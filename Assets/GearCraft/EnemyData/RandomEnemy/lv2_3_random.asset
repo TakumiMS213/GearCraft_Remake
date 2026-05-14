@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 71e6b0bb4f4ce479bb52b9e3d54c093f, type: 3}
+  m_Name: lv2_3_random
+  m_EditorClassIdentifier: 
+  lv1Enemies:
+    enemyPrefabs:
+    - {fileID: 8310521578096399468, guid: 78ae97d1305a147eea40d4ed63f2d571, type: 3}
+    - {fileID: 7711395149452848216, guid: 0ea506b5a8857e1428c6d11f54344bd2, type: 3}
+    - {fileID: 4862418018048898471, guid: eb81d34820e16fd4198ea45a5882b0c7, type: 3}
+  lv2Enemies:
+    enemyPrefabs:
+    - {fileID: 8310521578096399468, guid: 60f1c427e8a0b45afb4aa918f978cbee, type: 3}
+    - {fileID: 4862418018048898471, guid: 96ab8e57101a14ef88d8e44cc9903c68, type: 3}
+    - {fileID: 4862418018048898471, guid: 392aa4eb774664a23a43fa7a40ecb88e, type: 3}
+  lv3Enemies:
+    enemyPrefabs:
+    - {fileID: 1105495981581323202, guid: b62d09db7f4444c0d85ef4f3f86ff831, type: 3}
+    - {fileID: 2252462175396124830, guid: 567599f6de75946f8ac1dad7fff2717f, type: 3}
+    - {fileID: 2252462175396124830, guid: be0464c5ea5024cbb9ec44b12bfcadcc, type: 3}
+  spawns:
+  - enemyLevel: 2
+    spawnTime: 2
+    LastEnemy: 0
+  - enemyLevel: 2
+    spawnTime: 2
+    LastEnemy: 0
+  - enemyLevel: 2
+    spawnTime: 2
+    LastEnemy: 0

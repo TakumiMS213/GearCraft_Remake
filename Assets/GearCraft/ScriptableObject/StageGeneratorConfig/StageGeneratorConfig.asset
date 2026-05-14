@@ -1,0 +1,98 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 448451e9f53493143ad0aebd51435934, type: 3}
+  m_Name: StageGeneratorConfig
+  m_EditorClassIdentifier: 
+  totalStages: 31
+  bossStages: 09000000120000001e0000001f000000
+  stagesPerRest: 3
+  difficultyCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.90203047
+      value: 0.31169534
+      inSlope: 0.94572747
+      outSlope: 0.94572747
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 2
+      outSlope: 2
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  normalEnemyPool:
+  - {fileID: 11400000, guid: f7b40f58d8de243499a0d80a8e58c86d, type: 2}
+  - {fileID: 11400000, guid: 6cc88938c0229da4a9ee1fb3b6765482, type: 2}
+  - {fileID: 11400000, guid: e36c410e1ba26d1498567de1d54ad9e3, type: 2}
+  - {fileID: 11400000, guid: ff6bc388cedb87d42abb82d62ea819e5, type: 2}
+  - {fileID: 11400000, guid: 54270c7afbefb8f468eaa10d9eae9bbc, type: 2}
+  - {fileID: 11400000, guid: 5ccfbe44540bb634c8fabb9091494308, type: 2}
+  bossPool:
+  - {fileID: 11400000, guid: 4905cb82c7b70a3458d44e7546f3468c, type: 2}
+  - {fileID: 11400000, guid: 8dbafa68ed1643b4bb05a278cb286413, type: 2}
+  - {fileID: 11400000, guid: ffdfa706cfe794a4db50b6e65aa64032, type: 2}
+  baseEnemyCount: 3
+  maxEnemyCount: 6
+  baseSpawnInterval: 3
+  minSpawnInterval: 1
+  dropMultiplierCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 15.130385
+      value: 2.5690107
+      inSlope: 0.03531571
+      outSlope: 0.03531571
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33412135
+      outWeight: 0.4302531
+    - serializedVersion: 3
+      time: 31
+      value: 3
+      inSlope: 0.06451613
+      outSlope: 0.06451613
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4

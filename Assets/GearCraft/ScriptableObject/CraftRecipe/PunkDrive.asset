@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85b1a97f518a3c74ca62603ca4b916a5, type: 3}
+  m_Name: PunkDrive
+  m_EditorClassIdentifier: 
+  recipeName: PunkDrive
+  icon: {fileID: 21300000, guid: 247326923e2d64076bcc7684787cc4d2, type: 3}
+  completedImage: {fileID: 21300000, guid: 09122efdfb96c4c20b1383ac9085b204, type: 3}
+  costs:
+  - type: 1
+    amount: 4
+  resultType: 2
+  weaponResult: {fileID: 11400000, guid: 3001dfbf9db1bea4e828420f0224bd33, type: 2}
+  moduleFlag: 
+  statBonus: 0
+  requiredWeapon: {fileID: 0}

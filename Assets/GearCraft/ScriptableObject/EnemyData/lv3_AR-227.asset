@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 733a9a0744d2b7345998d5125f69f65f, type: 3}
+  m_Name: lv3_AR-227
+  m_EditorClassIdentifier: 
+  enemyName: AR-227
+  prefab: {fileID: 1105495981581323202, guid: b62d09db7f4444c0d85ef4f3f86ff831, type: 3}
+  baseHP: 4000
+  speed: 5
+  attackInterval: 2
+  bulletSpeed: 5
+  aiType: 6
+  bulletPrefabs:
+  - {fileID: 5356958644387713917, guid: d776dc084600f412f986eef8822d3997, type: 3}
+  - {fileID: 5356958644387713917, guid: 647fb3c8ad480444b9d24dc288394320, type: 3}
+  - {fileID: 1960967463930943775, guid: b70f2d8599ab54153b9f62495fcfec44, type: 3}
+  isBoss: 1
+  isHighlighted: 0
+  circleRadius: 3
+  circleDuration: 1.5
+  chargeDistance: 5
+  chargeTime: 1
+  explosionRadius: 3
+  explosionDamage: 30
+  drops:
+  - type: 5
+    minAmount: 1
+    maxAmount: 1
+    dropChance: 1
+  - type: 1
+    minAmount: 5
+    maxAmount: 15
+    dropChance: 1
+  - type: 0
+    minAmount: 15
+    maxAmount: 20
+    dropChance: 1

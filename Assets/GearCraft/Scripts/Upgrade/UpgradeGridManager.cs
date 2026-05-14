@@ -1,0 +1,378 @@
+using System.Collections.Generic;
+using UnityEngine;
+
+public class UpgradeGridManager : MonoBehaviour
+{
+    public static UpgradeGridManager Instance { get; private set; }
+
+    [System.Serializable]
+    public class PlacedPart
+    {
+        public UpgradePartSO partData;
+        public int gridX;
+        public int gridY;
+        public int rotation;
+        public int inventoryIndex = -1;
+    }
+
+    [Header("UI")]
+    public UpgradeGridUI gridUI;
+    public UpgradeEffectDisplay effectDisplay;
+
+    private int[,] grid;
+    private int gridSize;
+    private readonly List<PlacedPart> placedParts = new List<PlacedPart>();
+
+    public int GridSize => gridSize;
+    public List<PlacedPart> PlacedParts => placedParts;
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+    }
+
+    private void Start()
+    {
+        RefreshGridSize();
+    }
+
+    public void RefreshGridSize()
+    {
+        int newSize = StatusManager.Instance != null ? StatusManager.Instance.GetUpgradeGridSize() : 3;
+        if (grid != null && gridSize == newSize)
+        {
+            RefreshUI();
+            return;
+        }
+
+        int oldSize = gridSize;
+        gridSize = newSize;
+        MigrateGrid(oldSize, newSize);
+    }
+
+    public bool CanPlace(UpgradePartSO part, int posX, int posY, int rotation)
+    {
+        return CanPlace(part, posX, posY, rotation, grid, gridSize);
+    }
+
+    public bool TryPlace(UpgradePartSO part, int posX, int posY, int rotation)
+    {
+        return TryPlace(part, posX, posY, rotation, -1);
+    }
+
+    public bool TryPlace(UpgradePartSO part, int posX, int posY, int rotation, int inventoryIndex)
+    {
+        if (!CanPlace(part, posX, posY, rotation))
+        {
+            return false;
+        }
+
+        if (inventoryIndex >= 0 && IsInventoryPartPlaced(inventoryIndex))
+        {
+            return false;
+        }
+
+        int partIndex = placedParts.Count;
+        PlaceInGrid(part, posX, posY, rotation, grid, gridSize, partIndex);
+        placedParts.Add(new PlacedPart
+        {
+            partData = part,
+            gridX = posX,
+            gridY = posY,
+            rotation = rotation,
+            inventoryIndex = inventoryIndex
+        });
+
+        RecalculateEffects();
+        RefreshUI();
+        return true;
+    }
+
+    public void RemovePart(int partIndex)
+    {
+        if (partIndex < 0 || partIndex >= placedParts.Count)
+        {
+            return;
+        }
+
+        for (int y = 0; y < gridSize; y++)
+        {
+            for (int x = 0; x < gridSize; x++)
+            {
+                if (grid[y, x] == partIndex)
+                {
+                    grid[y, x] = -1;
+                }
+            }
+        }
+
+        placedParts.RemoveAt(partIndex);
+        RebuildGridIndices();
+        RecalculateEffects();
+        RefreshUI();
+    }
+
+    public void ClearAllParts()
+    {
+        placedParts.Clear();
+
+        if (grid != null)
+        {
+            for (int y = 0; y < gridSize; y++)
+            {
+                for (int x = 0; x < gridSize; x++)
+                {
+                    grid[y, x] = -1;
+                }
+            }
+        }
+
+        RecalculateEffects();
+        RefreshUI();
+    }
+
+    public bool IsInventoryPartPlaced(int inventoryIndex)
+    {
+        if (inventoryIndex < 0)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < placedParts.Count; i++)
+        {
+            if (placedParts[i] != null && placedParts[i].inventoryIndex == inventoryIndex)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public void RefreshUI()
+    {
+        if (gridUI == null)
+        {
+            return;
+        }
+
+        List<UpgradePartSO> ownedParts = StatusManager.Instance != null
+            ? StatusManager.Instance.ownedUpgradeParts
+            : null;
+
+        gridUI.RefreshDisplay(grid, gridSize, placedParts, ownedParts);
+    }
+
+    public void RecalculateEffects()
+    {
+        if (StatusManager.Instance == null)
+        {
+            return;
+        }
+
+        StatusManager status = StatusManager.Instance;
+        status.bonusDamage = 0f;
+        status.attackSpeedMult = 1f;
+        status.hasBulletDouble = false;
+        status.spreadModifier = 0f;
+        status.durabilityDrainChance = 0f;
+        status.ricochetCount = 0;
+        status.junkCollectorMult = 1f;
+        status.bulletSizeMult = 1f;
+        status.maxDurabilityBonus = 0;
+
+        float magnetBonus = 0f;
+        int maxDurabilityBonus = 0;
+
+        for (int i = 0; i < placedParts.Count; i++)
+        {
+            UpgradePartSO part = placedParts[i]?.partData;
+            if (part == null || part.effects == null)
+            {
+                continue;
+            }
+
+            for (int j = 0; j < part.effects.Length; j++)
+            {
+                UpgradeEffect effect = part.effects[j];
+                if (effect == null)
+                {
+                    continue;
+                }
+
+                ApplyEffect(status, effect, ref magnetBonus, ref maxDurabilityBonus);
+            }
+        }
+
+        status.magnetRange = 3f + magnetBonus;
+        status.maxDurabilityBonus = maxDurabilityBonus;
+
+        if (effectDisplay != null)
+        {
+            effectDisplay.Refresh();
+        }
+    }
+
+    private void MigrateGrid(int oldSize, int newSize)
+    {
+        int[,] newGrid = CreateEmptyGrid(newSize);
+        List<PlacedPart> validParts = new List<PlacedPart>();
+
+        for (int i = 0; i < placedParts.Count; i++)
+        {
+            PlacedPart part = placedParts[i];
+            if (part == null || part.partData == null)
+            {
+                continue;
+            }
+
+            if (CanPlace(part.partData, part.gridX, part.gridY, part.rotation, newGrid, newSize))
+            {
+                PlaceInGrid(part.partData, part.gridX, part.gridY, part.rotation, newGrid, newSize, validParts.Count);
+                validParts.Add(part);
+            }
+        }
+
+        placedParts.Clear();
+        placedParts.AddRange(validParts);
+        grid = newGrid;
+        RecalculateEffects();
+        RefreshUI();
+    }
+
+    private bool CanPlace(UpgradePartSO part, int posX, int posY, int rotation, int[,] targetGrid, int targetSize)
+    {
+        if (part == null || targetGrid == null)
+        {
+            return false;
+        }
+
+        if (part.rangedOnly &&
+            StatusManager.Instance != null &&
+            StatusManager.Instance.currentWeapon != null &&
+            StatusManager.Instance.currentWeapon.weaponType != WeaponType.Ranged)
+        {
+            return false;
+        }
+
+        bool[,] shape = part.GetRotatedShape(rotation);
+        int height = shape.GetLength(0);
+        int width = shape.GetLength(1);
+
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                if (!shape[y, x])
+                {
+                    continue;
+                }
+
+                int gridX = posX + x;
+                int gridY = posY + y;
+                if (gridX < 0 || gridX >= targetSize || gridY < 0 || gridY >= targetSize)
+                {
+                    return false;
+                }
+
+                if (targetGrid[gridY, gridX] != -1)
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private void RebuildGridIndices()
+    {
+        grid = CreateEmptyGrid(gridSize);
+        for (int i = 0; i < placedParts.Count; i++)
+        {
+            PlacedPart part = placedParts[i];
+            if (part != null && part.partData != null)
+            {
+                PlaceInGrid(part.partData, part.gridX, part.gridY, part.rotation, grid, gridSize, i);
+            }
+        }
+    }
+
+    private static int[,] CreateEmptyGrid(int size)
+    {
+        int[,] result = new int[size, size];
+        for (int y = 0; y < size; y++)
+        {
+            for (int x = 0; x < size; x++)
+            {
+                result[y, x] = -1;
+            }
+        }
+
+        return result;
+    }
+
+    private static void PlaceInGrid(UpgradePartSO part, int posX, int posY, int rotation, int[,] targetGrid, int targetSize, int index)
+    {
+        bool[,] shape = part.GetRotatedShape(rotation);
+        int height = shape.GetLength(0);
+        int width = shape.GetLength(1);
+
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                if (shape[y, x])
+                {
+                    targetGrid[posY + y, posX + x] = index;
+                }
+            }
+        }
+    }
+
+    private static void ApplyEffect(StatusManager status, UpgradeEffect effect, ref float magnetBonus, ref int maxDurabilityBonus)
+    {
+        switch (effect.type)
+        {
+            case UpgradeEffectType.DamageFlat:
+                status.bonusDamage += effect.value;
+                break;
+            case UpgradeEffectType.AttackSpeedMult:
+                status.attackSpeedMult *= effect.value;
+                break;
+            case UpgradeEffectType.BulletDouble:
+                status.hasBulletDouble = true;
+                break;
+            case UpgradeEffectType.SpreadReduction:
+                status.spreadModifier -= effect.value;
+                break;
+            case UpgradeEffectType.SpreadIncrease:
+                status.spreadModifier += effect.value;
+                break;
+            case UpgradeEffectType.DurabilityDrain:
+                status.durabilityDrainChance += effect.value;
+                break;
+            case UpgradeEffectType.Ricochet:
+                status.ricochetCount += (int)effect.value;
+                break;
+            case UpgradeEffectType.JunkCollector:
+                status.junkCollectorMult += effect.value;
+                break;
+            case UpgradeEffectType.BulletSizeUp:
+                status.bulletSizeMult += effect.value;
+                break;
+            case UpgradeEffectType.MaxDurabilityUp:
+                maxDurabilityBonus += (int)effect.value;
+                break;
+            case UpgradeEffectType.MagnetRangeUp:
+                magnetBonus += effect.value;
+                break;
+        }
+    }
+}

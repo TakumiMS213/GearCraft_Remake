@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 733a9a0744d2b7345998d5125f69f65f, type: 3}
+  m_Name: lv1_A-1
+  m_EditorClassIdentifier: 
+  enemyName: A-1
+  prefab: {fileID: 8310521578096399468, guid: 78ae97d1305a147eea40d4ed63f2d571, type: 3}
+  baseHP: 50
+  speed: 5
+  attackInterval: 2
+  bulletSpeed: 50
+  aiType: 0
+  bulletPrefabs:
+  - {fileID: 1960967463930943775, guid: bd58f7fb684ac5848b0c8c34f7ec2997, type: 3}
+  isBoss: 0
+  isHighlighted: 0
+  circleRadius: 3
+  circleDuration: 1.5
+  chargeDistance: 5
+  chargeTime: 1
+  explosionRadius: 3
+  explosionDamage: 30
+  drops:
+  - type: 0
+    minAmount: 1
+    maxAmount: 3
+    dropChance: 0.7
+  - type: 3
+    minAmount: 1
+    maxAmount: 1
+    dropChance: 0.1
+  - type: 1
+    minAmount: 1
+    maxAmount: 1
+    dropChance: 0.2

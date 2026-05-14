@@ -1,0 +1,57 @@
+using UnityEngine;
+
+public class MeleeWeapon : MonoBehaviour
+{
+    private PlayerController playerController;
+    private StatusManager runtimeStatus;
+    public GameObject BurnPtPrehub;
+    public GameObject ExplosionPrehub;
+
+    void Start()
+    {
+        playerController = FindAnyObjectByType<PlayerController>();
+        runtimeStatus = StatusManager.Instance;
+    }
+
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (runtimeStatus == null || runtimeStatus.currentWeapon == null) return;
+
+        // 近接武器でのみダメージ判定
+        if (other.CompareTag("Enemy") && runtimeStatus.currentWeapon.weaponType == WeaponType.Melee)
+        {
+            float damage = runtimeStatus.currentWeapon.baseDamage;
+
+            // STR加算 + 強化パーツのボーナスダメージ
+            damage += runtimeStatus.STR + runtimeStatus.bonusDamage;
+
+            // クラフト武器ボーナス（GearCraft系）
+            if (!runtimeStatus.currentWeapon.isDefault)
+            {
+                damage += runtimeStatus.craftWeaponDamagebuff;
+            }
+
+            EnemyController ec = other.GetComponent<EnemyController>();
+            if (ec != null)
+            {
+                ec.TakeDamage(damage);
+            }
+        }
+
+        // 弾丸反射（近接武器で弾を弾く）
+        if (other.CompareTag("Bullet") && runtimeStatus.currentWeapon.weaponType == WeaponType.Melee)
+        {
+            Destroy(other.gameObject);
+            if (other.gameObject.name.Contains("Missile"))
+            {
+                if (ExplosionPrehub != null)
+                    Instantiate(ExplosionPrehub, transform.position, Quaternion.identity);
+            }
+            else
+            {
+                if (BurnPtPrehub != null)
+                    Instantiate(BurnPtPrehub, transform.position, Quaternion.identity);
+            }
+        }
+    }
+}

@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 733a9a0744d2b7345998d5125f69f65f, type: 3}
+  m_Name: lv3_BB-413
+  m_EditorClassIdentifier: 
+  enemyName: BB-413
+  prefab: {fileID: 4862418018048898471, guid: ae21a14c9dbb64a909a4da618ab0639e, type: 3}
+  baseHP: 5000
+  speed: 2
+  attackInterval: 2
+  bulletSpeed: 5
+  aiType: 7
+  bulletPrefabs:
+  - {fileID: 4862418018048898471, guid: eb81d34820e16fd4198ea45a5882b0c7, type: 3}
+  isBoss: 1
+  isHighlighted: 0
+  circleRadius: 3
+  circleDuration: 1.5
+  chargeDistance: 5
+  chargeTime: 1
+  explosionRadius: 3
+  explosionDamage: 30
+  summonEnemyData: {fileID: 11400000, guid: 6cc88938c0229da4a9ee1fb3b6765482, type: 2}
+  summonCount: 18
+  summonInterval: 4
+  drops:
+  - type: 5
+    minAmount: 1
+    maxAmount: 1
+    dropChance: 1
+  - type: 1
+    minAmount: 5
+    maxAmount: 15
+    dropChance: 1
+  - type: 0
+    minAmount: 15
+    maxAmount: 20
+    dropChance: 1
