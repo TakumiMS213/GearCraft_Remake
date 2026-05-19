@@ -19,8 +19,14 @@ public class UpgradeEffectDisplay : MonoBehaviour
     {
         ClearEntries();
 
-        if (StatusManager.Instance == null || effectListParent == null)
+        if (effectListParent == null)
         {
+            return;
+        }
+
+        if (StatusManager.Instance == null)
+        {
+            AddEntry("No active upgrade effects.", neutralColor);
             return;
         }
 
@@ -80,15 +86,40 @@ public class UpgradeEffectDisplay : MonoBehaviour
 
     private void ClearEntries()
     {
+        if (effectListParent != null)
+        {
+            for (int i = effectListParent.childCount - 1; i >= 0; i--)
+            {
+                DestroyEntry(effectListParent.GetChild(i).gameObject);
+            }
+        }
+
         for (int i = 0; i < entries.Count; i++)
         {
             if (entries[i] != null)
             {
-                Destroy(entries[i]);
+                DestroyEntry(entries[i]);
             }
         }
 
         entries.Clear();
+    }
+
+    private void DestroyEntry(GameObject entry)
+    {
+        if (entry == null)
+        {
+            return;
+        }
+
+        if (Application.isPlaying)
+        {
+            Destroy(entry);
+        }
+        else
+        {
+            DestroyImmediate(entry);
+        }
     }
 
     private void AddEntry(string text, Color color)

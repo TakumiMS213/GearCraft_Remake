@@ -10,6 +10,9 @@ public class MaterialDropper : MonoBehaviour
     public GameObject gearDropPrefab;
     public GameObject scrapDropPrefab;
     public GameObject upgradeCoreDropPrefab;
+    public GameObject moduleCoreLv1DropPrefab;
+    public GameObject moduleCoreLv2DropPrefab;
+    public GameObject moduleCoreLv3DropPrefab;
 
     public static MaterialDropper Instance { get; private set; }
 
@@ -118,6 +121,9 @@ public class MaterialDropper : MonoBehaviour
             case MaterialManager.MaterialType.Gear: return gearDropPrefab;
             case MaterialManager.MaterialType.Scrap: return scrapDropPrefab;
             case MaterialManager.MaterialType.UpgradeCore: return upgradeCoreDropPrefab;
+            case MaterialManager.MaterialType.ModuleCore_lv1: return moduleCoreLv1DropPrefab != null ? moduleCoreLv1DropPrefab : upgradeCoreDropPrefab;
+            case MaterialManager.MaterialType.ModuleCore_lv2: return moduleCoreLv2DropPrefab != null ? moduleCoreLv2DropPrefab : upgradeCoreDropPrefab;
+            case MaterialManager.MaterialType.ModuleCore_lv3: return moduleCoreLv3DropPrefab != null ? moduleCoreLv3DropPrefab : upgradeCoreDropPrefab;
             default: return scrapDropPrefab;
         }
     }

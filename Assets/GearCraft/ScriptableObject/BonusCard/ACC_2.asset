@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba53de0965ece1a4d96741a54fe1d238, type: 3}
+  m_Name: ACC_2
+  m_EditorClassIdentifier: 
+  cardName: "\u7CBE\u5EA6\u4E0A\u6607 II"
+  cardImage: {fileID: 21300000, guid: c288cdc00a2554071b4499f1b97f4022, type: 3}
+  cardPrefab: {fileID: 5681348299819987411, guid: b45ced3efd88d4391b3ae24188e7a214, type: 3}
+  weight: 0.07
+  effects:
+  - type: 3
+    value: 2
+    weaponToGrant: {fileID: 0}
+    partToGrant: {fileID: 0}
+    materialType: 0

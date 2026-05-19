@@ -2797,6 +2797,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardDataList:
   - {fileID: 11400000, guid: a4b3056745ea90743bf3a2cab4352aa4, type: 2}
+  - {fileID: 11400000, guid: 2bd057f7ce18948e882301965e3d38ca, type: 2}
+  - {fileID: 11400000, guid: 80d360a8cdf3741d3b03e1e088ba3016, type: 2}
+  - {fileID: 11400000, guid: 8cb9d4126dbdb477e9611f01bf28ac1e, type: 2}
+  - {fileID: 11400000, guid: d442a97ecc89944639e18aaa781184b9, type: 2}
+  - {fileID: 11400000, guid: 0da34435d567545ffadecffc6543d6ba, type: 2}
+  - {fileID: 11400000, guid: 04aa4e34026184775a0e2781d4ca828a, type: 2}
+  - {fileID: 11400000, guid: 7ddb8343debaa4c66a64e4ae729f0b99, type: 2}
+  - {fileID: 11400000, guid: 697faaf94dc674678bcbf1d779a0cb15, type: 2}
+  - {fileID: 11400000, guid: 87377a5a4a68b405e8edb6f07ad3b448, type: 2}
+  - {fileID: 11400000, guid: 4d6d97b4f417e487c8996a4bdf49fd19, type: 2}
+  - {fileID: 11400000, guid: b6db921e3a5874499b0bcfa1d5f6fef1, type: 2}
+  - {fileID: 11400000, guid: f97c4d7a0ccf1464eafb95ff82db621d, type: 2}
+  - {fileID: 11400000, guid: 64978cf68914141db81fc360dc240f5d, type: 2}
+  - {fileID: 11400000, guid: cf0aa483aab974630a1640d778474f9d, type: 2}
+  - {fileID: 11400000, guid: db82399f852784457bebe2288ebba6d4, type: 2}
+  - {fileID: 11400000, guid: 198ce6aa42b034baaa716963726e7064, type: 2}
+  - {fileID: 11400000, guid: d18860fcff3cd49f5bf8e3ab42da584d, type: 2}
+  - {fileID: 11400000, guid: 6a87e07464d8f4fdbae1b5eb9f070b4f, type: 2}
+  - {fileID: 11400000, guid: 4d828146a0f75422195b99e2e13cfdf7, type: 2}
+  - {fileID: 11400000, guid: 3e8d3b06a9de04a50a6d5d40b4b839e7, type: 2}
   cardParent: {fileID: 1044977147}
   transition: {fileID: 742495350}
   transitionManager: {fileID: 742495350}
@@ -7628,7 +7648,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1754083653
 RectTransform:
   m_ObjectHideFlags: 0
@@ -8990,6 +9010,9 @@ MonoBehaviour:
   gearDropPrefab: {fileID: 9084430287257143526, guid: d5ac27320d818d84ba82c772aba26cc1, type: 3}
   scrapDropPrefab: {fileID: 7160100590242932943, guid: d4365d847fcfc844793c0fcfa8100e0a, type: 3}
   upgradeCoreDropPrefab: {fileID: 9211780731804556441, guid: 895ec35e8aa02b449b6682a188b131ba, type: 3}
+  moduleCoreLv1DropPrefab: {fileID: 9211780731804556441, guid: 87b8d0639914d48babd4a6a53fb96164, type: 3}
+  moduleCoreLv2DropPrefab: {fileID: 9211780731804556441, guid: 8e75f3e3549b54225addbb0d4b103b71, type: 3}
+  moduleCoreLv3DropPrefab: {fileID: 9211780731804556441, guid: 1bd684d3b337d428f8c3cc03d5d41a08, type: 3}
 --- !u!4 &2131013132
 Transform:
   m_ObjectHideFlags: 0

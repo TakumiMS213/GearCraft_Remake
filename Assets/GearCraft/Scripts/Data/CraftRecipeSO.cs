@@ -23,6 +23,9 @@ public class CraftRecipeSO : ScriptableObject
 
     [Header("Weapon結果（resultType == Weapon のとき）")]
     public WeaponDataSO weaponResult;
+    [Tooltip("同時に所持させる追加武器。GearCraft Sword/Axeのようなペア装備に使用")]
+    public WeaponDataSO additionalWeaponResult;
+
 
     [Header("Module結果（resultType == Module のとき）")]
     [Tooltip("StatusManagerのフラグ名: module_scrap, module_repair, module_barrier")]

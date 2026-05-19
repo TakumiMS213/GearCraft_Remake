@@ -12,6 +12,13 @@ public class MaterialDisplay : MonoBehaviour
     public RectTransform materialListParent;     // 素材一覧の親
     public GameObject materialEntryPrefab;       // 素材1行分のプレハブ（Image + Text）
 
+    [Header("素材アイコン")]
+    public Sprite scrapIcon;
+    public Sprite gearIcon;
+    public Sprite upgradeCoreIcon;
+    public Sprite moduleCoreLv1Icon;
+    public Sprite moduleCoreLv2Icon;
+    public Sprite moduleCoreLv3Icon;
 
     [Header("コスト表示（現在数/必要数）")]
     [Tooltip("左側のコスト表示TMP")]
@@ -42,9 +49,6 @@ public class MaterialDisplay : MonoBehaviour
 
     public void UpdateMaterialAmount()
     {
-        if (MaterialManager.Instance == null) return;
-
-
         // コスト表示を更新
         UpdateCostDisplay();
 
@@ -53,10 +57,10 @@ public class MaterialDisplay : MonoBehaviour
         {
             // 既存エントリをクリア
             foreach (var entry in dynamicEntries)
-                Destroy(entry);
+                DestroyEntry(entry);
             dynamicEntries.Clear();
 
-            var allMats = MaterialManager.Instance.GetAllMaterials();
+            var allMats = GetMaterialsForDisplay();
             foreach (var (type, count, name) in allMats)
             {
                 GameObject entry = Instantiate(materialEntryPrefab, materialListParent);
@@ -64,9 +68,72 @@ public class MaterialDisplay : MonoBehaviour
 
                 TMP_Text text = entry.GetComponentInChildren<TMP_Text>();
                 if (text != null)
-                    text.text = $"{name}: ×{count}";
+                    text.text = $"{name} x{count}";
+
+                Image icon = entry.transform.Find("Icon")?.GetComponent<Image>();
+                if (icon != null)
+                {
+                    icon.sprite = GetIcon(type);
+                    icon.enabled = icon.sprite != null;
+                }
             }
         }
+    }
+
+    private void DestroyEntry(GameObject entry)
+    {
+        if (entry == null)
+        {
+            return;
+        }
+
+        if (Application.isPlaying)
+        {
+            Destroy(entry);
+        }
+        else
+        {
+            DestroyImmediate(entry);
+        }
+    }
+
+    private Sprite GetIcon(MaterialManager.MaterialType type)
+    {
+        switch (type)
+        {
+            case MaterialManager.MaterialType.Scrap:
+                return scrapIcon;
+            case MaterialManager.MaterialType.Gear:
+                return gearIcon;
+            case MaterialManager.MaterialType.UpgradeCore:
+                return upgradeCoreIcon;
+            case MaterialManager.MaterialType.ModuleCore_lv1:
+                return moduleCoreLv1Icon;
+            case MaterialManager.MaterialType.ModuleCore_lv2:
+                return moduleCoreLv2Icon;
+            case MaterialManager.MaterialType.ModuleCore_lv3:
+                return moduleCoreLv3Icon;
+            default:
+                return null;
+        }
+    }
+
+    private List<(MaterialManager.MaterialType type, int count, string name)> GetMaterialsForDisplay()
+    {
+        if (MaterialManager.Instance != null)
+        {
+            return MaterialManager.Instance.GetAllMaterials();
+        }
+
+        return new List<(MaterialManager.MaterialType, int, string)>
+        {
+            (MaterialManager.MaterialType.Scrap, 0, "Scrap"),
+            (MaterialManager.MaterialType.Gear, 0, "Gear"),
+            (MaterialManager.MaterialType.UpgradeCore, 0, "UpCore"),
+            (MaterialManager.MaterialType.ModuleCore_lv1, 0, "ModC1"),
+            (MaterialManager.MaterialType.ModuleCore_lv2, 0, "ModC2"),
+            (MaterialManager.MaterialType.ModuleCore_lv3, 0, "ModC3"),
+        };
     }
 
     /// <summary>
@@ -138,7 +205,7 @@ public class MaterialDisplay : MonoBehaviour
     /// </summary>
     private void SetCostText(TMP_Text textComp, CraftCost cost)
     {
-        int current = MaterialManager.Instance.GetMaterial(cost.type);
+        int current = MaterialManager.Instance != null ? MaterialManager.Instance.GetMaterial(cost.type) : 0;
         int required = cost.amount;
         textComp.text = $"{current}/{required}";
         textComp.color = (current >= required) ? enoughColor : notEnoughColor;

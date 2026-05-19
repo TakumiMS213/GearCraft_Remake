@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 68316589f9c8e104ba5f0b925df24123, type: 3}
+  m_Name: GearCraft_Axe
+  m_EditorClassIdentifier: 
+  weaponName: GearCraft_Axe
+  icon: {fileID: 21300000, guid: ce445e32ebbdb7642b6aaa8ba51819da, type: 3}
+  weaponType: 0
+  coolTime: 0.8
+  baseDamage: 60
+  attackRange: 1.2
+  bulletSpeed: 25
+  bulletPrefab: {fileID: 0}
+  spreadAngle: 0
+  maxDurability: 10
+  armTriggerName: GearCraft_Axe
+  meleeRotateDuration: 0.8
+  isDefault: 0
+  isPiercing: 0

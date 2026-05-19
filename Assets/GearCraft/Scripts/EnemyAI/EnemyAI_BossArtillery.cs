@@ -17,11 +17,13 @@ public class EnemyAI_BossArtillery : MonoBehaviour, IEnemyAI
     private Tween moveTween;
     private bool hasPositioned = false;
     private Vector3 sniperPosition;
+    private float runtimeMaxHp;
 
     public void Initialize(EnemyController owner, EnemyDataSO data)
     {
         this.owner = owner;
         this.data = data;
+        runtimeMaxHp = owner != null ? owner.HP : data.baseHP;
         attackTimer = data.attackInterval * 1.5f;
         bombardTimer = 8f;
 
@@ -38,7 +40,7 @@ public class EnemyAI_BossArtillery : MonoBehaviour, IEnemyAI
         if (owner == null) return;
 
         // フェーズ判定
-        float hpRatio = owner.HP / data.baseHP;
+        float hpRatio = runtimeMaxHp > 0f ? owner.HP / runtimeMaxHp : 1f;
         if (hpRatio <= 0.3f) phase = 2;
         else if (hpRatio <= 0.6f) phase = 1;
         else phase = 0;
@@ -197,7 +199,5 @@ public class EnemyAI_BossArtillery : MonoBehaviour, IEnemyAI
     public void OnDeath()
     {
         moveTween?.Kill();
-        if (StatusManager.Instance != null)
-            StatusManager.Instance.bossKillCount++;
     }
 }

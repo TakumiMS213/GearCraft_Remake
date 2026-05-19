@@ -28,6 +28,7 @@ public class BonusCardsManager : MonoBehaviour
     private AudioSource audioSource;
 
     private List<GameObject> spawnedCards = new List<GameObject>();
+    private UniTaskCompletionSource cardSelectionCompletion;
 
     async void Start()
     {
@@ -55,7 +56,12 @@ public class BonusCardsManager : MonoBehaviour
     /// <summary>
     /// 重み付きランダムで3枚選んで表示
     /// </summary>
-    public async void ShowBonusCards()
+    public void ShowBonusCards()
+    {
+        ShowBonusCardsAsync().Forget();
+    }
+
+    public async UniTask ShowBonusCardsAsync()
     {
         int stageCount = StageCounter.Instance != null ? StageCounter.Instance.StageCount : 0;
 
@@ -78,6 +84,7 @@ public class BonusCardsManager : MonoBehaviour
         cardParent.pivot = new Vector2(0.5f, 0.5f);
         cardParent.DOAnchorPos(Vector2.zero, 0.5f).SetEase(Ease.OutQuad);
 
+        cardSelectionCompletion = new UniTaskCompletionSource();
         List<int> selectedIndices = WeightedRandomSelect(3);
         foreach (int i in selectedIndices)
         {
@@ -89,6 +96,13 @@ public class BonusCardsManager : MonoBehaviour
                 btn.onClick.AddListener(() => OnBonusCardSelected(cardIndex));
             spawnedCards.Add(card);
         }
+
+        if (spawnedCards.Count == 0)
+        {
+            cardSelectionCompletion.TrySetResult();
+        }
+
+        await cardSelectionCompletion.Task;
     }
 
     private List<int> WeightedRandomSelect(int n)
@@ -134,6 +148,7 @@ public class BonusCardsManager : MonoBehaviour
         }
 
         ClearCards();
+        cardSelectionCompletion?.TrySetResult();
 
         // ステージ進行はStageFlowManagerに委譲
         // (StageFlowManagerが次ステージ開始 or 宿舎遷移を判断する)

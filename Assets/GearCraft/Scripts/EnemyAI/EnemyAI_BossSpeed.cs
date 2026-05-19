@@ -18,11 +18,13 @@ public class EnemyAI_BossSpeed : MonoBehaviour, IEnemyAI
     private float chargeTimer;
     private float summonTimer;
     private int summonedCount;
+    private float runtimeMaxHp;
 
     public void Initialize(EnemyController owner, EnemyDataSO data)
     {
         this.owner = owner;
         this.data = data;
+        runtimeMaxHp = owner != null ? owner.HP : data.baseHP;
         attackTimer = data.attackInterval;
         chargeTimer = data.attackInterval * 3f;
         summonTimer = data.summonInterval;
@@ -42,7 +44,7 @@ public class EnemyAI_BossSpeed : MonoBehaviour, IEnemyAI
         if (owner == null || isCharging) return;
 
         // フェーズ判定
-        float hpRatio = owner.HP / data.baseHP;
+        float hpRatio = runtimeMaxHp > 0f ? owner.HP / runtimeMaxHp : 1f;
         if (hpRatio <= 0.3f) phase = 2;
         else if (hpRatio <= 0.6f) phase = 1;
         else phase = 0;
@@ -216,7 +218,5 @@ public class EnemyAI_BossSpeed : MonoBehaviour, IEnemyAI
     public void OnDeath()
     {
         currentTween?.Kill();
-        if (StatusManager.Instance != null)
-            StatusManager.Instance.bossKillCount++;
     }
 }

@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 733a9a0744d2b7345998d5125f69f65f, type: 3}
+  m_Name: lv3_FinalBoss
+  m_EditorClassIdentifier: 
+  enemyName: Final Gear
+  prefab: {fileID: 1105495981581323202, guid: fdfddfdc569204d49b37c090e9d42f18, type: 3}
+  baseHP: 12000
+  speed: 4
+  attackInterval: 2
+  bulletSpeed: 5
+  aiType: 8
+  bulletPrefabs:
+  - {fileID: 5356958644387713917, guid: d776dc084600f412f986eef8822d3997, type: 3}
+  - {fileID: 5356958644387713917, guid: 647fb3c8ad480444b9d24dc288394320, type: 3}
+  - {fileID: 1960967463930943775, guid: b70f2d8599ab54153b9f62495fcfec44, type: 3}
+  isBoss: 1
+  isHighlighted: 1
+  circleRadius: 4
+  circleDuration: 2
+  chargeDistance: 6
+  chargeTime: 0.8
+  explosionRadius: 4
+  explosionDamage: 40
+  summonEnemyData: {fileID: 11400000, guid: 6cc88938c0229da4a9ee1fb3b6765482, type: 2}
+  summonCount: 0
+  summonInterval: 6
+  drops:
+  - type: 5
+    minAmount: 2
+    maxAmount: 3
+    dropChance: 1
+  - type: 1
+    minAmount: 15
+    maxAmount: 25
+    dropChance: 1
+  - type: 0
+    minAmount: 25
+    maxAmount: 35
+    dropChance: 1

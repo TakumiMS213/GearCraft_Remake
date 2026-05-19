@@ -9,6 +9,8 @@ public class UpgradeGridUI : MonoBehaviour
     public RectTransform gridParent;
     public GameObject cellPrefab;
     public float cellSize = 60f;
+    public float maxCellSize = 150f;
+    public float minCellSize = 64f;
     public float cellSpacing = 4f;
 
     [Header("Part List")]
@@ -69,9 +71,10 @@ public class UpgradeGridUI : MonoBehaviour
             return;
         }
 
-        float totalSize = gridSize * (cellSize + cellSpacing) - cellSpacing;
-        float startX = -totalSize / 2f + cellSize / 2f;
-        float startY = totalSize / 2f - cellSize / 2f;
+        float resolvedCellSize = ResolveCellSize(gridSize);
+        float totalSize = gridSize * (resolvedCellSize + cellSpacing) - cellSpacing;
+        float startX = -totalSize / 2f + resolvedCellSize / 2f;
+        float startY = totalSize / 2f - resolvedCellSize / 2f;
 
         for (int y = 0; y < gridSize; y++)
         {
@@ -81,10 +84,10 @@ public class UpgradeGridUI : MonoBehaviour
                 RectTransform rectTransform = cell.GetComponent<RectTransform>();
                 if (rectTransform != null)
                 {
-                    rectTransform.sizeDelta = new Vector2(cellSize, cellSize);
+                    rectTransform.sizeDelta = new Vector2(resolvedCellSize, resolvedCellSize);
                     rectTransform.anchoredPosition = new Vector2(
-                        startX + x * (cellSize + cellSpacing),
-                        startY - y * (cellSize + cellSpacing));
+                        startX + x * (resolvedCellSize + cellSpacing),
+                        startY - y * (resolvedCellSize + cellSpacing));
                 }
 
                 UpgradePartSO cellPart = ResolvePart(grid[y, x], placedParts);
@@ -102,6 +105,25 @@ public class UpgradeGridUI : MonoBehaviour
                 cellObjects.Add(cell);
             }
         }
+    }
+
+    private float ResolveCellSize(int gridSize)
+    {
+        if (gridParent == null || gridSize <= 0)
+        {
+            return cellSize;
+        }
+
+        Rect rect = gridParent.rect;
+        float availableSize = Mathf.Min(rect.width, rect.height);
+        if (availableSize <= 0f)
+        {
+            return cellSize;
+        }
+
+        float spacingTotal = cellSpacing * (gridSize - 1);
+        float fittedSize = (availableSize - spacingTotal) / gridSize;
+        return Mathf.Clamp(fittedSize, minCellSize, maxCellSize);
     }
 
     private void RefreshPartList(List<UpgradePartSO> ownedParts)

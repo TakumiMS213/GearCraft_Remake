@@ -130,6 +130,10 @@ public class CraftManager : MonoBehaviour
                     status.AcquireWeapon(recipe.weaponResult);
                     status.EquipWeapon(recipe.weaponResult);
                 }
+                if (recipe.additionalWeaponResult != null)
+                {
+                    status.AcquireWeapon(recipe.additionalWeaponResult);
+                }
                 break;
 
             case CraftResultType.PunkDrive:

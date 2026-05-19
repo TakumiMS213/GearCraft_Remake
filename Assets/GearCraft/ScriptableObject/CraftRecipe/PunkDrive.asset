@@ -20,6 +20,7 @@ MonoBehaviour:
     amount: 4
   resultType: 2
   weaponResult: {fileID: 11400000, guid: 3001dfbf9db1bea4e828420f0224bd33, type: 2}
+  additionalWeaponResult: {fileID: 0}
   moduleFlag: 
   statBonus: 0
   requiredWeapon: {fileID: 0}

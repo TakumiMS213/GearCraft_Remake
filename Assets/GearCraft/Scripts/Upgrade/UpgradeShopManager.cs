@@ -86,7 +86,7 @@ public class UpgradeShopManager : MonoBehaviour
         {
             if (shopItemObjects[i] != null)
             {
-                Destroy(shopItemObjects[i]);
+                DestroyShopItem(shopItemObjects[i]);
             }
         }
 
@@ -106,6 +106,23 @@ public class UpgradeShopManager : MonoBehaviour
             ApplyTexts(item, part);
             ApplyTooltip(item, part);
             ApplyButton(item, part);
+        }
+    }
+
+    private void DestroyShopItem(GameObject item)
+    {
+        if (item == null)
+        {
+            return;
+        }
+
+        if (Application.isPlaying)
+        {
+            Destroy(item);
+        }
+        else
+        {
+            DestroyImmediate(item);
         }
     }
 
@@ -229,9 +246,23 @@ public class UpgradeShopManager : MonoBehaviour
                 result += "  ";
             }
 
-            result += $"{cost.type}: {cost.amount}";
+            result += $"{FormatMaterialName(cost.type)} x{cost.amount}";
         }
 
         return result;
+    }
+
+    private static string FormatMaterialName(MaterialManager.MaterialType type)
+    {
+        switch (type)
+        {
+            case MaterialManager.MaterialType.Scrap: return "Scrap";
+            case MaterialManager.MaterialType.Gear: return "Gear";
+            case MaterialManager.MaterialType.UpgradeCore: return "UpCore";
+            case MaterialManager.MaterialType.ModuleCore_lv1: return "ModC1";
+            case MaterialManager.MaterialType.ModuleCore_lv2: return "ModC2";
+            case MaterialManager.MaterialType.ModuleCore_lv3: return "ModC3";
+            default: return type.ToString();
+        }
     }
 }

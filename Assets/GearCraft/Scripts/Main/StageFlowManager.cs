@@ -44,6 +44,11 @@ public class StageFlowManager : MonoBehaviour
         currentStage = StageCounter.Instance != null ? StageCounter.Instance.StageCount : 1;
         stagesSinceRest = 0;
         gateWasHit = false;
+
+        if (perfectUI != null)
+        {
+            perfectUI.SetActive(false);
+        }
     }
 
     public void RegisterEnemy(EnemyController enemy)
@@ -125,7 +130,7 @@ public class StageFlowManager : MonoBehaviour
 
         if (bonusCardsManager != null)
         {
-            bonusCardsManager.ShowBonusCards();
+            await bonusCardsManager.ShowBonusCardsAsync();
         }
 
         currentStage++;

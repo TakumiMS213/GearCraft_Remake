@@ -30,9 +30,12 @@ public class EnemySpawner : MonoBehaviour
     public GameObject warning;
 
     private CancellationTokenSource cts;
+    private StageSpawnPlanner spawnPlanner;
 
     private void Start()
     {
+        spawnPlanner = new StageSpawnPlanner(stageConfig);
+
         int startStage = StageCounter.Instance != null ? StageCounter.Instance.StageCount : 1;
         if (autoStart)
         {
@@ -44,6 +47,7 @@ public class EnemySpawner : MonoBehaviour
     {
         StopSpawning();
         cts = new CancellationTokenSource();
+        spawnPlanner = new StageSpawnPlanner(stageConfig);
 
         if (useAutoGeneration && stageConfig != null)
         {
@@ -130,14 +134,13 @@ public class EnemySpawner : MonoBehaviour
 
     private async UniTask SpawnBossStage(int stageNum, CancellationToken token)
     {
-        int bossIndex = stageConfig.GetBossIndex(stageNum);
-        int minionCount = Mathf.Max(2, stageConfig.baseEnemyCount);
+        StageSpawnPlan plan = spawnPlanner.CreatePlan(stageNum);
         float spawnInterval = stageConfig.GetSpawnInterval(stageNum);
         float difficulty = stageConfig.GetDifficulty(stageNum);
 
         if (stageConfig.normalEnemyPool != null && stageConfig.normalEnemyPool.Length > 0)
         {
-            for (int i = 0; i < minionCount; i++)
+            for (int i = 0; i < plan.MinionCount; i++)
             {
                 token.ThrowIfCancellationRequested();
                 EnemyDataSO minionData = SelectEnemyByDifficulty(stageNum, difficulty);
@@ -151,23 +154,21 @@ public class EnemySpawner : MonoBehaviour
                 if (enemy != null)
                 {
                     enemy.enemyData = minionData;
+                    enemy.isLastEnemy = plan.MarkLastMinionAsStageEnd && i == plan.MinionCount - 1;
                 }
 
                 await UniTask.Delay((int)(spawnInterval * 1000f), cancellationToken: token);
             }
         }
 
-        if (stageConfig.bossPool == null || bossIndex < 0 || bossIndex >= stageConfig.bossPool.Length)
+        if (!plan.HasBoss)
         {
+            Debug.LogWarning($"Boss data is missing for stage {stageNum}. The last minion will end the stage.");
             return;
         }
 
         token.ThrowIfCancellationRequested();
-        EnemyDataSO bossData = stageConfig.bossPool[bossIndex];
-        if (bossData == null || bossData.prefab == null)
-        {
-            return;
-        }
+        EnemyDataSO bossData = plan.BossData;
 
         await UniTask.Delay(2000, cancellationToken: token);
 

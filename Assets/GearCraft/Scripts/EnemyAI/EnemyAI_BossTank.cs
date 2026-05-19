@@ -13,6 +13,7 @@ public class EnemyAI_BossTank : MonoBehaviour, IEnemyAI
     private float attackTimer;
     private int phase = 0;
     private Tween moveTween;
+    private float runtimeMaxHp;
 
     // バリア状態
     private bool barrierActive = false;
@@ -25,6 +26,7 @@ public class EnemyAI_BossTank : MonoBehaviour, IEnemyAI
     {
         this.owner = owner;
         this.data = data;
+        runtimeMaxHp = owner != null ? owner.HP : data.baseHP;
         attackTimer = data.attackInterval;
 
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
@@ -37,7 +39,7 @@ public class EnemyAI_BossTank : MonoBehaviour, IEnemyAI
         if (owner == null) return;
 
         // フェーズ判定
-        float hpRatio = owner.HP / data.baseHP;
+        float hpRatio = runtimeMaxHp > 0f ? owner.HP / runtimeMaxHp : 1f;
         if (hpRatio <= 0.3f) phase = 2;
         else if (hpRatio <= 0.6f) phase = 1;
         else phase = 0;
@@ -176,7 +178,5 @@ public class EnemyAI_BossTank : MonoBehaviour, IEnemyAI
     public void OnDeath()
     {
         moveTween?.Kill();
-        if (StatusManager.Instance != null)
-            StatusManager.Instance.bossKillCount++;
     }
 }

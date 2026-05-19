@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba53de0965ece1a4d96741a54fe1d238, type: 3}
+  m_Name: ModuleCore_1
+  m_EditorClassIdentifier: 
+  cardName: "\u30E2\u30B8\u30E5\u30FC\u30EB\u30B3\u30A2 Lv1"
+  cardImage: {fileID: 21300000, guid: 916b1989229ad114fa2b35ff9767c596, type: 3}
+  cardPrefab: {fileID: 5681348299819987411, guid: 9b1f00d55f0f7f043a66d25e7fbeea15, type: 3}
+  weight: 0.05
+  effects:
+  - type: 4
+    value: 1
+    weaponToGrant: {fileID: 0}
+    partToGrant: {fileID: 0}
+    materialType: 3

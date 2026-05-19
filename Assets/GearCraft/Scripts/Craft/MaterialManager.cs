@@ -142,12 +142,12 @@ public class MaterialManager : MonoBehaviour
     public System.Collections.Generic.List<(MaterialType type, int count, string name)> GetAllMaterials()
     {
         var list = new System.Collections.Generic.List<(MaterialType, int, string)>();
-        if (scrap > 0) list.Add((MaterialType.Scrap, scrap, "スクラップ"));
-        if (gear > 0) list.Add((MaterialType.Gear, gear, "歯車"));
-        if (upgradeCore > 0) list.Add((MaterialType.UpgradeCore, upgradeCore, "アップグレードコア"));
-        if (moduleCore_lv1 > 0) list.Add((MaterialType.ModuleCore_lv1, moduleCore_lv1, "モジュールコアLv1"));
-        if (moduleCore_lv2 > 0) list.Add((MaterialType.ModuleCore_lv2, moduleCore_lv2, "モジュールコアLv2"));
-        if (moduleCore_lv3 > 0) list.Add((MaterialType.ModuleCore_lv3, moduleCore_lv3, "モジュールコアLv3"));
+        list.Add((MaterialType.Scrap, scrap, "Scrap"));
+        list.Add((MaterialType.Gear, gear, "Gear"));
+        list.Add((MaterialType.UpgradeCore, upgradeCore, "UpCore"));
+        list.Add((MaterialType.ModuleCore_lv1, moduleCore_lv1, "ModC1"));
+        list.Add((MaterialType.ModuleCore_lv2, moduleCore_lv2, "ModC2"));
+        list.Add((MaterialType.ModuleCore_lv3, moduleCore_lv3, "ModC3"));
         return list;
     }
 }
