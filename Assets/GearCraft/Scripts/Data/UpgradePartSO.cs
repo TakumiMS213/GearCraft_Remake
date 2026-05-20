@@ -24,6 +24,24 @@ public class UpgradePartSO : ScriptableObject
     [Header("Restriction")]
     public bool rangedOnly;
 
+    private void OnValidate()
+    {
+        width = Mathf.Max(1, width);
+        height = Mathf.Max(1, height);
+
+        int expectedLength = width * height;
+        if (shapeData == null || shapeData.Length != expectedLength)
+        {
+            bool[] resized = new bool[expectedLength];
+            for (int i = 0; i < resized.Length; i++)
+            {
+                resized[i] = shapeData == null || i >= shapeData.Length || shapeData[i];
+            }
+
+            shapeData = resized;
+        }
+    }
+
     public bool[,] GetRotatedShape(int rotation)
     {
         bool[,] original = new bool[height, width];
@@ -66,13 +84,13 @@ public class UpgradePartSO : ScriptableObject
     public string BuildTooltipText()
     {
         var builder = new StringBuilder();
-        builder.AppendLine(string.IsNullOrEmpty(partName) ? "Upgrade Part" : partName);
-        builder.AppendLine($"Rarity: {rarity}");
-        builder.AppendLine($"Shape: {width}x{height}");
+        builder.AppendLine(string.IsNullOrEmpty(partName) ? "強化パーツ" : partName);
+        builder.AppendLine($"レアリティ: {FormatRarity(rarity)}");
+        builder.AppendLine($"形状: {width}x{height}");
 
         if (rangedOnly)
         {
-            builder.AppendLine("Restriction: ranged weapons only");
+            builder.AppendLine("制限: 遠距離武器のみ");
         }
 
         AppendEffects(builder);
@@ -82,10 +100,10 @@ public class UpgradePartSO : ScriptableObject
 
     private void AppendEffects(StringBuilder builder)
     {
-        builder.AppendLine("Effects:");
+        builder.AppendLine("効果:");
         if (effects == null || effects.Length == 0)
         {
-            builder.AppendLine("- None");
+            builder.AppendLine("- なし");
             return;
         }
 
@@ -103,10 +121,10 @@ public class UpgradePartSO : ScriptableObject
 
     private void AppendCosts(StringBuilder builder)
     {
-        builder.AppendLine("Cost:");
+        builder.AppendLine("コスト:");
         if (costs == null || costs.Length == 0)
         {
-            builder.AppendLine("- Free");
+            builder.AppendLine("- 無料");
             return;
         }
 
@@ -118,7 +136,7 @@ public class UpgradePartSO : ScriptableObject
                 continue;
             }
 
-            builder.AppendLine($"- {cost.type}: {cost.amount}");
+            builder.AppendLine($"- {FormatMaterialName(cost.type)} x{cost.amount}");
         }
     }
 
@@ -127,29 +145,55 @@ public class UpgradePartSO : ScriptableObject
         switch (effect.type)
         {
             case UpgradeEffectType.DamageFlat:
-                return $"Damage +{effect.value:0}";
+                return $"ダメージ +{effect.value:0}";
             case UpgradeEffectType.AttackSpeedMult:
-                return $"Attack speed x{effect.value:0.##}";
+                return $"攻撃速度 x{effect.value:0.##}";
             case UpgradeEffectType.BulletDouble:
-                return "Bullet double";
+                return "弾数2倍";
             case UpgradeEffectType.SpreadReduction:
-                return $"Spread -{effect.value:0.#}";
+                return $"拡散 -{effect.value:0.#}";
             case UpgradeEffectType.SpreadIncrease:
-                return $"Spread +{effect.value:0.#}";
+                return $"拡散 +{effect.value:0.#}";
             case UpgradeEffectType.DurabilityDrain:
-                return $"Durability drain {effect.value * 100f:0}%";
+                return $"耐久吸収 {effect.value * 100f:0}%";
             case UpgradeEffectType.Ricochet:
-                return $"Ricochet +{effect.value:0}";
+                return $"跳弾 +{effect.value:0}";
             case UpgradeEffectType.JunkCollector:
-                return $"Material drop x{effect.value:0.##}";
+                return $"素材ドロップ x{effect.value:0.##}";
             case UpgradeEffectType.BulletSizeUp:
-                return $"Bullet size x{effect.value:0.##}";
+                return $"弾サイズ x{effect.value:0.##}";
             case UpgradeEffectType.MaxDurabilityUp:
-                return $"Max durability +{effect.value:0}";
+                return $"最大耐久 +{effect.value:0}";
             case UpgradeEffectType.MagnetRangeUp:
-                return $"Magnet range +{effect.value:0.#}";
+                return $"回収範囲 +{effect.value:0.#}";
             default:
                 return $"{effect.type} {effect.value:0.##}";
+        }
+    }
+
+    private static string FormatRarity(PartRarity rarity)
+    {
+        switch (rarity)
+        {
+            case PartRarity.Common: return "コモン";
+            case PartRarity.Uncommon: return "アンコモン";
+            case PartRarity.Rare: return "レア";
+            case PartRarity.Epic: return "エピック";
+            default: return rarity.ToString();
+        }
+    }
+
+    private static string FormatMaterialName(MaterialManager.MaterialType type)
+    {
+        switch (type)
+        {
+            case MaterialManager.MaterialType.Scrap: return "Scrap";
+            case MaterialManager.MaterialType.Gear: return "Gear";
+            case MaterialManager.MaterialType.UpgradeCore: return "UpCore";
+            case MaterialManager.MaterialType.ModuleCore_lv1: return "ModC1";
+            case MaterialManager.MaterialType.ModuleCore_lv2: return "ModC2";
+            case MaterialManager.MaterialType.ModuleCore_lv3: return "ModC3";
+            default: return type.ToString();
         }
     }
 

@@ -26,7 +26,7 @@ public class UpgradeEffectDisplay : MonoBehaviour
 
         if (StatusManager.Instance == null)
         {
-            AddEntry("No active upgrade effects.", neutralColor);
+            AddEntry("現在有効な強化効果はありません。", neutralColor);
             return;
         }
 
@@ -34,53 +34,53 @@ public class UpgradeEffectDisplay : MonoBehaviour
 
         if (status.bonusDamage != 0f)
         {
-            AddEntry($"Damage +{status.bonusDamage:F0}", positiveColor);
+            AddEntry($"ダメージ +{status.bonusDamage:F0}", positiveColor);
         }
 
         if (status.attackSpeedMult != 1f)
         {
             float percent = (1f - status.attackSpeedMult) * 100f;
-            AddEntry(percent > 0f ? $"Attack speed +{percent:F0}%" : $"Attack speed {percent:F0}%", percent > 0f ? positiveColor : negativeColor);
+            AddEntry(percent > 0f ? $"攻撃速度 +{percent:F0}%" : $"攻撃速度 {percent:F0}%", percent > 0f ? positiveColor : negativeColor);
         }
 
         if (status.hasBulletDouble)
         {
-            AddEntry("Bullet double ON", positiveColor);
+            AddEntry("弾数2倍 有効", positiveColor);
         }
 
         if (status.spreadModifier != 0f)
         {
-            AddEntry(status.spreadModifier < 0f ? $"Spread {status.spreadModifier:F1}" : $"Spread +{status.spreadModifier:F1}", status.spreadModifier < 0f ? positiveColor : negativeColor);
+            AddEntry(status.spreadModifier < 0f ? $"拡散 {status.spreadModifier:F1}" : $"拡散 +{status.spreadModifier:F1}", status.spreadModifier < 0f ? positiveColor : negativeColor);
         }
 
         if (status.durabilityDrainChance > 0f)
         {
-            AddEntry($"Durability drain {status.durabilityDrainChance * 100f:F0}%", positiveColor);
+            AddEntry($"耐久吸収 {status.durabilityDrainChance * 100f:F0}%", positiveColor);
         }
 
         if (status.ricochetCount > 0)
         {
-            AddEntry($"Ricochet {status.ricochetCount}", positiveColor);
+            AddEntry($"跳弾 {status.ricochetCount}", positiveColor);
         }
 
         if (status.junkCollectorMult != 1f)
         {
-            AddEntry($"Material drop x{status.junkCollectorMult:F1}", positiveColor);
+            AddEntry($"素材ドロップ x{status.junkCollectorMult:F1}", positiveColor);
         }
 
         if (status.bulletSizeMult != 1f)
         {
-            AddEntry($"Bullet size x{status.bulletSizeMult:F1}", positiveColor);
+            AddEntry($"弾サイズ x{status.bulletSizeMult:F1}", positiveColor);
         }
 
         if (status.magnetRange > 3f)
         {
-            AddEntry($"Magnet range +{status.magnetRange - 3f:F1}", positiveColor);
+            AddEntry($"回収範囲 +{status.magnetRange - 3f:F1}", positiveColor);
         }
 
         if (entries.Count == 0)
         {
-            AddEntry("No active upgrade effects.", neutralColor);
+            AddEntry("現在有効な強化効果はありません。", neutralColor);
         }
     }
 

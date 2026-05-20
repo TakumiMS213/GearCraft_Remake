@@ -11,23 +11,26 @@ public class TooltipTrigger : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (TooltipSystem.Instance != null && !string.IsNullOrEmpty(tooltipText))
+        TooltipSystem tooltipSystem = TooltipSystem.FindInstance();
+        if (tooltipSystem != null && !string.IsNullOrEmpty(tooltipText))
         {
-            TooltipSystem.Instance.Show(tooltipText);
+            tooltipSystem.Show(tooltipText, transform as RectTransform);
         }
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        if (TooltipSystem.Instance != null)
+        TooltipSystem tooltipSystem = TooltipSystem.FindInstance();
+        if (tooltipSystem != null)
         {
-            TooltipSystem.Instance.Hide();
+            tooltipSystem.Hide();
         }
     }
 
     private void OnDisable()
     {
-        if (TooltipSystem.Instance != null)
-            TooltipSystem.Instance.Hide();
+        TooltipSystem tooltipSystem = TooltipSystem.FindInstance();
+        if (tooltipSystem != null)
+            tooltipSystem.Hide();
     }
 }

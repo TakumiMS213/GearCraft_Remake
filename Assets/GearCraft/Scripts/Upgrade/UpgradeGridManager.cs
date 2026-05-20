@@ -13,6 +13,7 @@ public class UpgradeGridManager : MonoBehaviour
         public int gridY;
         public int rotation;
         public int inventoryIndex = -1;
+        public bool refundCostsOnRemove;
     }
 
     [Header("UI")]
@@ -68,6 +69,32 @@ public class UpgradeGridManager : MonoBehaviour
 
     public bool TryPlace(UpgradePartSO part, int posX, int posY, int rotation, int inventoryIndex)
     {
+        return TryPlaceInternal(part, posX, posY, rotation, inventoryIndex, false);
+    }
+
+    public bool TryPurchaseAndPlace(UpgradePartSO part, int posX, int posY, int rotation)
+    {
+        if (part == null || MaterialManager.Instance == null)
+        {
+            return false;
+        }
+
+        if (!CanPlace(part, posX, posY, rotation))
+        {
+            return false;
+        }
+
+        if (!MaterialManager.Instance.CanAfford(part.costs))
+        {
+            return false;
+        }
+
+        MaterialManager.Instance.SpendCosts(part.costs);
+        return TryPlaceInternal(part, posX, posY, rotation, -1, true);
+    }
+
+    private bool TryPlaceInternal(UpgradePartSO part, int posX, int posY, int rotation, int inventoryIndex, bool refundCostsOnRemove)
+    {
         if (!CanPlace(part, posX, posY, rotation))
         {
             return false;
@@ -86,7 +113,8 @@ public class UpgradeGridManager : MonoBehaviour
             gridX = posX,
             gridY = posY,
             rotation = rotation,
-            inventoryIndex = inventoryIndex
+            inventoryIndex = inventoryIndex,
+            refundCostsOnRemove = refundCostsOnRemove
         });
 
         RecalculateEffects();
@@ -101,6 +129,8 @@ public class UpgradeGridManager : MonoBehaviour
             return;
         }
 
+        PlacedPart removedPart = placedParts[partIndex];
+
         for (int y = 0; y < gridSize; y++)
         {
             for (int x = 0; x < gridSize; x++)
@@ -112,10 +142,35 @@ public class UpgradeGridManager : MonoBehaviour
             }
         }
 
+        RefundPartCosts(removedPart);
         placedParts.RemoveAt(partIndex);
         RebuildGridIndices();
         RecalculateEffects();
         RefreshUI();
+    }
+
+    private static void RefundPartCosts(PlacedPart part)
+    {
+        if (part == null || !part.refundCostsOnRemove || part.partData == null || part.partData.costs == null)
+        {
+            return;
+        }
+
+        if (MaterialManager.Instance == null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < part.partData.costs.Length; i++)
+        {
+            CraftCost cost = part.partData.costs[i];
+            if (cost == null)
+            {
+                continue;
+            }
+
+            MaterialManager.Instance.AddMaterial(cost.type, cost.amount);
+        }
     }
 
     public void ClearAllParts()

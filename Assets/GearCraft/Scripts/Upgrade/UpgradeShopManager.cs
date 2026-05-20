@@ -13,6 +13,8 @@ public class UpgradeShopManager : MonoBehaviour
     public RectTransform shopParent;
     public GameObject shopItemPrefab;
     public TMP_Text infoText;
+    public UpgradeGridUI targetGridUI;
+    public int shopContentBottomPadding = 96;
 
     [Header("Audio")]
     public AudioSource purchaseSound;
@@ -47,7 +49,7 @@ public class UpgradeShopManager : MonoBehaviour
         {
             if (infoText != null)
             {
-                infoText.text = "Not enough materials.";
+                infoText.text = "素材が足りません。";
             }
 
             if (errorSound != null)
@@ -71,7 +73,7 @@ public class UpgradeShopManager : MonoBehaviour
 
         if (infoText != null)
         {
-            infoText.text = $"{part.partName} acquired. Place it on the grid.";
+            infoText.text = $"{part.partName}を入手しました。グリッドに配置してください。";
         }
 
         if (purchaseSound != null)
@@ -105,8 +107,11 @@ public class UpgradeShopManager : MonoBehaviour
             ApplyIcon(item, part);
             ApplyTexts(item, part);
             ApplyTooltip(item, part);
-            ApplyButton(item, part);
+            ApplyDragHandler(item, part);
+            ApplyButton(item);
         }
+
+        ConfigureShopScrollPadding();
     }
 
     private void DestroyShopItem(GameObject item)
@@ -124,6 +129,24 @@ public class UpgradeShopManager : MonoBehaviour
         {
             DestroyImmediate(item);
         }
+    }
+
+    private void ConfigureShopScrollPadding()
+    {
+        if (shopParent == null)
+        {
+            return;
+        }
+
+        VerticalLayoutGroup layout = shopParent.GetComponent<VerticalLayoutGroup>();
+        if (layout != null)
+        {
+            RectOffset padding = layout.padding;
+            padding.bottom = Mathf.Max(padding.bottom, shopContentBottomPadding);
+            layout.padding = padding;
+        }
+
+        LayoutRebuilder.ForceRebuildLayoutImmediate(shopParent);
     }
 
     private void AddGuaranteedRarePart()
@@ -215,13 +238,72 @@ public class UpgradeShopManager : MonoBehaviour
         tooltip.tooltipText = part != null ? part.BuildTooltipText() : string.Empty;
     }
 
-    private void ApplyButton(GameObject item, UpgradePartSO part)
+    public bool CanAfford(UpgradePartSO part)
+    {
+        return part != null &&
+            MaterialManager.Instance != null &&
+            MaterialManager.Instance.CanAfford(part.costs);
+    }
+
+    public void ShowCannotAfford(UpgradePartSO part)
+    {
+        if (infoText != null)
+        {
+            infoText.text = part != null ? $"{part.partName}の素材が足りません。" : "素材が足りません。";
+        }
+
+        if (errorSound != null)
+        {
+            errorSound.Play();
+        }
+    }
+
+    public void OnPartPlaced(UpgradePartSO part)
+    {
+        if (infoText != null && part != null)
+        {
+            infoText.text = $"{part.partName}を装備しました。";
+        }
+
+        if (purchaseSound != null)
+        {
+            purchaseSound.Play();
+        }
+    }
+
+    public void OnPartPlacementFailed(UpgradePartSO part)
+    {
+        if (infoText != null)
+        {
+            infoText.text = part != null ? $"{part.partName}はそこに配置できません。" : "そこには配置できません。";
+        }
+
+        if (errorSound != null)
+        {
+            errorSound.Play();
+        }
+    }
+
+    private void ApplyDragHandler(GameObject item, UpgradePartSO part)
+    {
+        UpgradeShopItemDragHandler dragHandler = item.GetComponent<UpgradeShopItemDragHandler>();
+        if (dragHandler == null)
+        {
+            dragHandler = item.AddComponent<UpgradeShopItemDragHandler>();
+        }
+
+        UpgradeGridUI gridUI = targetGridUI != null
+            ? targetGridUI
+            : UpgradeGridManager.Instance != null ? UpgradeGridManager.Instance.gridUI : null;
+        dragHandler.Initialize(part, this, gridUI);
+    }
+
+    private void ApplyButton(GameObject item)
     {
         Button button = item.GetComponent<Button>();
         if (button != null)
         {
-            UpgradePartSO capturedPart = part;
-            button.onClick.AddListener(() => TryPurchase(capturedPart));
+            button.onClick.RemoveAllListeners();
         }
     }
 
@@ -229,7 +311,7 @@ public class UpgradeShopManager : MonoBehaviour
     {
         if (part == null || part.costs == null || part.costs.Length == 0)
         {
-            return "Free";
+            return "無料";
         }
 
         string result = string.Empty;
