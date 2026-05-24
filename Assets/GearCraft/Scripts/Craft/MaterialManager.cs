@@ -23,6 +23,8 @@ public class MaterialManager : MonoBehaviour
     [SerializeField] public int moduleCore_lv2 = 0;
     [SerializeField] public int moduleCore_lv3 = 0;
 
+    private bool gearCheatWasPressed;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -32,6 +34,23 @@ public class MaterialManager : MonoBehaviour
         }
         Instance = this;
         DontDestroyOnLoad(gameObject);
+    }
+
+    private void Update()
+    {
+        bool gearCheatPressed =
+            Input.GetKey(KeyCode.G) &&
+            Input.GetKey(KeyCode.E) &&
+            Input.GetKey(KeyCode.A) &&
+            Input.GetKey(KeyCode.R);
+
+        if (gearCheatPressed && !gearCheatWasPressed)
+        {
+            SetAllMaterials(99);
+            RefreshMaterialDisplays();
+        }
+
+        gearCheatWasPressed = gearCheatPressed;
     }
 
     // ===== 外部からアクセスするための関数 =====
@@ -62,6 +81,11 @@ public class MaterialManager : MonoBehaviour
             case MaterialType.ModuleCore_lv1: moduleCore_lv1 += amount; break;
             case MaterialType.ModuleCore_lv2: moduleCore_lv2 += amount; break;
             case MaterialType.ModuleCore_lv3: moduleCore_lv3 += amount; break;
+        }
+
+        if (StageFlowManager.Instance != null)
+        {
+            StageFlowManager.Instance.RecordMaterialGained(type, amount);
         }
     }
 
@@ -134,6 +158,25 @@ public class MaterialManager : MonoBehaviour
         moduleCore_lv1 = 0;
         moduleCore_lv2 = 0;
         moduleCore_lv3 = 0;
+    }
+
+    public void SetAllMaterials(int amount)
+    {
+        scrap = amount;
+        gear = amount;
+        upgradeCore = amount;
+        moduleCore_lv1 = amount;
+        moduleCore_lv2 = amount;
+        moduleCore_lv3 = amount;
+    }
+
+    private void RefreshMaterialDisplays()
+    {
+        MaterialDisplay[] displays = FindObjectsByType<MaterialDisplay>(FindObjectsSortMode.None);
+        for (int i = 0; i < displays.Length; i++)
+        {
+            displays[i].UpdateMaterialAmount();
+        }
     }
 
     /// <summary>

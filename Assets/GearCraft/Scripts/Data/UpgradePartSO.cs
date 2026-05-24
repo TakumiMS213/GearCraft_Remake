@@ -115,7 +115,7 @@ public class UpgradePartSO : ScriptableObject
                 continue;
             }
 
-            builder.AppendLine($"- {FormatEffect(effect)}");
+            builder.AppendLine($"- {UpgradeEffectTextFormatter.FormatEffect(effect)}");
         }
     }
 
@@ -137,37 +137,6 @@ public class UpgradePartSO : ScriptableObject
             }
 
             builder.AppendLine($"- {FormatMaterialName(cost.type)} x{cost.amount}");
-        }
-    }
-
-    private static string FormatEffect(UpgradeEffect effect)
-    {
-        switch (effect.type)
-        {
-            case UpgradeEffectType.DamageFlat:
-                return $"ダメージ +{effect.value:0}";
-            case UpgradeEffectType.AttackSpeedMult:
-                return $"攻撃速度 x{effect.value:0.##}";
-            case UpgradeEffectType.BulletDouble:
-                return "弾数2倍";
-            case UpgradeEffectType.SpreadReduction:
-                return $"拡散 -{effect.value:0.#}";
-            case UpgradeEffectType.SpreadIncrease:
-                return $"拡散 +{effect.value:0.#}";
-            case UpgradeEffectType.DurabilityDrain:
-                return $"耐久吸収 {effect.value * 100f:0}%";
-            case UpgradeEffectType.Ricochet:
-                return $"跳弾 +{effect.value:0}";
-            case UpgradeEffectType.JunkCollector:
-                return $"素材ドロップ x{effect.value:0.##}";
-            case UpgradeEffectType.BulletSizeUp:
-                return $"弾サイズ x{effect.value:0.##}";
-            case UpgradeEffectType.MaxDurabilityUp:
-                return $"最大耐久 +{effect.value:0}";
-            case UpgradeEffectType.MagnetRangeUp:
-                return $"回収範囲 +{effect.value:0.#}";
-            default:
-                return $"{effect.type} {effect.value:0.##}";
         }
     }
 

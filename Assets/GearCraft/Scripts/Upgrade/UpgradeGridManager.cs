@@ -14,6 +14,8 @@ public class UpgradeGridManager : MonoBehaviour
         public int rotation;
         public int inventoryIndex = -1;
         public bool refundCostsOnRemove;
+        public bool returnToShopOnSameDay;
+        public int placedShopDay = -1;
     }
 
     [Header("UI")]
@@ -40,6 +42,7 @@ public class UpgradeGridManager : MonoBehaviour
 
     private void Start()
     {
+        RestorePlacedParts();
         RefreshGridSize();
     }
 
@@ -74,6 +77,11 @@ public class UpgradeGridManager : MonoBehaviour
 
     public bool TryPurchaseAndPlace(UpgradePartSO part, int posX, int posY, int rotation)
     {
+        return TryPurchaseAndPlace(part, posX, posY, rotation, false, -1);
+    }
+
+    public bool TryPurchaseAndPlace(UpgradePartSO part, int posX, int posY, int rotation, bool returnToShopOnSameDay, int placedShopDay)
+    {
         if (part == null || MaterialManager.Instance == null)
         {
             return false;
@@ -90,10 +98,23 @@ public class UpgradeGridManager : MonoBehaviour
         }
 
         MaterialManager.Instance.SpendCosts(part.costs);
-        return TryPlaceInternal(part, posX, posY, rotation, -1, true);
+        return TryPlaceInternal(part, posX, posY, rotation, -1, true, returnToShopOnSameDay, placedShopDay);
     }
 
     private bool TryPlaceInternal(UpgradePartSO part, int posX, int posY, int rotation, int inventoryIndex, bool refundCostsOnRemove)
+    {
+        return TryPlaceInternal(part, posX, posY, rotation, inventoryIndex, refundCostsOnRemove, false, -1);
+    }
+
+    private bool TryPlaceInternal(
+        UpgradePartSO part,
+        int posX,
+        int posY,
+        int rotation,
+        int inventoryIndex,
+        bool refundCostsOnRemove,
+        bool returnToShopOnSameDay,
+        int placedShopDay)
     {
         if (!CanPlace(part, posX, posY, rotation))
         {
@@ -114,11 +135,14 @@ public class UpgradeGridManager : MonoBehaviour
             gridY = posY,
             rotation = rotation,
             inventoryIndex = inventoryIndex,
-            refundCostsOnRemove = refundCostsOnRemove
+            refundCostsOnRemove = refundCostsOnRemove,
+            returnToShopOnSameDay = returnToShopOnSameDay,
+            placedShopDay = placedShopDay
         });
 
         RecalculateEffects();
         RefreshUI();
+        SavePlacedParts();
         return true;
     }
 
@@ -143,10 +167,31 @@ public class UpgradeGridManager : MonoBehaviour
         }
 
         RefundPartCosts(removedPart);
+        ReturnPartToShopIfNeeded(removedPart);
         placedParts.RemoveAt(partIndex);
         RebuildGridIndices();
         RecalculateEffects();
         RefreshUI();
+        SavePlacedParts();
+    }
+
+    private static void ReturnPartToShopIfNeeded(PlacedPart part)
+    {
+        if (part == null || !part.returnToShopOnSameDay || part.partData == null || StatusManager.Instance == null)
+        {
+            return;
+        }
+
+        if (part.placedShopDay != StatusManager.Instance.upgradeShopDay)
+        {
+            return;
+        }
+
+        UpgradeShopManager shopManager = FindFirstObjectByType<UpgradeShopManager>();
+        if (shopManager != null)
+        {
+            shopManager.RestoreLineupPart(part.partData);
+        }
     }
 
     private static void RefundPartCosts(PlacedPart part)
@@ -190,6 +235,7 @@ public class UpgradeGridManager : MonoBehaviour
 
         RecalculateEffects();
         RefreshUI();
+        SavePlacedParts();
     }
 
     public bool IsInventoryPartPlaced(int inventoryIndex)
@@ -299,19 +345,51 @@ public class UpgradeGridManager : MonoBehaviour
         grid = newGrid;
         RecalculateEffects();
         RefreshUI();
+        SavePlacedParts();
+    }
+
+    private void RestorePlacedParts()
+    {
+        placedParts.Clear();
+        if (StatusManager.Instance == null || StatusManager.Instance.savedUpgradePartPlacements == null)
+        {
+            return;
+        }
+
+        List<StatusManager.SavedUpgradePartPlacement> savedParts = StatusManager.Instance.savedUpgradePartPlacements;
+        for (int i = 0; i < savedParts.Count; i++)
+        {
+            StatusManager.SavedUpgradePartPlacement saved = savedParts[i];
+            if (saved == null || saved.partData == null)
+            {
+                continue;
+            }
+
+            placedParts.Add(new PlacedPart
+            {
+                partData = saved.partData,
+                gridX = saved.gridX,
+                gridY = saved.gridY,
+                rotation = saved.rotation,
+                inventoryIndex = saved.inventoryIndex,
+                refundCostsOnRemove = saved.refundCostsOnRemove,
+                returnToShopOnSameDay = saved.returnToShopOnSameDay,
+                placedShopDay = saved.placedShopDay
+            });
+        }
+    }
+
+    private void SavePlacedParts()
+    {
+        if (StatusManager.Instance != null)
+        {
+            StatusManager.Instance.SaveUpgradeGridState(placedParts);
+        }
     }
 
     private bool CanPlace(UpgradePartSO part, int posX, int posY, int rotation, int[,] targetGrid, int targetSize)
     {
         if (part == null || targetGrid == null)
-        {
-            return false;
-        }
-
-        if (part.rangedOnly &&
-            StatusManager.Instance != null &&
-            StatusManager.Instance.currentWeapon != null &&
-            StatusManager.Instance.currentWeapon.weaponType != WeaponType.Ranged)
         {
             return false;
         }

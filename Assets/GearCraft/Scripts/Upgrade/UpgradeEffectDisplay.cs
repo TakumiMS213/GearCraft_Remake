@@ -7,6 +7,7 @@ public class UpgradeEffectDisplay : MonoBehaviour
     [Header("UI")]
     public RectTransform effectListParent;
     public GameObject effectEntryPrefab;
+    public float textSizeMultiplier = 1.5f;
 
     [Header("Colors")]
     public Color positiveColor = new Color(0.5f, 1f, 0.5f, 1f);
@@ -34,48 +35,52 @@ public class UpgradeEffectDisplay : MonoBehaviour
 
         if (status.bonusDamage != 0f)
         {
-            AddEntry($"ダメージ +{status.bonusDamage:F0}", positiveColor);
+            AddSignedEntry(UpgradeEffectTextFormatter.FormatMagnitudeDelta("ダメージ", status.bonusDamage), status.bonusDamage < 0f);
         }
 
         if (status.attackSpeedMult != 1f)
         {
-            float percent = (1f - status.attackSpeedMult) * 100f;
-            AddEntry(percent > 0f ? $"攻撃速度 +{percent:F0}%" : $"攻撃速度 {percent:F0}%", percent > 0f ? positiveColor : negativeColor);
+            AddSignedEntry(UpgradeEffectTextFormatter.FormatAttackSpeedMultiplier(status.attackSpeedMult), status.attackSpeedMult > 1f);
         }
 
         if (status.hasBulletDouble)
         {
-            AddEntry("弾数2倍 有効", positiveColor);
+            AddSignedEntry("弾数100%増加", false);
         }
 
         if (status.spreadModifier != 0f)
         {
-            AddEntry(status.spreadModifier < 0f ? $"拡散 {status.spreadModifier:F1}" : $"拡散 +{status.spreadModifier:F1}", status.spreadModifier < 0f ? positiveColor : negativeColor);
+            AddSignedEntry(UpgradeEffectTextFormatter.FormatSpreadModifier(status.spreadModifier), status.spreadModifier > 0f);
         }
 
         if (status.durabilityDrainChance > 0f)
         {
-            AddEntry($"耐久吸収 {status.durabilityDrainChance * 100f:F0}%", positiveColor);
+            AddSignedEntry(UpgradeEffectTextFormatter.FormatPercentDelta("耐久吸収率", status.durabilityDrainChance), false);
         }
 
         if (status.ricochetCount > 0)
         {
-            AddEntry($"跳弾 {status.ricochetCount}", positiveColor);
+            AddSignedEntry(UpgradeEffectTextFormatter.FormatMagnitudeDelta("跳弾", status.ricochetCount), false);
         }
 
         if (status.junkCollectorMult != 1f)
         {
-            AddEntry($"素材ドロップ x{status.junkCollectorMult:F1}", positiveColor);
+            AddSignedEntry(UpgradeEffectTextFormatter.FormatMultiplierDelta("素材ドロップ率", status.junkCollectorMult), status.junkCollectorMult < 1f);
         }
 
         if (status.bulletSizeMult != 1f)
         {
-            AddEntry($"弾サイズ x{status.bulletSizeMult:F1}", positiveColor);
+            AddSignedEntry(UpgradeEffectTextFormatter.FormatMultiplierDelta("弾サイズ", status.bulletSizeMult), status.bulletSizeMult < 1f);
         }
 
         if (status.magnetRange > 3f)
         {
-            AddEntry($"回収範囲 +{status.magnetRange - 3f:F1}", positiveColor);
+            AddSignedEntry(UpgradeEffectTextFormatter.FormatMagnitudeDelta("回収範囲", status.magnetRange - 3f), false);
+        }
+
+        if (status.maxDurabilityBonus != 0)
+        {
+            AddSignedEntry(UpgradeEffectTextFormatter.FormatMagnitudeDelta("最大耐久", status.maxDurabilityBonus), status.maxDurabilityBonus < 0);
         }
 
         if (entries.Count == 0)
@@ -137,6 +142,12 @@ public class UpgradeEffectDisplay : MonoBehaviour
         {
             textComponent.text = text;
             textComponent.color = color;
+            textComponent.fontSize *= Mathf.Max(0.1f, textSizeMultiplier);
         }
+    }
+
+    private void AddSignedEntry(string text, bool negative)
+    {
+        AddEntry($"{(negative ? "-" : "＋")} {text}", negative ? negativeColor : positiveColor);
     }
 }

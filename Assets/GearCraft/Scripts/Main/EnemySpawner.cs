@@ -28,6 +28,9 @@ public class EnemySpawner : MonoBehaviour
     public bool autoStart = true;
     public bool useAutoGeneration = true;
     public GameObject warning;
+    public EmergencyWarningUI emergencyWarningUI;
+    public float emergencySpeedThreshold = 8f;
+    public float emergencyExplosionDamageThreshold = 30f;
 
     private CancellationTokenSource cts;
     private StageSpawnPlanner spawnPlanner;
@@ -35,6 +38,7 @@ public class EnemySpawner : MonoBehaviour
     private void Start()
     {
         spawnPlanner = new StageSpawnPlanner(stageConfig);
+        EnsureEmergencyWarningUI();
 
         int startStage = StageCounter.Instance != null ? StageCounter.Instance.StageCount : 1;
         if (autoStart)
@@ -120,6 +124,7 @@ public class EnemySpawner : MonoBehaviour
                 continue;
             }
 
+            ShowEmergencyWarningIfNeeded(selectedEnemy);
             GameObject spawned = Instantiate(selectedEnemy.prefab, transform.position, Quaternion.identity);
             EnemyController enemy = spawned.GetComponent<EnemyController>();
             if (enemy != null)
@@ -149,6 +154,7 @@ public class EnemySpawner : MonoBehaviour
                     continue;
                 }
 
+                ShowEmergencyWarningIfNeeded(minionData);
                 GameObject spawned = Instantiate(minionData.prefab, transform.position, Quaternion.identity);
                 EnemyController enemy = spawned.GetComponent<EnemyController>();
                 if (enemy != null)
@@ -172,6 +178,7 @@ public class EnemySpawner : MonoBehaviour
 
         await UniTask.Delay(2000, cancellationToken: token);
 
+        ShowEmergencyWarningIfNeeded(bossData);
         GameObject bossObject = Instantiate(bossData.prefab, transform.position, Quaternion.identity);
         EnemyController bossEnemy = bossObject.GetComponent<EnemyController>();
         if (bossEnemy != null)
@@ -284,7 +291,49 @@ public class EnemySpawner : MonoBehaviour
             if (enemy != null)
             {
                 enemy.SetWaveData(data);
+                ShowEmergencyWarningIfNeeded(enemy.enemyData);
             }
         }
+    }
+
+    private void ShowEmergencyWarningIfNeeded(EnemyDataSO enemyData)
+    {
+        if (!ShouldShowEmergencyWarning(enemyData))
+        {
+            return;
+        }
+
+        EnsureEmergencyWarningUI();
+        if (emergencyWarningUI != null)
+        {
+            emergencyWarningUI.Show();
+        }
+    }
+
+    private bool ShouldShowEmergencyWarning(EnemyDataSO enemyData)
+    {
+        if (enemyData == null)
+        {
+            return false;
+        }
+
+        if (enemyData.isHighlighted)
+        {
+            return true;
+        }
+
+        bool hasDangerousExplosion = enemyData.aiType == EnemyAIType.Bomber &&
+            enemyData.explosionDamage >= emergencyExplosionDamageThreshold;
+        return enemyData.speed >= emergencySpeedThreshold || hasDangerousExplosion;
+    }
+
+    private void EnsureEmergencyWarningUI()
+    {
+        if (emergencyWarningUI != null)
+        {
+            return;
+        }
+
+        emergencyWarningUI = FindFirstObjectByType<EmergencyWarningUI>(FindObjectsInactive.Include);
     }
 }

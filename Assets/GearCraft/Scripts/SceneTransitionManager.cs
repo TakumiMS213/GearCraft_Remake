@@ -16,33 +16,40 @@ public class SceneTransitionManager : MonoBehaviour
     private void Awake()
     {
         // 初期透明度0（ただしImageがnullの場合は探す）
-        if (fadeImage == null)
-        {
-            fadeImage = FindFadeImage();
-            LoadfadeImage = FindFadeImage();
-        }
+        ResolveFadeImages();
         if (fadeImage != null)
+        {
             fadeImage.color = new Color(0, 0, 0, 0);
+        }
+
+        if (LoadfadeImage != null)
+        {
             LoadfadeImage.color = new Color(1f, 1f, 1f, 0f);
+        }
 
         // シーンロード完了時にフェードイン
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
+    private void OnDestroy()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         // シーン切り替え後にfadeImageを再取得（新シーンでImageが変わる場合に備える）
-        if (fadeImage == null)
-        {
-            fadeImage = FindFadeImage();
-            LoadfadeImage = FindFadeImage();
-        }
+        ResolveFadeImages();
         if (fadeImage != null)
         {
             // まず真っ黒にしてからフェードイン
             fadeImage.color = new Color(0, 0, 0, 1);
-            LoadfadeImage.color = new Color(1f, 1f, 1f, 1f);
             fadeImage.DOFade(0f, fadeDuration);
+        }
+
+        if (LoadfadeImage != null)
+        {
+            LoadfadeImage.color = new Color(1f, 1f, 1f, 1f);
             LoadfadeImage.DOFade(0f, fadeDuration);
         }
     }
@@ -52,17 +59,17 @@ public class SceneTransitionManager : MonoBehaviour
     /// </summary>
     public void LoadScene(string sceneName)
     {
-        if (fadeImage == null)
-        {
-            fadeImage = FindFadeImage();
-            LoadfadeImage = FindFadeImage();
-        }
+        ResolveFadeImages();
         if (fadeImage != null)
         {
             // まず透明にしてからフェードアウト
             fadeImage.color = new Color(0, 0, 0, 0);
-            LoadfadeImage.color = new Color(1f, 1f, 1f, 0f);
-            LoadfadeImage.DOFade(1f, fadeDuration);
+            if (LoadfadeImage != null)
+            {
+                LoadfadeImage.color = new Color(1f, 1f, 1f, 0f);
+                LoadfadeImage.DOFade(1f, fadeDuration);
+            }
+
             fadeImage.DOFade(1f, fadeDuration).OnComplete(() =>
             {
                 SceneManager.LoadScene(sceneName);
@@ -75,16 +82,39 @@ public class SceneTransitionManager : MonoBehaviour
         }
     }
 
-    // シーン内のFade用Imageを探す
-    private Image FindFadeImage()
+    private void ResolveFadeImages()
     {
-        // Canvas内のImageで"Fade"という名前のものを優先
+        if (fadeImage == null)
+        {
+            fadeImage = FindFadeImage("fade", "loadfade");
+        }
+
+        if (LoadfadeImage == null)
+        {
+            LoadfadeImage = FindFadeImage("loadfade", null);
+        }
+    }
+
+    // シーン内のFade用Imageを探す
+    private Image FindFadeImage(string requiredNamePart, string excludedNamePart)
+    {
         Image[] images = FindObjectsByType<Image>(FindObjectsInactive.Include, FindObjectsSortMode.None);
         foreach (var img in images)
         {
-            if (img.name.ToLower().Contains("fade")) return img;
+            string imageName = img.name.ToLowerInvariant();
+            if (!imageName.Contains(requiredNamePart))
+            {
+                continue;
+            }
+
+            if (!string.IsNullOrEmpty(excludedNamePart) && imageName.Contains(excludedNamePart))
+            {
+                continue;
+            }
+
+            return img;
         }
-        // なければ最初のImageを返す
-        return images.Length > 0 ? images[0] : null;
+
+        return null;
     }
 }

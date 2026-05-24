@@ -40,10 +40,21 @@ public class UpgradeShopItemDragHandler : MonoBehaviour, IBeginDragHandler, IDra
     {
         if (!dragging || gridUI == null)
         {
+            gridUI?.CancelShopDrag();
             return;
         }
 
         gridUI.EndShopDrag(eventData);
+        dragging = false;
+    }
+
+    private void OnDisable()
+    {
+        if (dragging && gridUI != null)
+        {
+            gridUI.CancelShopDrag();
+        }
+
         dragging = false;
     }
 }

@@ -3,6 +3,19 @@ using UnityEngine;
 
 public class StatusManager : MonoBehaviour
 {
+    [System.Serializable]
+    public class SavedUpgradePartPlacement
+    {
+        public UpgradePartSO partData;
+        public int gridX;
+        public int gridY;
+        public int rotation;
+        public int inventoryIndex = -1;
+        public bool refundCostsOnRemove;
+        public bool returnToShopOnSameDay;
+        public int placedShopDay = -1;
+    }
+
     // シングルトン本体
     public static StatusManager Instance;
 
@@ -19,6 +32,7 @@ public class StatusManager : MonoBehaviour
     public WeaponDataSO currentWeapon;            // 現在装備中の武器
     public List<WeaponDataSO> ownedWeapons = new List<WeaponDataSO>(); // 所持武器一覧
     public List<UpgradePartSO> ownedUpgradeParts = new List<UpgradePartSO>();
+    public List<SavedUpgradePartPlacement> savedUpgradePartPlacements = new List<SavedUpgradePartPlacement>();
 
     // ---- 耐久値管理 ----
     // 武器名をキーにした耐久値辞書（SOはシーンを跨ぐとインスタンスが変わる場合があるため名前で管理）
@@ -39,6 +53,7 @@ public class StatusManager : MonoBehaviour
     public bool killAllEnemies = true;
     public bool UseCraftSpacebuff = false;
     public int bossKillCount = 0;         // ボス撃破数（グリッドサイズ決定用）
+    public int upgradeShopDay = 0;
 
     // ---- 強化効果キャッシュ ----
     public float bonusDamage = 0f;
@@ -208,5 +223,46 @@ public class StatusManager : MonoBehaviour
     public int GetUpgradeGridSize()
     {
         return 3 + bossKillCount; // 3→4→5→6
+    }
+
+    public int BeginUpgradeShopDay()
+    {
+        upgradeShopDay++;
+        return upgradeShopDay;
+    }
+
+    public void SaveUpgradeGridState(List<UpgradeGridManager.PlacedPart> placedParts)
+    {
+        savedUpgradePartPlacements.Clear();
+        if (placedParts == null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < placedParts.Count; i++)
+        {
+            UpgradeGridManager.PlacedPart part = placedParts[i];
+            if (part == null || part.partData == null)
+            {
+                continue;
+            }
+
+            savedUpgradePartPlacements.Add(new SavedUpgradePartPlacement
+            {
+                partData = part.partData,
+                gridX = part.gridX,
+                gridY = part.gridY,
+                rotation = part.rotation,
+                inventoryIndex = part.inventoryIndex,
+                refundCostsOnRemove = part.refundCostsOnRemove,
+                returnToShopOnSameDay = part.returnToShopOnSameDay,
+                placedShopDay = part.placedShopDay
+            });
+        }
+    }
+
+    public void ClearSavedUpgradeGridState()
+    {
+        savedUpgradePartPlacements.Clear();
     }
 }

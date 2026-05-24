@@ -38,7 +38,7 @@ public class PerfectClearUI : MonoBehaviour
         // リセット
         canvasGroup.alpha = 0f;
         perfectText.transform.localScale = Vector3.one * scaleFrom;
-        perfectText.text = "PERFECT";
+        perfectText.text = "PERFECT!";
         perfectText.color = new Color(1f, 0.9f, 0.2f, 1f); // ゴールド
 
         Sequence seq = DOTween.Sequence();

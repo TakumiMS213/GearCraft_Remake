@@ -44,6 +44,8 @@ public class CraftTransitionManager : MonoBehaviour
     
     public void StartTransition()
     {
+        RaiseTransitionObjects();
+
         // 初期化
         image1.anchoredPosition = image1StartPos;
         image2.anchoredPosition = image2StartPos;
@@ -102,5 +104,28 @@ public class CraftTransitionManager : MonoBehaviour
         
         craftButton.gameObject.SetActive(true);
         seq.OnComplete(() => Debug.Log("Transition Complete"));
+    }
+
+    private void RaiseTransitionObjects()
+    {
+        if (image1 != null)
+        {
+            image1.SetAsLastSibling();
+        }
+
+        if (image2 != null)
+        {
+            image2.SetAsLastSibling();
+        }
+
+        if (image3 != null)
+        {
+            image3.rectTransform.SetAsLastSibling();
+        }
+
+        if (flashImage != null)
+        {
+            flashImage.rectTransform.SetAsLastSibling();
+        }
     }
 }

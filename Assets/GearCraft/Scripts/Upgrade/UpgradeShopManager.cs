@@ -8,6 +8,7 @@ public class UpgradeShopManager : MonoBehaviour
     [Header("Parts")]
     public UpgradePartSO[] allParts;
     public int shopSlotCount = 3;
+    public int rerollGearCost = 1;
 
     [Header("UI")]
     public RectTransform shopParent;
@@ -22,12 +23,54 @@ public class UpgradeShopManager : MonoBehaviour
 
     private readonly List<UpgradePartSO> currentLineup = new List<UpgradePartSO>();
     private readonly List<GameObject> shopItemObjects = new List<GameObject>();
+    private bool hasGeneratedLineup;
+    private int shopDay = -1;
+
+    public int ShopDay => shopDay;
 
     public void GenerateLineup()
+    {
+        if (!hasGeneratedLineup)
+        {
+            StartShopDayIfNeeded();
+            GenerateLineupInternal();
+            return;
+        }
+
+        TryRerollLineup();
+    }
+
+    public void TryRerollLineup()
+    {
+        if (MaterialManager.Instance == null || !MaterialManager.Instance.UseMaterial(MaterialManager.MaterialType.Gear, rerollGearCost))
+        {
+            if (infoText != null)
+            {
+                infoText.text = $"ラインナップ更新にはGear x{rerollGearCost}が必要です。";
+            }
+
+            if (errorSound != null)
+            {
+                errorSound.Play();
+            }
+
+            return;
+        }
+
+        GenerateLineupInternal();
+        RefreshMaterialDisplays();
+        if (infoText != null)
+        {
+            infoText.text = $"Gear x{rerollGearCost}を消費してラインナップを更新しました。";
+        }
+    }
+
+    private void GenerateLineupInternal()
     {
         currentLineup.Clear();
         if (allParts == null || allParts.Length == 0)
         {
+            hasGeneratedLineup = true;
             RefreshShopUI();
             return;
         }
@@ -35,7 +78,39 @@ public class UpgradeShopManager : MonoBehaviour
         AddGuaranteedRarePart();
         AddRandomRemainingParts();
         ShuffleLineup();
+        hasGeneratedLineup = true;
         RefreshShopUI();
+    }
+
+    public void EnsureLineupInitialized()
+    {
+        if (!hasGeneratedLineup)
+        {
+            StartShopDayIfNeeded();
+            GenerateLineupInternal();
+            return;
+        }
+
+        if (shopParent != null && shopParent.childCount == 0 && currentLineup.Count > 0)
+        {
+            RefreshShopUI();
+        }
+    }
+
+    public void RestoreLineupPart(UpgradePartSO part)
+    {
+        if (part == null || currentLineup.Contains(part))
+        {
+            return;
+        }
+
+        currentLineup.Add(part);
+        RefreshShopUI();
+
+        if (infoText != null)
+        {
+            infoText.text = $"{part.partName}をラインナップに戻しました。";
+        }
     }
 
     public void TryPurchase(UpgradePartSO part)
@@ -84,15 +159,7 @@ public class UpgradeShopManager : MonoBehaviour
 
     private void RefreshShopUI()
     {
-        for (int i = 0; i < shopItemObjects.Count; i++)
-        {
-            if (shopItemObjects[i] != null)
-            {
-                DestroyShopItem(shopItemObjects[i]);
-            }
-        }
-
-        shopItemObjects.Clear();
+        ClearShopItems();
         if (shopParent == null || shopItemPrefab == null)
         {
             return;
@@ -112,6 +179,29 @@ public class UpgradeShopManager : MonoBehaviour
         }
 
         ConfigureShopScrollPadding();
+    }
+
+    private void ClearShopItems()
+    {
+        if (shopParent != null)
+        {
+            for (int i = shopParent.childCount - 1; i >= 0; i--)
+            {
+                DestroyShopItem(shopParent.GetChild(i).gameObject);
+            }
+        }
+        else
+        {
+            for (int i = 0; i < shopItemObjects.Count; i++)
+            {
+                if (shopItemObjects[i] != null)
+                {
+                    DestroyShopItem(shopItemObjects[i]);
+                }
+            }
+        }
+
+        shopItemObjects.Clear();
     }
 
     private void DestroyShopItem(GameObject item)
@@ -215,16 +305,34 @@ public class UpgradeShopManager : MonoBehaviour
 
     private static void ApplyTexts(GameObject item, UpgradePartSO part)
     {
-        TMP_Text[] texts = item.GetComponentsInChildren<TMP_Text>();
-        if (texts.Length > 0)
+        TMP_Text nameText = FindText(item, "NameText", 0);
+        if (nameText != null)
         {
-            texts[0].text = part != null ? part.partName : string.Empty;
+            nameText.text = part != null ? part.partName : string.Empty;
+            nameText.color = part != null ? PartRarityColors.Get(part.rarity) : Color.white;
         }
 
-        if (texts.Length > 1)
+        TMP_Text costText = FindText(item, "CostText", 1);
+        if (costText != null)
         {
-            texts[1].text = BuildCostText(part);
+            costText.text = BuildCostText(part);
         }
+    }
+
+    private static TMP_Text FindText(GameObject item, string childName, int fallbackIndex)
+    {
+        Transform child = item.transform.Find(childName);
+        if (child != null)
+        {
+            TMP_Text directText = child.GetComponent<TMP_Text>();
+            if (directText != null)
+            {
+                return directText;
+            }
+        }
+
+        TMP_Text[] texts = item.GetComponentsInChildren<TMP_Text>();
+        return fallbackIndex >= 0 && fallbackIndex < texts.Length ? texts[fallbackIndex] : null;
     }
 
     private static void ApplyTooltip(GameObject item, UpgradePartSO part)
@@ -235,6 +343,7 @@ public class UpgradeShopManager : MonoBehaviour
             tooltip = item.AddComponent<TooltipTrigger>();
         }
 
+        tooltip.part = part;
         tooltip.tooltipText = part != null ? part.BuildTooltipText() : string.Empty;
     }
 
@@ -260,6 +369,11 @@ public class UpgradeShopManager : MonoBehaviour
 
     public void OnPartPlaced(UpgradePartSO part)
     {
+        if (part != null && currentLineup.Remove(part))
+        {
+            RefreshShopUI();
+        }
+
         if (infoText != null && part != null)
         {
             infoText.text = $"{part.partName}を装備しました。";
@@ -296,6 +410,27 @@ public class UpgradeShopManager : MonoBehaviour
             ? targetGridUI
             : UpgradeGridManager.Instance != null ? UpgradeGridManager.Instance.gridUI : null;
         dragHandler.Initialize(part, this, gridUI);
+    }
+
+    private void StartShopDayIfNeeded()
+    {
+        if (shopDay >= 0)
+        {
+            return;
+        }
+
+        shopDay = StatusManager.Instance != null
+            ? StatusManager.Instance.BeginUpgradeShopDay()
+            : 0;
+    }
+
+    private static void RefreshMaterialDisplays()
+    {
+        MaterialDisplay[] displays = FindObjectsByType<MaterialDisplay>(FindObjectsSortMode.None);
+        for (int i = 0; i < displays.Length; i++)
+        {
+            displays[i].UpdateMaterialAmount();
+        }
     }
 
     private void ApplyButton(GameObject item)

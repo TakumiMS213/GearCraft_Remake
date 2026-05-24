@@ -19,10 +19,13 @@ public class StageFlowManager : MonoBehaviour
     public TextMeshProUGUI stageNumText;
     public GameObject perfectUI;
     public GameObject gateWarningUI;
+    public RestResultReportUI restResultReportUI;
 
     private readonly List<EnemyController> activeEnemies = new List<EnemyController>();
+    private readonly Dictionary<MaterialManager.MaterialType, int> restMaterialGains = new Dictionary<MaterialManager.MaterialType, int>();
     private int currentStage = 1;
     private int stagesSinceRest;
+    private int restDefeatedEnemies;
     private bool gateWasHit;
 
     public bool IsStageActive { get; private set; }
@@ -39,11 +42,20 @@ public class StageFlowManager : MonoBehaviour
         }
     }
 
+    private void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
+    }
+
     private void Start()
     {
         currentStage = StageCounter.Instance != null ? StageCounter.Instance.StageCount : 1;
         stagesSinceRest = 0;
         gateWasHit = false;
+        ResetRestResultStats();
 
         if (perfectUI != null)
         {
@@ -62,6 +74,7 @@ public class StageFlowManager : MonoBehaviour
     public void OnEnemyKilled(EnemyController enemy, bool wasLastEnemy)
     {
         activeEnemies.Remove(enemy);
+        restDefeatedEnemies++;
 
         if (StatusManager.Instance != null)
         {
@@ -81,6 +94,21 @@ public class StageFlowManager : MonoBehaviour
         {
             StatusManager.Instance.killAllEnemies = false;
         }
+    }
+
+    public void RecordMaterialGained(MaterialManager.MaterialType type, int amount)
+    {
+        if (amount <= 0)
+        {
+            return;
+        }
+
+        if (!restMaterialGains.ContainsKey(type))
+        {
+            restMaterialGains[type] = 0;
+        }
+
+        restMaterialGains[type] += amount;
     }
 
     private async UniTaskVoid OnStageComplete()
@@ -128,7 +156,11 @@ public class StageFlowManager : MonoBehaviour
             return;
         }
 
-        if (bonusCardsManager != null)
+        bool willReturnToRest = stageConfig != null &&
+            stageConfig.stagesPerRest > 0 &&
+            stagesSinceRest + 1 >= stageConfig.stagesPerRest;
+
+        if (!willReturnToRest && bonusCardsManager != null)
         {
             await bonusCardsManager.ShowBonusCardsAsync();
         }
@@ -143,7 +175,13 @@ public class StageFlowManager : MonoBehaviour
         if (stageConfig != null && stageConfig.stagesPerRest > 0 && stagesSinceRest >= stageConfig.stagesPerRest)
         {
             stagesSinceRest = 0;
-            await UniTask.Delay(TimeSpan.FromSeconds(1f));
+
+            if (StatusManager.Instance != null && StatusManager.Instance.module_scrap)
+            {
+                MaterialManager.Instance?.AddMaterial(MaterialManager.MaterialType.Gear, 1);
+            }
+
+            await ShowRestResultReportAsync();
 
             if (transitionManager != null)
             {
@@ -151,12 +189,6 @@ public class StageFlowManager : MonoBehaviour
             }
 
             await UniTask.Delay(TimeSpan.FromSeconds(1f));
-
-            if (StatusManager.Instance != null && StatusManager.Instance.module_scrap)
-            {
-                MaterialManager.Instance?.AddMaterial(MaterialManager.MaterialType.Gear, 1);
-            }
-
             sceneTransitionManager?.LoadScene("CraftSpace");
             return;
         }
@@ -164,6 +196,29 @@ public class StageFlowManager : MonoBehaviour
         gateWasHit = false;
         await UniTask.Delay(TimeSpan.FromSeconds(1f));
         StartNextStage();
+    }
+
+    private async UniTask ShowRestResultReportAsync()
+    {
+        if (restResultReportUI == null)
+        {
+            restResultReportUI = FindFirstObjectByType<RestResultReportUI>();
+        }
+
+        if (restResultReportUI == null)
+        {
+            GameObject reportObject = new GameObject("RestResultReportUI");
+            restResultReportUI = reportObject.AddComponent<RestResultReportUI>();
+        }
+
+        await restResultReportUI.ShowAsync(restDefeatedEnemies, restMaterialGains, this.GetCancellationTokenOnDestroy());
+        ResetRestResultStats();
+    }
+
+    private void ResetRestResultStats()
+    {
+        restDefeatedEnemies = 0;
+        restMaterialGains.Clear();
     }
 
     private void StartNextStage()

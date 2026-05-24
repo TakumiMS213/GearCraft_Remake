@@ -9,7 +9,7 @@ public class StageGeneratorSO : ScriptableObject
     public int stagesPerRest = 3;        // 宿舎に戻るまでのステージ数
 
     [Header("難易度カーブ")]
-    [Tooltip("X軸=ステージ番号(0-31), Y軸=難易度(0.0-1.0)")]
+    [Tooltip("X軸=進行度(0.0-1.0)またはステージ番号(0-31), Y軸=難易度(0.0-1.0)")]
     public AnimationCurve difficultyCurve = AnimationCurve.Linear(0, 0, 31, 1);
 
     [Header("敵プール")]
@@ -54,7 +54,23 @@ public class StageGeneratorSO : ScriptableObject
     /// </summary>
     public float GetDifficulty(int stageNum)
     {
-        return difficultyCurve.Evaluate(stageNum);
+        if (difficultyCurve == null || difficultyCurve.length == 0)
+        {
+            return 0f;
+        }
+
+        float lastKeyTime = difficultyCurve.keys[difficultyCurve.length - 1].time;
+        float curveTime = lastKeyTime <= 1.01f
+            ? GetNormalizedStageProgress(stageNum)
+            : stageNum;
+
+        return Mathf.Clamp01(difficultyCurve.Evaluate(curveTime));
+    }
+
+    private float GetNormalizedStageProgress(int stageNum)
+    {
+        int finalStage = Mathf.Max(1, totalStages);
+        return Mathf.Clamp01((float)stageNum / finalStage);
     }
 
     /// <summary>

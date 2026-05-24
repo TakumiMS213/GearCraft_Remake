@@ -6,13 +6,24 @@ using UnityEngine.EventSystems;
 /// </summary>
 public class TooltipTrigger : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
+    public UpgradePartSO part;
+
     [TextArea]
     public string tooltipText;
 
     public void OnPointerEnter(PointerEventData eventData)
     {
         TooltipSystem tooltipSystem = TooltipSystem.FindInstance();
-        if (tooltipSystem != null && !string.IsNullOrEmpty(tooltipText))
+        if (tooltipSystem == null)
+        {
+            return;
+        }
+
+        if (part != null)
+        {
+            tooltipSystem.ShowPart(part, transform as RectTransform);
+        }
+        else if (!string.IsNullOrEmpty(tooltipText))
         {
             tooltipSystem.Show(tooltipText, transform as RectTransform);
         }

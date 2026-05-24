@@ -470,6 +470,8 @@ MonoBehaviour:
   ownedWeapons:
   - {fileID: 11400000, guid: 7ea165434b8ce4244bec51255964e394, type: 2}
   - {fileID: 11400000, guid: f057aa26c431ca947b3ce436977f84bb, type: 2}
+  - {fileID: 11400000, guid: c67894c193a09784b99ba2fa502db3dd, type: 2}
+  ownedUpgradeParts: []
   selectWeapon: 0
   module_scrap: 0
   module_repair: 0
@@ -488,6 +490,7 @@ MonoBehaviour:
   junkCollectorMult: 1
   bulletSizeMult: 1
   magnetRange: 3
+  maxDurabilityBonus: 0
 --- !u!1 &220785207
 GameObject:
   m_ObjectHideFlags: 0

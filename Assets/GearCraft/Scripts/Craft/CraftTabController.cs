@@ -66,7 +66,7 @@ public class CraftTabController : MonoBehaviour
         if (tabIndex == 1)
         {
             if (upgradeShopManager != null)
-                upgradeShopManager.GenerateLineup();
+                upgradeShopManager.EnsureLineupInitialized();
 
             if (UpgradeGridManager.Instance != null)
                 UpgradeGridManager.Instance.RefreshGridSize();
