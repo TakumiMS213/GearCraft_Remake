@@ -147,7 +147,6 @@ GameObject:
   - component: {fileID: -3679237861203681614}
   - component: {fileID: -8252889568745814014}
   - component: {fileID: -297185549765834444}
-  - component: {fileID: -4168396195781647770}
   - component: {fileID: 376623517616840626}
   m_Layer: 3
   m_Name: IC-408
@@ -313,23 +312,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enemyData: {fileID: 11400000, guid: 4905cb82c7b70a3458d44e7546f3468c, type: 2}
-  HP: 4000
   isLastEnemy: 0
   deathEffect: {fileID: 6786343413224804731, guid: 309bfd18c797e4111b7470ea476e58ab, type: 3}
   highlightMarker: {fileID: 0}
---- !u!114 &-4168396195781647770
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2252462175396124830}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c42327d3a7bbb4c7a8d8a682a13b5cae, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  speed: -0.2
 --- !u!95 &376623517616840626
 Animator:
   serializedVersion: 7

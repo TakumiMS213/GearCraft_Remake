@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyName: G-1
   prefab: {fileID: 7711395149452848216, guid: 0ea506b5a8857e1428c6d11f54344bd2, type: 3}
-  baseHP: 100
+  baseHP: 60
   speed: 1
   attackInterval: 2
   bulletSpeed: 5
@@ -28,6 +28,9 @@ MonoBehaviour:
   chargeTime: 1
   explosionRadius: 3
   explosionDamage: 30
+  summonEnemyData: {fileID: 0}
+  summonCount: 0
+  summonInterval: 6
   drops:
   - type: 1
     minAmount: 1

@@ -104,9 +104,10 @@ public class EnemySpawner : MonoBehaviour
 
     private async UniTask SpawnNormalStage(int stageNum, CancellationToken token)
     {
-        int enemyCount = stageConfig.GetEnemyCount(stageNum);
-        float spawnInterval = stageConfig.GetSpawnInterval(stageNum);
-        float difficulty = stageConfig.GetDifficulty(stageNum);
+        int scalingStage = GetEnemyScalingStage(stageNum);
+        int enemyCount = stageConfig.GetEnemyCount(scalingStage);
+        float spawnInterval = stageConfig.GetSpawnInterval(scalingStage);
+        float difficulty = stageConfig.GetDifficulty(scalingStage);
 
         if (stageConfig.normalEnemyPool == null || stageConfig.normalEnemyPool.Length == 0)
         {
@@ -118,7 +119,7 @@ public class EnemySpawner : MonoBehaviour
         {
             token.ThrowIfCancellationRequested();
 
-            EnemyDataSO selectedEnemy = SelectEnemyByDifficulty(stageNum, difficulty);
+            EnemyDataSO selectedEnemy = SelectEnemyByDifficulty(scalingStage, difficulty);
             if (selectedEnemy == null || selectedEnemy.prefab == null)
             {
                 continue;
@@ -140,15 +141,16 @@ public class EnemySpawner : MonoBehaviour
     private async UniTask SpawnBossStage(int stageNum, CancellationToken token)
     {
         StageSpawnPlan plan = spawnPlanner.CreatePlan(stageNum);
-        float spawnInterval = stageConfig.GetSpawnInterval(stageNum);
-        float difficulty = stageConfig.GetDifficulty(stageNum);
+        int scalingStage = GetEnemyScalingStage(stageNum);
+        float spawnInterval = stageConfig.GetSpawnInterval(scalingStage);
+        float difficulty = stageConfig.GetDifficulty(scalingStage);
 
         if (stageConfig.normalEnemyPool != null && stageConfig.normalEnemyPool.Length > 0)
         {
             for (int i = 0; i < plan.MinionCount; i++)
             {
                 token.ThrowIfCancellationRequested();
-                EnemyDataSO minionData = SelectEnemyByDifficulty(stageNum, difficulty);
+                EnemyDataSO minionData = SelectEnemyByDifficulty(scalingStage, difficulty);
                 if (minionData == null || minionData.prefab == null)
                 {
                     continue;
@@ -186,6 +188,16 @@ public class EnemySpawner : MonoBehaviour
             bossEnemy.enemyData = bossData;
             bossEnemy.isLastEnemy = true;
         }
+    }
+
+    private int GetEnemyScalingStage(int stageNum)
+    {
+        if (StageFlowManager.Instance != null)
+        {
+            return Mathf.Max(1, StageFlowManager.Instance.EnemyScalingStage);
+        }
+
+        return Mathf.Max(1, stageNum);
     }
 
     private int GetAvailablePoolMax(int stageNum)

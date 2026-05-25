@@ -13,7 +13,6 @@ GameObject:
   - component: {fileID: 8310521578096399464}
   - component: {fileID: 8310521578096399467}
   - component: {fileID: 39938070735827989}
-  - component: {fileID: 761463621766226529}
   - component: {fileID: -3663102068159681746}
   m_Layer: 3
   m_Name: EA-21
@@ -178,23 +177,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enemyData: {fileID: 11400000, guid: 54270c7afbefb8f468eaa10d9eae9bbc, type: 2}
-  HP: 120
   isLastEnemy: 0
   deathEffect: {fileID: 2555472082101049140, guid: ec1d5aee65fcf4032b04408158c4c8b4, type: 3}
   highlightMarker: {fileID: 0}
---- !u!114 &761463621766226529
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8310521578096399468}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c42327d3a7bbb4c7a8d8a682a13b5cae, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  speed: -4
 --- !u!95 &-3663102068159681746
 Animator:
   serializedVersion: 7

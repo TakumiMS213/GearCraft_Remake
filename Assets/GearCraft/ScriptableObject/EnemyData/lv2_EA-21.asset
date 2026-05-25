@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyName: EA-21
   prefab: {fileID: 8310521578096399468, guid: 60f1c427e8a0b45afb4aa918f978cbee, type: 3}
-  baseHP: 75
+  baseHP: 60
   speed: 5
   attackInterval: 2
   bulletSpeed: 5
@@ -29,6 +29,9 @@ MonoBehaviour:
   chargeTime: 1
   explosionRadius: 3
   explosionDamage: 30
+  summonEnemyData: {fileID: 0}
+  summonCount: 0
+  summonInterval: 6
   drops:
   - type: 0
     minAmount: 3

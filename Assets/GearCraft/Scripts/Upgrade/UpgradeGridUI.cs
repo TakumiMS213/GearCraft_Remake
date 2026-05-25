@@ -28,14 +28,6 @@ public class UpgradeGridUI : MonoBehaviour
     public float ineffectiveWarningIconSize = 38f;
     public string ineffectiveWarningText = "現在装備中の武器に効果がありません";
 
-    [Header("Cursor")]
-    public Sprite normalCursorSprite;
-    public Sprite deleteCursorSprite;
-    public Sprite handCursorSprite;
-    public Vector2 normalCursorHotspot;
-    public Vector2 deleteCursorHotspot = new Vector2(16f, 16f);
-    public Vector2 handCursorHotspot = new Vector2(16f, 16f);
-
     private readonly List<GameObject> cellObjects = new List<GameObject>();
     private readonly List<GameObject> partSlotObjects = new List<GameObject>();
     private readonly List<GameObject> dragPreviewCells = new List<GameObject>();
@@ -52,16 +44,6 @@ public class UpgradeGridUI : MonoBehaviour
     private UpgradeShopManager draggingShopManager;
     private int draggingRotation;
     private Vector2 lastDragScreenPosition;
-    private bool pointerOverRemovablePart;
-    private CursorState currentCursorState = CursorState.None;
-
-    private enum CursorState
-    {
-        None,
-        Normal,
-        Delete,
-        Hand
-    }
 
     private struct ShapeBounds
     {
@@ -88,7 +70,6 @@ public class UpgradeGridUI : MonoBehaviour
     {
         if (draggingPart == null)
         {
-            RefreshCursor();
             return;
         }
 
@@ -98,22 +79,11 @@ public class UpgradeGridUI : MonoBehaviour
             RebuildDragPreview();
             UpdateDragPreview(lastDragScreenPosition);
         }
-
-        RefreshCursor();
-    }
-
-    private void OnEnable()
-    {
-        pointerOverRemovablePart = false;
-        currentCursorState = CursorState.None;
-        RefreshCursor();
     }
 
     private void OnDisable()
     {
         CancelShopDrag();
-        Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
-        currentCursorState = CursorState.None;
     }
 
     public void SelectPart(UpgradePartSO part)
@@ -186,8 +156,6 @@ public class UpgradeGridUI : MonoBehaviour
                 {
                     button.onClick.AddListener(() => OnCellClicked(gx, gy, grid));
                 }
-
-                AddCursorTrigger(cell, gx, gy, grid);
 
                 cellObjects.Add(cell);
             }
@@ -268,8 +236,6 @@ public class UpgradeGridUI : MonoBehaviour
                 selectedPart = null;
                 selectedInventoryIndex = -1;
                 selectedRotation = 0;
-                pointerOverRemovablePart = false;
-                RefreshCursor();
             }
 
             return;
@@ -284,9 +250,6 @@ public class UpgradeGridUI : MonoBehaviour
             {
                 infoText.text = "パーツを外しました。素材を返還しました。";
             }
-
-            pointerOverRemovablePart = false;
-            RefreshCursor();
         }
     }
 
@@ -313,7 +276,6 @@ public class UpgradeGridUI : MonoBehaviour
         EnsureDragPreviewRoot();
         RebuildDragPreview();
         UpdateDragPreview(eventData.position);
-        RefreshCursor();
 
         if (infoText != null)
         {
@@ -334,7 +296,6 @@ public class UpgradeGridUI : MonoBehaviour
         draggingShopManager = null;
         draggingRotation = 0;
         ClearDragPreview();
-        RefreshCursor();
     }
 
     public void EndShopDrag(PointerEventData eventData)
@@ -377,8 +338,6 @@ public class UpgradeGridUI : MonoBehaviour
         {
             shopManager.OnPartPlacementFailed(partToPlace);
         }
-
-        RefreshCursor();
     }
 
     private void EnsureRootCanvas()
@@ -725,83 +684,6 @@ public class UpgradeGridUI : MonoBehaviour
         {
             materialDisplay.UpdateMaterialAmount();
         }
-    }
-
-    private void AddCursorTrigger(GameObject cell, int x, int y, int[,] grid)
-    {
-        EventTrigger trigger = cell.GetComponent<EventTrigger>();
-        if (trigger == null)
-        {
-            trigger = cell.AddComponent<EventTrigger>();
-        }
-
-        trigger.triggers ??= new List<EventTrigger.Entry>();
-
-        EventTrigger.Entry enter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
-        enter.callback.AddListener(_ => OnCellPointerEnter(x, y, grid));
-        trigger.triggers.Add(enter);
-
-        EventTrigger.Entry exit = new EventTrigger.Entry { eventID = EventTriggerType.PointerExit };
-        exit.callback.AddListener(_ => OnCellPointerExit());
-        trigger.triggers.Add(exit);
-    }
-
-    private void OnCellPointerEnter(int x, int y, int[,] grid)
-    {
-        pointerOverRemovablePart =
-            draggingPart == null &&
-            selectedPart == null &&
-            grid != null &&
-            y >= 0 &&
-            y < grid.GetLength(0) &&
-            x >= 0 &&
-            x < grid.GetLength(1) &&
-            grid[y, x] >= 0;
-        RefreshCursor();
-    }
-
-    private void OnCellPointerExit()
-    {
-        pointerOverRemovablePart = false;
-        RefreshCursor();
-    }
-
-    private void RefreshCursor()
-    {
-        CursorState nextState = CursorState.Normal;
-        if (draggingPart != null)
-        {
-            nextState = CursorState.Hand;
-        }
-        else if (pointerOverRemovablePart)
-        {
-            nextState = CursorState.Delete;
-        }
-
-        if (currentCursorState == nextState)
-        {
-            return;
-        }
-
-        currentCursorState = nextState;
-        switch (nextState)
-        {
-            case CursorState.Delete:
-                SetCursor(deleteCursorSprite, deleteCursorHotspot);
-                break;
-            case CursorState.Hand:
-                SetCursor(handCursorSprite, handCursorHotspot);
-                break;
-            default:
-                SetCursor(normalCursorSprite, normalCursorHotspot);
-                break;
-        }
-    }
-
-    private static void SetCursor(Sprite cursorSprite, Vector2 hotspot)
-    {
-        Texture2D texture = cursorSprite != null ? cursorSprite.texture : null;
-        Cursor.SetCursor(texture, hotspot, CursorMode.Auto);
     }
 
     private void PlayPlacementEffect(Vector2 screenPosition)

@@ -9,7 +9,15 @@ public class PlayerController : MonoBehaviour
     // --- Movement Settings ---
     public float moveSpeed = 5f;
     public float jumpForce = 10f;
+    [Header("ダッシュ設定")]
+    public float doubleTapWindow = 0.25f;
+    public float dashSpeed = 12f;
+    public float dashDuration = 0.18f;
     private bool isGrounded;
+    private int lastTapDirection = 0;
+    private float lastTapTime = -999f;
+    private int dashDirection = 0;
+    private float dashTimer = 0f;
 
     // --- Weapon (データ駆動) ---
     [Header("武器設定")]
@@ -50,6 +58,10 @@ public class PlayerController : MonoBehaviour
     public Animator armAnimator;
     public ArmRotation armRotation;
     public StatusManager runtimeStatus;
+    private MeleeWeapon meleeWeapon;
+    private SpriteRenderer armSpriteRenderer;
+    private WeaponDataSO appliedWeapon;
+    private string lastArmTriggerName;
 
     // --- Particle ---
     public GameObject BurnPtPrehub;
@@ -72,7 +84,10 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         anim = GetComponent<Animator>();
-        runtimeStatus.UseCraftSpacebuff = false;
+        meleeWeapon = armAnimator != null ? armAnimator.GetComponent<MeleeWeapon>() : FindAnyObjectByType<MeleeWeapon>();
+        armSpriteRenderer = armAnimator != null ? armAnimator.GetComponent<SpriteRenderer>() : null;
+        if (runtimeStatus != null)
+            runtimeStatus.UseCraftSpacebuff = false;
         isInvincible = false;
 
         if (runtimeStatus != null)
@@ -147,6 +162,25 @@ public class PlayerController : MonoBehaviour
         if (runtimeStatus != null && runtimeStatus.currentWeapon != null)
         {
             currentWeapon = runtimeStatus.currentWeapon;
+            ApplyWeaponDataIfNeeded();
+        }
+    }
+
+    private void ApplyWeaponDataIfNeeded()
+    {
+        if (currentWeapon == appliedWeapon) return;
+
+        appliedWeapon = currentWeapon;
+        lastArmTriggerName = null;
+
+        if (meleeWeapon != null)
+        {
+            meleeWeapon.ApplyWeaponData(currentWeapon);
+        }
+
+        if (armSpriteRenderer != null && currentWeapon != null && currentWeapon.icon != null)
+        {
+            armSpriteRenderer.sprite = currentWeapon.icon;
         }
     }
 
@@ -171,23 +205,42 @@ public class PlayerController : MonoBehaviour
     {
         if (armAnimator == null || currentWeapon == null) return;
 
-        if (!string.IsNullOrEmpty(currentWeapon.armTriggerName))
+        if (!string.IsNullOrEmpty(currentWeapon.armTriggerName) && currentWeapon.armTriggerName != lastArmTriggerName)
         {
             armAnimator.SetTrigger(currentWeapon.armTriggerName);
+            lastArmTriggerName = currentWeapon.armTriggerName;
         }
     }
 
     // --- Movement ---
     private void HandleMovement()
     {
+        HandleDashInput();
+
         float moveInput = Input.GetAxisRaw("Horizontal");
-        if (isTouchingWall && wallNormal != Vector2.zero && moveInput != 0)
+        if (IsBlockedByWall(moveInput))
         {
-            if (Mathf.Sign(moveInput) == -Mathf.Sign(wallNormal.x))
-                moveInput = 0;
+            moveInput = 0;
         }
-        rb.linearVelocity = new Vector2(moveInput * moveSpeed, rb.linearVelocity.y);
-        anim.SetBool("run", moveInput != 0);
+
+        if (dashTimer > 0f)
+        {
+            dashTimer -= Time.deltaTime;
+            if (IsBlockedByWall(dashDirection))
+            {
+                dashTimer = 0f;
+            }
+            else
+            {
+                rb.linearVelocity = new Vector2(dashDirection * dashSpeed, rb.linearVelocity.y);
+            }
+        }
+        else
+        {
+            rb.linearVelocity = new Vector2(moveInput * moveSpeed, rb.linearVelocity.y);
+        }
+
+        anim.SetBool("run", dashTimer > 0f || moveInput != 0);
 
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
         {
@@ -196,6 +249,56 @@ public class PlayerController : MonoBehaviour
             anim.SetBool("jump", true);
         }
         if (isGrounded) anim.SetBool("jump", false);
+    }
+
+    private void HandleDashInput()
+    {
+        int pressedDirection = GetHorizontalKeyDownDirection();
+        if (pressedDirection == 0) return;
+
+        if (pressedDirection == lastTapDirection && Time.time - lastTapTime <= doubleTapWindow)
+        {
+            StartDash(pressedDirection);
+            lastTapDirection = 0;
+            lastTapTime = -999f;
+            return;
+        }
+
+        lastTapDirection = pressedDirection;
+        lastTapTime = Time.time;
+    }
+
+    private int GetHorizontalKeyDownDirection()
+    {
+        if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
+        {
+            return -1;
+        }
+
+        if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
+        {
+            return 1;
+        }
+
+        return 0;
+    }
+
+    private void StartDash(int direction)
+    {
+        if (direction == 0 || IsBlockedByWall(direction)) return;
+
+        dashDirection = direction;
+        dashTimer = dashDuration;
+    }
+
+    private bool IsBlockedByWall(float direction)
+    {
+        if (!isTouchingWall || wallNormal == Vector2.zero || direction == 0f)
+        {
+            return false;
+        }
+
+        return Mathf.Sign(direction) == -Mathf.Sign(wallNormal.x);
     }
 
     // --- Attack ---
@@ -263,16 +366,21 @@ public class PlayerController : MonoBehaviour
 
         // 弾丸にダメージを設定
         var bc = bullet.GetComponent<BulletController>();
-        if (bc != null && runtimeStatus != null)
+        if (bc != null)
         {
-            bc.bulletDamage = currentDamage + runtimeStatus.ACC + runtimeStatus.bonusDamage;
+            ApplyWeaponDataToBullet(bc);
 
-            // 弾丸サイズ
-            if (runtimeStatus.bulletSizeMult > 1f)
-                bullet.transform.localScale *= runtimeStatus.bulletSizeMult;
+            if (runtimeStatus != null)
+            {
+                bc.bulletDamage = currentDamage + runtimeStatus.ACC + runtimeStatus.bonusDamage;
 
-            // 跳弾
-            bc.ricochetCount = runtimeStatus.ricochetCount;
+                // 弾丸サイズ
+                if (runtimeStatus.bulletSizeMult > 1f)
+                    bullet.transform.localScale *= runtimeStatus.bulletSizeMult;
+
+                // 跳弾
+                bc.ricochetCount = runtimeStatus.ricochetCount;
+            }
 
             // 貫通
             if (currentWeapon.isPiercing)
@@ -290,11 +398,19 @@ public class PlayerController : MonoBehaviour
             var bc2 = bullet2.GetComponent<BulletController>();
             if (bc2 != null)
             {
+                ApplyWeaponDataToBullet(bc2);
                 bc2.bulletDamage = currentDamage + runtimeStatus.ACC + runtimeStatus.bonusDamage;
                 bc2.ricochetCount = runtimeStatus.ricochetCount;
                 if (currentWeapon.isPiercing) bc2.destroyOnHit = false;
             }
         }
+    }
+
+    private void ApplyWeaponDataToBullet(BulletController bullet)
+    {
+        if (bullet == null || currentWeapon == null) return;
+
+        bullet.bulletLifeTime = Mathf.Max(0.1f, currentWeapon.attackRange);
     }
 
     // --- CoolTime ---
@@ -456,21 +572,25 @@ public class PlayerController : MonoBehaviour
 
     async void ChangeGearCraft()
     {
+        if (runtimeStatus == null || currentWeapon == null) return;
+
         // GearCraft_Sword→GearCraft_Axe切替（武器名で判定）
         CanUseGearCraft = false;
-        armAnimator.SetFloat("speedNum", 1);
+        if (armAnimator != null)
+            armAnimator.SetFloat("speedNum", 1);
 
         // GearCraft_Axeに切替（StatusManagerの武器リストから検索）
-        var axeWeapon = runtimeStatus.ownedWeapons.Find(w => w.weaponName == "GearCraft_Axe");
+        var swordWeapon = currentWeapon;
+        var axeWeapon = runtimeStatus.FindOwnedWeaponByName("GearCraft_Axe");
         if (axeWeapon != null)
             runtimeStatus.EquipWeapon(axeWeapon);
 
         await UniTask.Delay(TimeSpan.FromSeconds(5f));
-        armAnimator.SetFloat("speedNum", -1);
+        if (armAnimator != null)
+            armAnimator.SetFloat("speedNum", -1);
 
         // 元に戻す
-        var swordWeapon = runtimeStatus.ownedWeapons.Find(w => w.weaponName == "GearCraft_Sword");
-        if (swordWeapon != null)
+        if (swordWeapon != null && runtimeStatus.ownedWeapons.Contains(swordWeapon))
             runtimeStatus.EquipWeapon(swordWeapon);
 
         await UniTask.Delay(TimeSpan.FromSeconds(5f));

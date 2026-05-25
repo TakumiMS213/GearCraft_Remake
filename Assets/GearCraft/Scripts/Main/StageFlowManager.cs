@@ -29,12 +29,14 @@ public class StageFlowManager : MonoBehaviour
     private bool gateWasHit;
 
     public bool IsStageActive { get; private set; }
+    public int EnemyScalingStage { get; private set; } = 1;
 
     private void Awake()
     {
         if (Instance == null)
         {
             Instance = this;
+            EnemyScalingStage = GetStageFromCounter();
         }
         else if (Instance != this)
         {
@@ -52,7 +54,8 @@ public class StageFlowManager : MonoBehaviour
 
     private void Start()
     {
-        currentStage = StageCounter.Instance != null ? StageCounter.Instance.StageCount : 1;
+        currentStage = GetStageFromCounter();
+        EnemyScalingStage = currentStage;
         stagesSinceRest = 0;
         gateWasHit = false;
         ResetRestResultStats();
@@ -61,6 +64,11 @@ public class StageFlowManager : MonoBehaviour
         {
             perfectUI.SetActive(false);
         }
+    }
+
+    private int GetStageFromCounter()
+    {
+        return StageCounter.Instance != null ? Mathf.Max(1, StageCounter.Instance.StageCount) : 1;
     }
 
     public void RegisterEnemy(EnemyController enemy)

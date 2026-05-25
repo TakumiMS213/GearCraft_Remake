@@ -155,13 +155,12 @@ public class MaterialDisplay : MonoBehaviour
 
         if (hasRequiredWeapon)
         {
-            // 前提条件あり：左に武器所持状態を表示
+            // 前提条件あり：左に現在装備中の武器条件を表示
             if (costTextLeft != null)
             {
-                bool owns = StatusManager.Instance != null
-                    && StatusManager.Instance.ownedWeapons.Contains(currentRecipe.requiredWeapon);
-                costTextLeft.text = owns ? "1/1" : "0/1";
-                costTextLeft.color = owns ? enoughColor : notEnoughColor;
+                bool meetsRequiredWeapon = CraftManager.MeetsRequiredWeapon(currentRecipe);
+                costTextLeft.text = meetsRequiredWeapon ? "1/1" : "0/1";
+                costTextLeft.color = meetsRequiredWeapon ? enoughColor : notEnoughColor;
             }
 
             // 右にコスト表示（あれば）

@@ -2,6 +2,13 @@ using UnityEngine;
 
 public class ArmRotation : MonoBehaviour
 {
+    [System.Serializable]
+    public class WeaponArmPoseRule
+    {
+        public string armTriggerName;
+        public int poseIndex;
+    }
+
     // --- Arm関連 ---
     public Transform player;        // Player本体
     public Transform sholder;       // 肩（回転の基準点）
@@ -9,6 +16,7 @@ public class ArmRotation : MonoBehaviour
     public Vector3[] armOffsets;    // 武器ごとのArm位置オフセット
     public Vector3[] armScales;     // 武器ごとのArmスケール
     public Vector3[] armBaseRotations; // 武器ごとのArm基準回転（XYZ軸）
+    public WeaponArmPoseRule[] poseRules;
 
     private PlayerController playerController;
 
@@ -28,18 +36,17 @@ public class ArmRotation : MonoBehaviour
         if (isMelee)
         {
             // Armをプレイヤーに追従させる（位置のみ）
-            if (armOffsets != null && armOffsets.Length > 0)
-                arm.position = player.position + armOffsets[0];
+            int meleePoseIndex = GetPoseIndex(currentWeaponData);
+            ApplyPose(meleePoseIndex);
+            arm.position = player.position + GetOffset(meleePoseIndex);
             return; // 回転処理はスキップ
         }
 
         // 以下、遠距離武器の回転処理
-        int weaponIndex = 0; // デフォルト
-        if (armOffsets != null && armOffsets.Length > 1)
-            weaponIndex = Mathf.Clamp(weaponIndex, 0, armOffsets.Length - 1);
-        Vector3 armOffset = armOffsets[weaponIndex];
-        Vector3 armScale = armScales[weaponIndex];
-        Vector3 armBaseRotation = (armBaseRotations != null && armBaseRotations.Length > weaponIndex) ? armBaseRotations[weaponIndex] : Vector3.zero;
+        int weaponIndex = GetPoseIndex(currentWeaponData);
+        Vector3 armOffset = GetOffset(weaponIndex);
+        Vector3 armScale = GetScale(weaponIndex);
+        Vector3 armBaseRotation = GetBaseRotation(weaponIndex);
 
         // マウス位置取得
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -66,6 +73,71 @@ public class ArmRotation : MonoBehaviour
         Vector3 rotatedOffset = sholder.rotation * armOffset;
         arm.position = sholder.position + rotatedOffset;
         arm.rotation = sholder.rotation;
+    }
+
+    private int GetPoseIndex(WeaponDataSO weapon)
+    {
+        if (weapon == null)
+        {
+            return 0;
+        }
+
+        if (poseRules != null)
+        {
+            for (int i = 0; i < poseRules.Length; i++)
+            {
+                WeaponArmPoseRule rule = poseRules[i];
+                if (rule != null && rule.armTriggerName == weapon.armTriggerName)
+                {
+                    return ClampPoseIndex(rule.poseIndex);
+                }
+            }
+        }
+
+        switch (weapon.armTriggerName)
+        {
+            case "Assault":
+                return ClampPoseIndex(1);
+            case "SteamShoot":
+                return ClampPoseIndex(2);
+            case "GearCraft_Axe":
+                return ClampPoseIndex(3);
+            default:
+                return ClampPoseIndex(0);
+        }
+    }
+
+    private int ClampPoseIndex(int index)
+    {
+        int maxLength = armOffsets != null ? armOffsets.Length : 0;
+        if (armScales != null && armScales.Length > maxLength) maxLength = armScales.Length;
+        if (armBaseRotations != null && armBaseRotations.Length > maxLength) maxLength = armBaseRotations.Length;
+        if (maxLength <= 0) return 0;
+        return Mathf.Clamp(index, 0, maxLength - 1);
+    }
+
+    private Vector3 GetOffset(int index)
+    {
+        if (armOffsets == null || armOffsets.Length == 0) return Vector3.zero;
+        return armOffsets[Mathf.Clamp(index, 0, armOffsets.Length - 1)];
+    }
+
+    private Vector3 GetScale(int index)
+    {
+        if (armScales == null || armScales.Length == 0) return Vector3.one;
+        return armScales[Mathf.Clamp(index, 0, armScales.Length - 1)];
+    }
+
+    private Vector3 GetBaseRotation(int index)
+    {
+        if (armBaseRotations == null || armBaseRotations.Length == 0) return Vector3.zero;
+        return armBaseRotations[Mathf.Clamp(index, 0, armBaseRotations.Length - 1)];
+    }
+
+    private void ApplyPose(int index)
+    {
+        if (arm == null) return;
+        arm.localScale = GetScale(index);
     }
 
 

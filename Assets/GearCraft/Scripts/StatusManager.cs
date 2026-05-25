@@ -87,6 +87,8 @@ public class StatusManager : MonoBehaviour
         {
             ownedWeapons.Add(defaultWeapon);
         }
+        EnsureWeaponDurability(defaultWeapon);
+        EnsureWeaponDurability(currentWeapon);
     }
 
     // ---- 武器耐久値管理 ----
@@ -100,12 +102,7 @@ public class StatusManager : MonoBehaviour
         if (!ownedWeapons.Contains(weapon))
             ownedWeapons.Add(weapon);
 
-        string key = weapon.weaponName;
-        if (!weaponDurabilities.ContainsKey(key))
-        {
-            weaponDurabilities[key] = weapon.maxDurability;
-            weaponMaxDurabilities[key] = weapon.maxDurability;
-        }
+        EnsureWeaponDurability(weapon);
     }
 
     /// <summary>
@@ -114,7 +111,37 @@ public class StatusManager : MonoBehaviour
     public void EquipWeapon(WeaponDataSO weapon)
     {
         if (weapon == null || !ownedWeapons.Contains(weapon)) return;
+        EnsureWeaponDurability(weapon);
         currentWeapon = weapon;
+    }
+
+    public WeaponDataSO FindOwnedWeaponByName(string weaponName)
+    {
+        if (string.IsNullOrEmpty(weaponName)) return null;
+        return ownedWeapons.Find(weapon => weapon != null && weapon.weaponName == weaponName);
+    }
+
+    private void EnsureWeaponDurability(WeaponDataSO weapon)
+    {
+        if (weapon == null || string.IsNullOrEmpty(weapon.weaponName)) return;
+
+        string key = weapon.weaponName;
+        if (!weaponMaxDurabilities.ContainsKey(key))
+        {
+            weaponMaxDurabilities[key] = weapon.maxDurability;
+        }
+        if (!weaponDurabilities.ContainsKey(key))
+        {
+            weaponDurabilities[key] = GetBaseMaxDurability(weapon);
+        }
+    }
+
+    private int GetBaseMaxDurability(WeaponDataSO weapon)
+    {
+        if (weapon == null || string.IsNullOrEmpty(weapon.weaponName)) return 0;
+
+        string key = weapon.weaponName;
+        return weaponMaxDurabilities.ContainsKey(key) ? weaponMaxDurabilities[key] : weapon.maxDurability;
     }
 
     public int AcquireUpgradePart(UpgradePartSO part)
@@ -137,6 +164,7 @@ public class StatusManager : MonoBehaviour
     public int GetCurrentDurability()
     {
         if (currentWeapon == null) return -1;
+        EnsureWeaponDurability(currentWeapon);
         string key = currentWeapon.weaponName;
         return weaponDurabilities.ContainsKey(key) ? weaponDurabilities[key] : currentWeapon.maxDurability;
     }
@@ -147,9 +175,7 @@ public class StatusManager : MonoBehaviour
     public int GetCurrentMaxDurability()
     {
         if (currentWeapon == null) return -1;
-        string key = currentWeapon.weaponName;
-        int baseDur = weaponMaxDurabilities.ContainsKey(key) ? weaponMaxDurabilities[key] : currentWeapon.maxDurability;
-        return baseDur + maxDurabilityBonus;
+        return GetBaseMaxDurability(currentWeapon) + maxDurabilityBonus;
     }
 
     /// <summary>
@@ -159,10 +185,8 @@ public class StatusManager : MonoBehaviour
     {
         if (currentWeapon == null || currentWeapon.isDefault) return false;
 
+        EnsureWeaponDurability(currentWeapon);
         string key = currentWeapon.weaponName;
-        if (!weaponDurabilities.ContainsKey(key))
-            weaponDurabilities[key] = currentWeapon.maxDurability;
-
         weaponDurabilities[key]--;
 
         if (weaponDurabilities[key] <= 0)
@@ -180,8 +204,8 @@ public class StatusManager : MonoBehaviour
     public void RepairDurability(int amount)
     {
         if (currentWeapon == null || currentWeapon.isDefault) return;
+        EnsureWeaponDurability(currentWeapon);
         string key = currentWeapon.weaponName;
-        if (!weaponDurabilities.ContainsKey(key)) return;
 
         int max = GetCurrentMaxDurability();
         weaponDurabilities[key] = Mathf.Min(weaponDurabilities[key] + amount, max);

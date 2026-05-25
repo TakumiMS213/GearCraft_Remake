@@ -22,7 +22,7 @@ MonoBehaviour:
   bulletPrefab: {fileID: 5356958644387713917, guid: b30cb99703595ce429f224037e120f04, type: 3}
   spreadAngle: 0
   maxDurability: 20
-  armTriggerName: 
+  armTriggerName: SteamShoot
   meleeRotateDuration: 0.5
   isDefault: 0
   isPiercing: 0

@@ -13,7 +13,6 @@ GameObject:
   - component: {fileID: 4862418018048898466}
   - component: {fileID: 4862418018048898467}
   - component: {fileID: 4862418018048898464}
-  - component: {fileID: 4862418018048898465}
   - component: {fileID: 7183709923381382261}
   m_Layer: 3
   m_Name: EG-33
@@ -178,23 +177,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enemyData: {fileID: 11400000, guid: 5ccfbe44540bb634c8fabb9091494308, type: 2}
-  HP: 400
   isLastEnemy: 0
   deathEffect: {fileID: 2555472082101049140, guid: ec1d5aee65fcf4032b04408158c4c8b4, type: 3}
   highlightMarker: {fileID: 0}
---- !u!114 &4862418018048898465
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4862418018048898471}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c42327d3a7bbb4c7a8d8a682a13b5cae, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  speed: -2
 --- !u!95 &7183709923381382261
 Animator:
   serializedVersion: 7

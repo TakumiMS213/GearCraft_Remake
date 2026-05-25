@@ -52,21 +52,34 @@ public class CraftManager : MonoBehaviour
     /// </summary>
     public bool CanCraft()
     {
-        if (selectedRecipe == null) return false;
-        if (MaterialManager.Instance == null) return false;
+        return CanCraftRecipe(selectedRecipe);
+    }
 
-        // 素材チェック
-        if (!MaterialManager.Instance.CanAfford(selectedRecipe.costs))
-            return false;
+    public static bool CanCraftRecipe(CraftRecipeSO recipe)
+    {
+        return HasEnoughMaterials(recipe) && MeetsRequiredWeapon(recipe);
+    }
 
-        // 前提武器チェック
-        if (selectedRecipe.requiredWeapon != null && StatusManager.Instance != null)
-        {
-            if (!StatusManager.Instance.ownedWeapons.Contains(selectedRecipe.requiredWeapon))
-                return false;
-        }
+    public static bool HasEnoughMaterials(CraftRecipeSO recipe)
+    {
+        if (recipe == null || MaterialManager.Instance == null) return false;
+        return MaterialManager.Instance.CanAfford(recipe.costs);
+    }
 
-        return true;
+    public static bool MeetsRequiredWeapon(CraftRecipeSO recipe)
+    {
+        if (recipe == null) return false;
+        if (recipe.requiredWeapon == null) return true;
+        if (StatusManager.Instance == null) return false;
+
+        return IsSameWeapon(StatusManager.Instance.currentWeapon, recipe.requiredWeapon);
+    }
+
+    private static bool IsSameWeapon(WeaponDataSO current, WeaponDataSO required)
+    {
+        if (current == null || required == null) return false;
+        if (current == required) return true;
+        return !string.IsNullOrEmpty(current.weaponName) && current.weaponName == required.weaponName;
     }
 
     /// <summary>

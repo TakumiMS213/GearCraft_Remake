@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyName: BB-12
   prefab: {fileID: 4862418018048898471, guid: 392aa4eb774664a23a43fa7a40ecb88e, type: 3}
-  baseHP: 10
+  baseHP: 1
   speed: 2
   attackInterval: 2
   bulletSpeed: 5
@@ -28,6 +28,9 @@ MonoBehaviour:
   chargeTime: 1
   explosionRadius: 3
   explosionDamage: 30
+  summonEnemyData: {fileID: 0}
+  summonCount: 0
+  summonInterval: 6
   drops:
   - type: 4
     minAmount: 1

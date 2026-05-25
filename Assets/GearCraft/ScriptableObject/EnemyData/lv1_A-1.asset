@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyName: A-1
   prefab: {fileID: 8310521578096399468, guid: 78ae97d1305a147eea40d4ed63f2d571, type: 3}
-  baseHP: 50
+  baseHP: 20
   speed: 5
   attackInterval: 2
   bulletSpeed: 50
@@ -29,6 +29,9 @@ MonoBehaviour:
   chargeTime: 1
   explosionRadius: 3
   explosionDamage: 30
+  summonEnemyData: {fileID: 0}
+  summonCount: 0
+  summonInterval: 6
   drops:
   - type: 0
     minAmount: 1

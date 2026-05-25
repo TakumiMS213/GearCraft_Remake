@@ -9,6 +9,7 @@ public class EnemyController : MonoBehaviour
     public EnemyDataSO enemyData;
 
     [Header("ランタイムステータス")]
+    [NonSerialized]
     public float HP;
     public bool isLastEnemy = false;
 
@@ -32,7 +33,11 @@ public class EnemyController : MonoBehaviour
         if (enemyData != null)
         {
             // ステージ補正を加えたHP
-            float stageBonus = StageCounter.Instance != null ? StageCounter.Instance.StageCount / 10f : 0f;
+            int scalingStage = StageFlowManager.Instance != null
+                ? StageFlowManager.Instance.EnemyScalingStage
+                : StageCounter.Instance != null ? StageCounter.Instance.StageCount : 1;
+            scalingStage = Mathf.Max(1, scalingStage);
+            float stageBonus = scalingStage / 10f;
             HP = enemyData.baseHP + enemyData.baseHP * stageBonus;
 
             // AIアタッチ

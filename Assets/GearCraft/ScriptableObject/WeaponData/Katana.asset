@@ -17,12 +17,12 @@ MonoBehaviour:
   weaponType: 0
   coolTime: 0.5
   baseDamage: 20
-  attackRange: 1
+  attackRange: 1.5
   bulletSpeed: 25
   bulletPrefab: {fileID: 0}
   spreadAngle: 0
   maxDurability: 999
-  armTriggerName: 
+  armTriggerName: Sword
   meleeRotateDuration: 0.5
   isDefault: 1
   isPiercing: 0

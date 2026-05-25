@@ -4,13 +4,35 @@ public class MeleeWeapon : MonoBehaviour
 {
     private PlayerController playerController;
     private StatusManager runtimeStatus;
+    private BoxCollider2D hitCollider;
+    private Vector2 baseColliderSize;
+    private Vector2 baseColliderOffset;
     public GameObject BurnPtPrehub;
     public GameObject ExplosionPrehub;
+
+    void Awake()
+    {
+        hitCollider = GetComponent<BoxCollider2D>();
+        if (hitCollider != null)
+        {
+            baseColliderSize = hitCollider.size;
+            baseColliderOffset = hitCollider.offset;
+        }
+    }
 
     void Start()
     {
         playerController = FindAnyObjectByType<PlayerController>();
         runtimeStatus = StatusManager.Instance;
+    }
+
+    public void ApplyWeaponData(WeaponDataSO weapon)
+    {
+        if (hitCollider == null || weapon == null || weapon.weaponType != WeaponType.Melee) return;
+
+        float range = Mathf.Max(0.1f, weapon.attackRange);
+        hitCollider.size = new Vector2(baseColliderSize.x, baseColliderSize.y * range);
+        hitCollider.offset = new Vector2(baseColliderOffset.x, baseColliderOffset.y * range);
     }
 
     void OnTriggerEnter2D(Collider2D other)

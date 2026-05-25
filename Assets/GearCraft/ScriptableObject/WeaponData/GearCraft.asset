@@ -22,7 +22,7 @@ MonoBehaviour:
   bulletPrefab: {fileID: 0}
   spreadAngle: 0
   maxDurability: 10
-  armTriggerName: 
+  armTriggerName: GearCraft_Sword
   meleeRotateDuration: 0.5
   isDefault: 0
   isPiercing: 0
