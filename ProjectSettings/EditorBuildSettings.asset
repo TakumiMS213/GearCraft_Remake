@@ -9,6 +9,9 @@ EditorBuildSettings:
     path: Assets/GearCraft/Scenes/Title.unity
     guid: 858b4887827dd4c4480bed157475c43f
   - enabled: 1
+    path: Assets/GearCraft/Scenes/Story.unity
+    guid: 6bf3b439a7fe84a5da41cf91f4a7f898
+  - enabled: 1
     path: Assets/GearCraft/Scenes/Main.unity
     guid: 421bbefc220967b49bc946ab7b2d53ed
   - enabled: 1

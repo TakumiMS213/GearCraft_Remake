@@ -7,6 +7,7 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 lastPosition;
 
     public RectTransform[] walls;  // 背景画像6枚
+    [SerializeField] private bool enableCanvasParallax = false;
     public float parallaxScale = 1f;  // 全背景共通のパララックス倍率
 
     public float backgroundMoveThresholdX = 3f;  // このX座標以上で背景が動く
@@ -28,6 +29,18 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
+        if (ArrivalMessagePresenter.IsMessagePlaying)
+        {
+            rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
+            if (anim != null)
+            {
+                anim.SetBool("run", false);
+            }
+
+            lastPosition = transform.position;
+            return;
+        }
+
         float moveInput = Input.GetAxisRaw("Horizontal");
         bool moveBackground = transform.position.x >= backgroundMoveThresholdX;
 
@@ -48,7 +61,7 @@ public class PlayerMovement : MonoBehaviour
 
         Vector3 delta = transform.position - lastPosition;
 
-        if (moveBackground && walls != null && walls.Length > 0 && canvas != null)
+        if (enableCanvasParallax && moveBackground && walls != null && walls.Length > 0 && canvas != null)
         {
             Vector2 screenDelta = RectTransformUtility.WorldToScreenPoint(Camera.main, transform.position) -
                                   RectTransformUtility.WorldToScreenPoint(Camera.main, lastPosition);

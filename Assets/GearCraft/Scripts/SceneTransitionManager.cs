@@ -44,13 +44,13 @@ public class SceneTransitionManager : MonoBehaviour
         {
             // まず真っ黒にしてからフェードイン
             fadeImage.color = new Color(0, 0, 0, 1);
-            fadeImage.DOFade(0f, fadeDuration);
+            fadeImage.DOFade(0f, fadeDuration).SetUpdate(true);
         }
 
         if (LoadfadeImage != null)
         {
             LoadfadeImage.color = new Color(1f, 1f, 1f, 1f);
-            LoadfadeImage.DOFade(0f, fadeDuration);
+            LoadfadeImage.DOFade(0f, fadeDuration).SetUpdate(true);
         }
     }
 
@@ -67,13 +67,16 @@ public class SceneTransitionManager : MonoBehaviour
             if (LoadfadeImage != null)
             {
                 LoadfadeImage.color = new Color(1f, 1f, 1f, 0f);
-                LoadfadeImage.DOFade(1f, fadeDuration);
+                LoadfadeImage.DOFade(1f, fadeDuration).SetUpdate(true);
             }
 
-            fadeImage.DOFade(1f, fadeDuration).OnComplete(() =>
-            {
-                SceneManager.LoadScene(sceneName);
-            });
+            fadeImage
+                .DOFade(1f, fadeDuration)
+                .SetUpdate(true)
+                .OnComplete(() =>
+                {
+                    SceneManager.LoadScene(sceneName);
+                });
         }
         else
         {

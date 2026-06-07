@@ -472,6 +472,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: f057aa26c431ca947b3ce436977f84bb, type: 2}
   - {fileID: 11400000, guid: c67894c193a09784b99ba2fa502db3dd, type: 2}
   ownedUpgradeParts: []
+  savedUpgradePartPlacements: []
   selectWeapon: 0
   module_scrap: 0
   module_repair: 0
@@ -481,6 +482,7 @@ MonoBehaviour:
   killAllEnemies: 1
   UseCraftSpacebuff: 0
   bossKillCount: 0
+  upgradeShopDay: 0
   bonusDamage: 0
   attackSpeedMult: 1
   hasBulletDouble: 0
@@ -3610,6 +3612,7 @@ GameObject:
   - component: {fileID: 1145834085}
   - component: {fileID: 1145834086}
   - component: {fileID: 1145834087}
+  - component: {fileID: 1145834088}
   m_Layer: 0
   m_Name: TitleManagerObject
   m_TagString: Untagged
@@ -3727,6 +3730,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   clickSound: {fileID: 8300000, guid: 780aef3363657904b8aabe80dddfc37d, type: 3}
   volume: 0.1
+--- !u!114 &1145834088
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1145834080}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2e8c452ac1ae7481597a22b0f5ac2f3c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sceneTransitionManager: {fileID: 1145834086}
+  storySceneName: Story
+  returnSceneName: CraftSpace
+  requestArrivalMessage: 1
 --- !u!1 &1154619761
 GameObject:
   m_ObjectHideFlags: 0
@@ -4998,21 +5017,21 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1145834086}
-        m_TargetAssemblyTypeName: SceneTransitionManager, Assembly-CSharp
-        m_MethodName: LoadScene
-        m_Mode: 5
+      - m_Target: {fileID: 1145834087}
+        m_TargetAssemblyTypeName: SoundButton, Assembly-CSharp
+        m_MethodName: PlayClickSound
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: main
+          m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 1145834087}
-        m_TargetAssemblyTypeName: SoundButton, Assembly-CSharp
-        m_MethodName: PlayClickSound
+      - m_Target: {fileID: 1145834088}
+        m_TargetAssemblyTypeName: StorySceneLoader, Assembly-CSharp
+        m_MethodName: LoadStory
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
