@@ -13,15 +13,15 @@ MonoBehaviour:
   m_Name: A2_G2
   m_EditorClassIdentifier: 
   spawns:
-  - enemyPrefab: {fileID: 8310521578096399468, guid: 78ae97d1305a147eea40d4ed63f2d571, type: 3}
+  - enemyData: {fileID: 11400000, guid: f7b40f58d8de243499a0d80a8e58c86d, type: 2}
     spawnTime: 2
     LastEnemy: 0
-  - enemyPrefab: {fileID: 8310521578096399468, guid: 78ae97d1305a147eea40d4ed63f2d571, type: 3}
+  - enemyData: {fileID: 11400000, guid: f7b40f58d8de243499a0d80a8e58c86d, type: 2}
     spawnTime: 2
     LastEnemy: 0
-  - enemyPrefab: {fileID: 7711395149452848216, guid: 0ea506b5a8857e1428c6d11f54344bd2, type: 3}
+  - enemyData: {fileID: 11400000, guid: e36c410e1ba26d1498567de1d54ad9e3, type: 2}
     spawnTime: 0
     LastEnemy: 0
-  - enemyPrefab: {fileID: 7711395149452848216, guid: 0ea506b5a8857e1428c6d11f54344bd2, type: 3}
+  - enemyData: {fileID: 11400000, guid: e36c410e1ba26d1498567de1d54ad9e3, type: 2}
     spawnTime: 0
     LastEnemy: 0

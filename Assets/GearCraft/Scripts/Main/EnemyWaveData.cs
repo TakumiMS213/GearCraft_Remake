@@ -6,7 +6,7 @@ public class EnemyWaveData : ScriptableObject
     [System.Serializable]
     public class SpawnData
     {
-        public GameObject enemyPrefab;
+        public EnemyDataSO enemyData;
         public float spawnTime; // Wave開始からの秒数
         public bool LastEnemy = false;
     }

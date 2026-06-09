@@ -8,29 +8,31 @@ public class UIRangeDisplay : MonoBehaviour
     [System.Serializable]
     public class UIRange
     {
-        public GameObject uiObject;   // 表示切り替え対象のUI（画像など）
-        public float minX;            // 表示開始X座標
-        public float maxX;            // 表示終了X座標
+        public GameObject uiObject;
+        public float minX;
+        public float maxX;
     }
 
-    public Transform player;          // プレイヤーのTransform
-    public UIRange[] uiRanges;        // UIごとのX範囲設定
+    public Transform player;
+    public UIRange[] uiRanges;
     [SerializeField] private CraftSpaceInteractionZone[] interactionZones;
 
-    public TransitionManager transitionManager;  // ← これを追加
+    public TransitionManager transitionManager;
 
     public int uplimit;
     public AudioSource selectSound_statusUp;
     public AudioSource cantSelect;
 
-    [SerializeField] private Image fadeImage; // 黒いImage (最初は Alpha=0 にしておくこと)
-    public StatusManager status; // ステータスマネージャーの参照
+    [SerializeField] private Image fadeImage;
+    public StatusManager status;
+
     private CraftSpaceInteractionZone activeZone;
 
-    void Start()
+    private void Start()
     {
         status = StatusManager.Instance ?? FindAnyObjectByType<StatusManager>();
         uplimit = 1;
+
         if (fadeImage != null)
         {
             fadeImage.color = new Color(0, 0, 0, 0);
@@ -43,13 +45,8 @@ public class UIRangeDisplay : MonoBehaviour
         HideAllPrompts();
     }
 
-    void Update()
+    private void Update()
     {
-        if (transitionManager == null) Debug.LogWarning("transitionManagerが未設定です");
-        if (selectSound_statusUp == null) Debug.LogWarning("selectSound_statusUpが未設定です");
-        if (cantSelect == null) Debug.LogWarning("cantSelectが未設定です");
-        if (fadeImage == null) Debug.LogWarning("fadeImageが未設定です");
-
         if (Input.GetKeyDown(KeyCode.Space))
         {
             ExecuteActiveAction();
@@ -182,20 +179,14 @@ public class UIRangeDisplay : MonoBehaviour
 
     private void LoadCraftScene()
     {
-        selectSound_statusUp.Play();
-        fadeImage
-            .DOFade(0.5f, 0.5f)
-            .SetUpdate(true)
-            .OnComplete(() => SceneManager.LoadScene("Craft"));
+        selectSound_statusUp?.Play();
+        SceneTransitionManager.LoadSceneWithTransition("Craft");
     }
 
     private void LoadMainScene()
     {
-        selectSound_statusUp.Play();
-        fadeImage
-            .DOFade(1f, 2f)
-            .SetUpdate(true)
-            .OnComplete(() => SceneManager.LoadScene("Main"));
+        selectSound_statusUp?.Play();
+        SceneTransitionManager.LoadSceneWithTransition("Main");
     }
 
     private void HideAllPrompts()

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SteamGatling
   m_EditorClassIdentifier: 
   weaponName: SteamGatling
-  icon: {fileID: 21300000, guid: eafe6ec19ce1c3049abc3dfa59b7c897, type: 3}
+  icon: {fileID: 21300000, guid: 951031652047f4267aba5f3ab2134c46, type: 3}
   weaponType: 1
   coolTime: 0.05
   baseDamage: 10

@@ -13,12 +13,12 @@ MonoBehaviour:
   m_Name: BB_3
   m_EditorClassIdentifier: 
   spawns:
-  - enemyPrefab: {fileID: 4862418018048898471, guid: 392aa4eb774664a23a43fa7a40ecb88e, type: 3}
+  - enemyData: {fileID: 11400000, guid: ff6bc388cedb87d42abb82d62ea819e5, type: 2}
     spawnTime: 0
     LastEnemy: 0
-  - enemyPrefab: {fileID: 4862418018048898471, guid: 392aa4eb774664a23a43fa7a40ecb88e, type: 3}
+  - enemyData: {fileID: 11400000, guid: ff6bc388cedb87d42abb82d62ea819e5, type: 2}
     spawnTime: 1
     LastEnemy: 0
-  - enemyPrefab: {fileID: 4862418018048898471, guid: 392aa4eb774664a23a43fa7a40ecb88e, type: 3}
+  - enemyData: {fileID: 11400000, guid: ff6bc388cedb87d42abb82d62ea819e5, type: 2}
     spawnTime: 2
     LastEnemy: 0

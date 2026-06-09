@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: Last_IC-408
   m_EditorClassIdentifier: 
   spawns:
-  - enemyPrefab: {fileID: 2252462175396124830, guid: 567599f6de75946f8ac1dad7fff2717f, type: 3}
+  - enemyData: {fileID: 11400000, guid: 4905cb82c7b70a3458d44e7546f3468c, type: 2}
     spawnTime: 0
     LastEnemy: 1

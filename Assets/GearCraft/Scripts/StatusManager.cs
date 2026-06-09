@@ -31,6 +31,7 @@ public class StatusManager : MonoBehaviour
     public WeaponDataSO defaultWeapon;           // 刀（破壊後のフォールバック）
     public WeaponDataSO currentWeapon;            // 現在装備中の武器
     public List<WeaponDataSO> ownedWeapons = new List<WeaponDataSO>(); // 所持武器一覧
+    public List<WeaponDataSO> weaponCatalog = new List<WeaponDataSO>(); // 参照用の全武器データ
     public List<UpgradePartSO> ownedUpgradeParts = new List<UpgradePartSO>();
     public List<SavedUpgradePartPlacement> savedUpgradePartPlacements = new List<SavedUpgradePartPlacement>();
 
@@ -78,17 +79,7 @@ public class StatusManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
-        // デフォルト武器の初期化
-        if (currentWeapon == null && defaultWeapon != null)
-        {
-            currentWeapon = defaultWeapon;
-        }
-        if (defaultWeapon != null && !ownedWeapons.Contains(defaultWeapon))
-        {
-            ownedWeapons.Add(defaultWeapon);
-        }
-        EnsureWeaponDurability(defaultWeapon);
-        EnsureWeaponDurability(currentWeapon);
+        InitializeWeapons();
     }
 
     // ---- 武器耐久値管理 ----
@@ -119,6 +110,58 @@ public class StatusManager : MonoBehaviour
     {
         if (string.IsNullOrEmpty(weaponName)) return null;
         return ownedWeapons.Find(weapon => weapon != null && weapon.weaponName == weaponName);
+    }
+
+    public WeaponDataSO FindWeaponDataByName(string weaponName)
+    {
+        WeaponDataSO ownedWeapon = FindOwnedWeaponByName(weaponName);
+        if (ownedWeapon != null)
+        {
+            return ownedWeapon;
+        }
+
+        if (string.IsNullOrEmpty(weaponName) || weaponCatalog == null)
+        {
+            return null;
+        }
+
+        return weaponCatalog.Find(weapon => weapon != null && weapon.weaponName == weaponName);
+    }
+
+    private void InitializeWeapons()
+    {
+        if (currentWeapon == null && defaultWeapon != null)
+        {
+            currentWeapon = defaultWeapon;
+        }
+
+        AddUniqueWeapon(ownedWeapons, defaultWeapon);
+        AddUniqueWeapon(weaponCatalog, defaultWeapon);
+        AddUniqueWeapon(weaponCatalog, currentWeapon);
+
+        EnsureWeaponDurability(defaultWeapon);
+        EnsureWeaponDurability(currentWeapon);
+
+        if (ownedWeapons == null)
+        {
+            return;
+        }
+
+        foreach (WeaponDataSO weapon in ownedWeapons)
+        {
+            EnsureWeaponDurability(weapon);
+            AddUniqueWeapon(weaponCatalog, weapon);
+        }
+    }
+
+    private static void AddUniqueWeapon(List<WeaponDataSO> list, WeaponDataSO weapon)
+    {
+        if (list == null || weapon == null || list.Contains(weapon))
+        {
+            return;
+        }
+
+        list.Add(weapon);
     }
 
     private void EnsureWeaponDurability(WeaponDataSO weapon)

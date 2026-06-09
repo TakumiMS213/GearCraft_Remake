@@ -13,18 +13,18 @@ MonoBehaviour:
   m_Name: A4_EA1
   m_EditorClassIdentifier: 
   spawns:
-  - enemyPrefab: {fileID: 8310521578096399468, guid: 78ae97d1305a147eea40d4ed63f2d571, type: 3}
+  - enemyData: {fileID: 11400000, guid: f7b40f58d8de243499a0d80a8e58c86d, type: 2}
     spawnTime: 0
     LastEnemy: 0
-  - enemyPrefab: {fileID: 8310521578096399468, guid: 78ae97d1305a147eea40d4ed63f2d571, type: 3}
+  - enemyData: {fileID: 11400000, guid: f7b40f58d8de243499a0d80a8e58c86d, type: 2}
     spawnTime: 2
     LastEnemy: 0
-  - enemyPrefab: {fileID: 8310521578096399468, guid: 60f1c427e8a0b45afb4aa918f978cbee, type: 3}
+  - enemyData: {fileID: 11400000, guid: 54270c7afbefb8f468eaa10d9eae9bbc, type: 2}
     spawnTime: 5
     LastEnemy: 1
-  - enemyPrefab: {fileID: 8310521578096399468, guid: 78ae97d1305a147eea40d4ed63f2d571, type: 3}
+  - enemyData: {fileID: 11400000, guid: f7b40f58d8de243499a0d80a8e58c86d, type: 2}
     spawnTime: 7
     LastEnemy: 0
-  - enemyPrefab: {fileID: 8310521578096399468, guid: 78ae97d1305a147eea40d4ed63f2d571, type: 3}
+  - enemyData: {fileID: 11400000, guid: f7b40f58d8de243499a0d80a8e58c86d, type: 2}
     spawnTime: 9
     LastEnemy: 0

@@ -20,17 +20,35 @@ public class StatusDisplay : MonoBehaviour
     private const int HP_MAX = 100;
     private const int GATE_MAX = 100;
     public StatusManager statusManager;
+    private MaterialManager materialManager;
+    private bool hasDisplaySnapshot;
+    private int displayedHp;
+    private float displayedGate;
+    private int displayedStr;
+    private int displayedAcc;
+    private int displayedGear;
 
     void Start()
     {
-    statusManager = StatusManager.Instance ?? FindAnyObjectByType<StatusManager>();
+        ResolveManagers();
         UpdateDisplay();
     }
 
     void Update()
     {
-        // デモ用。実際は値が変わったときにのみ呼ぶのが理想
-        UpdateDisplay();
+        ResolveManagers();
+        if (statusManager == null) { return; }
+
+        int gearCount = GetGearCount();
+        if (!hasDisplaySnapshot ||
+            displayedHp != statusManager.HP ||
+            !Mathf.Approximately(displayedGate, statusManager.GATE) ||
+            displayedStr != statusManager.STR ||
+            displayedAcc != statusManager.ACC ||
+            displayedGear != gearCount)
+        {
+            UpdateDisplay();
+        }
     }
 
     /// <summary>
@@ -38,21 +56,58 @@ public class StatusDisplay : MonoBehaviour
     /// </summary>
     public void UpdateDisplay()
     {
-        if(statusManager == null){ return; }
+        ResolveManagers();
+        if (statusManager == null) { return; }
+
         // --- HP ---
         int hpBars = Mathf.Clamp(Mathf.RoundToInt(statusManager.HP / (HP_MAX / 10f)), 0, 10);
-        Color hpColor = GetGaugeColor(statusManager.HP / HP_MAX);
-        hpText.text = "    HP : " + BuildGaugeText(hpBars, 10, hpColor, Color.white);
+        Color hpColor = GetGaugeColor(statusManager.HP / (float)HP_MAX);
+        SetText(hpText, "    HP : " + BuildGaugeText(hpBars, 10, hpColor, Color.white));
 
         // --- GATE ---
         int gateBars = Mathf.Clamp(Mathf.RoundToInt(statusManager.GATE / (GATE_MAX / 10f)), 0, 10);
         Color gateColor = GetGaugeColor(statusManager.GATE / (float)GATE_MAX);
-        gateText.text = "GATE : " + BuildGaugeText(gateBars, 10, gateColor, Color.white);
+        SetText(gateText, "GATE : " + BuildGaugeText(gateBars, 10, gateColor, Color.white));
 
         // --- STR / ACC ---
-        strText.text = $"STR : {statusManager.STR}";
-        accText.text = $"ACC : {statusManager.ACC}";
-        gearText.text = $"× {MaterialManager.Instance.GetMaterial(MaterialManager.MaterialType.Gear)}";
+        SetText(strText, $"STR : {statusManager.STR}");
+        SetText(accText, $"ACC : {statusManager.ACC}");
+
+        int gearCount = GetGearCount();
+        SetText(gearText, $"× {gearCount}");
+
+        hasDisplaySnapshot = true;
+        displayedHp = statusManager.HP;
+        displayedGate = statusManager.GATE;
+        displayedStr = statusManager.STR;
+        displayedAcc = statusManager.ACC;
+        displayedGear = gearCount;
+    }
+
+    private void ResolveManagers()
+    {
+        if (statusManager == null)
+        {
+            statusManager = StatusManager.Instance ?? FindAnyObjectByType<StatusManager>();
+        }
+
+        if (materialManager == null)
+        {
+            materialManager = MaterialManager.Instance ?? FindAnyObjectByType<MaterialManager>();
+        }
+    }
+
+    private void SetText(TMP_Text target, string value)
+    {
+        if (target == null) { return; }
+        target.text = value;
+    }
+
+    private int GetGearCount()
+    {
+        return materialManager != null
+            ? materialManager.GetMaterial(MaterialManager.MaterialType.Gear)
+            : 0;
     }
 
     /// <summary>

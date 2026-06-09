@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: RailCraft
   m_EditorClassIdentifier: 
   recipeName: RailCraft
-  icon: {fileID: 21300000, guid: 62f9a3e657bbd8f45893541814f09c29, type: 3}
-  completedImage: {fileID: 21300000, guid: 62f9a3e657bbd8f45893541814f09c29, type: 3}
+  icon: {fileID: 21300000, guid: 79ae2f232116b402d93941ee1f1614c6, type: 3}
+  completedImage: {fileID: 21300000, guid: 79ae2f232116b402d93941ee1f1614c6, type: 3}
   costs:
   - type: 1
     amount: 40

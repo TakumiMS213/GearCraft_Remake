@@ -43,9 +43,7 @@ public class PlayerMovement : MonoBehaviour
 
         float moveInput = Input.GetAxisRaw("Horizontal");
         bool moveBackground = transform.position.x >= backgroundMoveThresholdX;
-
-        float effectiveSpeed = moveBackground ? moveSpeed : moveSpeed * 2f;
-        rb.linearVelocity = new Vector2(moveInput * effectiveSpeed, rb.linearVelocity.y);
+        rb.linearVelocity = new Vector2(moveInput * moveSpeed, rb.linearVelocity.y);
 
         if(moveInput > 0)
         {

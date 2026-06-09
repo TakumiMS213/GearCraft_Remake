@@ -22,6 +22,6 @@ public class StorySceneLoader : MonoBehaviour
             return;
         }
 
-        UnityEngine.SceneManagement.SceneManager.LoadScene(storySceneName);
+        SceneTransitionManager.LoadSceneWithTransition(storySceneName);
     }
 }

@@ -77,6 +77,6 @@ public class StoryPresenter : MonoBehaviour
             return;
         }
 
-        UnityEngine.SceneManagement.SceneManager.LoadScene(returnSceneName);
+        SceneTransitionManager.LoadSceneWithTransition(returnSceneName);
     }
 }

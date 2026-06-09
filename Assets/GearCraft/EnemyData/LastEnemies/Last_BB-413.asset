@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: Last_BB-413
   m_EditorClassIdentifier: 
   spawns:
-  - enemyPrefab: {fileID: 4862418018048898471, guid: ae21a14c9dbb64a909a4da618ab0639e, type: 3}
+  - enemyData: {fileID: 11400000, guid: 8dbafa68ed1643b4bb05a278cb286413, type: 2}
     spawnTime: 0
     LastEnemy: 1

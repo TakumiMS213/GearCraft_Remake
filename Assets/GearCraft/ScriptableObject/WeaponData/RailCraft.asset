@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: RailCraft
   m_EditorClassIdentifier: 
   weaponName: RailCraft
-  icon: {fileID: 21300000, guid: eafe6ec19ce1c3049abc3dfa59b7c897, type: 3}
+  icon: {fileID: 21300000, guid: 79ae2f232116b402d93941ee1f1614c6, type: 3}
   weaponType: 1
   coolTime: 2
   baseDamage: 150

@@ -202,6 +202,7 @@ public class EnemyController : MonoBehaviour
     {
         if (data != null)
         {
+            enemyData = data.enemyData;
             isLastEnemy = data.LastEnemy;
         }
     }

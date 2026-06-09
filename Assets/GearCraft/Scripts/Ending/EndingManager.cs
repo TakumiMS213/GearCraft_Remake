@@ -2,7 +2,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
 using Cysharp.Threading.Tasks;
-using UnityEngine.SceneManagement;
 
 public class EndingManager : MonoBehaviour
 {
@@ -68,7 +67,7 @@ public class EndingManager : MonoBehaviour
     public static void LoadEndingScene(int endNum)
     {
         PendingEndingNum = endNum;
-        SceneManager.LoadScene("Ending");
+        SceneTransitionManager.LoadSceneWithTransition("Ending");
     }
 
     /// <summary>
@@ -128,7 +127,7 @@ public class EndingManager : MonoBehaviour
                 .AsyncWaitForCompletion();
         }
 
-        SceneManager.LoadScene(sceneName);
+        SceneTransitionManager.LoadSceneWithTransition(sceneName);
     }
 
     private void SetAlpha(Image img, float alpha)

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -34,6 +35,18 @@ public class EnemySpawner : MonoBehaviour
 
     private CancellationTokenSource cts;
     private StageSpawnPlanner spawnPlanner;
+
+    private readonly struct DeferredLastEnemySpawn
+    {
+        public DeferredLastEnemySpawn(EnemyDataSO enemyData, float spawnTime)
+        {
+            EnemyData = enemyData;
+            SpawnTime = spawnTime;
+        }
+
+        public EnemyDataSO EnemyData { get; }
+        public float SpawnTime { get; }
+    }
 
     private void Start()
     {
@@ -115,15 +128,18 @@ public class EnemySpawner : MonoBehaviour
             return;
         }
 
-        for (int i = 0; i < enemyCount; i++)
+        List<EnemyDataSO> spawnList = BuildNormalEnemySequence(scalingStage, difficulty, enemyCount);
+        if (spawnList.Count == 0)
+        {
+            Debug.LogWarning($"No valid enemy prefab was found for stage {stageNum}. Stage clear cannot be assigned.");
+            return;
+        }
+
+        for (int i = 0; i < spawnList.Count; i++)
         {
             token.ThrowIfCancellationRequested();
 
-            EnemyDataSO selectedEnemy = SelectEnemyByDifficulty(scalingStage, difficulty);
-            if (selectedEnemy == null || selectedEnemy.prefab == null)
-            {
-                continue;
-            }
+            EnemyDataSO selectedEnemy = spawnList[i];
 
             ShowEmergencyWarningIfNeeded(selectedEnemy);
             GameObject spawned = Instantiate(selectedEnemy.prefab, transform.position, Quaternion.identity);
@@ -131,7 +147,7 @@ public class EnemySpawner : MonoBehaviour
             if (enemy != null)
             {
                 enemy.enemyData = selectedEnemy;
-                enemy.isLastEnemy = i == enemyCount - 1;
+                enemy.isLastEnemy = i == spawnList.Count - 1;
             }
 
             await UniTask.Delay((int)(spawnInterval * 1000f), cancellationToken: token);
@@ -147,14 +163,17 @@ public class EnemySpawner : MonoBehaviour
 
         if (stageConfig.normalEnemyPool != null && stageConfig.normalEnemyPool.Length > 0)
         {
-            for (int i = 0; i < plan.MinionCount; i++)
+            List<EnemyDataSO> minions = BuildNormalEnemySequence(scalingStage, difficulty, plan.MinionCount);
+            if (plan.MarkLastMinionAsStageEnd && minions.Count == 0)
+            {
+                Debug.LogWarning($"No valid minion prefab was found for boss stage {stageNum}. Stage clear cannot be assigned.");
+                return;
+            }
+
+            for (int i = 0; i < minions.Count; i++)
             {
                 token.ThrowIfCancellationRequested();
-                EnemyDataSO minionData = SelectEnemyByDifficulty(scalingStage, difficulty);
-                if (minionData == null || minionData.prefab == null)
-                {
-                    continue;
-                }
+                EnemyDataSO minionData = minions[i];
 
                 ShowEmergencyWarningIfNeeded(minionData);
                 GameObject spawned = Instantiate(minionData.prefab, transform.position, Quaternion.identity);
@@ -162,7 +181,7 @@ public class EnemySpawner : MonoBehaviour
                 if (enemy != null)
                 {
                     enemy.enemyData = minionData;
-                    enemy.isLastEnemy = plan.MarkLastMinionAsStageEnd && i == plan.MinionCount - 1;
+                    enemy.isLastEnemy = plan.MarkLastMinionAsStageEnd && i == minions.Count - 1;
                 }
 
                 await UniTask.Delay((int)(spawnInterval * 1000f), cancellationToken: token);
@@ -241,6 +260,23 @@ public class EnemySpawner : MonoBehaviour
         return pool[index];
     }
 
+    private List<EnemyDataSO> BuildNormalEnemySequence(int stageNum, float difficulty, int enemyCount)
+    {
+        List<EnemyDataSO> sequence = new List<EnemyDataSO>();
+        int attempts = Mathf.Max(enemyCount * 4, enemyCount);
+
+        for (int i = 0; i < attempts && sequence.Count < enemyCount; i++)
+        {
+            EnemyDataSO selectedEnemy = SelectEnemyByDifficulty(stageNum, difficulty);
+            if (selectedEnemy != null && selectedEnemy.prefab != null)
+            {
+                sequence.Add(selectedEnemy);
+            }
+        }
+
+        return sequence;
+    }
+
     private async UniTaskVoid SpawnStageAsync(Stage stage, CancellationToken token)
     {
         if (stage == null || stage.groups == null)
@@ -252,6 +288,10 @@ public class EnemySpawner : MonoBehaviour
         {
             do
             {
+                List<DeferredLastEnemySpawn> deferredLastEnemySpawns = new List<DeferredLastEnemySpawn>();
+                bool hasConfiguredLastEnemy = HasConfiguredLastEnemy(stage);
+                EnemyWaveData.SpawnData fallbackLastSpawn = hasConfiguredLastEnemy ? null : FindFallbackLastSpawn(stage);
+
                 for (int i = 0; i < stage.groups.Length; i++)
                 {
                     SpawnGroup group = stage.groups[i];
@@ -263,7 +303,16 @@ public class EnemySpawner : MonoBehaviour
 
                     await UniTask.Delay((int)(group.delay * 1000f), cancellationToken: token);
                     token.ThrowIfCancellationRequested();
-                    await SpawnWaveAsync(group.waveData, token);
+                    await SpawnWaveAsync(group.waveData, token, deferredLastEnemySpawns, fallbackLastSpawn);
+                }
+
+                if (hasConfiguredLastEnemy)
+                {
+                    SpawnDeferredLastEnemies(deferredLastEnemySpawns, token);
+                }
+                else if (fallbackLastSpawn == null)
+                {
+                    Debug.LogWarning("No valid spawn was found for this manual stage. Stage clear cannot be assigned.");
                 }
 
                 if (stage.loop)
@@ -278,7 +327,11 @@ public class EnemySpawner : MonoBehaviour
         }
     }
 
-    private async UniTask SpawnWaveAsync(EnemyWaveData wave, CancellationToken token)
+    private async UniTask SpawnWaveAsync(
+        EnemyWaveData wave,
+        CancellationToken token,
+        List<DeferredLastEnemySpawn> deferredLastEnemySpawns,
+        EnemyWaveData.SpawnData fallbackLastSpawn)
     {
         float startTime = Time.time;
 
@@ -286,8 +339,14 @@ public class EnemySpawner : MonoBehaviour
         {
             EnemyWaveData.SpawnData data = wave.spawns[i];
             token.ThrowIfCancellationRequested();
-            if (data == null || data.enemyPrefab == null)
+            if (data == null || data.enemyData == null || data.enemyData.prefab == null)
             {
+                continue;
+            }
+
+            if (data.LastEnemy)
+            {
+                deferredLastEnemySpawns?.Add(new DeferredLastEnemySpawn(data.enemyData, data.spawnTime));
                 continue;
             }
 
@@ -298,14 +357,116 @@ public class EnemySpawner : MonoBehaviour
             }
 
             token.ThrowIfCancellationRequested();
-            GameObject spawned = Instantiate(data.enemyPrefab, transform.position, Quaternion.identity);
+            ShowEmergencyWarningIfNeeded(data.enemyData);
+            GameObject spawned = Instantiate(data.enemyData.prefab, transform.position, Quaternion.identity);
             EnemyController enemy = spawned.GetComponent<EnemyController>();
             if (enemy != null)
             {
-                enemy.SetWaveData(data);
-                ShowEmergencyWarningIfNeeded(enemy.enemyData);
+                enemy.enemyData = data.enemyData;
+                enemy.SetLastEnemy(data.LastEnemy || ReferenceEquals(data, fallbackLastSpawn));
             }
         }
+    }
+
+    private void SpawnDeferredLastEnemies(List<DeferredLastEnemySpawn> deferredLastEnemySpawns, CancellationToken token)
+    {
+        if (deferredLastEnemySpawns == null || deferredLastEnemySpawns.Count == 0)
+        {
+            Debug.LogWarning("No LastEnemy spawn was found for this manual stage. Stage clear will not trigger until a LastEnemy is configured.");
+            return;
+        }
+
+        deferredLastEnemySpawns.Sort((a, b) => a.SpawnTime.CompareTo(b.SpawnTime));
+
+        for (int i = 0; i < deferredLastEnemySpawns.Count; i++)
+        {
+            token.ThrowIfCancellationRequested();
+            DeferredLastEnemySpawn data = deferredLastEnemySpawns[i];
+            if (data.EnemyData == null || data.EnemyData.prefab == null)
+            {
+                continue;
+            }
+
+            ShowEmergencyWarningIfNeeded(data.EnemyData);
+            GameObject spawned = Instantiate(data.EnemyData.prefab, transform.position, Quaternion.identity);
+            EnemyController enemy = spawned.GetComponent<EnemyController>();
+            if (enemy != null)
+            {
+                enemy.enemyData = data.EnemyData;
+                enemy.SetLastEnemy(IsLastValidDeferredSpawn(deferredLastEnemySpawns, i));
+            }
+        }
+    }
+
+    private static bool HasConfiguredLastEnemy(Stage stage)
+    {
+        if (stage == null || stage.groups == null)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < stage.groups.Length; i++)
+        {
+            SpawnGroup group = stage.groups[i];
+            if (group == null || group.waveData == null || group.waveData.spawns == null)
+            {
+                continue;
+            }
+
+            for (int j = 0; j < group.waveData.spawns.Length; j++)
+            {
+                EnemyWaveData.SpawnData spawn = group.waveData.spawns[j];
+                if (spawn != null && spawn.enemyData != null && spawn.enemyData.prefab != null && spawn.LastEnemy)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static EnemyWaveData.SpawnData FindFallbackLastSpawn(Stage stage)
+    {
+        if (stage == null || stage.groups == null)
+        {
+            return null;
+        }
+
+        EnemyWaveData.SpawnData fallback = null;
+        for (int i = 0; i < stage.groups.Length; i++)
+        {
+            SpawnGroup group = stage.groups[i];
+            if (group == null || group.waveData == null || group.waveData.spawns == null)
+            {
+                continue;
+            }
+
+            for (int j = 0; j < group.waveData.spawns.Length; j++)
+            {
+                EnemyWaveData.SpawnData spawn = group.waveData.spawns[j];
+                if (spawn != null && spawn.enemyData != null && spawn.enemyData.prefab != null)
+                {
+                    fallback = spawn;
+                }
+            }
+        }
+
+        return fallback;
+    }
+
+    private static bool IsLastValidDeferredSpawn(List<DeferredLastEnemySpawn> deferredLastEnemySpawns, int index)
+    {
+        for (int i = index + 1; i < deferredLastEnemySpawns.Count; i++)
+        {
+            EnemyDataSO enemyData = deferredLastEnemySpawns[i].EnemyData;
+            if (enemyData != null && enemyData.prefab != null)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private void ShowEmergencyWarningIfNeeded(EnemyDataSO enemyData)
