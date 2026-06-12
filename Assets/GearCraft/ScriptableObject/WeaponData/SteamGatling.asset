@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SteamGatling
   m_EditorClassIdentifier: 
   weaponName: SteamGatling
-  icon: {fileID: 21300000, guid: 951031652047f4267aba5f3ab2134c46, type: 3}
+  icon: {fileID: -638043900989242246, guid: 951031652047f4267aba5f3ab2134c46, type: 3}
   weaponType: 1
   coolTime: 0.05
   baseDamage: 10
@@ -22,7 +22,7 @@ MonoBehaviour:
   bulletPrefab: {fileID: 3699647882942459135, guid: dd6cbbc7c57d3e2479c589a56a3feff6, type: 3}
   spreadAngle: 6
   maxDurability: 15
-  armTriggerName: Assault
+  armTriggerName: SteamGatling
   meleeRotateDuration: 0.5
   isDefault: 0
   isPiercing: 0

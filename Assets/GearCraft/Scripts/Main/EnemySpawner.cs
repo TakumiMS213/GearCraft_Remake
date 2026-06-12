@@ -53,7 +53,7 @@ public class EnemySpawner : MonoBehaviour
         spawnPlanner = new StageSpawnPlanner(stageConfig);
         EnsureEmergencyWarningUI();
 
-        int startStage = StageCounter.Instance != null ? StageCounter.Instance.StageCount : 1;
+        int startStage = StageCounter.Instance != null ? Mathf.Max(1, StageCounter.Instance.StageCount) : 1;
         if (autoStart)
         {
             StartStage(startStage);

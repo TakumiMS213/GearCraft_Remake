@@ -59,7 +59,6 @@ public class PlayerController : MonoBehaviour
     public ArmRotation armRotation;
     public StatusManager runtimeStatus;
     private MeleeWeapon meleeWeapon;
-    private SpriteRenderer armSpriteRenderer;
     private WeaponDataSO appliedWeapon;
     private string lastArmTriggerName;
 
@@ -85,7 +84,6 @@ public class PlayerController : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
         anim = GetComponent<Animator>();
         meleeWeapon = armAnimator != null ? armAnimator.GetComponent<MeleeWeapon>() : FindAnyObjectByType<MeleeWeapon>();
-        armSpriteRenderer = armAnimator != null ? armAnimator.GetComponent<SpriteRenderer>() : null;
         if (runtimeStatus != null)
             runtimeStatus.UseCraftSpacebuff = false;
         isInvincible = false;
@@ -178,10 +176,6 @@ public class PlayerController : MonoBehaviour
             meleeWeapon.ApplyWeaponData(currentWeapon);
         }
 
-        if (armSpriteRenderer != null && currentWeapon != null && currentWeapon.icon != null)
-        {
-            armSpriteRenderer.sprite = currentWeapon.icon;
-        }
     }
 
     /// <summary>
@@ -339,7 +333,8 @@ public class PlayerController : MonoBehaviour
 
     private void PerformShotAttack()
     {
-        if (FirePoint == null || currentWeapon == null || currentWeapon.bulletPrefab == null) return;
+        if (FirePoint == null || currentWeapon == null) return;
+        if (!currentWeapon.useLineHitbox && currentWeapon.bulletPrefab == null) return;
 
         Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         mouseWorldPos.z = 0f;
@@ -353,6 +348,12 @@ public class PlayerController : MonoBehaviour
         float finalAngle = angle + UnityEngine.Random.Range(-spread, spread);
 
         direction = new Vector2(Mathf.Cos(finalAngle * Mathf.Deg2Rad), Mathf.Sin(finalAngle * Mathf.Deg2Rad));
+
+        if (currentWeapon.useLineHitbox)
+        {
+            PerformLineHitboxAttack(direction, finalAngle);
+            return;
+        }
 
         // 弾丸生成
         GameObject bullet = Instantiate(currentWeapon.bulletPrefab, FirePoint.position, Quaternion.Euler(0, 0, finalAngle));
@@ -404,6 +405,35 @@ public class PlayerController : MonoBehaviour
                 if (currentWeapon.isPiercing) bc2.destroyOnHit = false;
             }
         }
+    }
+
+    private void PerformLineHitboxAttack(Vector2 direction, float angle)
+    {
+        float range = Mathf.Max(0.1f, currentWeapon.attackRange);
+        float width = Mathf.Max(0.01f, currentWeapon.lineHitboxWidth);
+        float duration = Mathf.Max(0.01f, currentWeapon.lineHitboxDuration);
+        float damage = currentDamage;
+
+        if (runtimeStatus != null)
+        {
+            damage += runtimeStatus.ACC + runtimeStatus.bonusDamage;
+        }
+
+        Vector3 center = FirePoint.position + (Vector3)(direction.normalized * range * 0.5f);
+        GameObject hitbox = new GameObject($"{currentWeapon.weaponName}_LineHitbox");
+        hitbox.transform.position = center;
+        hitbox.transform.rotation = Quaternion.Euler(0f, 0f, angle);
+
+        BoxCollider2D collider = hitbox.AddComponent<BoxCollider2D>();
+        collider.isTrigger = true;
+        collider.size = new Vector2(range, width);
+
+        Rigidbody2D hitboxBody = hitbox.AddComponent<Rigidbody2D>();
+        hitboxBody.bodyType = RigidbodyType2D.Kinematic;
+        hitboxBody.gravityScale = 0f;
+
+        LineHitboxController controller = hitbox.AddComponent<LineHitboxController>();
+        controller.Initialize(damage, duration, collider.size, currentWeapon.lineHitboxVisualPrefab, currentWeapon.lineHitboxVisualSprite);
     }
 
     private void ApplyWeaponDataToBullet(BulletController bullet)

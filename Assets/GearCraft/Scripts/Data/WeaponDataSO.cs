@@ -17,6 +17,11 @@ public class WeaponDataSO : ScriptableObject
     public float bulletSpeed = 25f;
     public GameObject bulletPrefab;
     public float spreadAngle = 0f;       // 拡散角度（度）
+    public bool useLineHitbox = false;   // true = 弾速に依存しない直線判定を使用
+    public float lineHitboxWidth = 0.5f; // 直線判定の太さ
+    public float lineHitboxDuration = 0.05f; // 判定を残す時間
+    public GameObject lineHitboxVisualPrefab; // 直線判定の表示用Prefab
+    public Sprite lineHitboxVisualSprite; // 表示Prefabへ後から差し替えるSprite
 
     [Header("耐久値")]
     public int maxDurability = 10;       // ステージ終了時に1減る

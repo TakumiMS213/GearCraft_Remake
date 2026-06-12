@@ -34,7 +34,8 @@ public class EnemyAI_Straight : MonoBehaviour, IEnemyAI
 
         // ゲート方向へ直進
         Vector2 dir = (target.position - owner.transform.position).normalized;
-        owner.transform.Translate(dir * data.speed * Time.deltaTime);
+        Vector2 nextPosition = (Vector2)owner.transform.position + dir * data.speed * Time.deltaTime;
+        owner.transform.position = nextPosition;
 
         // 攻撃タイマー
         attackTimer -= Time.deltaTime;
@@ -62,5 +63,12 @@ public class EnemyAI_Straight : MonoBehaviour, IEnemyAI
             rb.linearVelocity = direction * data.bulletSpeed;
     }
 
-    public void OnDeath() { }
+    public void OnDeath()
+    {
+        Rigidbody2D rb = owner != null ? owner.GetComponent<Rigidbody2D>() : null;
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector2.zero;
+        }
+    }
 }

@@ -9,6 +9,8 @@ public class StageCounter : MonoBehaviour
 
     private void Awake()
     {
+        StageCount = Mathf.Max(1, StageCount);
+
         // シングルトン実装
         if (Instance != null && Instance != this)
         {

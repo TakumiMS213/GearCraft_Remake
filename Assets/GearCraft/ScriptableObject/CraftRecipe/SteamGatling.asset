@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: SteamGatling
   m_EditorClassIdentifier: 
   recipeName: SteamGatling
-  icon: {fileID: 21300000, guid: 951031652047f4267aba5f3ab2134c46, type: 3}
-  completedImage: {fileID: 21300000, guid: 951031652047f4267aba5f3ab2134c46, type: 3}
+  icon: {fileID: -638043900989242246, guid: 951031652047f4267aba5f3ab2134c46, type: 3}
+  completedImage: {fileID: -638043900989242246, guid: 951031652047f4267aba5f3ab2134c46, type: 3}
   costs:
   - type: 1
     amount: 30

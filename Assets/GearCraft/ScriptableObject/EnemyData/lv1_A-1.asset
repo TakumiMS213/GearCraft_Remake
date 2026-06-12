@@ -17,7 +17,7 @@ MonoBehaviour:
   baseHP: 20
   speed: 5
   attackInterval: 2
-  bulletSpeed: 50
+  bulletSpeed: 5
   aiType: 0
   bulletPrefabs:
   - {fileID: 1960967463930943775, guid: bd58f7fb684ac5848b0c8c34f7ec2997, type: 3}

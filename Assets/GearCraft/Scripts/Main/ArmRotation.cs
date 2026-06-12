@@ -97,6 +97,8 @@ public class ArmRotation : MonoBehaviour
         switch (weapon.armTriggerName)
         {
             case "Assault":
+            case "RailCraft":
+            case "SteamGatling":
                 return ClampPoseIndex(1);
             case "SteamShoot":
                 return ClampPoseIndex(2);

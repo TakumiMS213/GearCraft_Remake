@@ -5,6 +5,9 @@ using DG.Tweening;
 
 public class EnemyController : MonoBehaviour
 {
+    private const string EnemyLayerName = "Enemy";
+    private static bool enemyLayerCollisionConfigured;
+
     [Header("敵データ（ScriptableObject）")]
     public EnemyDataSO enemyData;
 
@@ -21,6 +24,11 @@ public class EnemyController : MonoBehaviour
     private Color originalColor;
     private CameraShake cameraShake;
     private IEnemyAI currentAI;
+
+    private void Awake()
+    {
+        ConfigureEnemyPhysics();
+    }
 
     void Start()
     {
@@ -61,6 +69,25 @@ public class EnemyController : MonoBehaviour
     {
         if (currentAI != null)
             currentAI.UpdateAI();
+    }
+
+    private void ConfigureEnemyPhysics()
+    {
+        int enemyLayer = LayerMask.NameToLayer(EnemyLayerName);
+        if (enemyLayer >= 0 && !enemyLayerCollisionConfigured)
+        {
+            Physics2D.IgnoreLayerCollision(enemyLayer, enemyLayer, true);
+            enemyLayerCollisionConfigured = true;
+        }
+
+        Rigidbody2D rb = GetComponent<Rigidbody2D>();
+        if (rb != null)
+        {
+            rb.bodyType = RigidbodyType2D.Kinematic;
+            rb.gravityScale = 0f;
+            rb.constraints = RigidbodyConstraints2D.FreezeRotation;
+            rb.linearVelocity = Vector2.zero;
+        }
     }
 
     /// <summary>
