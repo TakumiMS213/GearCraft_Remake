@@ -21,6 +21,7 @@ MonoBehaviour:
   bulletSpeed: 25
   bulletPrefab: {fileID: 3699647882942459135, guid: dd6cbbc7c57d3e2479c589a56a3feff6, type: 3}
   spreadAngle: 3
+  muzzleOffset: {x: 1.2, y: 0}
   maxDurability: 20
   armTriggerName: Assault
   meleeRotateDuration: 0.5

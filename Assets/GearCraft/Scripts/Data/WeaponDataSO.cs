@@ -17,6 +17,7 @@ public class WeaponDataSO : ScriptableObject
     public float bulletSpeed = 25f;
     public GameObject bulletPrefab;
     public float spreadAngle = 0f;       // 拡散角度（度）
+    public Vector2 muzzleOffset = Vector2.zero; // x=照準方向, y=照準方向に対する上方向
     public bool useLineHitbox = false;   // true = 弾速に依存しない直線判定を使用
     public float lineHitboxWidth = 0.5f; // 直線判定の太さ
     public float lineHitboxDuration = 0.05f; // 判定を残す時間

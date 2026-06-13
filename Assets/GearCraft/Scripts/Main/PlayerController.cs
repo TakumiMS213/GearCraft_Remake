@@ -83,7 +83,7 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         anim = GetComponent<Animator>();
-        meleeWeapon = armAnimator != null ? armAnimator.GetComponent<MeleeWeapon>() : FindAnyObjectByType<MeleeWeapon>();
+        meleeWeapon = armAnimator != null ? armAnimator.GetComponentInParent<MeleeWeapon>() : FindAnyObjectByType<MeleeWeapon>();
         if (runtimeStatus != null)
             runtimeStatus.UseCraftSpacebuff = false;
         isInvincible = false;
@@ -348,15 +348,16 @@ public class PlayerController : MonoBehaviour
         float finalAngle = angle + UnityEngine.Random.Range(-spread, spread);
 
         direction = new Vector2(Mathf.Cos(finalAngle * Mathf.Deg2Rad), Mathf.Sin(finalAngle * Mathf.Deg2Rad));
+        Vector3 muzzlePosition = GetMuzzlePosition(direction);
 
         if (currentWeapon.useLineHitbox)
         {
-            PerformLineHitboxAttack(direction, finalAngle);
+            PerformLineHitboxAttack(direction, finalAngle, muzzlePosition);
             return;
         }
 
         // 弾丸生成
-        GameObject bullet = Instantiate(currentWeapon.bulletPrefab, FirePoint.position, Quaternion.Euler(0, 0, finalAngle));
+        GameObject bullet = Instantiate(currentWeapon.bulletPrefab, muzzlePosition, Quaternion.Euler(0, 0, finalAngle));
         if (bullet == null) return;
 
         var rbBullet = bullet.GetComponent<Rigidbody2D>();
@@ -393,7 +394,8 @@ public class PlayerController : MonoBehaviour
         {
             float secondAngle = finalAngle + UnityEngine.Random.Range(-5f, 5f);
             Vector2 dir2 = new Vector2(Mathf.Cos(secondAngle * Mathf.Deg2Rad), Mathf.Sin(secondAngle * Mathf.Deg2Rad));
-            GameObject bullet2 = Instantiate(currentWeapon.bulletPrefab, FirePoint.position, Quaternion.Euler(0, 0, secondAngle));
+            Vector3 secondMuzzlePosition = GetMuzzlePosition(dir2);
+            GameObject bullet2 = Instantiate(currentWeapon.bulletPrefab, secondMuzzlePosition, Quaternion.Euler(0, 0, secondAngle));
             var rb2 = bullet2.GetComponent<Rigidbody2D>();
             if (rb2 != null) rb2.linearVelocity = dir2 * currentWeapon.bulletSpeed;
             var bc2 = bullet2.GetComponent<BulletController>();
@@ -407,7 +409,15 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void PerformLineHitboxAttack(Vector2 direction, float angle)
+    private Vector3 GetMuzzlePosition(Vector2 direction)
+    {
+        Vector2 normalizedDirection = direction.sqrMagnitude > 0f ? direction.normalized : Vector2.right;
+        Vector2 perpendicular = new Vector2(-normalizedDirection.y, normalizedDirection.x);
+        Vector2 offset = normalizedDirection * currentWeapon.muzzleOffset.x + perpendicular * currentWeapon.muzzleOffset.y;
+        return FirePoint.position + (Vector3)offset;
+    }
+
+    private void PerformLineHitboxAttack(Vector2 direction, float angle, Vector3 muzzlePosition)
     {
         float range = Mathf.Max(0.1f, currentWeapon.attackRange);
         float width = Mathf.Max(0.01f, currentWeapon.lineHitboxWidth);
@@ -419,7 +429,7 @@ public class PlayerController : MonoBehaviour
             damage += runtimeStatus.ACC + runtimeStatus.bonusDamage;
         }
 
-        Vector3 center = FirePoint.position + (Vector3)(direction.normalized * range * 0.5f);
+        Vector3 center = muzzlePosition + (Vector3)(direction.normalized * range * 0.5f);
         GameObject hitbox = new GameObject($"{currentWeapon.weaponName}_LineHitbox");
         hitbox.transform.position = center;
         hitbox.transform.rotation = Quaternion.Euler(0f, 0f, angle);

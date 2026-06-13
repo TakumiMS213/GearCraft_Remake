@@ -21,6 +21,7 @@ MonoBehaviour:
   bulletSpeed: 120
   bulletPrefab: {fileID: 3699647882942459135, guid: dd6cbbc7c57d3e2479c589a56a3feff6, type: 3}
   spreadAngle: 0
+  muzzleOffset: {x: 1.95, y: -0.5}
   useLineHitbox: 1
   lineHitboxWidth: 0.5
   lineHitboxDuration: 0.05

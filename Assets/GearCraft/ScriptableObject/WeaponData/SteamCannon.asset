@@ -21,6 +21,7 @@ MonoBehaviour:
   bulletSpeed: 25
   bulletPrefab: {fileID: 5356958644387713917, guid: b30cb99703595ce429f224037e120f04, type: 3}
   spreadAngle: 0
+  muzzleOffset: {x: 1.35, y: 0}
   maxDurability: 20
   armTriggerName: SteamShoot
   meleeRotateDuration: 0.5

@@ -97,6 +97,14 @@ public class DroppedMaterialItem : MonoBehaviour
         }
     }
 
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.collider.CompareTag("Player"))
+        {
+            Pickup();
+        }
+    }
+
     private void Pickup()
     {
         if (MaterialManager.Instance != null)
