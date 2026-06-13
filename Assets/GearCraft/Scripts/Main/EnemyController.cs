@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
+using GearCraft.Scripts.Items;
 
 public class EnemyController : MonoBehaviour
 {

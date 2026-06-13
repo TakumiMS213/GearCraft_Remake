@@ -1,76 +1,132 @@
 using UnityEngine;
 
-/// <summary>
-/// 地面に落ちた素材アイテム。物理落下→プレイヤー接近で吸い寄せ→接触でインベントリ追加。
-/// </summary>
-public class DroppedMaterialItem : MonoBehaviour
+namespace GearCraft.Scripts.Items
 {
-    [Header("素材情報")]
-    public MaterialManager.MaterialType materialType;
-    public int amount = 1;
-
-    [Header("吸い寄せ設定")]
-    public float magnetSpeed = 12f;
-    public float pickupDistance = 0.5f;
-
-    [Header("初期散乱")]
-    public float scatterForce = 5f;
-
-    private Transform player;
-    private Rigidbody2D rb;
-    private bool isMagneting = false;
-    private SpriteRenderer spriteRenderer;
-    private float lifeTime = 30f;       // 30秒で自動消滅
-
-    void Start()
+    public class DroppedMaterialItem : MonoBehaviour
     {
-        rb = GetComponent<Rigidbody2D>();
-        spriteRenderer = GetComponent<SpriteRenderer>();
+        [Header("Material")]
+        [SerializeField] private MaterialManager.MaterialType materialType;
+        [SerializeField] private int amount = 1;
 
-        // プレイヤーを検索
-        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-        if (playerObj != null)
-            player = playerObj.transform;
+        [Header("Pickup")]
+        [SerializeField] private float magnetSpeed = 12f;
+        [SerializeField] private float pickupDistance = 0.5f;
 
-        // ランダム方向に散乱
-        if (rb != null)
+        [Header("Scatter")]
+        [SerializeField] private float scatterForce = 5f;
+
+        [Header("Lifetime")]
+        [SerializeField] private float lifeTime = 10f;
+        [SerializeField] private float blinkStartTime = 5f;
+        [SerializeField] private float maxBlinkInterval = 0.35f;
+        [SerializeField] private float minBlinkInterval = 0.06f;
+
+        private Transform player;
+        private Rigidbody2D rb;
+        private SpriteRenderer spriteRenderer;
+        private bool isMagneting;
+        private float elapsedTime;
+        private float blinkTimer;
+
+        public void Configure(MaterialManager.MaterialType type, int value)
         {
-            Vector2 randomDir = new Vector2(
-                Random.Range(-1f, 1f),
-                Random.Range(0.5f, 1.5f)
-            ).normalized;
-            rb.AddForce(randomDir * scatterForce, ForceMode2D.Impulse);
-            rb.angularVelocity = Random.Range(-360f, 360f);
+            materialType = type;
+            amount = value;
         }
 
-        // 自動消滅タイマー
-        Destroy(gameObject, lifeTime);
-    }
-
-    void Update()
-    {
-        if (player == null) return;
-
-        float magnetRange = 3f;
-        // StatusManagerから吸収範囲を取得
-        if (StatusManager.Instance != null)
-            magnetRange = StatusManager.Instance.magnetRange;
-
-        float dist = Vector2.Distance(transform.position, player.position);
-
-        // 吸い寄せ判定
-        if (dist <= magnetRange)
+        private void Start()
         {
-            isMagneting = true;
-        }
+            rb = GetComponent<Rigidbody2D>();
+            spriteRenderer = GetComponent<SpriteRenderer>();
 
-        // 吸い寄せ移動
-        if (isMagneting)
-        {
-            // 物理を無効化して直接移動
+            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+            if (playerObj != null)
+            {
+                player = playerObj.transform;
+            }
+
             if (rb != null)
             {
-                rb.gravityScale = 0;
+                Vector2 randomDir = new Vector2(
+                    Random.Range(-1f, 1f),
+                    Random.Range(0.5f, 1.5f)
+                ).normalized;
+                rb.AddForce(randomDir * scatterForce, ForceMode2D.Impulse);
+                rb.angularVelocity = Random.Range(-360f, 360f);
+            }
+        }
+
+        private void Update()
+        {
+            elapsedTime += Time.deltaTime;
+            if (elapsedTime >= lifeTime)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
+            UpdateBlink();
+            UpdateMagnetPickup();
+        }
+
+        private void OnTriggerEnter2D(Collider2D collision)
+        {
+            if (collision != null && collision.CompareTag("Player"))
+            {
+                Pickup();
+            }
+        }
+
+        private void OnCollisionEnter2D(Collision2D collision)
+        {
+            if (collision != null && collision.collider != null && collision.collider.CompareTag("Player"))
+            {
+                Pickup();
+            }
+        }
+
+        private void UpdateBlink()
+        {
+            if (spriteRenderer == null || blinkStartTime <= 0f) return;
+
+            float remainingTime = lifeTime - elapsedTime;
+            if (remainingTime > blinkStartTime)
+            {
+                spriteRenderer.enabled = true;
+                return;
+            }
+
+            float blinkProgress = 1f - Mathf.Clamp01(remainingTime / blinkStartTime);
+            float interval = Mathf.Lerp(maxBlinkInterval, minBlinkInterval, blinkProgress);
+            blinkTimer += Time.deltaTime;
+            if (blinkTimer >= interval)
+            {
+                blinkTimer = 0f;
+                spriteRenderer.enabled = !spriteRenderer.enabled;
+            }
+        }
+
+        private void UpdateMagnetPickup()
+        {
+            if (player == null) return;
+
+            float magnetRange = 3f;
+            if (StatusManager.Instance != null)
+            {
+                magnetRange = StatusManager.Instance.magnetRange;
+            }
+
+            float dist = Vector2.Distance(transform.position, player.position);
+            if (dist <= magnetRange)
+            {
+                isMagneting = true;
+            }
+
+            if (!isMagneting) return;
+
+            if (rb != null)
+            {
+                rb.gravityScale = 0f;
                 rb.linearVelocity = Vector2.zero;
                 rb.angularVelocity = 0f;
             }
@@ -81,38 +137,25 @@ public class DroppedMaterialItem : MonoBehaviour
                 magnetSpeed * Time.deltaTime
             );
 
-            // ピックアップ
             if (dist <= pickupDistance)
             {
                 Pickup();
             }
         }
-    }
 
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        if (collision.CompareTag("Player"))
+        private void Pickup()
         {
-            Pickup();
-        }
-    }
+            if (spriteRenderer != null)
+            {
+                spriteRenderer.enabled = true;
+            }
 
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        if (collision.collider.CompareTag("Player"))
-        {
-            Pickup();
-        }
-    }
+            if (MaterialManager.Instance != null)
+            {
+                MaterialManager.Instance.AddMaterial(materialType, amount);
+            }
 
-    private void Pickup()
-    {
-        if (MaterialManager.Instance != null)
-        {
-            MaterialManager.Instance.AddMaterial(materialType, amount);
+            Destroy(gameObject);
         }
-
-        // ピックアップエフェクト（簡易的にスケールを0にしてDestroy）
-        Destroy(gameObject);
     }
 }

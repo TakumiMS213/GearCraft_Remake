@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
+using GearCraft.Scripts.Items;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -92,12 +93,12 @@ public class RestResultReportUI : MonoBehaviour
         MaterialDropper dropper = MaterialDropper.Instance != null ? MaterialDropper.Instance : FindFirstObjectByType<MaterialDropper>();
         if (dropper != null)
         {
-            scrapIcon = ResolveSprite(scrapIcon, dropper.scrapDropPrefab);
-            gearIcon = ResolveSprite(gearIcon, dropper.gearDropPrefab);
-            upgradeCoreIcon = ResolveSprite(upgradeCoreIcon, dropper.upgradeCoreDropPrefab);
-            moduleCoreLv1Icon = ResolveSprite(moduleCoreLv1Icon, dropper.moduleCoreLv1DropPrefab);
-            moduleCoreLv2Icon = ResolveSprite(moduleCoreLv2Icon, dropper.moduleCoreLv2DropPrefab);
-            moduleCoreLv3Icon = ResolveSprite(moduleCoreLv3Icon, dropper.moduleCoreLv3DropPrefab);
+            scrapIcon = ResolveSprite(scrapIcon, dropper.ScrapDropPrefab);
+            gearIcon = ResolveSprite(gearIcon, dropper.GearDropPrefab);
+            upgradeCoreIcon = ResolveSprite(upgradeCoreIcon, dropper.UpgradeCoreDropPrefab);
+            moduleCoreLv1Icon = ResolveSprite(moduleCoreLv1Icon, dropper.ModuleCoreLv1DropPrefab);
+            moduleCoreLv2Icon = ResolveSprite(moduleCoreLv2Icon, dropper.ModuleCoreLv2DropPrefab);
+            moduleCoreLv3Icon = ResolveSprite(moduleCoreLv3Icon, dropper.ModuleCoreLv3DropPrefab);
         }
     }
 

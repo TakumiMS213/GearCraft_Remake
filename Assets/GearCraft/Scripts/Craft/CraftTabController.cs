@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using GearCraft.Scripts.Craft;
 
 /// <summary>
 /// Craftシーンのタブ切替コントローラー。
@@ -28,9 +29,12 @@ public class CraftTabController : MonoBehaviour
     public UpgradeShopManager upgradeShopManager; // ショップ初期化用
 
     private int currentTab = 0; // 0=Craft, 1=Upgrade
+    private CraftTutorialController tutorialController;
 
     void Start()
     {
+        EnsureTutorialController();
+
         // ボタンイベント登録
         if (craftTabButton != null)
             craftTabButton.onClick.AddListener(() => SwitchTab(0));
@@ -39,6 +43,7 @@ public class CraftTabController : MonoBehaviour
 
         // 初期状態：クラフトタブを表示
         SwitchTab(0);
+        tutorialController?.OnCraftSceneEntered();
     }
 
     /// <summary>
@@ -75,6 +80,8 @@ public class CraftTabController : MonoBehaviour
         // 素材表示を更新
         if (materialDisplay != null)
             materialDisplay.UpdateMaterialAmount();
+
+        tutorialController?.OnTabOpened(tabIndex);
     }
 
     private void UpdateTabColors()
@@ -95,5 +102,14 @@ public class CraftTabController : MonoBehaviour
         TMP_Text txt = btn.GetComponentInChildren<TMP_Text>();
         if (txt != null)
             txt.color = isActive ? Color.white : new Color(0.6f, 0.6f, 0.6f, 1f);
+    }
+
+    private void EnsureTutorialController()
+    {
+        tutorialController = GetComponent<CraftTutorialController>();
+        if (tutorialController == null)
+        {
+            tutorialController = gameObject.AddComponent<CraftTutorialController>();
+        }
     }
 }
