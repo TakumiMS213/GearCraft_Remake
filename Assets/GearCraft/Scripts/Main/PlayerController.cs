@@ -345,7 +345,7 @@ public class PlayerController : MonoBehaviour
         float spread = currentWeapon.spreadAngle;
         if (runtimeStatus != null)
             spread += runtimeStatus.spreadModifier;
-        float finalAngle = angle + UnityEngine.Random.Range(-spread, spread);
+        float finalAngle = CalculateSpreadAngle(angle, spread);
 
         direction = new Vector2(Mathf.Cos(finalAngle * Mathf.Deg2Rad), Mathf.Sin(finalAngle * Mathf.Deg2Rad));
         Vector3 muzzlePosition = GetMuzzlePosition(direction);
@@ -392,7 +392,7 @@ public class PlayerController : MonoBehaviour
         // 弾丸倍化
         if (runtimeStatus != null && runtimeStatus.hasBulletDouble)
         {
-            float secondAngle = finalAngle + UnityEngine.Random.Range(-5f, 5f);
+            float secondAngle = CalculateSpreadAngle(angle, spread);
             Vector2 dir2 = new Vector2(Mathf.Cos(secondAngle * Mathf.Deg2Rad), Mathf.Sin(secondAngle * Mathf.Deg2Rad));
             Vector3 secondMuzzlePosition = GetMuzzlePosition(dir2);
             GameObject bullet2 = Instantiate(currentWeapon.bulletPrefab, secondMuzzlePosition, Quaternion.Euler(0, 0, secondAngle));
@@ -407,6 +407,12 @@ public class PlayerController : MonoBehaviour
                 if (currentWeapon.isPiercing) bc2.destroyOnHit = false;
             }
         }
+    }
+
+    private static float CalculateSpreadAngle(float baseAngle, float spread)
+    {
+        float clampedSpread = Mathf.Max(0f, spread);
+        return baseAngle + UnityEngine.Random.Range(-clampedSpread, clampedSpread);
     }
 
     private Vector3 GetMuzzlePosition(Vector2 direction)

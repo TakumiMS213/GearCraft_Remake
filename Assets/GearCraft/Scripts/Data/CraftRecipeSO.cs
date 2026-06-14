@@ -38,4 +38,19 @@ public class CraftRecipeSO : ScriptableObject
     [Header("前提条件")]
     [Tooltip("特定の武器を所持している必要がある場合に設定")]
     public WeaponDataSO requiredWeapon;
+
+    [Header("Unlock")]
+    [SerializeField, Min(0)] private int unlockBossKills;
+    [SerializeField, TextArea(2, 4)] private string summary;
+    [SerializeField] private string unlockId;
+    [SerializeField] private int unlockSortOrder;
+    [SerializeField] private bool hiddenFromUnlockList;
+
+    public int UnlockBossKills => unlockBossKills;
+    public int UnlockSortOrder => unlockSortOrder;
+    public string Summary => summary;
+    public bool HiddenFromUnlockList => hiddenFromUnlockList;
+    public string DisplayName => string.IsNullOrWhiteSpace(recipeName) ? name : recipeName;
+    public string UnlockId => string.IsNullOrWhiteSpace(unlockId) ? DisplayName : unlockId;
+    public Sprite NotificationIcon => icon != null ? icon : completedImage;
 }

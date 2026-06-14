@@ -136,6 +136,7 @@ public class UpgradeShopManager : MonoBehaviour
         }
 
         MaterialManager.Instance.SpendCosts(part.costs);
+        RefreshMaterialDisplays();
         int inventoryIndex = StatusManager.Instance != null
             ? StatusManager.Instance.AcquireUpgradePart(part)
             : -1;

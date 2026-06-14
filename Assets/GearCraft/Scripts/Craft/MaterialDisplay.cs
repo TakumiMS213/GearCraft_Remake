@@ -25,6 +25,8 @@ public class MaterialDisplay : MonoBehaviour
     public TMP_Text costTextLeft;
     [Tooltip("右側のコスト表示TMP")]
     public TMP_Text costTextRight;
+    [SerializeField] private TMP_Text costText;
+    [SerializeField] private TMP_FontAsset dotGothicFont;
 
     [Header("色設定")]
     public Color enoughColor = Color.white;
@@ -139,74 +141,102 @@ public class MaterialDisplay : MonoBehaviour
     /// <summary>
     /// 左右のコスト表示TMPを「現在数/必要数」形式で更新
     /// </summary>
-    private void UpdateCostDisplay()
+private void UpdateCostDisplay()
     {
-        if (currentRecipe == null)
+        HideLegacyCostTexts();
+
+        if (costText != null)
         {
-            // レシピ未選択時はクリア
-            if (costTextLeft != null) costTextLeft.text = "";
-            if (costTextRight != null) costTextRight.text = "";
-            return;
-        }
-
-        bool hasRequiredWeapon = currentRecipe.requiredWeapon != null;
-        var costs = currentRecipe.costs;
-        bool hasCosts = costs != null && costs.Length > 0;
-
-        if (hasRequiredWeapon)
-        {
-            // 前提条件あり：左に現在装備中の武器条件を表示
-            if (costTextLeft != null)
-            {
-                bool meetsRequiredWeapon = CraftManager.MeetsRequiredWeapon(currentRecipe);
-                costTextLeft.text = meetsRequiredWeapon ? "1/1" : "0/1";
-                costTextLeft.color = meetsRequiredWeapon ? enoughColor : notEnoughColor;
-            }
-
-            // 右にコスト表示（あれば）
-            if (costTextRight != null)
-            {
-                if (hasCosts)
-                    SetCostText(costTextRight, costs[0]);
-                else
-                    costTextRight.text = "";
-            }
-        }
-        else
-        {
-            // 前提条件なし：従来通り左右にコスト表示
-            if (!hasCosts)
-            {
-                if (costTextLeft != null) costTextLeft.text = "";
-                if (costTextRight != null) costTextRight.text = "";
-                return;
-            }
-
-            // 左テキスト：1番目のコスト
-            if (costTextLeft != null)
-            {
-                SetCostText(costTextLeft, costs[0]);
-            }
-
-            // 右テキスト：2番目のコストがあればそれ、なければ1番目と同じ
-            if (costTextRight != null)
-            {
-                if (costs.Length >= 2)
-                    SetCostText(costTextRight, costs[1]);
-                else
-                    SetCostText(costTextRight, costs[0]);
-            }
+            costText.text = "";
+            costText.gameObject.SetActive(false);
         }
     }
 
     /// <summary>
     /// 個別のコストテキストを設定
     /// </summary>
-    private void SetCostText(TMP_Text textComp, CraftCost cost)
+private void EnsureCostText()
     {
-        int current = MaterialManager.Instance != null ? MaterialManager.Instance.GetMaterial(cost.type) : 0;
-        int required = cost.amount;
-        textComp.text = $"{current}/{required}";
-        textComp.color = (current >= required) ? enoughColor : notEnoughColor;
+        if (costText != null)
+        {
+            return;
+        }
+
+        ResolveFont();
+
+        GameObject textObject = new GameObject("RecipeCostText", typeof(RectTransform), typeof(TextMeshProUGUI));
+        textObject.transform.SetParent(transform, false);
+        RectTransform rect = textObject.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0f, 0f);
+        rect.anchorMax = new Vector2(1f, 0f);
+        rect.pivot = new Vector2(0.5f, 0f);
+        rect.offsetMin = new Vector2(16f, -40f);
+        rect.offsetMax = new Vector2(-16f, -4f);
+
+        costText = textObject.GetComponent<TMP_Text>();
+        costText.font = dotGothicFont != null ? dotGothicFont : costText.font;
+        costText.fontSize = 26f;
+        costText.alignment = TextAlignmentOptions.Center;
+        costText.richText = true;
+        costText.enableWordWrapping = false;
+    }
+
+    private void HideLegacyCostTexts()
+    {
+        if (costTextLeft != null)
+        {
+            costTextLeft.gameObject.SetActive(false);
+        }
+
+        if (costTextRight != null)
+        {
+            costTextRight.gameObject.SetActive(false);
+        }
+    }
+
+    private void ResolveFont()
+    {
+        if (dotGothicFont != null)
+        {
+            return;
+        }
+
+        TMP_Text[] texts = FindObjectsByType<TMP_Text>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        for (int i = 0; i < texts.Length; i++)
+        {
+            TMP_FontAsset font = texts[i] != null ? texts[i].font : null;
+            if (font != null && font.name.Contains("DotGothic"))
+            {
+                dotGothicFont = font;
+                return;
+            }
+        }
+
+        dotGothicFont = Resources.Load<TMP_FontAsset>("DotGothic16-Regular SDF");
+    }
+
+    private string Colorize(string text, bool enough)
+    {
+        Color color = enough ? enoughColor : notEnoughColor;
+        return $"<color=#{ColorUtility.ToHtmlStringRGBA(color)}>{text}</color>";
+    }
+
+    private static string FormatCount(int current, int required)
+    {
+        return $"{current}/{required}";
+    }
+
+    private static string FormatMaterialName(MaterialManager.MaterialType type)
+    {
+        switch (type)
+        {
+            case MaterialManager.MaterialType.Scrap: return "Scrap";
+            case MaterialManager.MaterialType.Gear: return "Gear";
+            case MaterialManager.MaterialType.UpgradeCore: return "UpCore";
+            case MaterialManager.MaterialType.ModuleCore_lv1: return "ModC1";
+            case MaterialManager.MaterialType.ModuleCore_lv2: return "ModC2";
+            case MaterialManager.MaterialType.ModuleCore_lv3: return "ModC3";
+            default: return type.ToString();
+        }
     }
 }

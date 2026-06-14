@@ -1,7 +1,10 @@
 using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
+using GearCraft.Scripts.Craft;
+using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 
 /// <summary>
 /// 武器クラフトシステム（再構築版）。
@@ -26,25 +29,53 @@ public class CraftManager : MonoBehaviour
     public float errorDisplayTime = 1f;
     public float errorFadeTime = 0.3f;
 
+    [Header("Unlock")]
+    [SerializeField] private List<Button> recipeButtons = new List<Button>();
+    [SerializeField] private CraftUnlockPopupView unlockPopupView;
+    [SerializeField] private TMP_FontAsset dotGothicFont;
+
+    private readonly List<CraftRecipeSO> unlockedRecipes = new List<CraftRecipeSO>();
+    private readonly List<CraftRecipeSO> pendingUnlockNotifications = new List<CraftRecipeSO>();
+    private readonly List<Image> recipeVisualImages = new List<Image>();
     private CraftRecipeSO selectedRecipe;
 
-    void Start()
+private IEnumerator Start()
     {
-        // 初期状態で最初のレシピを選択
-        if (recipes != null && recipes.Count > 0)
+        yield return null;
+
+        InitializeUnlockedRecipes();
+        ConfigureRecipeButtons();
+        if (unlockedRecipes.Count > 0)
+        {
             SelectRecipe(0);
+        }
+
+        yield return ShowUnlockNotificationsAsync();
     }
 
     /// <summary>
     /// レシピを選択する（UIボタンから呼ぶ）
     /// </summary>
-    public void SelectRecipe(int index)
+public void SelectRecipe(int index)
     {
-        if (index < 0 || index >= recipes.Count) return;
-        selectedRecipe = recipes[index];
+        if (index < 0 || index >= unlockedRecipes.Count)
+        {
+            return;
+        }
+
+        selectedRecipe = unlockedRecipes[index];
 
         if (materialDisplay != null)
+        {
             materialDisplay.SetCurrentRecipe(selectedRecipe);
+        }
+
+        if (craftButton != null)
+        {
+            craftButton.gameObject.SetActive(true);
+        }
+
+        ApplyRecipeVisuals(selectedRecipe);
     }
 
     /// <summary>
@@ -167,5 +198,323 @@ public class CraftManager : MonoBehaviour
                     status.craftWeaponDamagebuff += recipe.statBonus;
                 break;
         }
+    }
+
+
+private void InitializeUnlockedRecipes()
+    {
+        int bossKillCount = StatusManager.Instance != null ? StatusManager.Instance.bossKillCount : 0;
+        CraftRecipeUnlockModel model = new CraftRecipeUnlockModel(recipes);
+        model.CollectUnlockedRecipes(bossKillCount, unlockedRecipes);
+        model.CollectNewUnlocks(
+            bossKillCount,
+            id => StatusManager.Instance != null && StatusManager.Instance.IsCraftUnlockNotified(id),
+            pendingUnlockNotifications);
+    }
+
+    private void ConfigureRecipeButtons()
+    {
+        ResolveRecipeButtons();
+        ResolveFont();
+
+        for (int i = 0; i < recipeButtons.Count; i++)
+        {
+            Button button = recipeButtons[i];
+            if (button == null)
+            {
+                continue;
+            }
+
+            bool hasRecipe = i < unlockedRecipes.Count;
+            button.gameObject.SetActive(hasRecipe);
+            button.onClick.RemoveAllListeners();
+            if (!hasRecipe)
+            {
+                continue;
+            }
+
+            int recipeIndex = i;
+            CraftRecipeSO recipe = unlockedRecipes[i];
+            TMP_Text label = button.GetComponentInChildren<TMP_Text>(true);
+            if (label != null)
+            {
+                label.font = dotGothicFont != null ? dotGothicFont : label.font;
+                label.text = recipe.DisplayName;
+            }
+
+            button.onClick.AddListener(() => SelectRecipe(recipeIndex));
+        }
+    }
+
+    private void ResolveRecipeButtons()
+    {
+        if (recipeButtons.Count > 0)
+        {
+            return;
+        }
+
+        ButtonImageController imageController = GetComponent<ButtonImageController>();
+        if (imageController == null || imageController.actionSets == null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < imageController.actionSets.Count; i++)
+        {
+            Button button = imageController.actionSets[i] != null ? imageController.actionSets[i].button : null;
+            if (button != null && !recipeButtons.Contains(button))
+            {
+                recipeButtons.Add(button);
+            }
+        }
+    }
+
+    private IEnumerator ShowUnlockNotificationsAsync()
+    {
+        if (pendingUnlockNotifications.Count == 0)
+        {
+            yield break;
+        }
+
+        CraftUnlockPopupView view = ResolveUnlockPopupView();
+        Canvas parentCanvas = GetComponentInParent<Canvas>();
+        if (view == null || parentCanvas == null)
+        {
+            yield break;
+        }
+
+        for (int i = 0; i < pendingUnlockNotifications.Count; i++)
+        {
+            CraftRecipeSO recipe = pendingUnlockNotifications[i];
+            if (recipe == null)
+            {
+                continue;
+            }
+
+            yield return view.ShowAsync(recipe, parentCanvas.transform);
+            StatusManager.Instance?.MarkCraftUnlockNotified(recipe.UnlockId);
+        }
+    }
+
+    private CraftUnlockPopupView ResolveUnlockPopupView()
+    {
+        if (unlockPopupView != null)
+        {
+            return unlockPopupView;
+        }
+
+        unlockPopupView = GetComponent<CraftUnlockPopupView>();
+        if (unlockPopupView == null)
+        {
+            unlockPopupView = gameObject.AddComponent<CraftUnlockPopupView>();
+        }
+
+        return unlockPopupView;
+    }
+
+    private void ResolveFont()
+    {
+        if (dotGothicFont != null)
+        {
+            return;
+        }
+
+        TMP_Text[] texts = FindObjectsByType<TMP_Text>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        for (int i = 0; i < texts.Length; i++)
+        {
+            TMP_FontAsset font = texts[i] != null ? texts[i].font : null;
+            if (font != null && font.name.Contains("DotGothic"))
+            {
+                dotGothicFont = font;
+                return;
+            }
+        }
+
+        dotGothicFont = Resources.Load<TMP_FontAsset>("DotGothic16-Regular SDF");
+    }
+
+
+
+
+private void ApplyRecipeVisuals(CraftRecipeSO recipe)
+    {
+        ResolveRecipeVisualImages();
+        HideRecipeVisualImages();
+
+        if (recipe == null)
+        {
+            return;
+        }
+
+        ShowResultImage(recipe);
+        ShowRequiredWeaponImage(recipe);
+        ShowCostImages(recipe);
+    }
+
+    private void ResolveRecipeVisualImages()
+    {
+        if (recipeVisualImages.Count > 0)
+        {
+            return;
+        }
+
+        Image[] images = FindObjectsByType<Image>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        for (int i = 0; i < images.Length; i++)
+        {
+            Image image = images[i];
+            if (image == null)
+            {
+                continue;
+            }
+
+            string objectName = image.gameObject.name;
+            if (objectName.StartsWith("Material_") || objectName.StartsWith("Result_"))
+            {
+                recipeVisualImages.Add(image);
+            }
+        }
+    }
+
+    private void HideRecipeVisualImages()
+    {
+        for (int i = 0; i < recipeVisualImages.Count; i++)
+        {
+            if (recipeVisualImages[i] != null)
+            {
+                recipeVisualImages[i].gameObject.SetActive(false);
+            }
+        }
+    }
+
+private void ShowResultImage(CraftRecipeSO recipe)
+    {
+        string resultName = "Result_" + ToVisualKey(recipe.DisplayName);
+        ShowRecipeVisualImage(resultName);
+    }
+
+    private void ShowRequiredWeaponImage(CraftRecipeSO recipe)
+    {
+        if (recipe.requiredWeapon == null)
+        {
+            return;
+        }
+
+        ShowRecipeVisualImage(recipe.DisplayName == "GearCraft" ? "Material_Sword" : "Material_Gun");
+    }
+
+private void ShowCostImages(CraftRecipeSO recipe)
+    {
+        if (recipe.costs == null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < recipe.costs.Length; i++)
+        {
+            CraftCost cost = recipe.costs[i];
+            Image image = ShowRecipeVisualImage(GetMaterialImageName(cost.type));
+            ConfigureMaterialImage(image, cost);
+        }
+    }
+
+
+
+
+
+    private Image FindRecipeVisualImage(string objectName)
+    {
+        for (int i = 0; i < recipeVisualImages.Count; i++)
+        {
+            Image image = recipeVisualImages[i];
+            if (image != null && image.gameObject.name == objectName)
+            {
+                return image;
+            }
+        }
+
+        return null;
+    }
+
+private Image ShowRecipeVisualImage(string objectName)
+    {
+        Image image = FindRecipeVisualImage(objectName);
+        if (image != null)
+        {
+            image.gameObject.SetActive(true);
+        }
+
+        return image;
+    }
+
+    private static string ToVisualKey(string displayName)
+    {
+        return string.IsNullOrWhiteSpace(displayName) ? string.Empty : displayName.Replace(" ", string.Empty);
+    }
+
+    private static string GetMaterialImageName(MaterialManager.MaterialType type)
+    {
+        switch (type)
+        {
+            case MaterialManager.MaterialType.Scrap: return "Material_Scrap";
+            case MaterialManager.MaterialType.Gear: return "Material_Gear";
+            case MaterialManager.MaterialType.UpgradeCore: return "Material_lv1_drop";
+            case MaterialManager.MaterialType.ModuleCore_lv1: return "Material_lv1_drop";
+            case MaterialManager.MaterialType.ModuleCore_lv2: return "Material_lv2_drop";
+            case MaterialManager.MaterialType.ModuleCore_lv3: return "Material_lv3_drop";
+            default: return string.Empty;
+        }
+    }
+
+
+private void ConfigureMaterialImage(Image image, CraftCost cost)
+    {
+        if (image == null || cost == null)
+        {
+            return;
+        }
+
+        image.raycastTarget = true;
+
+        CraftMaterialTooltipTrigger trigger = image.GetComponent<CraftMaterialTooltipTrigger>();
+        if (trigger == null)
+        {
+            trigger = image.gameObject.AddComponent<CraftMaterialTooltipTrigger>();
+        }
+
+        trigger.Configure(cost.type);
+        UpdateMaterialCountLabel(image.rectTransform, cost);
+    }
+
+    private void UpdateMaterialCountLabel(RectTransform parent, CraftCost cost)
+    {
+        if (parent == null || cost == null)
+        {
+            return;
+        }
+
+        TMP_Text label = parent.Find("MaterialRequirementText")?.GetComponent<TMP_Text>();
+        if (label == null)
+        {
+            GameObject labelObject = new GameObject("MaterialRequirementText", typeof(RectTransform), typeof(TextMeshProUGUI));
+            labelObject.transform.SetParent(parent, false);
+            RectTransform rect = labelObject.GetComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0.5f, 0f);
+            rect.anchorMax = new Vector2(0.5f, 0f);
+            rect.pivot = new Vector2(0.5f, 1f);
+            rect.anchoredPosition = new Vector2(0f, -28f);
+            rect.sizeDelta = new Vector2(180f, 34f);
+
+            label = labelObject.GetComponent<TMP_Text>();
+            label.font = dotGothicFont != null ? dotGothicFont : label.font;
+            label.fontSize = 52f;
+            label.alignment = TextAlignmentOptions.Center;
+            label.raycastTarget = false;
+            label.enableWordWrapping = false;
+        }
+
+        int current = MaterialManager.Instance != null ? MaterialManager.Instance.GetMaterial(cost.type) : 0;
+        label.text = $"{current}/{cost.amount}";
+        label.color = current >= cost.amount ? Color.white : new Color(1f, 0.3f, 0.3f, 1f);
+        label.gameObject.SetActive(true);
     }
 }

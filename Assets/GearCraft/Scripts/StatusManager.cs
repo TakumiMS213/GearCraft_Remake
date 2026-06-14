@@ -55,6 +55,7 @@ public class StatusManager : MonoBehaviour
     public bool UseCraftSpacebuff = false;
     public int bossKillCount = 0;         // ボス撃破数（グリッドサイズ決定用）
     public int upgradeShopDay = 0;
+    [SerializeField] private List<string> notifiedCraftUnlockIds = new List<string>();
 
     // ---- 強化効果キャッシュ ----
     public float bonusDamage = 0f;
@@ -296,6 +297,21 @@ public class StatusManager : MonoBehaviour
     {
         upgradeShopDay++;
         return upgradeShopDay;
+    }
+
+    public bool IsCraftUnlockNotified(string unlockId)
+    {
+        return !string.IsNullOrWhiteSpace(unlockId) && notifiedCraftUnlockIds.Contains(unlockId);
+    }
+
+    public void MarkCraftUnlockNotified(string unlockId)
+    {
+        if (string.IsNullOrWhiteSpace(unlockId) || notifiedCraftUnlockIds.Contains(unlockId))
+        {
+            return;
+        }
+
+        notifiedCraftUnlockIds.Add(unlockId);
     }
 
     public void SaveUpgradeGridState(List<UpgradeGridManager.PlacedPart> placedParts)

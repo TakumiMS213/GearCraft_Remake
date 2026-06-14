@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85b1a97f518a3c74ca62603ca4b916a5, type: 3}
   m_Name: SteamCannon
   m_EditorClassIdentifier: 
-  recipeName: SteamCannon
+  recipeName: SteamShoot
   icon: {fileID: 21300000, guid: 14a5ba212d9cda5498bc4dd99e85cc4e, type: 3}
   completedImage: {fileID: 21300000, guid: 09122efdfb96c4c20b1383ac9085b204, type: 3}
   costs:
@@ -24,3 +24,8 @@ MonoBehaviour:
   moduleFlag: 
   statBonus: 0
   requiredWeapon: {fileID: 11400000, guid: c67894c193a09784b99ba2fa502db3dd, type: 2}
+  unlockBossKills: 1
+  summary: "\u84B8\u6C17\u5727\u3067\u5358\u767A\u5F3E\u3092\u6483\u3064\u9060\u8DDD\u96E2\u6B66\u5668\u3002"
+  unlockId: SteamShoot
+  unlockSortOrder: 2
+  hiddenFromUnlockList: 0

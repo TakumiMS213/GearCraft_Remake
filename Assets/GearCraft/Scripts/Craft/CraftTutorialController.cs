@@ -10,8 +10,6 @@ namespace GearCraft.Scripts.Craft
     {
         private const int CraftTab = 0;
         private const int WeaponCustomTab = 1;
-        private const string CraftTutorialKey = "GearCraft.Tutorial.Craft.SceneEntry.v3";
-        private const string WeaponCustomTutorialKey = "GearCraft.Tutorial.WeaponCustom.v3";
 
         private readonly TutorialStep[] craftSteps =
         {
@@ -19,6 +17,7 @@ namespace GearCraft.Scripts.Craft
             new TutorialStep("Recipe", "左側のリストから作りたい項目を選びます。", "CraftRecipeScrollView"),
             new TutorialStep("Materials", "必要素材と現在の所持数を確認します。", "MaterialDisplayArea"),
             new TutorialStep("Craft Button", "素材が足りていれば、このボタンで作成できます。", "craft_button"),
+            new TutorialStep("Help", "もう一度見たいときは、この「？」ボタンを押してください。", "question"),
         };
 
         private readonly TutorialStep[] weaponCustomSteps =
@@ -27,6 +26,7 @@ namespace GearCraft.Scripts.Craft
             new TutorialStep("Parts Shop", "左側のパーツショップから強化パーツを選びます。", "ShopArea"),
             new TutorialStep("Grid", "パーツをグリッドへ配置すると効果が発動します。", "GridArea"),
             new TutorialStep("Effects", "現在発動している効果はここで確認できます。", "EffectSummary"),
+            new TutorialStep("Help", "もう一度見たいときは、この「？」ボタンを押してください。", "question"),
         };
 
         private Canvas canvas;
@@ -51,7 +51,8 @@ namespace GearCraft.Scripts.Craft
         private TMP_Text confirmText;
         private int currentTab;
         private int currentStepIndex;
-        private string currentTutorialKey;
+        private bool craftAutoPlayedThisScene;
+        private bool weaponCustomAutoPlayedThisScene;
         private Coroutine autoStartCoroutine;
         private TutorialStep[] currentSteps;
 
@@ -91,11 +92,12 @@ namespace GearCraft.Scripts.Craft
 
         private void TryAutoStartTutorial(int tabIndex)
         {
-            string key = GetTutorialKey(tabIndex);
-            if (PlayerPrefs.GetInt(key, 0) != 0 || IsTutorialActive())
+            if (IsTutorialActive() || HasAutoPlayedThisScene(tabIndex))
             {
                 return;
             }
+
+            SetAutoPlayedThisScene(tabIndex);
 
             if (autoStartCoroutine != null)
             {
@@ -143,7 +145,6 @@ namespace GearCraft.Scripts.Craft
         private void StartTutorial(int tabIndex)
         {
             currentTab = tabIndex;
-            currentTutorialKey = GetTutorialKey(tabIndex);
             currentSteps = tabIndex == WeaponCustomTab ? weaponCustomSteps : craftSteps;
             currentStepIndex = 0;
 
@@ -197,12 +198,6 @@ namespace GearCraft.Scripts.Craft
 
         private void CompleteTutorial()
         {
-            if (!string.IsNullOrEmpty(currentTutorialKey))
-            {
-                PlayerPrefs.SetInt(currentTutorialKey, 1);
-                PlayerPrefs.Save();
-            }
-
             HideTutorial();
         }
 
@@ -235,7 +230,7 @@ namespace GearCraft.Scripts.Craft
                     ? currentSteps[currentStepIndex]
                     : null;
 
-            RectTransform target = step != null ? FindRectTransform(step.TargetName) : null;
+            RectTransform target = ResolveTarget(step);
             if (target == null || canvasRect == null)
             {
                 ApplyFullDim();
@@ -381,6 +376,50 @@ namespace GearCraft.Scripts.Craft
             return inactiveMatch;
         }
 
+        private RectTransform ResolveTarget(TutorialStep step)
+        {
+            if (step == null)
+            {
+                return null;
+            }
+
+            if (step.TargetName == "question")
+            {
+                return FindQuestionRectTransform(currentTab);
+            }
+
+            return FindRectTransform(step.TargetName);
+        }
+
+        private static RectTransform FindQuestionRectTransform(int tabIndex)
+        {
+            RectTransform[] questions = FindRectTransforms("question");
+            RectTransform inactiveMatch = null;
+            for (int i = 0; i < questions.Length; i++)
+            {
+                RectTransform question = questions[i];
+                if (question == null)
+                {
+                    continue;
+                }
+
+                bool isCraftQuestion = IsChildOfNamedParent(question, "CraftPanel");
+                if ((tabIndex == CraftTab) != isCraftQuestion)
+                {
+                    continue;
+                }
+
+                if (question.gameObject.activeInHierarchy)
+                {
+                    return question;
+                }
+
+                inactiveMatch ??= question;
+            }
+
+            return inactiveMatch;
+        }
+
         private static RectTransform FindActiveRectTransform(string objectName)
         {
             RectTransform[] rects = FindObjectsByType<RectTransform>(FindObjectsInactive.Include, FindObjectsSortMode.None);
@@ -443,9 +482,20 @@ namespace GearCraft.Scripts.Craft
             return false;
         }
 
-        private static string GetTutorialKey(int tabIndex)
+        private bool HasAutoPlayedThisScene(int tabIndex)
         {
-            return tabIndex == WeaponCustomTab ? WeaponCustomTutorialKey : CraftTutorialKey;
+            return tabIndex == WeaponCustomTab ? weaponCustomAutoPlayedThisScene : craftAutoPlayedThisScene;
+        }
+
+        private void SetAutoPlayedThisScene(int tabIndex)
+        {
+            if (tabIndex == WeaponCustomTab)
+            {
+                weaponCustomAutoPlayedThisScene = true;
+                return;
+            }
+
+            craftAutoPlayedThisScene = true;
         }
 
         private void EnsureLayout()
@@ -551,8 +601,8 @@ namespace GearCraft.Scripts.Craft
 
             Button yesButton = CreateButton("YesButton", panel, "YES", new Vector2(-164f, 36f), new Vector2(144f, 58f));
             Button noButton = CreateButton("NoButton", panel, "NO", new Vector2(164f, 36f), new Vector2(144f, 58f));
-            CenterButton(yesButton, new Vector2(90f, -72f));
-            CenterButton(noButton, new Vector2(-90f, -72f));
+            CenterButton(yesButton, new Vector2(-90f, -72f));
+            CenterButton(noButton, new Vector2(90f, -72f));
             yesButton.onClick.AddListener(() => StartTutorial(currentTab));
             noButton.onClick.AddListener(HideConfirm);
         }

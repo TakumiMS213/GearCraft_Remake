@@ -26,3 +26,8 @@ MonoBehaviour:
   moduleFlag: 
   statBonus: 0
   requiredWeapon: {fileID: 11400000, guid: 3001dfbf9db1bea4e828420f0224bd33, type: 2}
+  unlockBossKills: 2
+  summary: "\u84B8\u6C17\u5F3E\u3092\u9023\u5C04\u3059\u308B\u9AD8\u706B\u529B\u306E\u9060\u8DDD\u96E2\u6B66\u5668\u3002"
+  unlockId: SteamGatling
+  unlockSortOrder: 4
+  hiddenFromUnlockList: 0

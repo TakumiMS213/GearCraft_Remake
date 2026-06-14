@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85b1a97f518a3c74ca62603ca4b916a5, type: 3}
   m_Name: RepairModule
   m_EditorClassIdentifier: 
-  recipeName: RepairModule
+  recipeName: Repair Module
   icon: {fileID: 21300000, guid: 8f4fc3f6895b72e45a77177d894b3bde, type: 3}
   completedImage: {fileID: 21300000, guid: 8f4fc3f6895b72e45a77177d894b3bde, type: 3}
   costs:
@@ -26,3 +26,8 @@ MonoBehaviour:
   moduleFlag: module_repair
   statBonus: 0
   requiredWeapon: {fileID: 0}
+  unlockBossKills: 1
+  summary: "\u6B66\u5668\u306E\u7D99\u6226\u529B\u3092\u652F\u3048\u308B\u4FEE\u7406\u7528\u30E2\u30B8\u30E5\u30FC\u30EB\u3002"
+  unlockId: RepairModule
+  unlockSortOrder: 3
+  hiddenFromUnlockList: 0

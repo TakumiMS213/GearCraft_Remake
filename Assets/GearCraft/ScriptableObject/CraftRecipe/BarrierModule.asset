@@ -26,3 +26,8 @@ MonoBehaviour:
   moduleFlag: module_barrier
   statBonus: 0
   requiredWeapon: {fileID: 0}
+  unlockBossKills: 99
+  summary: 
+  unlockId: BarrierModule
+  unlockSortOrder: 99
+  hiddenFromUnlockList: 1

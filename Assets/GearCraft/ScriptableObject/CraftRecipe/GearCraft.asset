@@ -24,3 +24,8 @@ MonoBehaviour:
   moduleFlag: 
   statBonus: 0
   requiredWeapon: {fileID: 11400000, guid: 7ea165434b8ce4244bec51255964e394, type: 2}
+  unlockBossKills: 0
+  summary: "\u5200\u3068\u65A7\u3092\u5207\u308A\u66FF\u3048\u3066\u6226\u3048\u308B\u8FD1\u63A5\u30AF\u30E9\u30D5\u30C8\u6B66\u5668\u3002"
+  unlockId: GearCraft
+  unlockSortOrder: 0
+  hiddenFromUnlockList: 0

@@ -98,7 +98,13 @@ public class UpgradeGridManager : MonoBehaviour
         }
 
         MaterialManager.Instance.SpendCosts(part.costs);
-        return TryPlaceInternal(part, posX, posY, rotation, -1, true, returnToShopOnSameDay, placedShopDay);
+        bool placed = TryPlaceInternal(part, posX, posY, rotation, -1, true, returnToShopOnSameDay, placedShopDay);
+        if (placed)
+        {
+            RefreshMaterialDisplays();
+        }
+
+        return placed;
     }
 
     private bool TryPlaceInternal(UpgradePartSO part, int posX, int posY, int rotation, int inventoryIndex, bool refundCostsOnRemove)
@@ -172,6 +178,7 @@ public class UpgradeGridManager : MonoBehaviour
         RebuildGridIndices();
         RecalculateEffects();
         RefreshUI();
+        RefreshMaterialDisplays();
         SavePlacedParts();
     }
 
@@ -215,6 +222,18 @@ public class UpgradeGridManager : MonoBehaviour
             }
 
             MaterialManager.Instance.AddMaterial(cost.type, cost.amount);
+        }
+    }
+
+    private static void RefreshMaterialDisplays()
+    {
+        MaterialDisplay[] displays = FindObjectsByType<MaterialDisplay>(FindObjectsSortMode.None);
+        for (int i = 0; i < displays.Length; i++)
+        {
+            if (displays[i] != null)
+            {
+                displays[i].UpdateMaterialAmount();
+            }
         }
     }
 

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85b1a97f518a3c74ca62603ca4b916a5, type: 3}
   m_Name: UpgradeModule
   m_EditorClassIdentifier: 
-  recipeName: UpgradeModule
+  recipeName: UpGradeModule
   icon: {fileID: 21300000, guid: 8008310d854fcb44db773d46e69bc419, type: 3}
   completedImage: {fileID: 21300000, guid: 8008310d854fcb44db773d46e69bc419, type: 3}
   costs:
@@ -26,3 +26,8 @@ MonoBehaviour:
   moduleFlag: 
   statBonus: 5
   requiredWeapon: {fileID: 0}
+  unlockBossKills: 2
+  summary: "\u30AF\u30E9\u30D5\u30C8\u6B66\u5668\u306E\u57FA\u790E\u706B\u529B\u3092\u5F37\u5316\u3059\u308B\u30E2\u30B8\u30E5\u30FC\u30EB\u3002"
+  unlockId: UpGradeModule
+  unlockSortOrder: 6
+  hiddenFromUnlockList: 0

@@ -594,6 +594,7 @@ MonoBehaviour:
   UseCraftSpacebuff: 0
   bossKillCount: 0
   upgradeShopDay: 0
+  notifiedCraftUnlockIds: []
   bonusDamage: 0
   attackSpeedMult: 1
   hasBulletDouble: 0
@@ -5225,7 +5226,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0.002, y: -143.998}
+  m_AnchoredPosition: {x: 0, y: -144}
   m_SizeDelta: {x: 767.984, y: 172.8}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1510841034
@@ -5795,7 +5796,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0.002, y: -359.988}
+  m_AnchoredPosition: {x: 0, y: -374.38}
   m_SizeDelta: {x: 767.984, y: 172.8}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1685121880

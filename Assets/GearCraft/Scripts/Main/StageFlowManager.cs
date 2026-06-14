@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class StageFlowManager : MonoBehaviour
 {
@@ -20,6 +22,15 @@ public class StageFlowManager : MonoBehaviour
     public GameObject perfectUI;
     public GameObject gateWarningUI;
     public RestResultReportUI restResultReportUI;
+
+    [Header("Opening Notice")]
+    [SerializeField] private GameObject openingNoticeRoot;
+    [SerializeField] private RectTransform openingNoticePaper;
+    [SerializeField] private Button openingNoticeButton;
+    [SerializeField] private Vector2 openingNoticeHiddenPosition = new Vector2(0f, 980f);
+    [SerializeField] private Vector2 openingNoticeShownPosition = Vector2.zero;
+    [SerializeField] private float openingNoticeDuration = 0.65f;
+    [SerializeField] private float dayDisplaySeconds = 1.2f;
 
     private readonly List<EnemyController> activeEnemies = new List<EnemyController>();
     private readonly Dictionary<MaterialManager.MaterialType, int> restMaterialGains = new Dictionary<MaterialManager.MaterialType, int>();
@@ -52,7 +63,7 @@ public class StageFlowManager : MonoBehaviour
         }
     }
 
-    private void Start()
+    private async void Start()
     {
         currentStage = GetStageFromCounter();
         EnemyScalingStage = currentStage;
@@ -64,6 +75,14 @@ public class StageFlowManager : MonoBehaviour
         {
             perfectUI.SetActive(false);
         }
+
+        if (openingNoticeRoot != null && openingNoticePaper != null)
+        {
+            await PlayOpeningNoticeAsync();
+        }
+
+        await ShowDayAsync();
+        StartNextStage();
     }
 
     private int GetStageFromCounter()
@@ -236,6 +255,47 @@ public class StageFlowManager : MonoBehaviour
         {
             enemySpawner.StartStage(currentStage);
         }
+    }
+
+    private async UniTask PlayOpeningNoticeAsync()
+    {
+        bool clicked = false;
+        openingNoticeRoot.SetActive(true);
+        openingNoticePaper.anchoredPosition = openingNoticeHiddenPosition;
+
+        if (openingNoticeButton != null)
+        {
+            openingNoticeButton.onClick.RemoveAllListeners();
+            openingNoticeButton.onClick.AddListener(() => clicked = true);
+        }
+
+        openingNoticePaper
+            .DOAnchorPos(openingNoticeShownPosition, openingNoticeDuration)
+            .SetEase(Ease.InCirc);
+
+        await UniTask.Delay(TimeSpan.FromSeconds(openingNoticeDuration));
+        await UniTask.WaitUntil(() => clicked || Input.GetMouseButtonDown(0), cancellationToken: this.GetCancellationTokenOnDestroy());
+
+        openingNoticePaper
+            .DOAnchorPos(openingNoticeHiddenPosition, openingNoticeDuration)
+            .SetEase(Ease.InCirc);
+
+        await UniTask.Delay(TimeSpan.FromSeconds(openingNoticeDuration));
+        openingNoticeRoot.SetActive(false);
+    }
+
+    private async UniTask ShowDayAsync()
+    {
+        if (stageNumText == null)
+        {
+            return;
+        }
+
+        int day = ((Mathf.Max(1, currentStage) - 1) / 3) + 1;
+        stageNumText.text = $"Day{day}";
+        stageNumText.alpha = 1f;
+        await UniTask.Delay(TimeSpan.FromSeconds(dayDisplaySeconds));
+        stageNumText.text = "";
     }
 
     private async void HandleGameClear()
