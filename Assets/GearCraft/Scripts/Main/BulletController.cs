@@ -1,3 +1,4 @@
+using GearCraft.Scripts.Items;
 using UnityEngine;
 
 public class BulletController : MonoBehaviour
@@ -37,10 +38,21 @@ public class BulletController : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        // プレイヤーには反応しない
-        if (collision.CompareTag("Player")) return;
+        if (collision == null)
+        {
+            return;
+        }
 
-        // 敵へのダメージ
+        if (collision.GetComponent<DroppedMaterialItem>() != null)
+        {
+            return;
+        }
+
+        if (collision.CompareTag("Player"))
+        {
+            return;
+        }
+
         if (collision.CompareTag("Enemy"))
         {
             EnemyController ec = collision.GetComponent<EnemyController>();
@@ -48,22 +60,26 @@ public class BulletController : MonoBehaviour
             {
                 ec.TakeDamage(bulletDamage);
             }
+
             SpawnHitEffect();
             if (isCannonBullet)
+            {
                 BombDamage();
+            }
 
-            if (destroyOnHit) Destroy(gameObject);
+            if (destroyOnHit)
+            {
+                Destroy(gameObject);
+            }
         }
-        // 壁・地面への衝突
         else if (!collision.isTrigger)
         {
-            // 跳弾処理
             if (ricochetCount > 0)
             {
                 ricochetCount--;
                 ReflectBullet(collision);
                 SpawnHitEffect();
-                return; // 反射して続行
+                return;
             }
 
             SpawnHitEffect();

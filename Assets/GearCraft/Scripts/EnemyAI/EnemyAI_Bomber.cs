@@ -37,7 +37,7 @@ public class EnemyAI_Bomber : MonoBehaviour, IEnemyAI
 
         // ターゲット方向へ突進
         Vector2 dir = (target.position - owner.transform.position).normalized;
-        owner.transform.Translate(dir * data.speed * 1.5f * Time.deltaTime);
+        owner.transform.Translate(dir * owner.GetMoveSpeed(data.speed) * 1.5f * Time.deltaTime);
 
         // 近接で爆発
         float dist = Vector2.Distance(owner.transform.position, target.position);

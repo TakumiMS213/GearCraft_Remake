@@ -43,7 +43,14 @@ public class CraftSpaceCameraFollow : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (target == null || ArrivalMessagePresenter.IsCameraPresentationPlaying)
+        if (ArrivalMessagePresenter.IsCameraPresentationPlaying)
+        {
+            velocity = Vector3.zero;
+            SyncLastCameraPosition();
+            return;
+        }
+
+        if (target == null)
         {
             MoveSyncedObjectsByCameraDelta();
             return;
@@ -118,6 +125,11 @@ public class CraftSpaceCameraFollow : MonoBehaviour
                 syncedObject.position += cameraDelta;
             }
         }
+    }
+
+    private void SyncLastCameraPosition()
+    {
+        lastCameraPosition = transform.position;
     }
 
     private float GetMinCameraX()

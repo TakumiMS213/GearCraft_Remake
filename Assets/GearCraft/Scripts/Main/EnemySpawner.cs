@@ -6,6 +6,14 @@ using UnityEngine;
 
 public class EnemySpawner : MonoBehaviour
 {
+    private const int LowTierStartIndex = 0;
+    private const int LowTierCount = 3;
+    private const int AdvancedTierStartIndex = 3;
+    private const int AdvancedTierCount = 3;
+    private const int MinimumAdvancedEnemiesAfterFirstBoss = 3;
+    private const int LowTierBurstCountAfterSecondBoss = 5;
+    private const float LowTierWeightAfterFirstBoss = 0.8f;
+
     [Header("Auto Generation")]
     public StageGeneratorSO stageConfig;
 
@@ -219,62 +227,184 @@ public class EnemySpawner : MonoBehaviour
         return Mathf.Max(1, stageNum);
     }
 
-    private int GetAvailablePoolMax(int stageNum)
+    private List<EnemyDataSO> BuildNormalEnemySequence(int stageNum, float difficulty, int enemyCount)
     {
+        List<EnemyDataSO> sequence = new List<EnemyDataSO>();
         EnemyDataSO[] pool = stageConfig.normalEnemyPool;
-        if (pool == null || pool.Length == 0)
+        if (pool == null || pool.Length == 0 || enemyCount <= 0)
         {
-            return 0;
-        }
-
-        if (stageNum <= 1)
-        {
-            return 1;
+            return sequence;
         }
 
         int bossKillCount = StatusManager.Instance != null ? StatusManager.Instance.bossKillCount : 0;
         if (bossKillCount <= 0)
         {
-            return Mathf.Min(3, pool.Length);
+            FillRandomEnemies(sequence, pool, LowTierStartIndex, LowTierCount, enemyCount);
+            return sequence;
         }
 
         if (bossKillCount == 1)
         {
-            return Mathf.Min(6, pool.Length);
-        }
+            int advancedTarget = Mathf.Min(MinimumAdvancedEnemiesAfterFirstBoss, enemyCount);
+            FillPreferredEnemies(sequence, pool, AdvancedTierStartIndex, AdvancedTierCount, LowTierStartIndex, LowTierCount, advancedTarget);
 
-        return pool.Length;
-    }
-
-    private EnemyDataSO SelectEnemyByDifficulty(int stageNum, float difficulty)
-    {
-        EnemyDataSO[] pool = stageConfig.normalEnemyPool;
-        if (pool == null || pool.Length == 0)
-        {
-            return null;
-        }
-
-        int availableMax = Mathf.Max(1, GetAvailablePoolMax(stageNum));
-        float biasedIndex = difficulty * (availableMax - 1) + UnityEngine.Random.Range(-1f, 1f);
-        int index = Mathf.Clamp(Mathf.RoundToInt(biasedIndex), 0, availableMax - 1);
-        return pool[index];
-    }
-
-    private List<EnemyDataSO> BuildNormalEnemySequence(int stageNum, float difficulty, int enemyCount)
-    {
-        List<EnemyDataSO> sequence = new List<EnemyDataSO>();
-        int attempts = Mathf.Max(enemyCount * 4, enemyCount);
-
-        for (int i = 0; i < attempts && sequence.Count < enemyCount; i++)
-        {
-            EnemyDataSO selectedEnemy = SelectEnemyByDifficulty(stageNum, difficulty);
-            if (selectedEnemy != null && selectedEnemy.prefab != null)
+            while (sequence.Count < enemyCount)
             {
-                sequence.Add(selectedEnemy);
+                bool preferLowTier = UnityEngine.Random.value < LowTierWeightAfterFirstBoss;
+                if (preferLowTier)
+                {
+                    if (!TryAddPreferredEnemy(sequence, pool, LowTierStartIndex, LowTierCount, AdvancedTierStartIndex, AdvancedTierCount))
+                    {
+                        break;
+                    }
+                }
+                else
+                {
+                    if (!TryAddPreferredEnemy(sequence, pool, AdvancedTierStartIndex, AdvancedTierCount, LowTierStartIndex, LowTierCount))
+                    {
+                        break;
+                    }
+                }
+            }
+
+            ShuffleSequence(sequence);
+            return sequence;
+        }
+
+        int burstCount = Mathf.Min(LowTierBurstCountAfterSecondBoss, enemyCount);
+        int advancedCount = Mathf.Max(0, enemyCount - burstCount);
+        FillPreferredEnemies(sequence, pool, AdvancedTierStartIndex, AdvancedTierCount, LowTierStartIndex, LowTierCount, advancedCount);
+
+        List<EnemyDataSO> lowTierBurst = new List<EnemyDataSO>();
+        FillRandomEnemies(lowTierBurst, pool, LowTierStartIndex, LowTierCount, burstCount);
+        int insertIndex = sequence.Count > 0 ? UnityEngine.Random.Range(0, sequence.Count + 1) : 0;
+        sequence.InsertRange(insertIndex, lowTierBurst);
+
+        while (sequence.Count < enemyCount)
+        {
+            if (!TryAddPreferredEnemy(sequence, pool, AdvancedTierStartIndex, AdvancedTierCount, LowTierStartIndex, LowTierCount))
+            {
+                break;
             }
         }
 
         return sequence;
+    }
+
+    private void FillPreferredEnemies(
+        List<EnemyDataSO> sequence,
+        EnemyDataSO[] pool,
+        int preferredStart,
+        int preferredCount,
+        int fallbackStart,
+        int fallbackCount,
+        int targetCount)
+    {
+        while (sequence.Count < targetCount)
+        {
+            if (!TryAddPreferredEnemy(sequence, pool, preferredStart, preferredCount, fallbackStart, fallbackCount))
+            {
+                break;
+            }
+        }
+    }
+
+    private void FillRandomEnemies(List<EnemyDataSO> sequence, EnemyDataSO[] pool, int startIndex, int count, int targetCount)
+    {
+        while (sequence.Count < targetCount)
+        {
+            if (!TryAddRandomEnemy(sequence, pool, startIndex, count))
+            {
+                break;
+            }
+        }
+    }
+
+    private bool TryAddPreferredEnemy(
+        List<EnemyDataSO> sequence,
+        EnemyDataSO[] pool,
+        int preferredStart,
+        int preferredCount,
+        int fallbackStart,
+        int fallbackCount)
+    {
+        if (TryAddRandomEnemy(sequence, pool, preferredStart, preferredCount))
+        {
+            return true;
+        }
+
+        return TryAddRandomEnemy(sequence, pool, fallbackStart, fallbackCount);
+    }
+
+    private bool TryAddRandomEnemy(List<EnemyDataSO> sequence, EnemyDataSO[] pool, int startIndex, int count)
+    {
+        EnemyDataSO enemy = GetRandomValidEnemy(pool, startIndex, count);
+        if (enemy == null)
+        {
+            return false;
+        }
+
+        sequence.Add(enemy);
+        return true;
+    }
+
+    private EnemyDataSO GetRandomValidEnemy(EnemyDataSO[] pool, int startIndex, int count)
+    {
+        int availableCount = CountValidEnemies(pool, startIndex, count);
+        if (availableCount <= 0)
+        {
+            return null;
+        }
+
+        int selectedOffset = UnityEngine.Random.Range(0, availableCount);
+        int endIndex = Mathf.Min(pool.Length, startIndex + count);
+        for (int i = Mathf.Max(0, startIndex); i < endIndex; i++)
+        {
+            EnemyDataSO enemy = pool[i];
+            if (enemy == null || enemy.prefab == null)
+            {
+                continue;
+            }
+
+            if (selectedOffset == 0)
+            {
+                return enemy;
+            }
+
+            selectedOffset--;
+        }
+
+        return null;
+    }
+
+    private int CountValidEnemies(EnemyDataSO[] pool, int startIndex, int count)
+    {
+        if (pool == null || count <= 0 || startIndex >= pool.Length)
+        {
+            return 0;
+        }
+
+        int validCount = 0;
+        int endIndex = Mathf.Min(pool.Length, startIndex + count);
+        for (int i = Mathf.Max(0, startIndex); i < endIndex; i++)
+        {
+            EnemyDataSO enemy = pool[i];
+            if (enemy != null && enemy.prefab != null)
+            {
+                validCount++;
+            }
+        }
+
+        return validCount;
+    }
+
+    private void ShuffleSequence(List<EnemyDataSO> sequence)
+    {
+        for (int i = sequence.Count - 1; i > 0; i--)
+        {
+            int swapIndex = UnityEngine.Random.Range(0, i + 1);
+            (sequence[i], sequence[swapIndex]) = (sequence[swapIndex], sequence[i]);
+        }
     }
 
     private async UniTaskVoid SpawnStageAsync(Stage stage, CancellationToken token)

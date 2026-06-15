@@ -8,6 +8,8 @@ using UnityEngine.UI;
 
 public class StageFlowManager : MonoBehaviour
 {
+    private const string OpeningNoticeSeenKey = "GearCraft.Main.OpeningNotice.Seen.v1";
+
     public static StageFlowManager Instance { get; private set; }
 
     [Header("References")]
@@ -38,6 +40,8 @@ public class StageFlowManager : MonoBehaviour
     private int stagesSinceRest;
     private int restDefeatedEnemies;
     private bool gateWasHit;
+    private bool stageLastEnemyKilled;
+    private bool stageCompletionTriggered;
 
     public bool IsStageActive { get; private set; }
     public int EnemyScalingStage { get; private set; } = 1;
@@ -76,9 +80,13 @@ public class StageFlowManager : MonoBehaviour
             perfectUI.SetActive(false);
         }
 
-        if (openingNoticeRoot != null && openingNoticePaper != null)
+        if (openingNoticeRoot != null && openingNoticePaper != null && !HasSeenOpeningNotice())
         {
             await PlayOpeningNoticeAsync();
+        }
+        else if (openingNoticeRoot != null)
+        {
+            openingNoticeRoot.SetActive(false);
         }
 
         await ShowDayAsync();
@@ -110,8 +118,10 @@ public class StageFlowManager : MonoBehaviour
 
         if (wasLastEnemy)
         {
-            OnStageComplete().Forget();
+            stageLastEnemyKilled = true;
         }
+
+        TryCompleteStage();
     }
 
     public void OnGateHit()
@@ -250,11 +260,28 @@ public class StageFlowManager : MonoBehaviour
 
     private void StartNextStage()
     {
+        activeEnemies.RemoveAll(enemy => enemy == null);
+        stageLastEnemyKilled = false;
+        stageCompletionTriggered = false;
         IsStageActive = true;
         if (enemySpawner != null)
         {
             enemySpawner.StartStage(currentStage);
         }
+    }
+
+    private void TryCompleteStage()
+    {
+        activeEnemies.RemoveAll(enemy => enemy == null);
+
+        if (stageCompletionTriggered || !stageLastEnemyKilled || activeEnemies.Count > 0)
+        {
+            return;
+        }
+
+        stageCompletionTriggered = true;
+        enemySpawner?.StopSpawning();
+        OnStageComplete().Forget();
     }
 
     private async UniTask PlayOpeningNoticeAsync()
@@ -282,6 +309,18 @@ public class StageFlowManager : MonoBehaviour
 
         await UniTask.Delay(TimeSpan.FromSeconds(openingNoticeDuration));
         openingNoticeRoot.SetActive(false);
+        MarkOpeningNoticeSeen();
+    }
+
+    private static bool HasSeenOpeningNotice()
+    {
+        return PlayerPrefs.GetInt(OpeningNoticeSeenKey, 0) == 1;
+    }
+
+    private static void MarkOpeningNoticeSeen()
+    {
+        PlayerPrefs.SetInt(OpeningNoticeSeenKey, 1);
+        PlayerPrefs.Save();
     }
 
     private async UniTask ShowDayAsync()

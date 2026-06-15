@@ -1,107 +1,178 @@
+using GearCraft.Scripts.Craft;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
-using GearCraft.Scripts.Craft;
 
-/// <summary>
-/// Craftシーンのタブ切替コントローラー。
-/// クラフトタブ / 強化パーツタブの表示を管理する。
-/// </summary>
 public class CraftTabController : MonoBehaviour
 {
-    [Header("タブボタン")]
-    public Button craftTabButton;       // クラフトタブボタン
-    public Button upgradeTabButton;     // 強化パーツタブボタン
+    [Header("Tab Buttons")]
+    public Button craftTabButton;
+    public Button upgradeTabButton;
 
-    [Header("パネル")]
-    public GameObject craftPanel;       // 既存のクラフトUI全体の親
-    public GameObject upgradePanel;     // 強化パーツUI全体の親
+    [Header("Panels")]
+    public GameObject craftPanel;
+    public GameObject upgradePanel;
 
-    [Header("タブ色設定")]
-    public Color activeTabColor   = new Color(0.9f, 0.75f, 0.3f, 1f);   // 選択中（ゴールド系）
-    public Color inactiveTabColor = new Color(0.3f, 0.3f, 0.35f, 1f);   // 非選択（ダークグレー）
+    [Header("Tab Colors")]
+    public Color activeTabColor = new Color(0.9f, 0.75f, 0.3f, 1f);
+    public Color inactiveTabColor = new Color(0.3f, 0.3f, 0.35f, 1f);
 
-    [Header("効果音")]
+    [Header("Audio")]
     public AudioSource tabSwitchSE;
 
-    [Header("連携")]
-    public MaterialDisplay materialDisplay;       // 素材表示の更新用
-    public UpgradeShopManager upgradeShopManager; // ショップ初期化用
+    [Header("References")]
+    public MaterialDisplay materialDisplay;
+    public UpgradeShopManager upgradeShopManager;
 
-    private int currentTab = 0; // 0=Craft, 1=Upgrade
+    [Header("Close")]
+    [SerializeField] private Button craftCloseButton;
+    [SerializeField] private Button upgradeCloseButton;
+    [SerializeField] private string closeSceneName = "CraftSpace";
+
+    private int currentTab;
     private CraftTutorialController tutorialController;
 
-    void Start()
+    private void Start()
     {
         EnsureTutorialController();
+        RegisterTabButtons();
+        RegisterCloseButtons();
 
-        // ボタンイベント登録
-        if (craftTabButton != null)
-            craftTabButton.onClick.AddListener(() => SwitchTab(0));
-        if (upgradeTabButton != null)
-            upgradeTabButton.onClick.AddListener(() => SwitchTab(1));
-
-        // 初期状態：クラフトタブを表示
         SwitchTab(0);
         tutorialController?.OnCraftSceneEntered();
     }
 
-    /// <summary>
-    /// タブを切り替える
-    /// </summary>
-    /// <param name="tabIndex">0=クラフト, 1=強化パーツ</param>
     public void SwitchTab(int tabIndex)
     {
         currentTab = tabIndex;
 
-        // パネル表示切替
         if (craftPanel != null)
+        {
             craftPanel.SetActive(tabIndex == 0);
-        if (upgradePanel != null)
-            upgradePanel.SetActive(tabIndex == 1);
+        }
 
-        // タブボタンの色更新
+        if (upgradePanel != null)
+        {
+            upgradePanel.SetActive(tabIndex == 1);
+        }
+
         UpdateTabColors();
 
-        // 効果音
         if (tabSwitchSE != null)
+        {
             tabSwitchSE.Play();
+        }
 
-        // 強化パーツタブに切替時：ショップ初期化 & グリッド更新
         if (tabIndex == 1)
         {
             if (upgradeShopManager != null)
+            {
                 upgradeShopManager.EnsureLineupInitialized();
+            }
 
             if (UpgradeGridManager.Instance != null)
+            {
                 UpgradeGridManager.Instance.RefreshGridSize();
+            }
         }
 
-        // 素材表示を更新
         if (materialDisplay != null)
+        {
             materialDisplay.UpdateMaterialAmount();
+        }
 
         tutorialController?.OnTabOpened(tabIndex);
     }
 
+    private void RegisterTabButtons()
+    {
+        if (craftTabButton != null)
+        {
+            craftTabButton.onClick.AddListener(() => SwitchTab(0));
+        }
+
+        if (upgradeTabButton != null)
+        {
+            upgradeTabButton.onClick.AddListener(() => SwitchTab(1));
+        }
+    }
+
+    private void RegisterCloseButtons()
+    {
+        if (craftCloseButton == null)
+        {
+            craftCloseButton = FindChildButton(craftPanel, "Close");
+        }
+
+        if (upgradeCloseButton == null)
+        {
+            upgradeCloseButton = FindChildButton(upgradePanel, "Close");
+        }
+
+        RegisterCloseButton(craftCloseButton);
+        RegisterCloseButton(upgradeCloseButton);
+    }
+
+    private void RegisterCloseButton(Button button)
+    {
+        if (button == null)
+        {
+            return;
+        }
+
+        button.onClick.RemoveListener(CloseCraftScene);
+        button.onClick.AddListener(CloseCraftScene);
+    }
+
+    private void CloseCraftScene()
+    {
+        SceneTransitionManager.LoadSceneWithTransition(closeSceneName);
+    }
+
+    private static Button FindChildButton(GameObject root, string objectName)
+    {
+        if (root == null)
+        {
+            return null;
+        }
+
+        Button[] buttons = root.GetComponentsInChildren<Button>(true);
+        for (int i = 0; i < buttons.Length; i++)
+        {
+            Button button = buttons[i];
+            if (button != null && button.gameObject.name == objectName)
+            {
+                return button;
+            }
+        }
+
+        return null;
+    }
+
     private void UpdateTabColors()
     {
-        SetTabColor(craftTabButton,   currentTab == 0);
+        SetTabColor(craftTabButton, currentTab == 0);
         SetTabColor(upgradeTabButton, currentTab == 1);
     }
 
-    private void SetTabColor(Button btn, bool isActive)
+    private void SetTabColor(Button button, bool isActive)
     {
-        if (btn == null) return;
+        if (button == null)
+        {
+            return;
+        }
 
-        Image img = btn.GetComponent<Image>();
-        if (img != null)
-            img.color = isActive ? activeTabColor : inactiveTabColor;
+        Image image = button.GetComponent<Image>();
+        if (image != null)
+        {
+            image.color = isActive ? activeTabColor : inactiveTabColor;
+        }
 
-        // テキスト色も変更
-        TMP_Text txt = btn.GetComponentInChildren<TMP_Text>();
-        if (txt != null)
-            txt.color = isActive ? Color.white : new Color(0.6f, 0.6f, 0.6f, 1f);
+        TMP_Text text = button.GetComponentInChildren<TMP_Text>();
+        if (text != null)
+        {
+            text.color = isActive ? Color.white : new Color(0.6f, 0.6f, 0.6f, 1f);
+        }
     }
 
     private void EnsureTutorialController()

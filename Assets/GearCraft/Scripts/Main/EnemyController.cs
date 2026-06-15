@@ -25,6 +25,9 @@ public class EnemyController : MonoBehaviour
     private Color originalColor;
     private CameraShake cameraShake;
     private IEnemyAI currentAI;
+    private float overheatEndTime;
+    private float overheatSpeedMultiplier = 1f;
+    private GameObject overheatEffectInstance;
 
     private void Awake()
     {
@@ -70,6 +73,30 @@ public class EnemyController : MonoBehaviour
     {
         if (currentAI != null)
             currentAI.UpdateAI();
+
+        UpdateOverheatStatus();
+    }
+
+    public float GetMoveSpeed(float baseSpeed)
+    {
+        return baseSpeed * (Time.time < overheatEndTime ? overheatSpeedMultiplier : 1f);
+    }
+
+    public void ApplyOverheat(float duration, float speedMultiplier, GameObject effectPrefab)
+    {
+        if (duration <= 0f)
+        {
+            return;
+        }
+
+        overheatEndTime = Mathf.Max(overheatEndTime, Time.time + duration);
+        overheatSpeedMultiplier = Mathf.Clamp(speedMultiplier, 0.05f, 1f);
+
+        if (effectPrefab != null && overheatEffectInstance == null)
+        {
+            overheatEffectInstance = Instantiate(effectPrefab, transform);
+            overheatEffectInstance.transform.localPosition = Vector3.zero;
+        }
     }
 
     private void ConfigureEnemyPhysics()
@@ -84,11 +111,26 @@ public class EnemyController : MonoBehaviour
         Rigidbody2D rb = GetComponent<Rigidbody2D>();
         if (rb != null)
         {
-            rb.bodyType = RigidbodyType2D.Kinematic;
-            rb.gravityScale = 0f;
+            bool usesGravity = IsGravityEnemy();
+            rb.bodyType = usesGravity ? RigidbodyType2D.Dynamic : RigidbodyType2D.Kinematic;
+            rb.gravityScale = usesGravity ? 1f : 0f;
             rb.constraints = RigidbodyConstraints2D.FreezeRotation;
             rb.linearVelocity = Vector2.zero;
         }
+
+        DroppedMaterialItem.IgnoreCollisionWithExistingDrops(GetComponent<Collider2D>());
+    }
+
+    private bool IsGravityEnemy()
+    {
+        string nameSource = enemyData != null ? enemyData.enemyName : gameObject.name;
+        if (string.IsNullOrEmpty(nameSource))
+        {
+            return false;
+        }
+
+        return nameSource.StartsWith("G-", StringComparison.OrdinalIgnoreCase) ||
+            nameSource.StartsWith("EG-", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -169,6 +211,9 @@ public class EnemyController : MonoBehaviour
         if (currentAI != null)
             currentAI.OnDeath();
 
+        if (overheatEffectInstance != null)
+            Destroy(overheatEffectInstance);
+
         // エフェクト再生
         if (deathEffect != null)
         {
@@ -213,6 +258,18 @@ public class EnemyController : MonoBehaviour
         yield return new WaitForSeconds(0.05f);
         if (spriteRenderer != null)
             spriteRenderer.color = originalColor;
+    }
+
+    private void UpdateOverheatStatus()
+    {
+        if (overheatEffectInstance == null || Time.time < overheatEndTime)
+        {
+            return;
+        }
+
+        Destroy(overheatEffectInstance);
+        overheatEffectInstance = null;
+        overheatSpeedMultiplier = 1f;
     }
 
     /// <summary>

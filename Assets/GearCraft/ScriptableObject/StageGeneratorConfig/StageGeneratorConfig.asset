@@ -60,8 +60,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 8dbafa68ed1643b4bb05a278cb286413, type: 2}
   - {fileID: 11400000, guid: ffdfa706cfe794a4db50b6e65aa64032, type: 2}
   - {fileID: 11400000, guid: f17cf0d1198f4ce9b4996bf924e7a05f, type: 2}
-  baseEnemyCount: 3
-  maxEnemyCount: 6
+  baseEnemyCount: 9
+  maxEnemyCount: 18
   baseSpawnInterval: 3
   minSpawnInterval: 1
   dropMultiplierCurve:

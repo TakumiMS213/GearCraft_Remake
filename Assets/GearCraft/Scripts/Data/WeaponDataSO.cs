@@ -11,6 +11,7 @@ public class WeaponDataSO : ScriptableObject
     [Header("攻撃パラメータ")]
     public float coolTime = 0.5f;
     public float baseDamage = 20f;
+    public float accDamageMultiplier = 1f;
     public float attackRange = 1f;       // 近接は判定長、遠距離は弾の生存時間として扱う
 
     [Header("遠距離設定（Ranged のみ）")]
@@ -34,4 +35,8 @@ public class WeaponDataSO : ScriptableObject
     [Header("特殊設定")]
     public bool isDefault = false;       // true = 刀（破壊後のフォールバック武器）
     public bool isPiercing = false;      // 貫通するか
+    public float GetScaledFlatDamageBonus(float flatDamage)
+    {
+        return flatDamage * accDamageMultiplier;
+    }
 }

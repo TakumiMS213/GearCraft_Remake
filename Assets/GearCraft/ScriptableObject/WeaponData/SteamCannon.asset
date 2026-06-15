@@ -17,11 +17,17 @@ MonoBehaviour:
   weaponType: 1
   coolTime: 1
   baseDamage: 50
+  accDamageMultiplier: 0.8
   attackRange: 3
   bulletSpeed: 25
   bulletPrefab: {fileID: 5356958644387713917, guid: b30cb99703595ce429f224037e120f04, type: 3}
   spreadAngle: 0
   muzzleOffset: {x: 1.35, y: 0}
+  useLineHitbox: 0
+  lineHitboxWidth: 0.5
+  lineHitboxDuration: 0.05
+  lineHitboxVisualPrefab: {fileID: 0}
+  lineHitboxVisualSprite: {fileID: 0}
   maxDurability: 20
   armTriggerName: SteamShoot
   meleeRotateDuration: 0.5

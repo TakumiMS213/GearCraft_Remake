@@ -14,6 +14,12 @@ public class UpgradeGridUI : MonoBehaviour
     public float minCellSize = 64f;
     public float cellSpacing = 4f;
 
+    [Header("Grid Highlight")]
+    [SerializeField] private bool showGridHighlight = true;
+    [SerializeField] private Color gridHighlightColor = new Color(1f, 0.86f, 0.12f, 1f);
+    [SerializeField] private float gridHighlightThickness = 8f;
+    [SerializeField] private float gridHighlightPadding = 16f;
+
     [Header("Part List")]
     public RectTransform partListParent;
     public GameObject partSlotPrefab;
@@ -39,6 +45,8 @@ public class UpgradeGridUI : MonoBehaviour
     private int[,] currentGrid;
     private GameObject dragPreviewRoot;
     private RectTransform dragPreviewRect;
+    private RectTransform gridHighlightRoot;
+    private Image[] gridHighlightEdges;
     private Canvas rootCanvas;
     private UpgradePartSO draggingPart;
     private UpgradeShopManager draggingShopManager;
@@ -121,6 +129,7 @@ public class UpgradeGridUI : MonoBehaviour
 
         if (grid == null || gridParent == null || cellPrefab == null)
         {
+            SetGridHighlightVisible(false);
             return;
         }
 
@@ -160,6 +169,8 @@ public class UpgradeGridUI : MonoBehaviour
                 cellObjects.Add(cell);
             }
         }
+
+        UpdateGridHighlight(totalSize);
     }
 
     private float ResolveCellSize(int gridSize)
@@ -214,6 +225,84 @@ public class UpgradeGridUI : MonoBehaviour
 
             partSlotObjects.Add(slot);
         }
+    }
+
+    private void UpdateGridHighlight(float gridContentSize)
+    {
+        if (!showGridHighlight || gridParent == null || gridContentSize <= 0f)
+        {
+            SetGridHighlightVisible(false);
+            return;
+        }
+
+        EnsureGridHighlight();
+        if (gridHighlightRoot == null || gridHighlightEdges == null)
+        {
+            return;
+        }
+
+        float size = gridContentSize + gridHighlightPadding * 2f;
+        gridHighlightRoot.SetAsLastSibling();
+        gridHighlightRoot.gameObject.SetActive(true);
+        gridHighlightRoot.anchoredPosition = Vector2.zero;
+        gridHighlightRoot.sizeDelta = new Vector2(size, size);
+
+        SetHighlightEdge(0, new Vector2(0f, size / 2f), new Vector2(size, gridHighlightThickness));
+        SetHighlightEdge(1, new Vector2(0f, -size / 2f), new Vector2(size, gridHighlightThickness));
+        SetHighlightEdge(2, new Vector2(-size / 2f, 0f), new Vector2(gridHighlightThickness, size));
+        SetHighlightEdge(3, new Vector2(size / 2f, 0f), new Vector2(gridHighlightThickness, size));
+    }
+
+    private void EnsureGridHighlight()
+    {
+        if (gridHighlightRoot != null)
+        {
+            return;
+        }
+
+        GameObject root = new GameObject("UpgradeGridHighlight", typeof(RectTransform));
+        root.transform.SetParent(gridParent, false);
+        gridHighlightRoot = root.GetComponent<RectTransform>();
+        gridHighlightRoot.anchorMin = new Vector2(0.5f, 0.5f);
+        gridHighlightRoot.anchorMax = new Vector2(0.5f, 0.5f);
+        gridHighlightRoot.pivot = new Vector2(0.5f, 0.5f);
+        gridHighlightRoot.SetAsLastSibling();
+
+        gridHighlightEdges = new Image[4];
+        for (int i = 0; i < gridHighlightEdges.Length; i++)
+        {
+            GameObject edge = new GameObject($"HighlightEdge{i}", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            edge.transform.SetParent(gridHighlightRoot, false);
+
+            Image image = edge.GetComponent<Image>();
+            image.color = gridHighlightColor;
+            image.raycastTarget = false;
+            gridHighlightEdges[i] = image;
+        }
+    }
+
+    private void SetGridHighlightVisible(bool visible)
+    {
+        if (gridHighlightRoot != null)
+        {
+            gridHighlightRoot.gameObject.SetActive(visible);
+        }
+    }
+
+    private void SetHighlightEdge(int index, Vector2 position, Vector2 size)
+    {
+        if (gridHighlightEdges == null || index < 0 || index >= gridHighlightEdges.Length || gridHighlightEdges[index] == null)
+        {
+            return;
+        }
+
+        RectTransform rect = gridHighlightEdges[index].rectTransform;
+        rect.anchorMin = new Vector2(0.5f, 0.5f);
+        rect.anchorMax = new Vector2(0.5f, 0.5f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = position;
+        rect.sizeDelta = size;
+        gridHighlightEdges[index].color = gridHighlightColor;
     }
 
     private void OnCellClicked(int x, int y, int[,] grid)

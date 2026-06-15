@@ -4,6 +4,7 @@ using UnityEngine.SceneManagement;
 using DG.Tweening;
 using TMPro;
 using System.Collections;
+using GearCraft.Scripts.Data;
 
 public class SceneTransitionManager : MonoBehaviour
 {
@@ -18,6 +19,7 @@ public class SceneTransitionManager : MonoBehaviour
     [Header("Loading Settings")]
     [SerializeField] private GameObject loadingRoot;
     [SerializeField] private TMP_Text loadingTipText;
+    [SerializeField] private LoadingTipData loadingTipData;
     [SerializeField] private float minLoadingSeconds = 1f;
     [SerializeField] private float maxLoadingSeconds = 2f;
     [SerializeField]
@@ -189,6 +191,16 @@ public class SceneTransitionManager : MonoBehaviour
 
     private string SelectTip()
     {
+        if (loadingTipData == null)
+        {
+            loadingTipData = Resources.Load<LoadingTipData>("LoadingTipData");
+        }
+
+        if (loadingTipData != null && loadingTipData.HasTips)
+        {
+            return loadingTipData.GetRandomTip();
+        }
+
         if (loadingTips == null || loadingTips.Length == 0)
         {
             return string.Empty;

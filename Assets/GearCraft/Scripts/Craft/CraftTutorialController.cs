@@ -10,6 +10,8 @@ namespace GearCraft.Scripts.Craft
     {
         private const int CraftTab = 0;
         private const int WeaponCustomTab = 1;
+        private const string CraftAutoPlayedKey = "GearCraft.CraftTutorial.AutoPlayed.Craft.v3";
+        private const string WeaponCustomAutoPlayedKey = "GearCraft.CraftTutorial.AutoPlayed.WeaponCustom.v2";
 
         private readonly TutorialStep[] craftSteps =
         {
@@ -53,6 +55,7 @@ namespace GearCraft.Scripts.Craft
         private int currentStepIndex;
         private bool craftAutoPlayedThisScene;
         private bool weaponCustomAutoPlayedThisScene;
+        private int pendingAutoPlayedTab = -1;
         private Coroutine autoStartCoroutine;
         private TutorialStep[] currentSteps;
 
@@ -97,8 +100,6 @@ namespace GearCraft.Scripts.Craft
                 return;
             }
 
-            SetAutoPlayedThisScene(tabIndex);
-
             if (autoStartCoroutine != null)
             {
                 StopCoroutine(autoStartCoroutine);
@@ -117,13 +118,13 @@ namespace GearCraft.Scripts.Craft
                 TutorialStep[] steps = tabIndex == WeaponCustomTab ? weaponCustomSteps : craftSteps;
                 if (steps.Length == 0 || FindActiveRectTransform(steps[0].TargetName) != null)
                 {
-                    StartTutorial(tabIndex);
+                    StartTutorial(tabIndex, true);
                     autoStartCoroutine = null;
                     yield break;
                 }
             }
 
-            StartTutorial(tabIndex);
+            StartTutorial(tabIndex, true);
             autoStartCoroutine = null;
         }
 
@@ -142,11 +143,21 @@ namespace GearCraft.Scripts.Craft
             }
         }
 
-        private void StartTutorial(int tabIndex)
+        private void StartTutorial(int tabIndex, bool markAutoPlayed = false)
         {
             currentTab = tabIndex;
             currentSteps = tabIndex == WeaponCustomTab ? weaponCustomSteps : craftSteps;
             currentStepIndex = 0;
+
+            if (markAutoPlayed)
+            {
+                MarkAutoStartedThisScene(tabIndex);
+                pendingAutoPlayedTab = tabIndex;
+            }
+            else
+            {
+                pendingAutoPlayedTab = -1;
+            }
 
             if (tutorialRoot != null)
             {
@@ -198,6 +209,12 @@ namespace GearCraft.Scripts.Craft
 
         private void CompleteTutorial()
         {
+            if (pendingAutoPlayedTab >= 0)
+            {
+                PersistAutoPlayed(pendingAutoPlayedTab);
+                pendingAutoPlayedTab = -1;
+            }
+
             HideTutorial();
         }
 
@@ -484,10 +501,15 @@ namespace GearCraft.Scripts.Craft
 
         private bool HasAutoPlayedThisScene(int tabIndex)
         {
-            return tabIndex == WeaponCustomTab ? weaponCustomAutoPlayedThisScene : craftAutoPlayedThisScene;
+            if (tabIndex == WeaponCustomTab)
+            {
+                return weaponCustomAutoPlayedThisScene || PlayerPrefs.GetInt(WeaponCustomAutoPlayedKey, 0) == 1;
+            }
+
+            return craftAutoPlayedThisScene || PlayerPrefs.GetInt(CraftAutoPlayedKey, 0) == 1;
         }
 
-        private void SetAutoPlayedThisScene(int tabIndex)
+        private void MarkAutoStartedThisScene(int tabIndex)
         {
             if (tabIndex == WeaponCustomTab)
             {
@@ -496,6 +518,19 @@ namespace GearCraft.Scripts.Craft
             }
 
             craftAutoPlayedThisScene = true;
+        }
+
+        private void PersistAutoPlayed(int tabIndex)
+        {
+            if (tabIndex == WeaponCustomTab)
+            {
+                PlayerPrefs.SetInt(WeaponCustomAutoPlayedKey, 1);
+                PlayerPrefs.Save();
+                return;
+            }
+
+            PlayerPrefs.SetInt(CraftAutoPlayedKey, 1);
+            PlayerPrefs.Save();
         }
 
         private void EnsureLayout()

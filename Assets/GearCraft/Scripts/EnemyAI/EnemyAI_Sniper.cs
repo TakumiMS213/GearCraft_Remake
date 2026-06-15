@@ -34,7 +34,7 @@ public class EnemyAI_Sniper : MonoBehaviour, IEnemyAI
         if (!hasPositioned)
         {
             owner.transform.position = Vector3.MoveTowards(
-                owner.transform.position, sniperPosition, data.speed * Time.deltaTime);
+                owner.transform.position, sniperPosition, owner.GetMoveSpeed(data.speed) * Time.deltaTime);
             if (Vector3.Distance(owner.transform.position, sniperPosition) < 0.1f)
                 hasPositioned = true;
             return;

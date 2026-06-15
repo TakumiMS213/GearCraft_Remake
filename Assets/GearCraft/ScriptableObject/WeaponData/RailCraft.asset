@@ -17,6 +17,7 @@ MonoBehaviour:
   weaponType: 1
   coolTime: 2
   baseDamage: 150
+  accDamageMultiplier: 1
   attackRange: 10
   bulletSpeed: 120
   bulletPrefab: {fileID: 3699647882942459135, guid: dd6cbbc7c57d3e2479c589a56a3feff6, type: 3}

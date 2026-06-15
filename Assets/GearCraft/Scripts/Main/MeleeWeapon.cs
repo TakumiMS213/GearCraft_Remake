@@ -45,7 +45,7 @@ public class MeleeWeapon : MonoBehaviour
             float damage = runtimeStatus.currentWeapon.baseDamage;
 
             // STR加算 + 強化パーツのボーナスダメージ
-            damage += runtimeStatus.STR + runtimeStatus.bonusDamage;
+            damage += runtimeStatus.STR + runtimeStatus.currentWeapon.GetScaledFlatDamageBonus(runtimeStatus.bonusDamage);
 
             // クラフト武器ボーナス（GearCraft系）
             if (!runtimeStatus.currentWeapon.isDefault)

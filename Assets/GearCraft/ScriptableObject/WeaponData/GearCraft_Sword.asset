@@ -17,10 +17,17 @@ MonoBehaviour:
   weaponType: 0
   coolTime: 0.5
   baseDamage: 40
+  accDamageMultiplier: 1
   attackRange: 1
   bulletSpeed: 25
   bulletPrefab: {fileID: 0}
   spreadAngle: 0
+  muzzleOffset: {x: 0, y: 0}
+  useLineHitbox: 0
+  lineHitboxWidth: 0.5
+  lineHitboxDuration: 0.05
+  lineHitboxVisualPrefab: {fileID: 0}
+  lineHitboxVisualSprite: {fileID: 0}
   maxDurability: 10
   armTriggerName: GearCraft_Sword
   meleeRotateDuration: 0.5

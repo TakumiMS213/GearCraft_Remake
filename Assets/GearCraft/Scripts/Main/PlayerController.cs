@@ -1,6 +1,7 @@
 using System;
 using Cysharp.Threading.Tasks;
 using System.Threading;
+using GearCraft.Scripts.Main;
 using UnityEngine;
 
 
@@ -341,12 +342,13 @@ public class PlayerController : MonoBehaviour
         Vector2 direction = (mouseWorldPos - FirePoint.position).normalized;
         float angle = Mathf.Clamp(Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg, -90f, 90f);
 
-        // 拡散角度の適用
         float spread = currentWeapon.spreadAngle;
         if (runtimeStatus != null)
+        {
             spread += runtimeStatus.spreadModifier;
-        float finalAngle = CalculateSpreadAngle(angle, spread);
+        }
 
+        float finalAngle = CalculateSpreadAngle(angle, spread);
         direction = new Vector2(Mathf.Cos(finalAngle * Mathf.Deg2Rad), Mathf.Sin(finalAngle * Mathf.Deg2Rad));
         Vector3 muzzlePosition = GetMuzzlePosition(direction);
 
@@ -356,58 +358,79 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        // 弾丸生成
         GameObject bullet = Instantiate(currentWeapon.bulletPrefab, muzzlePosition, Quaternion.Euler(0, 0, finalAngle));
         if (bullet == null) return;
 
-        var rbBullet = bullet.GetComponent<Rigidbody2D>();
+        Rigidbody2D rbBullet = bullet.GetComponent<Rigidbody2D>();
         if (rbBullet != null)
         {
             rbBullet.linearVelocity = direction * currentWeapon.bulletSpeed;
         }
 
-        // 弾丸にダメージを設定
-        var bc = bullet.GetComponent<BulletController>();
-        if (bc != null)
-        {
-            ApplyWeaponDataToBullet(bc);
+        ConfigureSpawnedProjectile(bullet);
 
-            if (runtimeStatus != null)
-            {
-                bc.bulletDamage = currentDamage + runtimeStatus.ACC + runtimeStatus.bonusDamage;
-
-                // 弾丸サイズ
-                if (runtimeStatus.bulletSizeMult > 1f)
-                    bullet.transform.localScale *= runtimeStatus.bulletSizeMult;
-
-                // 跳弾
-                bc.ricochetCount = runtimeStatus.ricochetCount;
-            }
-
-            // 貫通
-            if (currentWeapon.isPiercing)
-                bc.destroyOnHit = false;
-        }
-
-        // 弾丸倍化
         if (runtimeStatus != null && runtimeStatus.hasBulletDouble)
         {
             float secondAngle = CalculateSpreadAngle(angle, spread);
             Vector2 dir2 = new Vector2(Mathf.Cos(secondAngle * Mathf.Deg2Rad), Mathf.Sin(secondAngle * Mathf.Deg2Rad));
             Vector3 secondMuzzlePosition = GetMuzzlePosition(dir2);
             GameObject bullet2 = Instantiate(currentWeapon.bulletPrefab, secondMuzzlePosition, Quaternion.Euler(0, 0, secondAngle));
-            var rb2 = bullet2.GetComponent<Rigidbody2D>();
-            if (rb2 != null) rb2.linearVelocity = dir2 * currentWeapon.bulletSpeed;
-            var bc2 = bullet2.GetComponent<BulletController>();
-            if (bc2 != null)
+            if (bullet2 == null) return;
+
+            Rigidbody2D rb2 = bullet2.GetComponent<Rigidbody2D>();
+            if (rb2 != null)
             {
-                ApplyWeaponDataToBullet(bc2);
-                bc2.bulletDamage = currentDamage + runtimeStatus.ACC + runtimeStatus.bonusDamage;
-                bc2.ricochetCount = runtimeStatus.ricochetCount;
-                if (currentWeapon.isPiercing) bc2.destroyOnHit = false;
+                rb2.linearVelocity = dir2 * currentWeapon.bulletSpeed;
             }
+
+            ConfigureSpawnedProjectile(bullet2);
         }
     }
+
+    private void ConfigureSpawnedProjectile(GameObject bullet)
+    {
+        if (bullet == null || currentWeapon == null)
+        {
+            return;
+        }
+
+        float projectileDamage = currentDamage;
+        if (runtimeStatus != null)
+        {
+            projectileDamage += currentWeapon.GetScaledFlatDamageBonus(runtimeStatus.ACC + runtimeStatus.bonusDamage);
+            if (runtimeStatus.bulletSizeMult > 1f)
+            {
+                bullet.transform.localScale *= runtimeStatus.bulletSizeMult;
+            }
+        }
+
+        SteamThrowerBulletController steamThrowerBullet = bullet.GetComponent<SteamThrowerBulletController>();
+        if (steamThrowerBullet != null)
+        {
+            steamThrowerBullet.Configure(projectileDamage, currentWeapon.attackRange, null);
+            return;
+        }
+
+        BulletController bulletController = bullet.GetComponent<BulletController>();
+        if (bulletController == null)
+        {
+            return;
+        }
+
+        ApplyWeaponDataToBullet(bulletController);
+        bulletController.bulletDamage = projectileDamage;
+
+        if (runtimeStatus != null)
+        {
+            bulletController.ricochetCount = runtimeStatus.ricochetCount;
+        }
+
+        if (currentWeapon.isPiercing)
+        {
+            bulletController.destroyOnHit = false;
+        }
+    }
+
 
     private static float CalculateSpreadAngle(float baseAngle, float spread)
     {
@@ -432,7 +455,7 @@ public class PlayerController : MonoBehaviour
 
         if (runtimeStatus != null)
         {
-            damage += runtimeStatus.ACC + runtimeStatus.bonusDamage;
+            damage += currentWeapon.GetScaledFlatDamageBonus(runtimeStatus.ACC + runtimeStatus.bonusDamage);
         }
 
         Vector3 center = muzzlePosition + (Vector3)(direction.normalized * range * 0.5f);
@@ -568,50 +591,68 @@ public class PlayerController : MonoBehaviour
 
     private async UniTaskVoid BoostActive()
     {
-        if (MaterialManager.Instance == null) return;
-        if (MaterialManager.Instance.GetMaterial(MaterialManager.MaterialType.Gear) < 1) return;
-        if (currentWeapon == null) return;
+        if (runtimeStatus == null)
+        {
+            runtimeStatus = StatusManager.Instance ?? FindAnyObjectByType<StatusManager>();
+        }
 
-        float currentCT = currentWeapon.coolTime * (runtimeStatus?.attackSpeedMult ?? 1f);
-        if (currentCT <= 0.1f) return;
+        if (runtimeStatus == null || MaterialManager.Instance == null)
+        {
+            return;
+        }
 
-        if (boostUseEffect != null && isBoostActive)
+        if (currentWeapon == null)
+        {
+            return;
+        }
+
+        if (!MaterialManager.Instance.UseMaterial(MaterialManager.MaterialType.Gear, 1))
+        {
+            return;
+        }
+
+        if (boostUseEffect != null)
+        {
             SpawnEffect(boostUseEffect, transform.position);
+        }
 
-        BoostPanel.SetActive(true);
-        MaterialManager.Instance.UseMaterial(MaterialManager.MaterialType.Gear, 1);
+        if (BoostPanel != null)
+        {
+            BoostPanel.SetActive(true);
+        }
 
         boostRemainingTime = Mathf.Min(boostRemainingTime + 5f, 5f);
         boostCount++;
 
-        // 攻撃速度バフを適用
-        if (runtimeStatus != null)
-            runtimeStatus.attackSpeedMult = Mathf.Max(runtimeStatus.attackSpeedMult * 0.5f, 0.1f);
-
-        if (!isBoostActive)
+        if (isBoostActive)
         {
-            isBoostActive = true;
-            boostCts = new CancellationTokenSource();
-            float savedSpeedMult = runtimeStatus?.attackSpeedMult ?? 1f;
+            return;
+        }
 
-            try
+        isBoostActive = true;
+        boostCts = new CancellationTokenSource();
+        float savedSpeedMult = runtimeStatus.attackSpeedMult;
+        runtimeStatus.attackSpeedMult = Mathf.Max(savedSpeedMult * 0.5f, 0.05f);
+
+        try
+        {
+            while (boostRemainingTime > 0f)
             {
-                while (boostRemainingTime > 0)
-                {
-                    await UniTask.Delay(TimeSpan.FromSeconds(0.1f), cancellationToken: boostCts.Token);
-                    boostRemainingTime -= 0.1f;
-                }
+                await UniTask.Delay(TimeSpan.FromSeconds(0.1f), cancellationToken: boostCts.Token);
+                boostRemainingTime -= 0.1f;
             }
-            catch (OperationCanceledException) { }
+        }
+        catch (OperationCanceledException)
+        {
+        }
 
-            boostCount = 0;
-            isBoostActive = false;
-            boostRemainingTime = 0f;
+        boostCount = 0;
+        isBoostActive = false;
+        boostRemainingTime = 0f;
+        runtimeStatus.attackSpeedMult = savedSpeedMult;
 
-            // 攻撃速度を元に戻す
-            if (runtimeStatus != null)
-                runtimeStatus.attackSpeedMult = 1f;
-
+        if (BoostPanel != null)
+        {
             BoostPanel.SetActive(false);
         }
     }

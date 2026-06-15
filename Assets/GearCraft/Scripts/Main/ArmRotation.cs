@@ -101,6 +101,7 @@ public class ArmRotation : MonoBehaviour
             case "SteamGatling":
                 return ClampPoseIndex(1);
             case "SteamShoot":
+            case "SteamThrower":
                 return ClampPoseIndex(2);
             case "GearCraft_Axe":
                 return ClampPoseIndex(3);

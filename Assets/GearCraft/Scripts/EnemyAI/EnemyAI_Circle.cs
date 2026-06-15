@@ -94,7 +94,7 @@ public class EnemyAI_Circle : MonoBehaviour, IEnemyAI
         currentTween?.Kill();
 
         float distance = Vector3.Distance(owner.transform.position, returnPoint.position);
-        float moveTime = distance / data.speed;
+        float moveTime = distance / Mathf.Max(owner.GetMoveSpeed(data.speed), 0.1f);
 
         currentTween = owner.transform.DOMove(returnPoint.position, moveTime)
             .SetEase(Ease.OutSine);

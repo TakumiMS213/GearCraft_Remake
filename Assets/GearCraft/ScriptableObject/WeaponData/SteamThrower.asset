@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 68316589f9c8e104ba5f0b925df24123, type: 3}
+  m_Name: SteamThrower
+  m_EditorClassIdentifier: 
+  weaponName: SteamThrower
+  icon: {fileID: -1560678534750883982, guid: fa913e07b0155e84b908a2be457646d8, type: 3}
+  weaponType: 1
+  coolTime: 0.08
+  baseDamage: 1
+  accDamageMultiplier: 0.08
+  attackRange: 2.4
+  bulletSpeed: 13
+  bulletPrefab: {fileID: 2674382936685281287, guid: 97ac3cad97a31f2428c500cf65bcd38e, type: 3}
+  spreadAngle: 0
+  muzzleOffset: {x: 1.45, y: 0}
+  useLineHitbox: 0
+  lineHitboxWidth: 0.5
+  lineHitboxDuration: 0.05
+  lineHitboxVisualPrefab: {fileID: 0}
+  lineHitboxVisualSprite: {fileID: 0}
+  maxDurability: 18
+  armTriggerName: SteamThrower
+  meleeRotateDuration: 0.5
+  isDefault: 0
+  isPiercing: 1

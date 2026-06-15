@@ -24,8 +24,8 @@ MonoBehaviour:
   moduleFlag: 
   statBonus: 0
   requiredWeapon: {fileID: 0}
-  unlockBossKills: 99
+  unlockBossKills: 0
   summary: 
   unlockId: PunkDrive
-  unlockSortOrder: 99
-  hiddenFromUnlockList: 1
+  unlockSortOrder: 2
+  hiddenFromUnlockList: 0

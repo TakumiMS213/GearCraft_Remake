@@ -139,7 +139,7 @@ public class EnemyAI_BossTank : MonoBehaviour, IEnemyAI
     {
         float targetX = owner.transform.position.x + Random.Range(-4f, 4f);
         targetX = Mathf.Clamp(targetX, -8f, 8f);
-        float speed = data.speed * 0.3f;
+        float speed = owner.GetMoveSpeed(data.speed) * 0.3f;
         float duration = Mathf.Abs(targetX - owner.transform.position.x) / Mathf.Max(speed, 0.1f);
 
         moveTween = owner.transform.DOMoveX(targetX, duration)

@@ -62,7 +62,7 @@ public class StatusDisplay : MonoBehaviour
         // --- HP ---
         int hpBars = Mathf.Clamp(Mathf.RoundToInt(statusManager.HP / (HP_MAX / 10f)), 0, 10);
         Color hpColor = GetGaugeColor(statusManager.HP / (float)HP_MAX);
-        SetText(hpText, "    HP : " + BuildGaugeText(hpBars, 10, hpColor, Color.white));
+        SetText(hpText,  "HP : " + BuildGaugeText(hpBars, 10, hpColor, Color.white));
 
         // --- GATE ---
         int gateBars = Mathf.Clamp(Mathf.RoundToInt(statusManager.GATE / (GATE_MAX / 10f)), 0, 10);

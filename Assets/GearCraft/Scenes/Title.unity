@@ -507,7 +507,7 @@ RectTransform:
   m_GameObject: {fileID: 136272337}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 879445378}
@@ -570,7 +570,7 @@ MonoBehaviour:
   ACC: 0
   GATE: 100
   defaultWeapon: {fileID: 11400000, guid: 7ea165434b8ce4244bec51255964e394, type: 2}
-  currentWeapon: {fileID: 11400000, guid: 3001dfbf9db1bea4e828420f0224bd33, type: 2}
+  currentWeapon: {fileID: 11400000, guid: 92cdc6d6319de9a44b3adc0255ea9310, type: 2}
   ownedWeapons:
   - {fileID: 11400000, guid: 7ea165434b8ce4244bec51255964e394, type: 2}
   weaponCatalog:
@@ -3991,6 +3991,7 @@ MonoBehaviour:
   fadeDuration: 0.7
   loadingRoot: {fileID: 136272337}
   loadingTipText: {fileID: 1152268550}
+  loadingTipData: {fileID: 0}
   minLoadingSeconds: 1
   maxLoadingSeconds: 2
   loadingTips:
@@ -4064,7 +4065,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 56, y: 56}
-  m_SizeDelta: {x: 980, y: 112}
+  m_SizeDelta: {x: 1274, y: 112}
   m_Pivot: {x: 0, y: 0}
 --- !u!114 &1152268550
 MonoBehaviour:
@@ -7401,8 +7402,8 @@ SceneRoots:
   - {fileID: 1588555328}
   - {fileID: 962934401}
   - {fileID: 1375487525}
-  - {fileID: 1858667664}
   - {fileID: 156347541}
+  - {fileID: 1858667664}
   - {fileID: 1489233926}
   - {fileID: 1063547959}
   - {fileID: 1310151869}

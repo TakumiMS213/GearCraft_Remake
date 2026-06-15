@@ -26,8 +26,8 @@ MonoBehaviour:
   circleDuration: 1.5
   chargeDistance: 5
   chargeTime: 1
-  explosionRadius: 3
-  explosionDamage: 30
+  explosionRadius: 1
+  explosionDamage: 10
   summonEnemyData: {fileID: 0}
   summonCount: 0
   summonInterval: 6

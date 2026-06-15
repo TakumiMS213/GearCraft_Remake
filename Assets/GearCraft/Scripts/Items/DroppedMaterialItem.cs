@@ -38,6 +38,7 @@ namespace GearCraft.Scripts.Items
         {
             rb = GetComponent<Rigidbody2D>();
             spriteRenderer = GetComponent<SpriteRenderer>();
+            IgnoreEnemyCollisions();
 
             GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
             if (playerObj != null)
@@ -53,6 +54,49 @@ namespace GearCraft.Scripts.Items
                 ).normalized;
                 rb.AddForce(randomDir * scatterForce, ForceMode2D.Impulse);
                 rb.angularVelocity = Random.Range(-360f, 360f);
+            }
+        }
+
+        public static void IgnoreCollisionWithExistingDrops(Collider2D targetCollider)
+        {
+            if (targetCollider == null)
+            {
+                return;
+            }
+
+            DroppedMaterialItem[] drops = FindObjectsByType<DroppedMaterialItem>(
+                FindObjectsInactive.Exclude,
+                FindObjectsSortMode.None);
+
+            for (int i = 0; i < drops.Length; i++)
+            {
+                Collider2D dropCollider = drops[i] != null ? drops[i].GetComponent<Collider2D>() : null;
+                if (dropCollider != null && dropCollider != targetCollider)
+                {
+                    Physics2D.IgnoreCollision(targetCollider, dropCollider, true);
+                }
+            }
+        }
+
+        private void IgnoreEnemyCollisions()
+        {
+            Collider2D dropCollider = GetComponent<Collider2D>();
+            if (dropCollider == null)
+            {
+                return;
+            }
+
+            global::EnemyController[] enemies = FindObjectsByType<global::EnemyController>(
+                FindObjectsInactive.Exclude,
+                FindObjectsSortMode.None);
+
+            for (int i = 0; i < enemies.Length; i++)
+            {
+                Collider2D enemyCollider = enemies[i] != null ? enemies[i].GetComponent<Collider2D>() : null;
+                if (enemyCollider != null)
+                {
+                    Physics2D.IgnoreCollision(dropCollider, enemyCollider, true);
+                }
             }
         }
 

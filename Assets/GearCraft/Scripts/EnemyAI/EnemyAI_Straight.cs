@@ -34,7 +34,7 @@ public class EnemyAI_Straight : MonoBehaviour, IEnemyAI
 
         // ゲート方向へ直進
         Vector2 dir = (target.position - owner.transform.position).normalized;
-        Vector2 nextPosition = (Vector2)owner.transform.position + dir * data.speed * Time.deltaTime;
+        Vector2 nextPosition = (Vector2)owner.transform.position + dir * owner.GetMoveSpeed(data.speed) * Time.deltaTime;
         owner.transform.position = nextPosition;
 
         // 攻撃タイマー

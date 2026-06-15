@@ -32,7 +32,7 @@ public class EnemyAI_Charger : MonoBehaviour, IEnemyAI
         if (playerTarget != null)
         {
             Vector2 dir = (playerTarget.position - owner.transform.position).normalized;
-            owner.transform.Translate(dir * data.speed * 0.3f * Time.deltaTime);
+            owner.transform.Translate(dir * owner.GetMoveSpeed(data.speed) * 0.3f * Time.deltaTime);
         }
 
         chargeTimer -= Time.deltaTime;
