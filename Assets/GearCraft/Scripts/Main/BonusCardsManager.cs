@@ -203,10 +203,6 @@ public class BonusCardsManager : MonoBehaviour
                 }
                 break;
 
-            case CardEffectType.RepairDurability:
-                status.RepairDurability((int)effect.value);
-                break;
-
             case CardEffectType.MagnetRangeUp:
                 status.magnetRange += effect.value;
                 break;

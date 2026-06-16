@@ -7598,6 +7598,7 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier:
   gridParent: {fileID: 1377054531}
+  gridPrefab: {fileID: 7519640972356971000, guid: bbf9a2db27284a77ba09cc29939e1ec6, type: 3}
   cellPrefab: {fileID: 4206488810657750144, guid: f8b24e5387143b94698d16a43c673ac7, type: 3}
   cellSize: 120
   maxCellSize: 170
@@ -12047,11 +12048,9 @@ MonoBehaviour:
   m_EditorClassIdentifier:
   allParts:
   - {fileID: 11400000, guid: 469044db7ed241b4a8a7f9106f271eeb, type: 2}
-  - {fileID: 11400000, guid: f86bff2a97f991649b5898cdbcf71b0f, type: 2}
   - {fileID: 11400000, guid: fd753ff57a86d7b4e9ee954a7e532eed, type: 2}
   - {fileID: 11400000, guid: 4974da6cb8b075849b58cd53dea232fb, type: 2}
   - {fileID: 11400000, guid: 52c4621f3772cad47b670b44e7035876, type: 2}
-  - {fileID: 11400000, guid: c24e7e54b719abc409b68c0ab1f6cf7a, type: 2}
   - {fileID: 11400000, guid: d9cb44b87fed95141b9e435e2f102aef, type: 2}
   - {fileID: 11400000, guid: de2fcd1e1e60f514298bc54c4654d30f, type: 2}
   - {fileID: 11400000, guid: de217bb6ce004657a845442a8441a217, type: 2}
@@ -12062,8 +12061,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 012422d4c22846c78e52068aada3d3d2, type: 2}
   - {fileID: 11400000, guid: 64d57a991f684498a1b80de91a915a2b, type: 2}
   - {fileID: 11400000, guid: f5a3b5fb04eb43d2bddd2681542e2b73, type: 2}
-  - {fileID: 11400000, guid: 3dcac19d3bd34eddaab3c9569b06a26c, type: 2}
-  - {fileID: 11400000, guid: eab4dcb320a1447496b5a7010f514e81, type: 2}
   shopSlotCount: 6
   rerollGearCost: 1
   shopParent: {fileID: 398361662}

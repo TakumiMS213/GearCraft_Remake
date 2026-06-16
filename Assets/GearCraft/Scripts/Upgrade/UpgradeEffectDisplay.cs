@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
@@ -45,17 +45,12 @@ public class UpgradeEffectDisplay : MonoBehaviour
 
         if (status.hasBulletDouble)
         {
-            AddSignedEntry("弾数100%増加", false);
+            AddSignedEntry("弾数+1", false);
         }
 
         if (status.spreadModifier != 0f)
         {
             AddSignedEntry(UpgradeEffectTextFormatter.FormatSpreadModifier(status.spreadModifier), status.spreadModifier > 0f);
-        }
-
-        if (status.durabilityDrainChance > 0f)
-        {
-            AddSignedEntry(UpgradeEffectTextFormatter.FormatPercentDelta("耐久吸収率", status.durabilityDrainChance), false);
         }
 
         if (status.ricochetCount > 0)
@@ -76,11 +71,6 @@ public class UpgradeEffectDisplay : MonoBehaviour
         if (status.magnetRange > 3f)
         {
             AddSignedEntry(UpgradeEffectTextFormatter.FormatMagnitudeDelta("回収範囲", status.magnetRange - 3f), false);
-        }
-
-        if (status.maxDurabilityBonus != 0)
-        {
-            AddSignedEntry(UpgradeEffectTextFormatter.FormatMagnitudeDelta("最大耐久", status.maxDurabilityBonus), status.maxDurabilityBonus < 0);
         }
 
         if (entries.Count == 0)
@@ -148,6 +138,6 @@ public class UpgradeEffectDisplay : MonoBehaviour
 
     private void AddSignedEntry(string text, bool negative)
     {
-        AddEntry($"{(negative ? "-" : "＋")} {text}", negative ? negativeColor : positiveColor);
+        AddEntry($"{(negative ? "-" : "+")} {text}", negative ? negativeColor : positiveColor);
     }
 }

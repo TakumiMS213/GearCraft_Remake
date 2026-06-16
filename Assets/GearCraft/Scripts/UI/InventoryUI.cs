@@ -1,11 +1,10 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Mainシーンのインベントリ表示。
-/// 素材グリッドと現在武器の詳細をまとめて描画する。
+/// Main scene inventory display for materials and the current weapon.
 /// </summary>
 public class InventoryUI : MonoBehaviour
 {
@@ -25,7 +24,7 @@ public class InventoryUI : MonoBehaviour
     public RectTransform itemListParent;
     public GameObject itemEntryPrefab;
 
-    [Header("素材アイコン")]
+    [Header("Material Icons")]
     public Sprite scrapIcon;
     public Sprite gearIcon;
     public Sprite upgradeCoreIcon;
@@ -140,15 +139,12 @@ public class InventoryUI : MonoBehaviour
         float damage = weapon.baseDamage + scaledBonus;
         float attackCooldown = status != null ? weapon.coolTime * status.attackSpeedMult : weapon.coolTime;
         float attackPerSecond = attackCooldown > 0f ? 1f / attackCooldown : 0f;
-        int durability = status != null ? status.GetCurrentDurability() : weapon.maxDurability;
-        int maxDurability = status != null ? status.GetCurrentMaxDurability() : weapon.maxDurability;
 
         return
-            $"与ダメージ: {FormatNumber(damage)}\n" +
+            $"ダメージ: {FormatNumber(damage)}\n" +
             $"攻撃間隔: {attackCooldown:0.##}秒\n" +
             $"攻撃速度: {attackPerSecond:0.##}/秒\n" +
-            $"射程: {weapon.attackRange:0.##}\n" +
-            $"耐久値: {durability}/{maxDurability}";
+            $"射程: {weapon.attackRange:0.##}";
     }
 
     private static string GetWeaponDescription(WeaponDataSO weapon)
@@ -161,10 +157,10 @@ public class InventoryUI : MonoBehaviour
         string typeText = weapon.weaponType == WeaponType.Melee ? "近接武器" : "射撃武器";
         if (weapon.isPiercing)
         {
-            return $"{typeText}。敵を貫通して複数対象へ攻撃できる。";
+            return $"{typeText}。敵を貫通して複数対象へ攻撃できます。";
         }
 
-        return $"{typeText}。扱いやすい標準的な武器。";
+        return $"{typeText}。扱いやすい標準的な武器です。";
     }
 
     private static string FormatNumber(float value)
@@ -205,17 +201,17 @@ public class InventoryUI : MonoBehaviour
         switch (type)
         {
             case MaterialManager.MaterialType.Scrap:
-                return "武器や設備の基礎素材。多くのクラフトで消費する。";
+                return "武器や設備の基礎素材。多くのクラフトで消費します。";
             case MaterialManager.MaterialType.Gear:
-                return "精密な歯車素材。武器製作やショップ更新に使用する。";
+                return "精密な歯車素材。武器製作やショップ更新に使用します。";
             case MaterialManager.MaterialType.UpgradeCore:
-                return "強化パーツの生成・購入に使う中核素材。";
+                return "強化パーツの生成や購入に使用する中核素材。";
             case MaterialManager.MaterialType.ModuleCore_lv1:
-                return "低位モジュールの構築に使うコア素材。";
+                return "低位モジュールの構築に使用するコア素材。";
             case MaterialManager.MaterialType.ModuleCore_lv2:
-                return "中位モジュールの構築に使うコア素材。";
+                return "中位モジュールの構築に使用するコア素材。";
             case MaterialManager.MaterialType.ModuleCore_lv3:
-                return "高位モジュールの構築に使う希少なコア素材。";
+                return "高位モジュールの構築に使用する希少なコア素材。";
             default:
                 return "";
         }

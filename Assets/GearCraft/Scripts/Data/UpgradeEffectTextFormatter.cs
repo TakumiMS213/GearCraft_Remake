@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public static class UpgradeEffectTextFormatter
 {
@@ -16,21 +16,17 @@ public static class UpgradeEffectTextFormatter
             case UpgradeEffectType.AttackSpeedMult:
                 return FormatAttackSpeedMultiplier(effect.value);
             case UpgradeEffectType.BulletDouble:
-                return "弾数100%増加";
+                return "弾数+1";
             case UpgradeEffectType.SpreadReduction:
                 return $"拡散低下 {GetMagnitudeLabel(effect.value)}";
             case UpgradeEffectType.SpreadIncrease:
                 return $"拡散増加 {GetMagnitudeLabel(effect.value)}";
-            case UpgradeEffectType.DurabilityDrain:
-                return FormatPercentDelta("耐久吸収率", effect.value);
             case UpgradeEffectType.Ricochet:
                 return FormatMagnitudeDelta("跳弾", effect.value);
             case UpgradeEffectType.JunkCollector:
                 return FormatPercentDelta("素材ドロップ率", effect.value);
             case UpgradeEffectType.BulletSizeUp:
                 return FormatPercentDelta("弾サイズ", effect.value);
-            case UpgradeEffectType.MaxDurabilityUp:
-                return FormatMagnitudeDelta("最大耐久", effect.value);
             case UpgradeEffectType.MagnetRangeUp:
                 return FormatMagnitudeDelta("回収範囲", effect.value);
             default:
@@ -41,7 +37,7 @@ public static class UpgradeEffectTextFormatter
     public static string FormatEffectLine(UpgradeEffect effect, string positiveColor, string negativeColor)
     {
         bool negative = IsNegativeEffect(effect);
-        string sign = negative ? "-" : "＋";
+        string sign = negative ? "-" : "+";
         string color = negative ? negativeColor : positiveColor;
         return $"<color={color}>{sign} {FormatEffect(effect)}</color>";
     }
@@ -60,11 +56,9 @@ public static class UpgradeEffectTextFormatter
             case UpgradeEffectType.AttackSpeedMult:
                 return effect.value > 1f;
             case UpgradeEffectType.DamageFlat:
-            case UpgradeEffectType.DurabilityDrain:
             case UpgradeEffectType.Ricochet:
             case UpgradeEffectType.JunkCollector:
             case UpgradeEffectType.BulletSizeUp:
-            case UpgradeEffectType.MaxDurabilityUp:
             case UpgradeEffectType.MagnetRangeUp:
                 return effect.value < 0f;
             default:
@@ -111,26 +105,10 @@ public static class UpgradeEffectTextFormatter
     public static string GetMagnitudeLabel(float value)
     {
         float magnitude = Mathf.Abs(value);
-        if (magnitude <= 1f)
-        {
-            return "小";
-        }
-
-        if (magnitude <= 3f)
-        {
-            return "中";
-        }
-
-        if (magnitude <= 6f)
-        {
-            return "大";
-        }
-
-        if (magnitude <= 10f)
-        {
-            return "超";
-        }
-
+        if (magnitude <= 1f) return "小";
+        if (magnitude <= 3f) return "中";
+        if (magnitude <= 6f) return "大";
+        if (magnitude <= 10f) return "超";
         return "極";
     }
 }

@@ -8,6 +8,7 @@ public class UpgradeGridUI : MonoBehaviour
 {
     [Header("Grid UI")]
     public RectTransform gridParent;
+    public GameObject gridPrefab;
     public GameObject cellPrefab;
     public float cellSize = 60f;
     public float maxCellSize = 150f;
@@ -123,11 +124,13 @@ public class UpgradeGridUI : MonoBehaviour
     private void RefreshGrid(int[,] grid, int gridSize, List<UpgradeGridManager.PlacedPart> placedParts)
     {
         ClearObjects(cellObjects);
+        ClearGeneratedChildren(gridParent, "UpgradeGrid");
         ClearGeneratedChildren(gridParent, "GridCell");
         currentGrid = grid;
         currentGridSize = gridSize;
 
-        if (grid == null || gridParent == null || cellPrefab == null)
+        GameObject emptyCellPrefab = gridPrefab != null ? gridPrefab : cellPrefab;
+        if (grid == null || gridParent == null || emptyCellPrefab == null)
         {
             SetGridHighlightVisible(false);
             return;
@@ -143,34 +146,59 @@ public class UpgradeGridUI : MonoBehaviour
         {
             for (int x = 0; x < gridSize; x++)
             {
-                GameObject cell = Instantiate(cellPrefab, gridParent);
-                RectTransform rectTransform = cell.GetComponent<RectTransform>();
-                if (rectTransform != null)
-                {
-                    rectTransform.sizeDelta = new Vector2(resolvedCellSize, resolvedCellSize);
-                    rectTransform.anchoredPosition = new Vector2(
-                        startX + x * (resolvedCellSize + cellSpacing),
-                        startY - y * (resolvedCellSize + cellSpacing));
-                }
-
                 UpgradePartSO cellPart = ResolvePart(grid[y, x], placedParts);
-                ApplyCellVisual(cell, cellPart);
-                ApplyTooltip(cell, cellPart);
-                ApplyIneffectiveWarning(cell, cellPart, grid, x, y);
-
+                Vector2 cellPosition = new Vector2(
+                    startX + x * (resolvedCellSize + cellSpacing),
+                    startY - y * (resolvedCellSize + cellSpacing));
                 int gx = x;
                 int gy = y;
-                Button button = cell.GetComponent<Button>();
-                if (button != null)
+
+                GameObject emptyCell = Instantiate(emptyCellPrefab, gridParent);
+                emptyCell.name = "UpgradeGrid";
+                ConfigureGridCell(emptyCell, cellPosition, resolvedCellSize, gx, gy, grid);
+                ApplyTooltip(emptyCell, null);
+                cellObjects.Add(emptyCell);
+
+                if (cellPart == null || cellPrefab == null)
                 {
-                    button.onClick.AddListener(() => OnCellClicked(gx, gy, grid));
+                    continue;
                 }
 
-                cellObjects.Add(cell);
+                GameObject placedCell = Instantiate(cellPrefab, gridParent);
+                placedCell.name = "GridCell";
+                ConfigureGridCell(placedCell, cellPosition, resolvedCellSize, gx, gy, grid);
+                ApplyCellVisual(placedCell, cellPart);
+                ApplyTooltip(placedCell, cellPart);
+                ApplyIneffectiveWarning(placedCell, cellPart, grid, x, y);
+                cellObjects.Add(placedCell);
             }
         }
 
         UpdateGridHighlight(totalSize);
+    }
+
+    private void ConfigureGridCell(GameObject cell, Vector2 position, float size, int x, int y, int[,] grid)
+    {
+        if (cell == null)
+        {
+            return;
+        }
+
+        RectTransform rectTransform = cell.GetComponent<RectTransform>();
+        if (rectTransform != null)
+        {
+            rectTransform.sizeDelta = new Vector2(size, size);
+            rectTransform.anchoredPosition = position;
+        }
+
+        Button button = cell.GetComponent<Button>();
+        if (button == null)
+        {
+            button = cell.AddComponent<Button>();
+        }
+
+        button.onClick.RemoveAllListeners();
+        button.onClick.AddListener(() => OnCellClicked(x, y, grid));
     }
 
     private float ResolveCellSize(int gridSize)
@@ -564,7 +592,8 @@ public class UpgradeGridUI : MonoBehaviour
     {
         gridX = -1;
         gridY = -1;
-        if (gridParent == null || currentGrid == null || currentGridSize <= 0)
+        RectTransform root = gridParent;
+        if (root == null || currentGrid == null || currentGridSize <= 0)
         {
             return false;
         }
@@ -574,7 +603,7 @@ public class UpgradeGridUI : MonoBehaviour
             : null;
 
         Vector2 localPoint;
-        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(gridParent, screenPosition, camera, out localPoint))
+        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(root, screenPosition, camera, out localPoint))
         {
             return false;
         }
@@ -592,7 +621,8 @@ public class UpgradeGridUI : MonoBehaviour
     {
         gridX = -1;
         gridY = -1;
-        if (draggingPart == null || gridParent == null || currentGrid == null || currentGridSize <= 0)
+        RectTransform root = gridParent;
+        if (draggingPart == null || root == null || currentGrid == null || currentGridSize <= 0)
         {
             return false;
         }
@@ -602,7 +632,7 @@ public class UpgradeGridUI : MonoBehaviour
             : null;
 
         Vector2 localPoint;
-        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(gridParent, screenPosition, camera, out localPoint))
+        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(root, screenPosition, camera, out localPoint))
         {
             return false;
         }
@@ -653,7 +683,8 @@ public class UpgradeGridUI : MonoBehaviour
     private bool TryGetDragPreviewAnchoredPosition(int gridX, int gridY, out Vector2 anchoredPosition)
     {
         anchoredPosition = Vector2.zero;
-        if (draggingPart == null || gridParent == null || currentGridSize <= 0)
+        RectTransform root = gridParent;
+        if (draggingPart == null || root == null || currentGridSize <= 0)
         {
             return false;
         }
@@ -681,7 +712,7 @@ public class UpgradeGridUI : MonoBehaviour
         float activeCenterX = gridStartX + (gridX + bounds.minX + (bounds.width - 1) * 0.5f) * step;
         float activeCenterY = gridStartY - (gridY + bounds.minY + (bounds.height - 1) * 0.5f) * step;
 
-        Vector3 worldPosition = gridParent.TransformPoint(new Vector3(activeCenterX, activeCenterY, 0f));
+        Vector3 worldPosition = root.TransformPoint(new Vector3(activeCenterX, activeCenterY, 0f));
         anchoredPosition = canvasRect.InverseTransformPoint(worldPosition);
         return true;
     }

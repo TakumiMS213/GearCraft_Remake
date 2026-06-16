@@ -301,14 +301,11 @@ public class UpgradeGridManager : MonoBehaviour
         status.attackSpeedMult = 1f;
         status.hasBulletDouble = false;
         status.spreadModifier = 0f;
-        status.durabilityDrainChance = 0f;
         status.ricochetCount = 0;
         status.junkCollectorMult = 1f;
         status.bulletSizeMult = 1f;
-        status.maxDurabilityBonus = 0;
 
         float magnetBonus = 0f;
-        int maxDurabilityBonus = 0;
 
         for (int i = 0; i < placedParts.Count; i++)
         {
@@ -326,12 +323,11 @@ public class UpgradeGridManager : MonoBehaviour
                     continue;
                 }
 
-                ApplyEffect(status, effect, ref magnetBonus, ref maxDurabilityBonus);
+                ApplyEffect(status, effect, ref magnetBonus);
             }
         }
 
         status.magnetRange = 3f + magnetBonus;
-        status.maxDurabilityBonus = maxDurabilityBonus;
 
         if (effectDisplay != null)
         {
@@ -488,7 +484,7 @@ public class UpgradeGridManager : MonoBehaviour
         }
     }
 
-    private static void ApplyEffect(StatusManager status, UpgradeEffect effect, ref float magnetBonus, ref int maxDurabilityBonus)
+    private static void ApplyEffect(StatusManager status, UpgradeEffect effect, ref float magnetBonus)
     {
         switch (effect.type)
         {
@@ -507,9 +503,6 @@ public class UpgradeGridManager : MonoBehaviour
             case UpgradeEffectType.SpreadIncrease:
                 status.spreadModifier += effect.value;
                 break;
-            case UpgradeEffectType.DurabilityDrain:
-                status.durabilityDrainChance += effect.value;
-                break;
             case UpgradeEffectType.Ricochet:
                 status.ricochetCount += (int)effect.value;
                 break;
@@ -518,9 +511,6 @@ public class UpgradeGridManager : MonoBehaviour
                 break;
             case UpgradeEffectType.BulletSizeUp:
                 status.bulletSizeMult += effect.value;
-                break;
-            case UpgradeEffectType.MaxDurabilityUp:
-                maxDurabilityBonus += (int)effect.value;
                 break;
             case UpgradeEffectType.MagnetRangeUp:
                 magnetBonus += effect.value;

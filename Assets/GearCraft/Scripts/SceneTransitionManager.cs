@@ -28,7 +28,7 @@ public class SceneTransitionManager : MonoBehaviour
         "Tip: 装備の相性を見直すと戦況が変わる。",
         "Tip: 休息前に素材を使い切る判断も大切。",
         "Tip: 歯車は次の一手を作るための余白。",
-        "Tip: 危険な時ほどゲートの耐久を確認しよう。"
+        "Tip: 危険な時ほどゲートの残りHPを確認しよう。"
     };
 
     public string sceneName = "CraftSpace";

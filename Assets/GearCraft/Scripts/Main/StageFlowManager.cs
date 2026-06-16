@@ -111,11 +111,6 @@ public class StageFlowManager : MonoBehaviour
         activeEnemies.Remove(enemy);
         restDefeatedEnemies++;
 
-        if (StatusManager.Instance != null)
-        {
-            StatusManager.Instance.TryDurabilityDrain();
-        }
-
         if (wasLastEnemy)
         {
             stageLastEnemyKilled = true;
@@ -164,15 +159,6 @@ public class StageFlowManager : MonoBehaviour
             int bossIndex = stageConfig.GetBossIndex(currentStage);
             int unlockedBossCount = bossIndex >= 0 ? bossIndex + 1 : StatusManager.Instance.bossKillCount + 1;
             StatusManager.Instance.bossKillCount = Mathf.Min(Mathf.Max(StatusManager.Instance.bossKillCount, unlockedBossCount), 4);
-        }
-
-        if (StatusManager.Instance != null)
-        {
-            bool weaponBroken = StatusManager.Instance.ReduceDurability();
-            if (weaponBroken)
-            {
-                Debug.Log("Weapon was broken. Switching to default weapon.");
-            }
         }
 
         if (transitionManager != null)

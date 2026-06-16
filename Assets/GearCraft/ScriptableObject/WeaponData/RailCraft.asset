@@ -29,7 +29,6 @@ MonoBehaviour:
   lineHitboxDuration: 0.05
   lineHitboxVisualPrefab: {fileID: 3581530104794004645, guid: e82cfff8ed5854398b4fb19bce4fbd4a, type: 3}
   lineHitboxVisualSprite: {fileID: 21300000, guid: d373871cbba262544b3f204a1e17ef63, type: 3}
-  maxDurability: 15
   armTriggerName: RailCraft
   meleeRotateDuration: 0.5
   isDefault: 0
