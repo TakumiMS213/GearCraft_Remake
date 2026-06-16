@@ -42,6 +42,7 @@ public class StageFlowManager : MonoBehaviour
     private bool gateWasHit;
     private bool stageLastEnemyKilled;
     private bool stageCompletionTriggered;
+    private DayStartSnapshot dayStartSnapshot;
 
     public bool IsStageActive { get; private set; }
     public int EnemyScalingStage { get; private set; } = 1;
@@ -74,6 +75,7 @@ public class StageFlowManager : MonoBehaviour
         stagesSinceRest = 0;
         gateWasHit = false;
         ResetRestResultStats();
+        CaptureDayStartSnapshot();
 
         if (perfectUI != null)
         {
@@ -201,7 +203,7 @@ public class StageFlowManager : MonoBehaviour
 
             if (StatusManager.Instance != null && StatusManager.Instance.module_scrap)
             {
-                MaterialManager.Instance?.AddMaterial(MaterialManager.MaterialType.Gear, 1);
+                MaterialManager.Instance?.AddMaterial(MaterialManager.MaterialType.Gear, 5);
             }
 
             await ShowRestResultReportAsync();
@@ -242,6 +244,27 @@ public class StageFlowManager : MonoBehaviour
     {
         restDefeatedEnemies = 0;
         restMaterialGains.Clear();
+    }
+
+    public void RestoreDayStartSnapshot()
+    {
+        if (dayStartSnapshot == null)
+        {
+            return;
+        }
+
+        dayStartSnapshot.Restore();
+        ResetRestResultStats();
+        activeEnemies.Clear();
+        IsStageActive = false;
+        stageLastEnemyKilled = false;
+        stageCompletionTriggered = false;
+        gateWasHit = false;
+    }
+
+    private void CaptureDayStartSnapshot()
+    {
+        dayStartSnapshot = DayStartSnapshot.Capture();
     }
 
     private void StartNextStage()
@@ -360,6 +383,182 @@ public class StageFlowManager : MonoBehaviour
             {
                 Destroy(bullets[i]);
             }
+        }
+    }
+
+    private sealed class DayStartSnapshot
+    {
+        private int stageCount;
+        private int hp;
+        private int san;
+        private int str;
+        private int acc;
+        private float gate;
+        private WeaponDataSO currentWeapon;
+        private List<WeaponDataSO> ownedWeapons;
+        private List<UpgradePartSO> ownedUpgradeParts;
+        private List<StatusManager.SavedUpgradePartPlacement> savedUpgradePlacements;
+        private int selectWeapon;
+        private bool moduleScrap;
+        private bool moduleRepair;
+        private bool moduleBarrier;
+        private bool punkDrive;
+        private int craftWeaponDamageBuff;
+        private bool killAllEnemies;
+        private bool useCraftSpaceBuff;
+        private int bossKillCount;
+        private int upgradeShopDay;
+        private float bonusDamage;
+        private float attackSpeedMult;
+        private bool hasBulletDouble;
+        private float spreadModifier;
+        private int ricochetCount;
+        private float junkCollectorMult;
+        private float bulletSizeMult;
+        private float magnetRange;
+        private int scrap;
+        private int gear;
+        private int upgradeCore;
+        private int moduleCoreLv1;
+        private int moduleCoreLv2;
+        private int moduleCoreLv3;
+
+        public static DayStartSnapshot Capture()
+        {
+            DayStartSnapshot snapshot = new DayStartSnapshot();
+            snapshot.stageCount = StageCounter.Instance != null ? StageCounter.Instance.StageCount : 1;
+
+            StatusManager status = StatusManager.Instance;
+            if (status != null)
+            {
+                snapshot.hp = status.HP;
+                snapshot.san = status.SAN;
+                snapshot.str = status.STR;
+                snapshot.acc = status.ACC;
+                snapshot.gate = status.GATE;
+                snapshot.currentWeapon = status.currentWeapon;
+                snapshot.ownedWeapons = status.ownedWeapons != null
+                    ? new List<WeaponDataSO>(status.ownedWeapons)
+                    : new List<WeaponDataSO>();
+                snapshot.ownedUpgradeParts = status.ownedUpgradeParts != null
+                    ? new List<UpgradePartSO>(status.ownedUpgradeParts)
+                    : new List<UpgradePartSO>();
+                snapshot.savedUpgradePlacements = ClonePlacements(status.savedUpgradePartPlacements);
+                snapshot.selectWeapon = status.selectWeapon;
+                snapshot.moduleScrap = status.module_scrap;
+                snapshot.moduleRepair = status.module_repair;
+                snapshot.moduleBarrier = status.module_barrier;
+                snapshot.punkDrive = status.punkDrive;
+                snapshot.craftWeaponDamageBuff = status.craftWeaponDamagebuff;
+                snapshot.killAllEnemies = status.killAllEnemies;
+                snapshot.useCraftSpaceBuff = status.UseCraftSpacebuff;
+                snapshot.bossKillCount = status.bossKillCount;
+                snapshot.upgradeShopDay = status.upgradeShopDay;
+                snapshot.bonusDamage = status.bonusDamage;
+                snapshot.attackSpeedMult = status.attackSpeedMult;
+                snapshot.hasBulletDouble = status.hasBulletDouble;
+                snapshot.spreadModifier = status.spreadModifier;
+                snapshot.ricochetCount = status.ricochetCount;
+                snapshot.junkCollectorMult = status.junkCollectorMult;
+                snapshot.bulletSizeMult = status.bulletSizeMult;
+                snapshot.magnetRange = status.magnetRange;
+            }
+
+            MaterialManager material = MaterialManager.Instance;
+            if (material != null)
+            {
+                snapshot.scrap = material.scrap;
+                snapshot.gear = material.gear;
+                snapshot.upgradeCore = material.upgradeCore;
+                snapshot.moduleCoreLv1 = material.moduleCore_lv1;
+                snapshot.moduleCoreLv2 = material.moduleCore_lv2;
+                snapshot.moduleCoreLv3 = material.moduleCore_lv3;
+            }
+
+            return snapshot;
+        }
+
+        public void Restore()
+        {
+            if (StageCounter.Instance != null)
+            {
+                StageCounter.Instance.StageCount = Mathf.Max(1, stageCount);
+            }
+
+            StatusManager status = StatusManager.Instance;
+            if (status != null)
+            {
+                status.HP = hp;
+                status.SAN = san;
+                status.STR = str;
+                status.ACC = acc;
+                status.GATE = gate;
+                status.currentWeapon = currentWeapon;
+                status.ownedWeapons = ownedWeapons != null ? new List<WeaponDataSO>(ownedWeapons) : new List<WeaponDataSO>();
+                status.ownedUpgradeParts = ownedUpgradeParts != null ? new List<UpgradePartSO>(ownedUpgradeParts) : new List<UpgradePartSO>();
+                status.savedUpgradePartPlacements = ClonePlacements(savedUpgradePlacements);
+                status.selectWeapon = selectWeapon;
+                status.module_scrap = moduleScrap;
+                status.module_repair = moduleRepair;
+                status.module_barrier = moduleBarrier;
+                status.punkDrive = punkDrive;
+                status.craftWeaponDamagebuff = craftWeaponDamageBuff;
+                status.killAllEnemies = killAllEnemies;
+                status.UseCraftSpacebuff = useCraftSpaceBuff;
+                status.bossKillCount = bossKillCount;
+                status.upgradeShopDay = upgradeShopDay;
+                status.bonusDamage = bonusDamage;
+                status.attackSpeedMult = attackSpeedMult;
+                status.hasBulletDouble = hasBulletDouble;
+                status.spreadModifier = spreadModifier;
+                status.ricochetCount = ricochetCount;
+                status.junkCollectorMult = junkCollectorMult;
+                status.bulletSizeMult = bulletSizeMult;
+                status.magnetRange = magnetRange;
+            }
+
+            MaterialManager material = MaterialManager.Instance;
+            if (material != null)
+            {
+                material.scrap = scrap;
+                material.gear = gear;
+                material.upgradeCore = upgradeCore;
+                material.moduleCore_lv1 = moduleCoreLv1;
+                material.moduleCore_lv2 = moduleCoreLv2;
+                material.moduleCore_lv3 = moduleCoreLv3;
+            }
+        }
+
+        private static List<StatusManager.SavedUpgradePartPlacement> ClonePlacements(List<StatusManager.SavedUpgradePartPlacement> source)
+        {
+            List<StatusManager.SavedUpgradePartPlacement> result = new List<StatusManager.SavedUpgradePartPlacement>();
+            if (source == null)
+            {
+                return result;
+            }
+
+            for (int i = 0; i < source.Count; i++)
+            {
+                StatusManager.SavedUpgradePartPlacement placement = source[i];
+                if (placement == null)
+                {
+                    continue;
+                }
+
+                result.Add(new StatusManager.SavedUpgradePartPlacement
+                {
+                    partData = placement.partData,
+                    gridX = placement.gridX,
+                    gridY = placement.gridY,
+                    rotation = placement.rotation,
+                    inventoryIndex = placement.inventoryIndex,
+                    refundCostsOnRemove = placement.refundCostsOnRemove,
+                    returnToShopOnSameDay = placement.returnToShopOnSameDay,
+                    placedShopDay = placement.placedShopDay
+                });
+            }
+
+            return result;
         }
     }
 }

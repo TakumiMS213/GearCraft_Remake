@@ -13,6 +13,9 @@ public class EnemySpawner : MonoBehaviour
     private const int MinimumAdvancedEnemiesAfterFirstBoss = 3;
     private const int LowTierBurstCountAfterSecondBoss = 5;
     private const float LowTierWeightAfterFirstBoss = 0.8f;
+    private const int GroupSpawnMinCount = 1;
+    private const int GroupSpawnMaxCount = 3;
+    private const int DefaultStagesPerDay = 3;
 
     [Header("Auto Generation")]
     public StageGeneratorSO stageConfig;
@@ -149,14 +152,7 @@ public class EnemySpawner : MonoBehaviour
 
             EnemyDataSO selectedEnemy = spawnList[i];
 
-            ShowEmergencyWarningIfNeeded(selectedEnemy);
-            GameObject spawned = Instantiate(selectedEnemy.prefab, transform.position, Quaternion.identity);
-            EnemyController enemy = spawned.GetComponent<EnemyController>();
-            if (enemy != null)
-            {
-                enemy.enemyData = selectedEnemy;
-                enemy.isLastEnemy = i == spawnList.Count - 1;
-            }
+            SpawnEnemyGroup(selectedEnemy, ShouldUseGroupedNormalSpawn(stageNum, selectedEnemy), i == spawnList.Count - 1);
 
             await UniTask.Delay((int)(spawnInterval * 1000f), cancellationToken: token);
         }
@@ -183,14 +179,8 @@ public class EnemySpawner : MonoBehaviour
                 token.ThrowIfCancellationRequested();
                 EnemyDataSO minionData = minions[i];
 
-                ShowEmergencyWarningIfNeeded(minionData);
-                GameObject spawned = Instantiate(minionData.prefab, transform.position, Quaternion.identity);
-                EnemyController enemy = spawned.GetComponent<EnemyController>();
-                if (enemy != null)
-                {
-                    enemy.enemyData = minionData;
-                    enemy.isLastEnemy = plan.MarkLastMinionAsStageEnd && i == minions.Count - 1;
-                }
+                bool markLast = plan.MarkLastMinionAsStageEnd && i == minions.Count - 1;
+                SpawnEnemyGroup(minionData, ShouldUseGroupedNormalSpawn(stageNum, minionData), markLast);
 
                 await UniTask.Delay((int)(spawnInterval * 1000f), cancellationToken: token);
             }
@@ -215,6 +205,52 @@ public class EnemySpawner : MonoBehaviour
             bossEnemy.enemyData = bossData;
             bossEnemy.isLastEnemy = true;
         }
+    }
+
+    private void SpawnEnemyGroup(EnemyDataSO enemyData, bool useGroup, bool markLastEnemy)
+    {
+        if (enemyData == null || enemyData.prefab == null)
+        {
+            return;
+        }
+
+        int spawnCount = useGroup ? UnityEngine.Random.Range(GroupSpawnMinCount, GroupSpawnMaxCount + 1) : 1;
+        for (int i = 0; i < spawnCount; i++)
+        {
+            ShowEmergencyWarningIfNeeded(enemyData);
+            Vector3 offset = GetGroupSpawnOffset(i, spawnCount);
+            GameObject spawned = Instantiate(enemyData.prefab, transform.position + offset, Quaternion.identity);
+            EnemyController enemy = spawned.GetComponent<EnemyController>();
+            if (enemy != null)
+            {
+                enemy.enemyData = enemyData;
+                enemy.isLastEnemy = markLastEnemy && i == spawnCount - 1;
+            }
+        }
+    }
+
+    private bool ShouldUseGroupedNormalSpawn(int stageNum, EnemyDataSO enemyData)
+    {
+        return !IsFirstDay(stageNum) && enemyData != null && !enemyData.IsBossType;
+    }
+
+    private bool IsFirstDay(int stageNum)
+    {
+        int stagesPerDay = stageConfig != null && stageConfig.stagesPerRest > 0
+            ? stageConfig.stagesPerRest
+            : DefaultStagesPerDay;
+        return stageNum <= stagesPerDay;
+    }
+
+    private static Vector3 GetGroupSpawnOffset(int index, int count)
+    {
+        if (count <= 1)
+        {
+            return Vector3.zero;
+        }
+
+        float center = (count - 1) * 0.5f;
+        return new Vector3((index - center) * 0.85f, 0f, 0f);
     }
 
     private int GetEnemyScalingStage(int stageNum)

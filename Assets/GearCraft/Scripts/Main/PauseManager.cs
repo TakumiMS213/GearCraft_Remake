@@ -8,6 +8,7 @@ public class PauseManager : MonoBehaviour
     public Button resumeButton;
     public Button retryButton;
     public Button inventoryButton;
+    [SerializeField] private Button inventoryCloseButton;
     public GameObject inventoryPanel;
 
     private bool isPaused;
@@ -38,6 +39,8 @@ public class PauseManager : MonoBehaviour
         {
             inventoryButton.onClick.AddListener(ToggleInventory);
         }
+
+        RegisterInventoryCloseButton();
     }
 
     private void Update()
@@ -86,6 +89,7 @@ public class PauseManager : MonoBehaviour
     {
         Time.timeScale = 1f;
         isPaused = false;
+        StageFlowManager.Instance?.RestoreDayStartSnapshot();
         SceneTransitionManager.LoadSceneWithTransition("Main");
     }
 
@@ -109,6 +113,34 @@ public class PauseManager : MonoBehaviour
         {
             inventoryUI.Refresh();
         }
+    }
+
+    public void CloseInventory()
+    {
+        if (inventoryPanel != null)
+        {
+            inventoryPanel.SetActive(false);
+        }
+    }
+
+    private void RegisterInventoryCloseButton()
+    {
+        if (inventoryCloseButton == null && inventoryPanel != null)
+        {
+            Transform closeTransform = inventoryPanel.transform.Find("Close");
+            if (closeTransform != null)
+            {
+                inventoryCloseButton = closeTransform.GetComponent<Button>();
+            }
+        }
+
+        if (inventoryCloseButton == null)
+        {
+            return;
+        }
+
+        inventoryCloseButton.onClick.RemoveListener(CloseInventory);
+        inventoryCloseButton.onClick.AddListener(CloseInventory);
     }
 
     private void OnDestroy()

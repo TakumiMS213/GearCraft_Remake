@@ -215,6 +215,7 @@ private void InitializeUnlockedRecipes()
     private void ConfigureRecipeButtons()
     {
         ResolveRecipeButtons();
+        EnsureRecipeButtonCapacity(unlockedRecipes.Count);
         ResolveFont();
 
         for (int i = 0; i < recipeButtons.Count; i++)
@@ -267,6 +268,62 @@ private void InitializeUnlockedRecipes()
                 recipeButtons.Add(button);
             }
         }
+    }
+
+    private void EnsureRecipeButtonCapacity(int requiredCount)
+    {
+        if (requiredCount <= recipeButtons.Count || recipeButtons.Count == 0)
+        {
+            return;
+        }
+
+        Button template = recipeButtons[recipeButtons.Count - 1];
+        if (template == null)
+        {
+            return;
+        }
+
+        RectTransform templateRect = template.GetComponent<RectTransform>();
+        Transform parent = template.transform.parent;
+        float yStep = GetRecipeButtonYStep();
+        int templateIndex = recipeButtons.Count - 1;
+
+        while (recipeButtons.Count < requiredCount)
+        {
+            Button button = Instantiate(template, parent);
+            button.name = $"CraftRecipeButton_{recipeButtons.Count}";
+
+            RectTransform rect = button.GetComponent<RectTransform>();
+            if (rect != null && templateRect != null)
+            {
+                rect.anchoredPosition = templateRect.anchoredPosition + new Vector2(0f, yStep * (recipeButtons.Count - templateIndex));
+            }
+
+            recipeButtons.Add(button);
+        }
+    }
+
+    private float GetRecipeButtonYStep()
+    {
+        if (recipeButtons.Count < 2)
+        {
+            return -80f;
+        }
+
+        RectTransform previous = recipeButtons[recipeButtons.Count - 2] != null
+            ? recipeButtons[recipeButtons.Count - 2].GetComponent<RectTransform>()
+            : null;
+        RectTransform last = recipeButtons[recipeButtons.Count - 1] != null
+            ? recipeButtons[recipeButtons.Count - 1].GetComponent<RectTransform>()
+            : null;
+
+        if (previous == null || last == null)
+        {
+            return -80f;
+        }
+
+        float step = last.anchoredPosition.y - previous.anchoredPosition.y;
+        return Mathf.Approximately(step, 0f) ? -80f : step;
     }
 
     private IEnumerator ShowUnlockNotificationsAsync()

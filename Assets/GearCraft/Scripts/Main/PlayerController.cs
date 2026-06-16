@@ -28,8 +28,10 @@ public class PlayerController : MonoBehaviour
     // --- Module References ---
     public GameObject punkdrive;
     public GameObject barrier;
+    [SerializeField] private GameObject barrierBreakEffectPrefab;
     public float barrierDuration = 5f;
     public float barrierCooldown = 10f;
+    [SerializeField] private float barrierRedeployDelay = 3f;
     public bool CanBarrierUse = true;
     public bool CanUseGearCraft = true;
 
@@ -41,6 +43,8 @@ public class PlayerController : MonoBehaviour
     private bool isBoostActive = false;
     private CancellationTokenSource boostCts;
     private const float ENEMY_CONTACT_DAMAGE = 5f;
+    private bool isBarrierActive;
+    private bool isBarrierRecharging;
 
     public int HP;
     public int SAN;
@@ -91,7 +95,10 @@ public class PlayerController : MonoBehaviour
 
         if (runtimeStatus != null)
         {
-            if (runtimeStatus.module_barrier) CanBarrierUse = true;
+            if (runtimeStatus.module_barrier)
+            {
+                ActivateBarrier();
+            }
             HP = runtimeStatus.HP;
             SAN = runtimeStatus.SAN;
             STR = runtimeStatus.STR;
@@ -132,10 +139,7 @@ public class PlayerController : MonoBehaviour
                 ChangeGearCraft();
             }
         }
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            UseBarrier();
-        }
+        UpdateAutoBarrier();
         if (Input.GetKeyDown(KeyCode.Q))
         {
             BoostActive().Forget();
@@ -499,7 +503,6 @@ public class PlayerController : MonoBehaviour
         if (collision.collider.CompareTag("Enemy") && !isInvincible && collision.gameObject.activeSelf)
         {
             TakeDamageByBullet(ENEMY_CONTACT_DAMAGE);
-            StartCoroutine(DamageCooldown());
         }
         if (collision.collider.CompareTag("Wall"))
         {
@@ -521,6 +524,11 @@ public class PlayerController : MonoBehaviour
     public async void TakeDamageByBullet(float bulletDamage)
     {
         if (isInvincible) return;
+        if (TryBreakBarrier())
+        {
+            return;
+        }
+
         if (runtimeStatus != null)
         {
             runtimeStatus.HP -= (int)bulletDamage;
@@ -555,10 +563,6 @@ public class PlayerController : MonoBehaviour
     private System.Collections.IEnumerator DamageCooldown()
     {
         isInvincible = true;
-        if (runtimeStatus != null && runtimeStatus.module_barrier == false)
-        {
-            runtimeStatus.HP -= (int)ENEMY_CONTACT_DAMAGE;
-        }
         float blinkDuration = 1f, blinkInterval = 0.1f, elapsedTime = 0f;
         while (elapsedTime < blinkDuration)
         {
@@ -572,20 +576,112 @@ public class PlayerController : MonoBehaviour
         isInvincible = false;
     }
 
-    private async void UseBarrier()
+    private void UpdateAutoBarrier()
     {
-        if (runtimeStatus != null && runtimeStatus.module_barrier && CanBarrierUse)
+        if (runtimeStatus == null || !runtimeStatus.module_barrier)
         {
+            isBarrierActive = false;
+            isBarrierRecharging = false;
             CanBarrierUse = false;
-            isInvincible = true;
+            if (barrier != null)
+            {
+                barrier.SetActive(false);
+            }
+            return;
+        }
+
+        if (!isBarrierActive && !isBarrierRecharging)
+        {
+            ActivateBarrier();
+        }
+    }
+
+    private void ActivateBarrier()
+    {
+        isBarrierActive = true;
+        isBarrierRecharging = false;
+        CanBarrierUse = true;
+        if (barrier != null)
+        {
             barrier.SetActive(true);
+        }
+    }
 
-            await UniTask.Delay(TimeSpan.FromSeconds(barrierDuration));
-            isInvincible = false;
+    private bool TryBreakBarrier()
+    {
+        if (runtimeStatus == null || !runtimeStatus.module_barrier || !isBarrierActive)
+        {
+            return false;
+        }
+
+        isBarrierActive = false;
+        CanBarrierUse = false;
+        if (barrier != null)
+        {
             barrier.SetActive(false);
+        }
 
-            await UniTask.Delay(TimeSpan.FromSeconds(barrierCooldown));
-            CanBarrierUse = true;
+        SpawnBarrierBreakEffect();
+
+        RedeployBarrierAsync().Forget();
+        return true;
+    }
+
+    private async UniTaskVoid RedeployBarrierAsync()
+    {
+        if (isBarrierRecharging)
+        {
+            return;
+        }
+
+        isBarrierRecharging = true;
+        await UniTask.Delay(TimeSpan.FromSeconds(barrierRedeployDelay), cancellationToken: this.GetCancellationTokenOnDestroy());
+        isBarrierRecharging = false;
+
+        if (runtimeStatus != null && runtimeStatus.module_barrier)
+        {
+            ActivateBarrier();
+        }
+    }
+
+    private void SpawnBarrierBreakEffect()
+    {
+        if (barrierBreakEffectPrefab != null)
+        {
+            Instantiate(barrierBreakEffectPrefab, transform.position, Quaternion.identity);
+            return;
+        }
+
+        GameObject effect = new GameObject("BarrierBreakParticle");
+        effect.transform.position = transform.position;
+
+        ParticleSystem particle = effect.AddComponent<ParticleSystem>();
+        ParticleSystem.MainModule main = particle.main;
+        main.duration = 0.45f;
+        main.loop = false;
+        main.startLifetime = new ParticleSystem.MinMaxCurve(0.35f, 0.75f);
+        main.startSpeed = new ParticleSystem.MinMaxCurve(2.2f, 5.2f);
+        main.startSize = new ParticleSystem.MinMaxCurve(0.08f, 0.2f);
+        main.startColor = new ParticleSystem.MinMaxGradient(
+            new Color(0.25f, 0.95f, 1f, 1f),
+            new Color(0.65f, 1f, 1f, 0.7f));
+        main.gravityModifier = 0.35f;
+        main.simulationSpace = ParticleSystemSimulationSpace.World;
+        main.stopAction = ParticleSystemStopAction.Destroy;
+
+        ParticleSystem.EmissionModule emission = particle.emission;
+        emission.rateOverTime = 0f;
+        emission.SetBursts(new[] { new ParticleSystem.Burst(0f, 22, 34) });
+
+        ParticleSystem.ShapeModule shape = particle.shape;
+        shape.enabled = true;
+        shape.shapeType = ParticleSystemShapeType.Circle;
+        shape.radius = 0.28f;
+
+        ParticleSystemRenderer particleRenderer = effect.GetComponent<ParticleSystemRenderer>();
+        if (particleRenderer != null)
+        {
+            particleRenderer.sortingOrder = 5000;
         }
     }
 
