@@ -206,9 +206,22 @@ public class PlayerController : MonoBehaviour
 
         if (!string.IsNullOrEmpty(currentWeapon.armTriggerName) && currentWeapon.armTriggerName != lastArmTriggerName)
         {
+            ResetArmAnimationTriggers();
             armAnimator.SetTrigger(currentWeapon.armTriggerName);
             lastArmTriggerName = currentWeapon.armTriggerName;
         }
+    }
+
+    private void ResetArmAnimationTriggers()
+    {
+        armAnimator.ResetTrigger("Assault");
+        armAnimator.ResetTrigger("Sword");
+        armAnimator.ResetTrigger("SteamShoot");
+        armAnimator.ResetTrigger("GearCraft_Sword");
+        armAnimator.ResetTrigger("GearCraft_Axe");
+        armAnimator.ResetTrigger("RailCraft");
+        armAnimator.ResetTrigger("SteamGatling");
+        armAnimator.ResetTrigger("SteamThrower");
     }
 
     // --- Movement ---

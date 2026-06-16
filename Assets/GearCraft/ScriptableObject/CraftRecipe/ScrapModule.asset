@@ -27,7 +27,7 @@ MonoBehaviour:
   statBonus: 0
   requiredWeapon: {fileID: 0}
   unlockBossKills: 0
-  summary: "\u30B9\u30AF\u30E9\u30C3\u30D7\u56DE\u53CE\u3092\u88DC\u52A9\u3059\u308B\u30E2\u30B8\u30E5\u30FC\u30EB\u3002"
+  summary: "\u30B9\u30AF\u30E9\u30C3\u30D7\u56DE\u53CE\u3092\u88DC\u52A9\u3059\u308B\u30E2\u30B8\u30E5\u30FC\u30EB\u3002\n1\u65E5\u3054\u3068\u306BGear+5"
   unlockId: ScrapModule
   unlockSortOrder: 1
   hiddenFromUnlockList: 0

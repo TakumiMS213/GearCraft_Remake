@@ -25,7 +25,7 @@ MonoBehaviour:
   statBonus: 0
   requiredWeapon: {fileID: 0}
   unlockBossKills: 0
-  summary: 
+  summary: "\u5468\u56F2\u306E\u6575\u3092\u56DE\u8EE2\u3059\u308B\u6B6F\u8ECA\u3067\u653B\u6483\u3059\u308B"
   unlockId: PunkDrive
   unlockSortOrder: 2
   hiddenFromUnlockList: 0

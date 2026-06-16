@@ -17,9 +17,7 @@ MonoBehaviour:
   completedImage: {fileID: 21300000, guid: 79ae2f232116b402d93941ee1f1614c6, type: 3}
   costs:
   - type: 1
-    amount: 40
-  - type: 2
-    amount: 3
+    amount: 30
   - type: 5
     amount: 1
   resultType: 0

@@ -29,36 +29,36 @@ Shader "GearCraft/SpriteSolidColor"
             #pragma fragment frag
             #include "UnityCG.cginc"
 
-            struct appdata_t
+            struct appdata
             {
                 float4 vertex : POSITION;
-                float4 color : COLOR;
-                float2 texcoord : TEXCOORD0;
+                float2 uv : TEXCOORD0;
+                fixed4 color : COLOR;
             };
 
             struct v2f
             {
                 float4 vertex : SV_POSITION;
+                float2 uv : TEXCOORD0;
                 fixed4 color : COLOR;
-                float2 texcoord : TEXCOORD0;
             };
 
             sampler2D _MainTex;
             fixed4 _Color;
 
-            v2f vert(appdata_t input)
+            v2f vert(appdata v)
             {
-                v2f output;
-                output.vertex = UnityObjectToClipPos(input.vertex);
-                output.texcoord = input.texcoord;
-                output.color = input.color * _Color;
-                return output;
+                v2f o;
+                o.vertex = UnityObjectToClipPos(v.vertex);
+                o.uv = v.uv;
+                o.color = v.color * _Color;
+                return o;
             }
 
-            fixed4 frag(v2f input) : SV_Target
+            fixed4 frag(v2f i) : SV_Target
             {
-                fixed alpha = tex2D(_MainTex, input.texcoord).a * input.color.a;
-                return fixed4(input.color.rgb, alpha);
+                fixed alpha = tex2D(_MainTex, i.uv).a * i.color.a;
+                return fixed4(i.color.rgb, alpha);
             }
             ENDCG
         }

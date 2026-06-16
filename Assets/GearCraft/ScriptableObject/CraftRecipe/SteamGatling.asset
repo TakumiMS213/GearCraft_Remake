@@ -18,8 +18,8 @@ MonoBehaviour:
   costs:
   - type: 1
     amount: 30
-  - type: 2
-    amount: 2
+  - type: 5
+    amount: 1
   resultType: 0
   weaponResult: {fileID: 11400000, guid: a789498952c12824e8f750ecfcf151bd, type: 2}
   additionalWeaponResult: {fileID: 0}

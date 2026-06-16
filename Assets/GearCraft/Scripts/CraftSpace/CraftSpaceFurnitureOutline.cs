@@ -134,6 +134,12 @@ public class CraftSpaceFurnitureOutline : MonoBehaviour
             return outlineMaterial;
         }
 
+        outlineMaterial = Resources.Load<Material>("FurnitureOutlineMaterial");
+        if (outlineMaterial != null)
+        {
+            return outlineMaterial;
+        }
+
         Shader shader = Shader.Find("GearCraft/SpriteSolidColor");
         if (shader == null)
         {
