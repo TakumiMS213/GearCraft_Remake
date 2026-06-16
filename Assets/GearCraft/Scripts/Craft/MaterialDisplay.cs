@@ -59,8 +59,15 @@ public class MaterialDisplay : MonoBehaviour
         {
             // 既存エントリをクリア
             foreach (var entry in dynamicEntries)
+            {
                 DestroyEntry(entry);
+            }
             dynamicEntries.Clear();
+
+            for (int i = materialListParent.childCount - 1; i >= 0; i--)
+            {
+                DestroyEntry(materialListParent.GetChild(i).gameObject);
+            }
 
             var allMats = GetMaterialsForDisplay();
             foreach (var (type, count, name) in allMats)
@@ -70,7 +77,9 @@ public class MaterialDisplay : MonoBehaviour
 
                 TMP_Text text = entry.GetComponentInChildren<TMP_Text>();
                 if (text != null)
+                {
                     text.text = $"{name} x{count}";
+                }
 
                 Image icon = entry.transform.Find("Icon")?.GetComponent<Image>();
                 if (icon != null)
@@ -141,7 +150,7 @@ public class MaterialDisplay : MonoBehaviour
     /// <summary>
     /// 左右のコスト表示TMPを「現在数/必要数」形式で更新
     /// </summary>
-private void UpdateCostDisplay()
+    private void UpdateCostDisplay()
     {
         HideLegacyCostTexts();
 
@@ -155,7 +164,7 @@ private void UpdateCostDisplay()
     /// <summary>
     /// 個別のコストテキストを設定
     /// </summary>
-private void EnsureCostText()
+    private void EnsureCostText()
     {
         if (costText != null)
         {

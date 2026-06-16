@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   weaponName: SteamThrower
   icon: {fileID: -1560678534750883982, guid: fa913e07b0155e84b908a2be457646d8, type: 3}
+  description: "\u8FD1\u8DDD\u96E2\u306B\u8D85\u9AD8\u71B1\u306E\u84B8\u6C17\u3092\u653E\u51FA\u3057\u3001\u6575\u3092\u653B\u6483\u3059\u308B\u3002\n\u6575\u3092\u30AA\u30FC\u30D0\u30FC\u30D2\u30FC\u30C8\u3055\u305B\u3001\u79FB\u52D5\u901F\u5EA6\u3092\u4E0B\u3052\u308B\u3002"
   weaponType: 1
   coolTime: 0.08
   baseDamage: 1

@@ -107,9 +107,8 @@ GameObject:
   - component: {fileID: 485391401827973903}
   - component: {fileID: 1449522180430625725}
   - component: {fileID: 5350697338403887797}
-  - component: {fileID: 3300302403889899999}
   m_Layer: 0
-  m_Name: InventoryEntry
+  m_Name: CraftMaterialEntry
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -182,22 +181,6 @@ MonoBehaviour:
   m_FlexibleWidth: 0
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
---- !u!114 &3300302403889899999
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3096101659291290387}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6b71439b05af044428c1c92b4bfb5689, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
-  iconImage: {fileID: 0}
-  nameText: {fileID: 0}
-  countText: {fileID: 0}
-  descriptionText: {fileID: 0}
 --- !u!1 &6313630367966425270
 GameObject:
   m_ObjectHideFlags: 0
@@ -264,7 +247,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\t\"\u7D20\u6750\u540D \xD70\"\uFF08\u30D7\u30EC\u30FC\u30B9\u30DB\u30EB\u30C0\u30FC\uFF09"
+  m_text: "\t\"\u7D20\u6750\u540D \xD70\"\uFF08\u30D7\u30EC\u30FC\u30B9\u30DB\u30EB\u30C0\uFF09"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: c29aba08e626f234da674f2bbeb0e7d3, type: 2}
   m_sharedMaterial: {fileID: -6663560369686292098, guid: c29aba08e626f234da674f2bbeb0e7d3, type: 2}

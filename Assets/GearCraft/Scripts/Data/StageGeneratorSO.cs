@@ -20,6 +20,8 @@ public class StageGeneratorSO : ScriptableObject
     [Header("スポーン設定")]
     public int baseEnemyCount = 3;
     public int maxEnemyCount = 12;
+    [Tooltip("初日だけ敵出現数を抑える。2日目以降は通常カーブを使用する")]
+    public int firstDayEnemyCount = 2;
     public float baseSpawnInterval = 3f;
     public float minSpawnInterval = 0.8f;
 
@@ -78,8 +80,19 @@ public class StageGeneratorSO : ScriptableObject
     /// </summary>
     public int GetEnemyCount(int stageNum)
     {
+        if (IsFirstDayStage(stageNum))
+        {
+            return Mathf.Max(1, firstDayEnemyCount);
+        }
+
         float difficulty = GetDifficulty(stageNum);
         return Mathf.RoundToInt(Mathf.Lerp(baseEnemyCount, maxEnemyCount, difficulty));
+    }
+
+    private bool IsFirstDayStage(int stageNum)
+    {
+        int firstDayStageCount = Mathf.Max(1, stagesPerRest);
+        return stageNum >= 1 && stageNum <= firstDayStageCount;
     }
 
     /// <summary>

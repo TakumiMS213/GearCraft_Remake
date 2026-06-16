@@ -6,6 +6,8 @@ public class WeaponDataSO : ScriptableObject
     [Header("基本情報")]
     public string weaponName;
     public Sprite icon;
+    [TextArea(2, 4)]
+    public string description;
     public WeaponType weaponType;
 
     [Header("攻撃パラメータ")]

@@ -62,6 +62,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: f17cf0d1198f4ce9b4996bf924e7a05f, type: 2}
   baseEnemyCount: 9
   maxEnemyCount: 18
+  firstDayEnemyCount: 2
   baseSpawnInterval: 3
   minSpawnInterval: 1
   dropMultiplierCurve:

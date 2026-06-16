@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   weaponName: Katana
   icon: {fileID: 21300000, guid: 62f9a3e657bbd8f45893541814f09c29, type: 3}
+  description: "\u521D\u671F\u88C5\u5099\u306E\u5200\u3002\u6700\u4F4E\u9650\u306E\u6226\u95D8\u6027\u80FD\u3092\u6301\u3064\u3002"
   weaponType: 0
   coolTime: 0.5
   baseDamage: 20

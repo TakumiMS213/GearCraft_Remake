@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   weaponName: GearCraft_Sword
   icon: {fileID: 21300000, guid: 1e2074d2fd3cf314ba4c26e4497b5c0f, type: 3}
+  description: "\u901F\u5EA6\u3068\u6271\u3044\u3084\u3059\u3055\u3092\u5099\u3048\u305FGearCraft\u306E\u5927\u5263\u30E2\u30FC\u30C9\u3002"
   weaponType: 0
   coolTime: 0.5
   baseDamage: 40

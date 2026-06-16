@@ -15,7 +15,7 @@ public class UpgradeGridUI : MonoBehaviour
     public float cellSpacing = 4f;
 
     [Header("Grid Highlight")]
-    [SerializeField] private bool showGridHighlight = true;
+    [SerializeField] private bool showGridHighlight = false;
     [SerializeField] private Color gridHighlightColor = new Color(1f, 0.86f, 0.12f, 1f);
     [SerializeField] private float gridHighlightThickness = 8f;
     [SerializeField] private float gridHighlightPadding = 16f;
