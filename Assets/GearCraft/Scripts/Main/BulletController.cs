@@ -12,6 +12,14 @@ public class BulletController : MonoBehaviour
     public bool isCannonBullet = false;
     public bool useSweptHitDetection = false;
     public float sweptHitRadius = 0.08f;
+    public float explosionRadiusMultiplier = 1f;
+    public float directHitKnockback = 0f;
+    public bool applyOverheatOnHit = false;
+    public float overheatDuration = 2.5f;
+    [Range(0.05f, 1f)] public float overheatSpeedMultiplier = 0.55f;
+    public GameObject overheatEffectPrefab;
+    public float bossDamageMultiplier = 1f;
+    public float normalDamageMultiplier = 1f;
 
     [Header("跳弾設定")]
     public int ricochetCount = 0;      // 残り跳弾回数
@@ -263,8 +271,41 @@ public class BulletController : MonoBehaviour
         }
 
         damagedEnemies.Add(enemy);
-        enemy.TakeDamage(bulletDamage);
+        enemy.TakeDamage(GetDamageForEnemy(enemy));
+        if (applyOverheatOnHit)
+        {
+            enemy.ApplyOverheat(overheatDuration, overheatSpeedMultiplier, overheatEffectPrefab);
+        }
+
+        ApplyDirectHitKnockback(enemy);
         return true;
+    }
+
+    private float GetDamageForEnemy(EnemyController enemy)
+    {
+        if (enemy != null && enemy.enemyData != null && enemy.enemyData.IsBossType)
+        {
+            return bulletDamage * Mathf.Max(0f, bossDamageMultiplier);
+        }
+
+        return bulletDamage * Mathf.Max(0f, normalDamageMultiplier);
+    }
+
+    private void ApplyDirectHitKnockback(EnemyController enemy)
+    {
+        if (enemy == null || directHitKnockback <= 0f)
+        {
+            return;
+        }
+
+        Rigidbody2D enemyBody = enemy.GetComponent<Rigidbody2D>();
+        Rigidbody2D bulletBody = GetComponent<Rigidbody2D>();
+        if (enemyBody == null || bulletBody == null || bulletBody.linearVelocity.sqrMagnitude <= 0.01f)
+        {
+            return;
+        }
+
+        enemyBody.MovePosition(enemyBody.position + bulletBody.linearVelocity.normalized * directHitKnockback);
     }
 
     /// <summary>
@@ -377,7 +418,7 @@ public class BulletController : MonoBehaviour
 
     void BombDamage()
     {
-        float bombRadius = 5f;
+        float bombRadius = 5f * Mathf.Max(0.01f, explosionRadiusMultiplier);
         float bombDamage = bulletDamage;
 
         Collider2D[] hitColliders = Physics2D.OverlapCircleAll(transform.position, bombRadius);

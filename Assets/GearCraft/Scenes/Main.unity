@@ -3088,8 +3088,10 @@ MonoBehaviour:
   FirePoint: {fileID: 1248760272}
   punkdrive: {fileID: 1241051995}
   barrier: {fileID: 1184932429}
+  barrierBreakEffectPrefab: {fileID: 0}
   barrierDuration: 5
   barrierCooldown: 10
+  barrierRedeployDelay: 3
   CanBarrierUse: 0
   CanUseGearCraft: 1
   HP: 0
@@ -3124,17 +3126,22 @@ MonoBehaviour:
   - {x: 1, y: 0, z: 0}
   - {x: 0.7, y: -0.2, z: 0}
   - {x: 0.7, y: 0, z: 0}
+  - {x: 0.7, y: 1.5, z: 0}
   armScales:
   - {x: 0.6, y: 0.6, z: 1}
   - {x: -1.3, y: 1.3, z: 0}
   - {x: -1.3, y: 1.3, z: 0}
-  - {x: -2, y: 2, z: 0}
+  - {x: -1.4, y: 1.4, z: 0}
+  - {x: -1.2, y: 1.2, z: 1}
   armBaseRotations:
   - {x: 0, y: 0, z: -20}
   - {x: 0, y: 0, z: 0}
   - {x: 0, y: 0, z: -20}
   - {x: 0, y: 0, z: 0}
-  poseRules: []
+  - {x: 0, y: 0, z: -20}
+  poseRules:
+  - armTriggerName: GearCraft_Sword
+    poseIndex: 4
 --- !u!95 &249872156
 Animator:
   serializedVersion: 7
@@ -7523,6 +7530,21 @@ MonoBehaviour:
   - {fileID: 11400000, guid: d18860fcff3cd49f5bf8e3ab42da584d, type: 2}
   - {fileID: 11400000, guid: 4d828146a0f75422195b99e2e13cfdf7, type: 2}
   - {fileID: 11400000, guid: 3e8d3b06a9de04a50a6d5d40b4b839e7, type: 2}
+  - {fileID: 11400000, guid: 8235c1aa98e6345e4b07a2f34a3eafad, type: 2}
+  - {fileID: 11400000, guid: 8205e284a0f554b7d83117c54a8087b5, type: 2}
+  - {fileID: 11400000, guid: bfe8cdae2da6642ce80417d0963cb8a1, type: 2}
+  - {fileID: 11400000, guid: 0a8b765f5249348e6b714b31bf9f6853, type: 2}
+  - {fileID: 11400000, guid: 7ae06b8dae3fb4437a35b1ba17e4c83e, type: 2}
+  - {fileID: 11400000, guid: 73d01fc7fa58942e69d2e595857f7ed2, type: 2}
+  - {fileID: 11400000, guid: 96345256f648749b09d4ce88a9da15c4, type: 2}
+  - {fileID: 11400000, guid: f45bcd16adb7946019ead8da7b84f42b, type: 2}
+  - {fileID: 11400000, guid: ae43cc05e9eda439f9e2f435615b2b12, type: 2}
+  - {fileID: 11400000, guid: e15a36dbc8ba44eb1add93d136d685cb, type: 2}
+  - {fileID: 11400000, guid: 9de19339a0d63470a8481d1c195a59ae, type: 2}
+  - {fileID: 11400000, guid: f2ecc12a0be334fe5ad5e9ffee59c0e1, type: 2}
+  - {fileID: 11400000, guid: 1d2a421f71ed845fa9a7680830ec4455, type: 2}
+  - {fileID: 11400000, guid: 4a8ee9e7a8a9d4b669c6d7749754cb8e, type: 2}
+  - {fileID: 11400000, guid: 0902a26a982f7438dadd374e005df7a3, type: 2}
   cardParent: {fileID: 1044977147}
   transition: {fileID: 742495350}
   transitionManager: {fileID: 742495350}

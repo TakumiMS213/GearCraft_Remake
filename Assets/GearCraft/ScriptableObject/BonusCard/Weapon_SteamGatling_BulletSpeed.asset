@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba53de0965ece1a4d96741a54fe1d238, type: 3}
+  m_Name: Weapon_SteamGatling_BulletSpeed
+  m_EditorClassIdentifier: 
+  cardName: "\u500D\u901F\u6A5F\u95A2"
+  cardImage: {fileID: -638043900989242246, guid: 951031652047f4267aba5f3ab2134c46, type: 3}
+  cardPrefab: {fileID: 7209819227857435650, guid: 3c30fd99b86b84efc976c40a2ea3abb3, type: 3}
+  weight: 0.25
+  requiredWeaponNames:
+  - SteamGatling
+  selectableOnce: 1
+  uniqueSelectionId: SteamGatling_BulletSpeed
+  effects:
+  - type: 140
+    value: 2
+    weaponToGrant: {fileID: 0}
+    partToGrant: {fileID: 0}
+    materialType: 0

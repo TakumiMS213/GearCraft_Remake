@@ -446,7 +446,8 @@ private void ApplyRecipeVisuals(CraftRecipeSO recipe)
 private void ShowResultImage(CraftRecipeSO recipe)
     {
         string resultName = "Result_" + ToVisualKey(recipe.DisplayName);
-        ShowRecipeVisualImage(resultName);
+        Image image = ShowRecipeVisualImage(resultName);
+        ConfigureResultImage(image, recipe);
     }
 
     private void ShowRequiredWeaponImage(CraftRecipeSO recipe)
@@ -540,6 +541,35 @@ private void ConfigureMaterialImage(Image image, CraftCost cost)
 
         trigger.Configure(cost.type);
         UpdateMaterialCountLabel(image.rectTransform, cost);
+    }
+
+    private void ConfigureResultImage(Image image, CraftRecipeSO recipe)
+    {
+        if (image == null)
+        {
+            return;
+        }
+
+        CraftResultDescriptionSO description = recipe != null ? recipe.resultDescription : null;
+        CraftResultTooltipTrigger trigger = image.GetComponent<CraftResultTooltipTrigger>();
+        if (description == null)
+        {
+            image.raycastTarget = false;
+            if (trigger != null)
+            {
+                trigger.Configure(null);
+            }
+
+            return;
+        }
+
+        image.raycastTarget = true;
+        if (trigger == null)
+        {
+            trigger = image.gameObject.AddComponent<CraftResultTooltipTrigger>();
+        }
+
+        trigger.Configure(description);
     }
 
     private void UpdateMaterialCountLabel(RectTransform parent, CraftCost cost)

@@ -20,6 +20,7 @@ public class CraftRecipeSO : ScriptableObject
 
     [Header("結果")]
     public CraftResultType resultType;
+    public CraftResultDescriptionSO resultDescription;
 
     [Header("Weapon結果（resultType == Weapon のとき）")]
     public WeaponDataSO weaponResult;

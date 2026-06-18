@@ -128,7 +128,15 @@ public class ArmRotation : MonoBehaviour
     private Vector3 GetScale(int index)
     {
         if (armScales == null || armScales.Length == 0) return Vector3.one;
-        return armScales[Mathf.Clamp(index, 0, armScales.Length - 1)];
+        Vector3 scale = armScales[Mathf.Clamp(index, 0, armScales.Length - 1)];
+        if (index == 3 &&
+            StatusManager.Instance != null &&
+            StatusManager.Instance.gearCraftAxeSizeMultiplier > 1f)
+        {
+            scale *= StatusManager.Instance.gearCraftAxeSizeMultiplier;
+        }
+
+        return scale;
     }
 
     private Vector3 GetBaseRotation(int index)

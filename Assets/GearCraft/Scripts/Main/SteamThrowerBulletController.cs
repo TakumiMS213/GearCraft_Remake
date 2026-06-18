@@ -20,6 +20,9 @@ namespace GearCraft.Scripts.Main
         [SerializeField] private GameObject impactParticlePrefab;
 
         private readonly Dictionary<EnemyController, float> lastHitTimes = new Dictionary<EnemyController, float>();
+        private float overheatSlipDamage;
+        private bool noGravity;
+        private bool burnDrops;
 
         public void Configure(float bulletDamage, float duration, GameObject overheatEffect)
         {
@@ -28,6 +31,22 @@ namespace GearCraft.Scripts.Main
             if (overheatEffect != null)
             {
                 overheatParticlePrefab = overheatEffect;
+            }
+        }
+
+        public void ConfigureBonus(float slipDamage, bool disableGravity, bool canBurnDrops)
+        {
+            overheatSlipDamage = Mathf.Max(0f, slipDamage);
+            noGravity = disableGravity;
+            burnDrops = canBurnDrops;
+
+            if (noGravity)
+            {
+                Rigidbody2D body = GetComponent<Rigidbody2D>();
+                if (body != null)
+                {
+                    body.gravityScale = 0f;
+                }
             }
         }
 
@@ -48,8 +67,19 @@ namespace GearCraft.Scripts.Main
 
         private void TryHit(Collider2D collision)
         {
-            if (collision == null || collision.GetComponent<DroppedMaterialItem>() != null)
+            if (collision == null)
             {
+                return;
+            }
+
+            DroppedMaterialItem droppedMaterial = collision.GetComponent<DroppedMaterialItem>();
+            if (droppedMaterial != null)
+            {
+                if (burnDrops)
+                {
+                    droppedMaterial.Burn();
+                }
+
                 return;
             }
 
@@ -68,6 +98,10 @@ namespace GearCraft.Scripts.Main
             lastHitTimes[enemy] = now;
             enemy.TakeDamage(damage);
             enemy.ApplyOverheat(overheatDuration, overheatSpeedMultiplier, overheatParticlePrefab);
+            if (overheatSlipDamage > 0f)
+            {
+                enemy.ApplyOverheatSlipDamage(overheatSlipDamage);
+            }
 
             if (impactParticlePrefab != null)
             {

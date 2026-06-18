@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba53de0965ece1a4d96741a54fe1d238, type: 3}
+  m_Name: Weapon_GearCraft_TransformGear
+  m_EditorClassIdentifier: 
+  cardName: "\u6B6F\u8ECA\u56DE\u53CE\u6A5F\u69CB"
+  cardImage: {fileID: 21300000, guid: 1e2074d2fd3cf314ba4c26e4497b5c0f, type: 3}
+  cardPrefab: {fileID: 2851610805034734771, guid: a1961fd2acd504379858f10e889877c6, type: 3}
+  weight: 0.25
+  requiredWeaponNames:
+  - GearCraft
+  - GearCraft_Sword
+  - GearCraft_Axe
+  selectableOnce: 1
+  uniqueSelectionId: GearCraft_TransformGear
+  effects:
+  - type: 102
+    value: 1
+    weaponToGrant: {fileID: 0}
+    partToGrant: {fileID: 0}
+    materialType: 0

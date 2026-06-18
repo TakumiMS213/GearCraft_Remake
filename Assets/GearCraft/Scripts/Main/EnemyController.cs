@@ -28,6 +28,8 @@ public class EnemyController : MonoBehaviour
     private float overheatEndTime;
     private float overheatSpeedMultiplier = 1f;
     private GameObject overheatEffectInstance;
+    private float overheatSlipDamagePerSecond;
+    private float nextOverheatSlipTime;
 
     private void Awake()
     {
@@ -96,6 +98,15 @@ public class EnemyController : MonoBehaviour
         {
             overheatEffectInstance = Instantiate(effectPrefab, transform);
             overheatEffectInstance.transform.localPosition = Vector3.zero;
+        }
+    }
+
+    public void ApplyOverheatSlipDamage(float damagePerSecond)
+    {
+        overheatSlipDamagePerSecond = Mathf.Max(overheatSlipDamagePerSecond, damagePerSecond);
+        if (nextOverheatSlipTime <= Time.time)
+        {
+            nextOverheatSlipTime = Time.time + 1f;
         }
     }
 
@@ -262,6 +273,12 @@ public class EnemyController : MonoBehaviour
 
     private void UpdateOverheatStatus()
     {
+        if (Time.time < overheatEndTime && overheatSlipDamagePerSecond > 0f && Time.time >= nextOverheatSlipTime)
+        {
+            nextOverheatSlipTime = Time.time + 1f;
+            TakeDamage(overheatSlipDamagePerSecond);
+        }
+
         if (overheatEffectInstance == null || Time.time < overheatEndTime)
         {
             return;
@@ -270,6 +287,7 @@ public class EnemyController : MonoBehaviour
         Destroy(overheatEffectInstance);
         overheatEffectInstance = null;
         overheatSpeedMultiplier = 1f;
+        overheatSlipDamagePerSecond = 0f;
     }
 
     /// <summary>

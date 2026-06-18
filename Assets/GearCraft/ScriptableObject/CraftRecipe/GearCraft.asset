@@ -19,6 +19,7 @@ MonoBehaviour:
   - type: 1
     amount: 10
   resultType: 0
+  resultDescription: {fileID: 11400000, guid: 7544a3a8541674da9bf8bcb6817976df, type: 2}
   weaponResult: {fileID: 11400000, guid: be552884d519f47029da189ef2aa365a, type: 2}
   additionalWeaponResult: {fileID: 11400000, guid: 9de1b19b7a77f49ccb00413e20c33d3b, type: 2}
   moduleFlag: 

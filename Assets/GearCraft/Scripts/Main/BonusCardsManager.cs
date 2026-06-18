@@ -109,7 +109,13 @@ public class BonusCardsManager : MonoBehaviour
     {
         List<int> result = new List<int>();
         List<int> pool = new List<int>();
-        for (int i = 0; i < cardDataList.Count; i++) pool.Add(i);
+        for (int i = 0; i < cardDataList.Count; i++)
+        {
+            if (CanOfferCard(cardDataList[i]))
+            {
+                pool.Add(i);
+            }
+        }
 
         for (int pick = 0; pick < n && pool.Count > 0; pick++)
         {
@@ -131,6 +137,41 @@ public class BonusCardsManager : MonoBehaviour
         return result;
     }
 
+    private bool CanOfferCard(BonusCardDataSO cardData)
+    {
+        if (cardData == null || cardData.cardPrefab == null || cardData.weight <= 0f)
+        {
+            return false;
+        }
+
+        StatusManager status = StatusManager.Instance;
+        if (cardData.selectableOnce && status != null && status.IsUniqueBonusCardSelected(cardData.uniqueSelectionId))
+        {
+            return false;
+        }
+
+        if (cardData.requiredWeaponNames == null || cardData.requiredWeaponNames.Length == 0)
+        {
+            return true;
+        }
+
+        string currentWeaponName = status != null && status.currentWeapon != null ? status.currentWeapon.weaponName : null;
+        if (string.IsNullOrEmpty(currentWeaponName))
+        {
+            return false;
+        }
+
+        for (int i = 0; i < cardData.requiredWeaponNames.Length; i++)
+        {
+            if (currentWeaponName == cardData.requiredWeaponNames[i])
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /// <summary>
     /// カード選択時：データ駆動で効果を適用
     /// </summary>
@@ -145,6 +186,11 @@ public class BonusCardsManager : MonoBehaviour
         foreach (var effect in cardData.effects)
         {
             ApplyCardEffect(effect);
+        }
+
+        if (cardData.selectableOnce && StatusManager.Instance != null)
+        {
+            StatusManager.Instance.MarkUniqueBonusCardSelected(cardData.uniqueSelectionId);
         }
 
         ClearCards();
@@ -223,6 +269,78 @@ public class BonusCardsManager : MonoBehaviour
                     status.ACC -= conv2;
                     status.STR += conv2;
                 }
+                break;
+
+            case CardEffectType.GearCraftAxeSizeMultiplier:
+                status.gearCraftAxeSizeMultiplier *= Mathf.Max(0.01f, effect.value);
+                break;
+
+            case CardEffectType.GearCraftSwordMoveSpeedBonus:
+                status.gearCraftSwordMoveSpeedBonus += effect.value;
+                break;
+
+            case CardEffectType.GearCraftTransformGainGear:
+                status.gearCraftTransformGearGain += Mathf.Max(0, (int)effect.value);
+                break;
+
+            case CardEffectType.SteamCannonBulletSpeedMultiplier:
+                status.steamCannonBulletSpeedMultiplier *= Mathf.Max(0.01f, effect.value);
+                break;
+
+            case CardEffectType.SteamCannonExplosionRadiusMultiplier:
+                status.steamCannonExplosionRadiusMultiplier *= Mathf.Max(0.01f, effect.value);
+                break;
+
+            case CardEffectType.SteamCannonGiantBulletChance:
+                status.steamCannonGiantBulletChance = Mathf.Clamp01(status.steamCannonGiantBulletChance + effect.value);
+                break;
+
+            case CardEffectType.SteamCannonDirectHitKnockback:
+                status.steamCannonDirectHitKnockback += Mathf.Max(0f, effect.value);
+                break;
+
+            case CardEffectType.SteamThrowerOverheatSlipDamage:
+                status.steamThrowerOverheatSlipDamage += Mathf.Max(0f, effect.value);
+                break;
+
+            case CardEffectType.SteamThrowerNoBulletGravity:
+                status.steamThrowerNoBulletGravity = true;
+                break;
+
+            case CardEffectType.SteamThrowerBoostDamageMultiplier:
+                status.steamThrowerBoostDamageMultiplier *= Mathf.Max(1f, effect.value);
+                break;
+
+            case CardEffectType.SteamThrowerBoostBurnDrops:
+                status.steamThrowerBoostBurnDrops = true;
+                break;
+
+            case CardEffectType.RailCraftBulletSizeMultiplier:
+                status.railCraftBulletSizeMultiplier *= Mathf.Max(0.01f, effect.value);
+                break;
+
+            case CardEffectType.RailCraftApplyOverheat:
+                status.railCraftApplyOverheat = true;
+                break;
+
+            case CardEffectType.RailCraftRicochetMultiplier:
+                status.railCraftRicochetMultiplier *= Mathf.Max(1f, effect.value);
+                break;
+
+            case CardEffectType.SteamGatlingBulletSpeedMultiplier:
+                status.steamGatlingBulletSpeedMultiplier *= Mathf.Max(0.01f, effect.value);
+                break;
+
+            case CardEffectType.SteamGatlingBossDamageMultiplier:
+                status.steamGatlingBossDamageMultiplier *= Mathf.Max(0.01f, effect.value);
+                break;
+
+            case CardEffectType.SteamGatlingNormalDamageMultiplier:
+                status.steamGatlingNormalDamageMultiplier *= Mathf.Max(0.01f, effect.value);
+                break;
+
+            case CardEffectType.SteamGatlingDownwardRecoil:
+                status.steamGatlingDownwardRecoil = true;
                 break;
         }
     }

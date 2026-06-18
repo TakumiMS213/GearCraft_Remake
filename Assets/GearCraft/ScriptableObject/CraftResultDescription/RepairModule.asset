@@ -1,0 +1,16 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a659b30e2400746ff8e9e695c6ed4b59, type: 3}
+  m_Name: RepairModule
+  m_EditorClassIdentifier: 
+  displayName: Repair Module
+  description: "\u7D99\u6226\u529B\u3092\u652F\u3048\u308B\u30E2\u30B8\u30E5\u30FC\u30EB\u3002\n\u30B9\u30C6\u30FC\u30B8\u30AF\u30EA\u30A2\u6BCE\u306B\u4F53\u529B\u56DE\u5FA9"

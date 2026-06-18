@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba53de0965ece1a4d96741a54fe1d238, type: 3}
+  m_Name: Weapon_SteamThrower_BoostBurn
+  m_EditorClassIdentifier: 
+  cardName: "\u904E\u71C3\u713CBOOST"
+  cardImage: {fileID: -1560678534750883982, guid: fa913e07b0155e84b908a2be457646d8, type: 3}
+  cardPrefab: {fileID: 3479878808088070851, guid: 28de274d298f44aa5a72218847aecc90, type: 3}
+  weight: 0.25
+  requiredWeaponNames:
+  - SteamThrower
+  selectableOnce: 1
+  uniqueSelectionId: SteamThrower_BoostBurn
+  effects:
+  - type: 122
+    value: 1.2
+    weaponToGrant: {fileID: 0}
+    partToGrant: {fileID: 0}
+    materialType: 0
+  - type: 123
+    value: 1
+    weaponToGrant: {fileID: 0}
+    partToGrant: {fileID: 0}
+    materialType: 0

@@ -16,6 +16,10 @@ public class EnemySpawner : MonoBehaviour
     private const int GroupSpawnMinCount = 1;
     private const int GroupSpawnMaxCount = 3;
     private const int DefaultStagesPerDay = 3;
+    private const float GSeriesSpeedThreshold = 2f;
+    private const float GroupSpawnSeparationDistance = 0.9f;
+    private const float GroupSpawnMinDelay = 0.12f;
+    private const float GroupSpawnMaxDelay = 0.9f;
 
     [Header("Auto Generation")]
     public StageGeneratorSO stageConfig;
@@ -152,7 +156,7 @@ public class EnemySpawner : MonoBehaviour
 
             EnemyDataSO selectedEnemy = spawnList[i];
 
-            SpawnEnemyGroup(selectedEnemy, ShouldUseGroupedNormalSpawn(stageNum, selectedEnemy), i == spawnList.Count - 1);
+            await SpawnEnemyGroupAsync(selectedEnemy, ShouldUseGroupedNormalSpawn(stageNum, selectedEnemy), i == spawnList.Count - 1, token);
 
             await UniTask.Delay((int)(spawnInterval * 1000f), cancellationToken: token);
         }
@@ -180,7 +184,7 @@ public class EnemySpawner : MonoBehaviour
                 EnemyDataSO minionData = minions[i];
 
                 bool markLast = plan.MarkLastMinionAsStageEnd && i == minions.Count - 1;
-                SpawnEnemyGroup(minionData, ShouldUseGroupedNormalSpawn(stageNum, minionData), markLast);
+                await SpawnEnemyGroupAsync(minionData, ShouldUseGroupedNormalSpawn(stageNum, minionData), markLast, token);
 
                 await UniTask.Delay((int)(spawnInterval * 1000f), cancellationToken: token);
             }
@@ -207,25 +211,74 @@ public class EnemySpawner : MonoBehaviour
         }
     }
 
-    private void SpawnEnemyGroup(EnemyDataSO enemyData, bool useGroup, bool markLastEnemy)
+    private async UniTask SpawnEnemyGroupAsync(EnemyDataSO enemyData, bool useGroup, bool markLastEnemy, CancellationToken token)
     {
         if (enemyData == null || enemyData.prefab == null)
         {
             return;
         }
 
-        int spawnCount = useGroup ? UnityEngine.Random.Range(GroupSpawnMinCount, GroupSpawnMaxCount + 1) : 1;
-        for (int i = 0; i < spawnCount; i++)
+        List<EnemyDataSO> groupEnemies = BuildSpawnGroup(enemyData, useGroup);
+        for (int i = 0; i < groupEnemies.Count; i++)
         {
-            ShowEmergencyWarningIfNeeded(enemyData);
-            Vector3 offset = GetGroupSpawnOffset(i, spawnCount);
-            GameObject spawned = Instantiate(enemyData.prefab, transform.position + offset, Quaternion.identity);
+            if (i > 0)
+            {
+                EnemyDataSO previousEnemy = groupEnemies[i - 1];
+                float spawnDelay = GetGroupSpawnDelay(previousEnemy);
+                await UniTask.Delay((int)(spawnDelay * 1000f), cancellationToken: token);
+            }
+
+            token.ThrowIfCancellationRequested();
+
+            EnemyDataSO groupEnemy = groupEnemies[i];
+            if (groupEnemy == null || groupEnemy.prefab == null)
+            {
+                continue;
+            }
+
+            ShowEmergencyWarningIfNeeded(groupEnemy);
+            GameObject spawned = Instantiate(groupEnemy.prefab, transform.position, Quaternion.identity);
             EnemyController enemy = spawned.GetComponent<EnemyController>();
             if (enemy != null)
             {
-                enemy.enemyData = enemyData;
-                enemy.isLastEnemy = markLastEnemy && i == spawnCount - 1;
+                enemy.enemyData = groupEnemy;
+                enemy.isLastEnemy = markLastEnemy && i == groupEnemies.Count - 1;
             }
+        }
+    }
+
+    private List<EnemyDataSO> BuildSpawnGroup(EnemyDataSO primaryEnemy, bool useGroup)
+    {
+        int targetCount = useGroup ? UnityEngine.Random.Range(GroupSpawnMinCount, GroupSpawnMaxCount + 1) : 1;
+        List<EnemyDataSO> groupEnemies = new List<EnemyDataSO>(GroupSpawnMaxCount);
+
+        if (IsGSeriesSupportEnemy(primaryEnemy))
+        {
+            int mixedTargetCount = Mathf.Clamp(Mathf.Max(2, targetCount), 2, GroupSpawnMaxCount);
+            AddSupportEnemies(groupEnemies, primaryEnemy, mixedTargetCount - 1);
+            groupEnemies.Add(primaryEnemy);
+            return groupEnemies;
+        }
+
+        for (int i = 0; i < targetCount; i++)
+        {
+            groupEnemies.Add(primaryEnemy);
+        }
+
+        return groupEnemies;
+    }
+
+    private void AddSupportEnemies(List<EnemyDataSO> groupEnemies, EnemyDataSO primaryEnemy, int count)
+    {
+        for (int i = 0; i < count; i++)
+        {
+            EnemyDataSO supportEnemy = GetRandomNonGSeriesEnemy(primaryEnemy);
+            if (supportEnemy == null)
+            {
+                break;
+            }
+
+            groupEnemies.Add(supportEnemy);
         }
     }
 
@@ -242,15 +295,94 @@ public class EnemySpawner : MonoBehaviour
         return stageNum <= stagesPerDay;
     }
 
-    private static Vector3 GetGroupSpawnOffset(int index, int count)
+    private static float GetGroupSpawnDelay(EnemyDataSO enemyData)
     {
-        if (count <= 1)
+        if (enemyData == null)
         {
-            return Vector3.zero;
+            return GroupSpawnMinDelay;
         }
 
-        float center = (count - 1) * 0.5f;
-        return new Vector3((index - center) * 0.85f, 0f, 0f);
+        float speed = Mathf.Max(0.01f, enemyData.speed);
+        return Mathf.Clamp(GroupSpawnSeparationDistance / speed, GroupSpawnMinDelay, GroupSpawnMaxDelay);
+    }
+
+    private EnemyDataSO GetRandomNonGSeriesEnemy(EnemyDataSO primaryEnemy)
+    {
+        EnemyDataSO[] pool = stageConfig != null ? stageConfig.normalEnemyPool : null;
+        if (pool == null || pool.Length == 0)
+        {
+            return null;
+        }
+
+        int bossKillCount = StatusManager.Instance != null ? StatusManager.Instance.bossKillCount : 0;
+        if (bossKillCount <= 0)
+        {
+            return GetRandomNonGSeriesEnemy(pool, LowTierStartIndex, LowTierCount, primaryEnemy);
+        }
+
+        if (bossKillCount == 1)
+        {
+            bool preferLowTier = UnityEngine.Random.value < LowTierWeightAfterFirstBoss;
+            EnemyDataSO preferred = preferLowTier
+                ? GetRandomNonGSeriesEnemy(pool, LowTierStartIndex, LowTierCount, primaryEnemy)
+                : GetRandomNonGSeriesEnemy(pool, AdvancedTierStartIndex, AdvancedTierCount, primaryEnemy);
+
+            if (preferred != null)
+            {
+                return preferred;
+            }
+
+            return preferLowTier
+                ? GetRandomNonGSeriesEnemy(pool, AdvancedTierStartIndex, AdvancedTierCount, primaryEnemy)
+                : GetRandomNonGSeriesEnemy(pool, LowTierStartIndex, LowTierCount, primaryEnemy);
+        }
+
+        EnemyDataSO advancedEnemy = GetRandomNonGSeriesEnemy(pool, AdvancedTierStartIndex, AdvancedTierCount, primaryEnemy);
+        if (advancedEnemy != null)
+        {
+            return advancedEnemy;
+        }
+
+        return GetRandomNonGSeriesEnemy(pool, LowTierStartIndex, LowTierCount, primaryEnemy);
+    }
+
+    private static EnemyDataSO GetRandomNonGSeriesEnemy(EnemyDataSO[] pool, int startIndex, int count, EnemyDataSO primaryEnemy)
+    {
+        List<EnemyDataSO> candidates = new List<EnemyDataSO>();
+        int endIndex = Mathf.Min(pool.Length, startIndex + count);
+        for (int i = Mathf.Max(0, startIndex); i < endIndex; i++)
+        {
+            EnemyDataSO candidate = pool[i];
+            if (candidate == null ||
+                candidate.prefab == null ||
+                candidate.IsBossType ||
+                ReferenceEquals(candidate, primaryEnemy) ||
+                IsGSeriesSupportEnemy(candidate))
+            {
+                continue;
+            }
+
+            candidates.Add(candidate);
+        }
+
+        if (candidates.Count == 0)
+        {
+            return null;
+        }
+
+        return candidates[UnityEngine.Random.Range(0, candidates.Count)];
+    }
+
+    private static bool IsGSeriesSupportEnemy(EnemyDataSO enemyData)
+    {
+        if (enemyData == null || enemyData.IsBossType || enemyData.speed > GSeriesSpeedThreshold)
+        {
+            return false;
+        }
+
+        string enemyName = enemyData.enemyName;
+        return !string.IsNullOrEmpty(enemyName) &&
+            enemyName.IndexOf("G", StringComparison.OrdinalIgnoreCase) >= 0;
     }
 
     private int GetEnemyScalingStage(int stageNum)

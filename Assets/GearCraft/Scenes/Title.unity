@@ -603,6 +603,26 @@ MonoBehaviour:
   junkCollectorMult: 1
   bulletSizeMult: 1
   magnetRange: 3
+  selectedUniqueBonusCardIds: []
+  gearCraftAxeSizeMultiplier: 1
+  gearCraftSwordMoveSpeedBonus: 0
+  gearCraftTransformGearGain: 0
+  steamCannonBulletSpeedMultiplier: 1
+  steamCannonExplosionRadiusMultiplier: 1
+  steamCannonGiantBulletChance: 0
+  steamCannonDirectHitKnockback: 0
+  steamThrowerOverheatSlipDamage: 0
+  steamThrowerNoBulletGravity: 0
+  steamThrowerBoostDamageMultiplier: 1
+  steamThrowerBoostBurnDrops: 0
+  steamThrowerBoostBurnDropsActive: 0
+  railCraftBulletSizeMultiplier: 1
+  railCraftApplyOverheat: 0
+  railCraftRicochetMultiplier: 1
+  steamGatlingBulletSpeedMultiplier: 1
+  steamGatlingBossDamageMultiplier: 1
+  steamGatlingNormalDamageMultiplier: 1
+  steamGatlingDownwardRecoil: 0
 --- !u!1 &220785207
 GameObject:
   m_ObjectHideFlags: 0

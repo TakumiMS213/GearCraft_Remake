@@ -249,7 +249,7 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-            rb.linearVelocity = new Vector2(moveInput * moveSpeed, rb.linearVelocity.y);
+            rb.linearVelocity = new Vector2(moveInput * GetCurrentMoveSpeed(), rb.linearVelocity.y);
         }
 
         anim.SetBool("run", dashTimer > 0f || moveInput != 0);
@@ -311,6 +311,17 @@ public class PlayerController : MonoBehaviour
         }
 
         return Mathf.Sign(direction) == -Mathf.Sign(wallNormal.x);
+    }
+
+    private float GetCurrentMoveSpeed()
+    {
+        float speed = moveSpeed;
+        if (runtimeStatus != null && currentWeapon != null && currentWeapon.weaponName == "GearCraft_Sword")
+        {
+            speed += runtimeStatus.gearCraftSwordMoveSpeedBonus;
+        }
+
+        return Mathf.Max(0f, speed);
     }
 
     // --- Attack ---
@@ -381,7 +392,7 @@ public class PlayerController : MonoBehaviour
         Rigidbody2D rbBullet = bullet.GetComponent<Rigidbody2D>();
         if (rbBullet != null)
         {
-            rbBullet.linearVelocity = direction * currentWeapon.bulletSpeed;
+            rbBullet.linearVelocity = direction * GetCurrentBulletSpeed();
         }
 
         ConfigureSpawnedProjectile(bullet);
@@ -397,11 +408,13 @@ public class PlayerController : MonoBehaviour
             Rigidbody2D rb2 = bullet2.GetComponent<Rigidbody2D>();
             if (rb2 != null)
             {
-                rb2.linearVelocity = dir2 * currentWeapon.bulletSpeed;
+                rb2.linearVelocity = dir2 * GetCurrentBulletSpeed();
             }
 
             ConfigureSpawnedProjectile(bullet2);
         }
+
+        ApplySteamGatlingDownwardRecoil(direction);
     }
 
     private void ConfigureSpawnedProjectile(GameObject bullet)
@@ -419,12 +432,29 @@ public class PlayerController : MonoBehaviour
             {
                 bullet.transform.localScale *= runtimeStatus.bulletSizeMult;
             }
+
+            ApplyWeaponSpecificProjectileVisuals(bullet);
         }
 
         SteamThrowerBulletController steamThrowerBullet = bullet.GetComponent<SteamThrowerBulletController>();
         if (steamThrowerBullet != null)
         {
+            if (runtimeStatus != null &&
+                currentWeapon.weaponName == "SteamThrower" &&
+                isBoostActive &&
+                runtimeStatus.steamThrowerBoostDamageMultiplier > 1f)
+            {
+                projectileDamage *= runtimeStatus.steamThrowerBoostDamageMultiplier;
+            }
+
             steamThrowerBullet.Configure(projectileDamage, currentWeapon.attackRange, null);
+            if (runtimeStatus != null && currentWeapon.weaponName == "SteamThrower")
+            {
+                steamThrowerBullet.ConfigureBonus(
+                    runtimeStatus.steamThrowerOverheatSlipDamage,
+                    runtimeStatus.steamThrowerNoBulletGravity,
+                    isBoostActive && runtimeStatus.steamThrowerBoostBurnDropsActive);
+            }
             return;
         }
 
@@ -439,7 +469,14 @@ public class PlayerController : MonoBehaviour
 
         if (runtimeStatus != null)
         {
-            bulletController.ricochetCount = runtimeStatus.ricochetCount;
+            int ricochet = runtimeStatus.ricochetCount;
+            if (currentWeapon.weaponName == "RailCraft" && runtimeStatus.railCraftRicochetMultiplier > 1f)
+            {
+                ricochet = Mathf.RoundToInt(ricochet * runtimeStatus.railCraftRicochetMultiplier);
+            }
+
+            bulletController.ricochetCount = ricochet;
+            ApplyWeaponSpecificBulletBonuses(bulletController);
         }
 
         if (currentWeapon.isPiercing)
@@ -453,6 +490,83 @@ public class PlayerController : MonoBehaviour
     {
         float clampedSpread = Mathf.Max(0f, spread);
         return baseAngle + UnityEngine.Random.Range(-clampedSpread, clampedSpread);
+    }
+
+    private float GetCurrentBulletSpeed()
+    {
+        float bulletSpeed = currentWeapon != null ? currentWeapon.bulletSpeed : 0f;
+        if (runtimeStatus == null || currentWeapon == null)
+        {
+            return bulletSpeed;
+        }
+
+        switch (currentWeapon.weaponName)
+        {
+            case "SteamCannon":
+                return bulletSpeed * runtimeStatus.steamCannonBulletSpeedMultiplier;
+            case "SteamGatling":
+                return bulletSpeed * runtimeStatus.steamGatlingBulletSpeedMultiplier;
+            default:
+                return bulletSpeed;
+        }
+    }
+
+    private void ApplyWeaponSpecificProjectileVisuals(GameObject bullet)
+    {
+        if (bullet == null || runtimeStatus == null || currentWeapon == null)
+        {
+            return;
+        }
+
+        if (currentWeapon.weaponName == "RailCraft" && runtimeStatus.railCraftBulletSizeMultiplier > 1f)
+        {
+            bullet.transform.localScale *= runtimeStatus.railCraftBulletSizeMultiplier;
+        }
+
+        if (currentWeapon.weaponName == "SteamCannon" &&
+            runtimeStatus.steamCannonGiantBulletChance > 0f &&
+            UnityEngine.Random.value < runtimeStatus.steamCannonGiantBulletChance)
+        {
+            bullet.transform.localScale *= 3f;
+        }
+    }
+
+    private void ApplyWeaponSpecificBulletBonuses(BulletController bulletController)
+    {
+        if (bulletController == null || runtimeStatus == null || currentWeapon == null)
+        {
+            return;
+        }
+
+        switch (currentWeapon.weaponName)
+        {
+            case "SteamCannon":
+                bulletController.explosionRadiusMultiplier = runtimeStatus.steamCannonExplosionRadiusMultiplier;
+                bulletController.directHitKnockback = runtimeStatus.steamCannonDirectHitKnockback;
+                break;
+            case "RailCraft":
+                bulletController.applyOverheatOnHit = runtimeStatus.railCraftApplyOverheat;
+                break;
+            case "SteamGatling":
+                bulletController.bossDamageMultiplier = runtimeStatus.steamGatlingBossDamageMultiplier;
+                bulletController.normalDamageMultiplier = runtimeStatus.steamGatlingNormalDamageMultiplier;
+                break;
+        }
+    }
+
+    private void ApplySteamGatlingDownwardRecoil(Vector2 direction)
+    {
+        if (runtimeStatus == null ||
+            currentWeapon == null ||
+            currentWeapon.weaponName != "SteamGatling" ||
+            !runtimeStatus.steamGatlingDownwardRecoil ||
+            direction.y > -0.45f ||
+            rb == null)
+        {
+            return;
+        }
+
+        rb.linearVelocity = new Vector2(rb.linearVelocity.x, Mathf.Max(rb.linearVelocity.y, jumpForce * 0.75f));
     }
 
     private Vector3 GetMuzzlePosition(Vector2 direction)
@@ -732,6 +846,12 @@ public class PlayerController : MonoBehaviour
 
         boostRemainingTime = Mathf.Min(boostRemainingTime + 5f, 5f);
         boostCount++;
+        if (currentWeapon != null &&
+            currentWeapon.weaponName == "SteamThrower" &&
+            runtimeStatus.steamThrowerBoostBurnDrops)
+        {
+            runtimeStatus.steamThrowerBoostBurnDropsActive = true;
+        }
 
         if (isBoostActive)
         {
@@ -759,6 +879,7 @@ public class PlayerController : MonoBehaviour
         isBoostActive = false;
         boostRemainingTime = 0f;
         runtimeStatus.attackSpeedMult = savedSpeedMult;
+        runtimeStatus.steamThrowerBoostBurnDropsActive = false;
 
         if (BoostPanel != null)
         {
@@ -779,7 +900,13 @@ public class PlayerController : MonoBehaviour
         var swordWeapon = currentWeapon;
         var axeWeapon = runtimeStatus.FindOwnedWeaponByName("GearCraft_Axe");
         if (axeWeapon != null)
+        {
             runtimeStatus.EquipWeapon(axeWeapon);
+            if (runtimeStatus.gearCraftTransformGearGain > 0)
+            {
+                MaterialManager.Instance?.AddMaterial(MaterialManager.MaterialType.Gear, runtimeStatus.gearCraftTransformGearGain);
+            }
+        }
 
         await UniTask.Delay(TimeSpan.FromSeconds(5f));
         if (armAnimator != null)

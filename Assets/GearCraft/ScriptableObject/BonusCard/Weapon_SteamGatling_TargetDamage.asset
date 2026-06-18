@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba53de0965ece1a4d96741a54fe1d238, type: 3}
+  m_Name: Weapon_SteamGatling_TargetDamage
+  m_EditorClassIdentifier: 
+  cardName: "\u5236\u5727\u5C04\u6483"
+  cardImage: {fileID: -638043900989242246, guid: 951031652047f4267aba5f3ab2134c46, type: 3}
+  cardPrefab: {fileID: 4406262519367321191, guid: c59c54fc55ada4ac6a6116de801f2c3e, type: 3}
+  weight: 0.25
+  requiredWeaponNames:
+  - SteamGatling
+  selectableOnce: 1
+  uniqueSelectionId: SteamGatling_TargetDamage
+  effects:
+  - type: 141
+    value: 0.7
+    weaponToGrant: {fileID: 0}
+    partToGrant: {fileID: 0}
+    materialType: 0
+  - type: 142
+    value: 1.3
+    weaponToGrant: {fileID: 0}
+    partToGrant: {fileID: 0}
+    materialType: 0

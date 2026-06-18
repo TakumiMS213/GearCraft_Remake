@@ -54,6 +54,28 @@ public class StatusManager : MonoBehaviour
     public float junkCollectorMult = 1f;
     public float bulletSizeMult = 1f;
     public float magnetRange = 3f;
+    public List<string> selectedUniqueBonusCardIds = new List<string>();
+
+    [Header("Weapon Specific Bonus Cards")]
+    public float gearCraftAxeSizeMultiplier = 1f;
+    public float gearCraftSwordMoveSpeedBonus = 0f;
+    public int gearCraftTransformGearGain = 0;
+    public float steamCannonBulletSpeedMultiplier = 1f;
+    public float steamCannonExplosionRadiusMultiplier = 1f;
+    public float steamCannonGiantBulletChance = 0f;
+    public float steamCannonDirectHitKnockback = 0f;
+    public float steamThrowerOverheatSlipDamage = 0f;
+    public bool steamThrowerNoBulletGravity = false;
+    public float steamThrowerBoostDamageMultiplier = 1f;
+    public bool steamThrowerBoostBurnDrops = false;
+    public bool steamThrowerBoostBurnDropsActive = false;
+    public float railCraftBulletSizeMultiplier = 1f;
+    public bool railCraftApplyOverheat = false;
+    public float railCraftRicochetMultiplier = 1f;
+    public float steamGatlingBulletSpeedMultiplier = 1f;
+    public float steamGatlingBossDamageMultiplier = 1f;
+    public float steamGatlingNormalDamageMultiplier = 1f;
+    public bool steamGatlingDownwardRecoil = false;
 
     private void Awake()
     {
@@ -160,6 +182,21 @@ public class StatusManager : MonoBehaviour
         }
 
         notifiedCraftUnlockIds.Add(unlockId);
+    }
+
+    public bool IsUniqueBonusCardSelected(string uniqueId)
+    {
+        return !string.IsNullOrWhiteSpace(uniqueId) && selectedUniqueBonusCardIds.Contains(uniqueId);
+    }
+
+    public void MarkUniqueBonusCardSelected(string uniqueId)
+    {
+        if (string.IsNullOrWhiteSpace(uniqueId) || selectedUniqueBonusCardIds.Contains(uniqueId))
+        {
+            return;
+        }
+
+        selectedUniqueBonusCardIds.Add(uniqueId);
     }
 
     public void SaveUpgradeGridState(List<UpgradeGridManager.PlacedPart> placedParts)

@@ -416,6 +416,25 @@ public class StageFlowManager : MonoBehaviour
         private float junkCollectorMult;
         private float bulletSizeMult;
         private float magnetRange;
+        private List<string> selectedUniqueBonusCardIds;
+        private float gearCraftAxeSizeMultiplier;
+        private float gearCraftSwordMoveSpeedBonus;
+        private int gearCraftTransformGearGain;
+        private float steamCannonBulletSpeedMultiplier;
+        private float steamCannonExplosionRadiusMultiplier;
+        private float steamCannonGiantBulletChance;
+        private float steamCannonDirectHitKnockback;
+        private float steamThrowerOverheatSlipDamage;
+        private bool steamThrowerNoBulletGravity;
+        private float steamThrowerBoostDamageMultiplier;
+        private bool steamThrowerBoostBurnDrops;
+        private float railCraftBulletSizeMultiplier;
+        private bool railCraftApplyOverheat;
+        private float railCraftRicochetMultiplier;
+        private float steamGatlingBulletSpeedMultiplier;
+        private float steamGatlingBossDamageMultiplier;
+        private float steamGatlingNormalDamageMultiplier;
+        private bool steamGatlingDownwardRecoil;
         private int scrap;
         private int gear;
         private int upgradeCore;
@@ -462,6 +481,27 @@ public class StageFlowManager : MonoBehaviour
                 snapshot.junkCollectorMult = status.junkCollectorMult;
                 snapshot.bulletSizeMult = status.bulletSizeMult;
                 snapshot.magnetRange = status.magnetRange;
+                snapshot.selectedUniqueBonusCardIds = status.selectedUniqueBonusCardIds != null
+                    ? new List<string>(status.selectedUniqueBonusCardIds)
+                    : new List<string>();
+                snapshot.gearCraftAxeSizeMultiplier = status.gearCraftAxeSizeMultiplier;
+                snapshot.gearCraftSwordMoveSpeedBonus = status.gearCraftSwordMoveSpeedBonus;
+                snapshot.gearCraftTransformGearGain = status.gearCraftTransformGearGain;
+                snapshot.steamCannonBulletSpeedMultiplier = status.steamCannonBulletSpeedMultiplier;
+                snapshot.steamCannonExplosionRadiusMultiplier = status.steamCannonExplosionRadiusMultiplier;
+                snapshot.steamCannonGiantBulletChance = status.steamCannonGiantBulletChance;
+                snapshot.steamCannonDirectHitKnockback = status.steamCannonDirectHitKnockback;
+                snapshot.steamThrowerOverheatSlipDamage = status.steamThrowerOverheatSlipDamage;
+                snapshot.steamThrowerNoBulletGravity = status.steamThrowerNoBulletGravity;
+                snapshot.steamThrowerBoostDamageMultiplier = status.steamThrowerBoostDamageMultiplier;
+                snapshot.steamThrowerBoostBurnDrops = status.steamThrowerBoostBurnDrops;
+                snapshot.railCraftBulletSizeMultiplier = status.railCraftBulletSizeMultiplier;
+                snapshot.railCraftApplyOverheat = status.railCraftApplyOverheat;
+                snapshot.railCraftRicochetMultiplier = status.railCraftRicochetMultiplier;
+                snapshot.steamGatlingBulletSpeedMultiplier = status.steamGatlingBulletSpeedMultiplier;
+                snapshot.steamGatlingBossDamageMultiplier = status.steamGatlingBossDamageMultiplier;
+                snapshot.steamGatlingNormalDamageMultiplier = status.steamGatlingNormalDamageMultiplier;
+                snapshot.steamGatlingDownwardRecoil = status.steamGatlingDownwardRecoil;
             }
 
             MaterialManager material = MaterialManager.Instance;
@@ -515,6 +555,28 @@ public class StageFlowManager : MonoBehaviour
                 status.junkCollectorMult = junkCollectorMult;
                 status.bulletSizeMult = bulletSizeMult;
                 status.magnetRange = magnetRange;
+                status.selectedUniqueBonusCardIds = selectedUniqueBonusCardIds != null
+                    ? new List<string>(selectedUniqueBonusCardIds)
+                    : new List<string>();
+                status.gearCraftAxeSizeMultiplier = gearCraftAxeSizeMultiplier;
+                status.gearCraftSwordMoveSpeedBonus = gearCraftSwordMoveSpeedBonus;
+                status.gearCraftTransformGearGain = gearCraftTransformGearGain;
+                status.steamCannonBulletSpeedMultiplier = steamCannonBulletSpeedMultiplier;
+                status.steamCannonExplosionRadiusMultiplier = steamCannonExplosionRadiusMultiplier;
+                status.steamCannonGiantBulletChance = steamCannonGiantBulletChance;
+                status.steamCannonDirectHitKnockback = steamCannonDirectHitKnockback;
+                status.steamThrowerOverheatSlipDamage = steamThrowerOverheatSlipDamage;
+                status.steamThrowerNoBulletGravity = steamThrowerNoBulletGravity;
+                status.steamThrowerBoostDamageMultiplier = steamThrowerBoostDamageMultiplier;
+                status.steamThrowerBoostBurnDrops = steamThrowerBoostBurnDrops;
+                status.steamThrowerBoostBurnDropsActive = false;
+                status.railCraftBulletSizeMultiplier = railCraftBulletSizeMultiplier;
+                status.railCraftApplyOverheat = railCraftApplyOverheat;
+                status.railCraftRicochetMultiplier = railCraftRicochetMultiplier;
+                status.steamGatlingBulletSpeedMultiplier = steamGatlingBulletSpeedMultiplier;
+                status.steamGatlingBossDamageMultiplier = steamGatlingBossDamageMultiplier;
+                status.steamGatlingNormalDamageMultiplier = steamGatlingNormalDamageMultiplier;
+                status.steamGatlingDownwardRecoil = steamGatlingDownwardRecoil;
             }
 
             MaterialManager material = MaterialManager.Instance;

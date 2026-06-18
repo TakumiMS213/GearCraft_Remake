@@ -34,6 +34,11 @@ namespace GearCraft.Scripts.Items
             amount = value;
         }
 
+        public void Burn()
+        {
+            Destroy(gameObject);
+        }
+
         private void Start()
         {
             rb = GetComponent<Rigidbody2D>();

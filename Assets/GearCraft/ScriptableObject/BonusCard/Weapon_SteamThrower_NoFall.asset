@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba53de0965ece1a4d96741a54fe1d238, type: 3}
+  m_Name: Weapon_SteamThrower_NoFall
+  m_EditorClassIdentifier: 
+  cardName: "\u6D6E\u904A\u84B8\u6C17"
+  cardImage: {fileID: -1560678534750883982, guid: fa913e07b0155e84b908a2be457646d8, type: 3}
+  cardPrefab: {fileID: 7176460080852243435, guid: e4b9e7834cbe54e51a72b1f914567328, type: 3}
+  weight: 0.25
+  requiredWeaponNames:
+  - SteamThrower
+  selectableOnce: 1
+  uniqueSelectionId: SteamThrower_NoFall
+  effects:
+  - type: 121
+    value: 1
+    weaponToGrant: {fileID: 0}
+    partToGrant: {fileID: 0}
+    materialType: 0
