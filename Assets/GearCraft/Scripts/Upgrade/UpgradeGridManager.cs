@@ -1,9 +1,11 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class UpgradeGridManager : MonoBehaviour
 {
     public static UpgradeGridManager Instance { get; private set; }
+    public event Action<UpgradePartSO> PartPlaced;
 
     [System.Serializable]
     public class PlacedPart
@@ -149,6 +151,7 @@ public class UpgradeGridManager : MonoBehaviour
         RecalculateEffects();
         RefreshUI();
         SavePlacedParts();
+        PartPlaced?.Invoke(part);
         return true;
     }
 

@@ -10,25 +10,34 @@ namespace GearCraft.Scripts.Craft
     {
         private const int CraftTab = 0;
         private const int WeaponCustomTab = 1;
-        private const string CraftAutoPlayedKey = "GearCraft.CraftTutorial.AutoPlayed.Craft.v3";
-        private const string WeaponCustomAutoPlayedKey = "GearCraft.CraftTutorial.AutoPlayed.WeaponCustom.v2";
+        private const string CraftAutoPlayedKey = "GearCraft.CraftTutorial.AutoPlayed.Craft.v4";
+        private const string WeaponCustomAutoPlayedKey = "GearCraft.CraftTutorial.AutoPlayed.WeaponCustom.v3";
+        private const string ScrapModuleRecipeKey = "ScrapModule";
+        private const string DamagePartKey = "Damage+1";
+        private const string DefaultTutorialDataResourcePath = "GearCraft/CraftTutorialData";
 
-        private readonly TutorialStep[] craftSteps =
+        private readonly CraftTutorialStepData[] defaultCraftSteps =
         {
-            new TutorialStep("Craft", "ここでは新しい武器や機能をクラフトできます。", "CraftTabButton"),
-            new TutorialStep("Recipe", "左側のリストから作りたい項目を選びます。", "CraftRecipeScrollView"),
-            new TutorialStep("Materials", "必要素材と現在の所持数を確認します。", "MaterialDisplayArea"),
-            new TutorialStep("Craft Button", "素材が足りていれば、このボタンで作成できます。", "craft_button"),
-            new TutorialStep("Help", "もう一度見たいときは、この「？」ボタンを押してください。", "question"),
+            new CraftTutorialStepData("Craft", "ここでは装備や機能を作成します。", "CraftTabButton"),
+            new CraftTutorialStepData("Recipe List", "左側に作成できる項目があります。", "CraftRecipeScrollView"),
+            new CraftTutorialStepData("Result", "中央に作成結果が表示されます。", "Result_ScrapModule"),
+            new CraftTutorialStepData("Materials", "必要素材は下に表示されます。", "Material_Scrap|Material_Gear"),
+            new CraftTutorialStepData("Goal", "ScrapModuleを作成します。", "Result_ScrapModule"),
+            new CraftTutorialStepData("ScrapModule", "ScrapModuleは素材回収を補助します。", "Result_ScrapModule"),
+            new CraftTutorialStepData("Supplies", "必要素材は配布済みです。", "Material_Scrap|Material_Gear"),
+            new CraftTutorialStepData("Craft", "CRAFTを押してください。", "craft_button", CraftTutorialWaitCondition.CraftScrapModule),
+            new CraftTutorialStepData("Next Phase", "WeaponCustomへ進みます。", "UpgradeTabButton"),
         };
 
-        private readonly TutorialStep[] weaponCustomSteps =
+        private readonly CraftTutorialStepData[] defaultWeaponCustomSteps =
         {
-            new TutorialStep("Weapon Custom", "ここでは武器に強化パーツを装着できます。", "UpgradeTabButton"),
-            new TutorialStep("Parts Shop", "左側のパーツショップから強化パーツを選びます。", "ShopArea"),
-            new TutorialStep("Grid", "パーツをグリッドへ配置すると効果が発動します。", "GridArea"),
-            new TutorialStep("Effects", "現在発動している効果はここで確認できます。", "EffectSummary"),
-            new TutorialStep("Help", "もう一度見たいときは、この「？」ボタンを押してください。", "question"),
+            new CraftTutorialStepData("WeaponCustom", "ここではパーツを配置して強化します。", "UpgradeTabButton"),
+            new CraftTutorialStepData("Grid", "中央のグリッドにパーツを置きます。", "GridArea"),
+            new CraftTutorialStepData("Shop", "左側に配置できるパーツがあります。", "ShopArea"),
+            new CraftTutorialStepData("Effect", "配置した効果は右側に表示されます。", "EffectSummary"),
+            new CraftTutorialStepData("Goal", "Damage+1をグリッドに配置します。", "GridArea"),
+            new CraftTutorialStepData("Attach Part", "Damage+1をグリッドへドラッグしてください。", "ShopItem_Damage+1|GridArea", CraftTutorialWaitCondition.PlaceDamagePart),
+            new CraftTutorialStepData("Complete", "Damage+1が装着されました。", "EffectSummary"),
         };
 
         private Canvas canvas;
@@ -57,7 +66,13 @@ namespace GearCraft.Scripts.Craft
         private bool weaponCustomAutoPlayedThisScene;
         private int pendingAutoPlayedTab = -1;
         private Coroutine autoStartCoroutine;
-        private TutorialStep[] currentSteps;
+        private CraftTutorialStepData[] currentSteps;
+        private CraftTutorialDataSO tutorialData;
+        private CraftManager craftManager;
+        private UpgradeShopManager upgradeShopManager;
+        private UpgradeGridManager upgradeGridManager;
+        private CraftRecipeSO tutorialScrapModuleRecipe;
+        private UpgradePartSO tutorialDamagePart;
 
         private void Awake()
         {
@@ -72,6 +87,16 @@ namespace GearCraft.Scripts.Craft
             {
                 UpdateHighlight();
             }
+        }
+
+        private void OnDestroy()
+        {
+            UnsubscribeTutorialEvents();
+        }
+
+        public void Configure(CraftTutorialDataSO data)
+        {
+            tutorialData = data;
         }
 
         public void OnTabOpened(int tabIndex)
@@ -95,6 +120,11 @@ namespace GearCraft.Scripts.Craft
 
         private void TryAutoStartTutorial(int tabIndex)
         {
+            if (tabIndex == WeaponCustomTab && PlayerPrefs.GetInt(CraftAutoPlayedKey, 0) != 1)
+            {
+                return;
+            }
+
             if (IsTutorialActive() || HasAutoPlayedThisScene(tabIndex))
             {
                 return;
@@ -115,7 +145,7 @@ namespace GearCraft.Scripts.Craft
             {
                 yield return null;
 
-                TutorialStep[] steps = tabIndex == WeaponCustomTab ? weaponCustomSteps : craftSteps;
+                CraftTutorialStepData[] steps = GetSteps(tabIndex);
                 if (steps.Length == 0 || FindActiveRectTransform(steps[0].TargetName) != null)
                 {
                     StartTutorial(tabIndex, true);
@@ -146,7 +176,10 @@ namespace GearCraft.Scripts.Craft
         private void StartTutorial(int tabIndex, bool markAutoPlayed = false)
         {
             currentTab = tabIndex;
-            currentSteps = tabIndex == WeaponCustomTab ? weaponCustomSteps : craftSteps;
+            ResolveTutorialReferences();
+            PrepareTutorialData(tabIndex);
+            SubscribeTutorialEvents();
+            currentSteps = GetSteps(tabIndex);
             currentStepIndex = 0;
 
             if (markAutoPlayed)
@@ -176,7 +209,8 @@ namespace GearCraft.Scripts.Craft
                 return;
             }
 
-            TutorialStep step = currentSteps[currentStepIndex];
+            CraftTutorialStepData step = currentSteps[currentStepIndex];
+            bool waitsForAction = step.WaitCondition != CraftTutorialWaitCondition.None;
             if (titleText != null)
             {
                 titleText.text = step.Title;
@@ -198,7 +232,37 @@ namespace GearCraft.Scripts.Craft
                 nextText.text = currentStepIndex == currentSteps.Length - 1 ? "OK" : "NEXT";
             }
 
+            if (nextButton != null)
+            {
+                nextButton.gameObject.SetActive(!waitsForAction);
+            }
+
             UpdateHighlight();
+        }
+
+        private CraftTutorialStepData[] GetSteps(int tabIndex)
+        {
+            ResolveTutorialData();
+            CraftTutorialStepData[] steps = tabIndex == WeaponCustomTab
+                ? tutorialData?.WeaponCustomSteps
+                : tutorialData?.CraftSteps;
+
+            if (steps != null && steps.Length > 0)
+            {
+                return steps;
+            }
+
+            return tabIndex == WeaponCustomTab ? defaultWeaponCustomSteps : defaultCraftSteps;
+        }
+
+        private void ResolveTutorialData()
+        {
+            if (tutorialData != null)
+            {
+                return;
+            }
+
+            tutorialData = Resources.Load<CraftTutorialDataSO>(DefaultTutorialDataResourcePath);
         }
 
         private void NextStep()
@@ -216,6 +280,177 @@ namespace GearCraft.Scripts.Craft
             }
 
             HideTutorial();
+        }
+
+        private void ResolveTutorialReferences()
+        {
+            craftManager = craftManager != null ? craftManager : FindFirstObjectByType<CraftManager>();
+            upgradeShopManager = upgradeShopManager != null ? upgradeShopManager : FindFirstObjectByType<UpgradeShopManager>();
+            upgradeGridManager = UpgradeGridManager.Instance != null
+                ? UpgradeGridManager.Instance
+                : FindFirstObjectByType<UpgradeGridManager>();
+
+            if (craftManager != null)
+            {
+                tutorialScrapModuleRecipe = craftManager.FindUnlockedRecipe(ScrapModuleRecipeKey) ??
+                    craftManager.FindRecipe(ScrapModuleRecipeKey);
+            }
+
+            if (upgradeShopManager != null)
+            {
+                tutorialDamagePart = upgradeShopManager.FindPart(DamagePartKey);
+            }
+        }
+
+        private void PrepareTutorialData(int tabIndex)
+        {
+            if (tabIndex == CraftTab)
+            {
+                PrepareCraftTutorial();
+                return;
+            }
+
+            PrepareWeaponCustomTutorial();
+        }
+
+        private void PrepareCraftTutorial()
+        {
+            if (tutorialScrapModuleRecipe == null)
+            {
+                return;
+            }
+
+            craftManager?.TrySelectRecipe(tutorialScrapModuleRecipe);
+            GrantMissingCosts(tutorialScrapModuleRecipe.costs);
+            RefreshMaterialDisplays();
+        }
+
+        private void PrepareWeaponCustomTutorial()
+        {
+            if (tutorialDamagePart == null)
+            {
+                return;
+            }
+
+            GrantMissingCosts(tutorialDamagePart.costs);
+            upgradeShopManager?.EnsureLineupContains(tutorialDamagePart);
+            UpgradeGridManager.Instance?.RefreshUI();
+            RefreshMaterialDisplays();
+        }
+
+        private static void GrantMissingCosts(CraftCost[] costs)
+        {
+            if (costs == null || MaterialManager.Instance == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < costs.Length; i++)
+            {
+                CraftCost cost = costs[i];
+                if (cost == null || cost.amount <= 0)
+                {
+                    continue;
+                }
+
+                int current = MaterialManager.Instance.GetMaterial(cost.type);
+                int missing = cost.amount - current;
+                if (missing > 0)
+                {
+                    MaterialManager.Instance.AddMaterial(cost.type, missing);
+                }
+            }
+        }
+
+        private static void RefreshMaterialDisplays()
+        {
+            MaterialDisplay[] displays = FindObjectsByType<MaterialDisplay>(FindObjectsSortMode.None);
+            for (int i = 0; i < displays.Length; i++)
+            {
+                if (displays[i] != null)
+                {
+                    displays[i].UpdateMaterialAmount();
+                }
+            }
+        }
+
+        private void SubscribeTutorialEvents()
+        {
+            UnsubscribeTutorialEvents();
+
+            if (craftManager != null)
+            {
+                craftManager.RecipeCrafted += OnRecipeCrafted;
+            }
+
+            if (upgradeShopManager != null)
+            {
+                upgradeShopManager.PartPlaced += OnPartPlaced;
+            }
+
+            if (upgradeGridManager != null)
+            {
+                upgradeGridManager.PartPlaced += OnPartPlaced;
+            }
+        }
+
+        private void UnsubscribeTutorialEvents()
+        {
+            if (craftManager != null)
+            {
+                craftManager.RecipeCrafted -= OnRecipeCrafted;
+            }
+
+            if (upgradeShopManager != null)
+            {
+                upgradeShopManager.PartPlaced -= OnPartPlaced;
+            }
+
+            if (upgradeGridManager != null)
+            {
+                upgradeGridManager.PartPlaced -= OnPartPlaced;
+            }
+        }
+
+        private void OnRecipeCrafted(CraftRecipeSO recipe)
+        {
+            if (!IsWaitingFor(CraftTutorialWaitCondition.CraftScrapModule) || !IsScrapModuleRecipe(recipe))
+            {
+                return;
+            }
+
+            NextStep();
+        }
+
+        private void OnPartPlaced(UpgradePartSO part)
+        {
+            if (!IsWaitingFor(CraftTutorialWaitCondition.PlaceDamagePart) || !IsDamagePart(part))
+            {
+                return;
+            }
+
+            NextStep();
+        }
+
+        private bool IsWaitingFor(CraftTutorialWaitCondition wait)
+        {
+            CraftTutorialStepData step = currentSteps != null &&
+                currentStepIndex >= 0 &&
+                currentStepIndex < currentSteps.Length
+                    ? currentSteps[currentStepIndex]
+                    : null;
+
+            return step != null && step.WaitCondition == wait;
+        }
+
+        private bool IsScrapModuleRecipe(CraftRecipeSO recipe)
+        {
+            return tutorialScrapModuleRecipe != null && recipe == tutorialScrapModuleRecipe;
+        }
+
+        private bool IsDamagePart(UpgradePartSO part)
+        {
+            return tutorialDamagePart != null && part == tutorialDamagePart;
         }
 
         private void HideTutorial()
@@ -241,24 +476,18 @@ namespace GearCraft.Scripts.Craft
 
         private void UpdateHighlight()
         {
-            TutorialStep step = currentSteps != null &&
+            CraftTutorialStepData step = currentSteps != null &&
                 currentStepIndex >= 0 &&
                 currentStepIndex < currentSteps.Length
                     ? currentSteps[currentStepIndex]
                     : null;
 
-            RectTransform target = ResolveTarget(step);
-            if (target == null || canvasRect == null)
+            if (canvasRect == null || !TryResolveTargetBounds(step, out Vector2 min, out Vector2 max))
             {
                 ApplyFullDim();
                 return;
             }
 
-            Vector3[] corners = new Vector3[4];
-            target.GetWorldCorners(corners);
-
-            Vector2 min = ScreenToCanvas(target, corners[0]);
-            Vector2 max = ScreenToCanvas(target, corners[2]);
             float padding = 12f;
             min -= Vector2.one * padding;
             max += Vector2.one * padding;
@@ -280,6 +509,46 @@ namespace GearCraft.Scripts.Craft
             SetPanel(borderLeft, min.x, min.y, border, max.y - min.y);
             SetPanel(borderRight, max.x - border, min.y, border, max.y - min.y);
             PlaceMessagePanel(min, max, canvasBounds);
+        }
+
+        private bool TryResolveTargetBounds(CraftTutorialStepData step, out Vector2 min, out Vector2 max)
+        {
+            min = Vector2.zero;
+            max = Vector2.zero;
+
+            if (step == null || string.IsNullOrWhiteSpace(step.TargetName))
+            {
+                return false;
+            }
+
+            string[] targetNames = step.TargetName.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+            bool hasTarget = false;
+            for (int i = 0; i < targetNames.Length; i++)
+            {
+                RectTransform target = ResolveTarget(targetNames[i].Trim());
+                if (target == null)
+                {
+                    continue;
+                }
+
+                Vector3[] corners = new Vector3[4];
+                target.GetWorldCorners(corners);
+                Vector2 targetMin = ScreenToCanvas(target, corners[0]);
+                Vector2 targetMax = ScreenToCanvas(target, corners[2]);
+
+                if (!hasTarget)
+                {
+                    min = targetMin;
+                    max = targetMax;
+                    hasTarget = true;
+                    continue;
+                }
+
+                min = Vector2.Min(min, targetMin);
+                max = Vector2.Max(max, targetMax);
+            }
+
+            return hasTarget;
         }
 
         private Vector2 ScreenToCanvas(RectTransform source, Vector3 worldPosition)
@@ -393,19 +662,19 @@ namespace GearCraft.Scripts.Craft
             return inactiveMatch;
         }
 
-        private RectTransform ResolveTarget(TutorialStep step)
+        private RectTransform ResolveTarget(string targetName)
         {
-            if (step == null)
+            if (string.IsNullOrWhiteSpace(targetName))
             {
                 return null;
             }
 
-            if (step.TargetName == "question")
+            if (targetName == "question")
             {
                 return FindQuestionRectTransform(currentTab);
             }
 
-            return FindRectTransform(step.TargetName);
+            return FindRectTransform(targetName);
         }
 
         private static RectTransform FindQuestionRectTransform(int tabIndex)
@@ -747,19 +1016,5 @@ namespace GearCraft.Scripts.Craft
             rect.offsetMax = Vector2.zero;
         }
 
-        [Serializable]
-        private sealed class TutorialStep
-        {
-            public readonly string Title;
-            public readonly string Body;
-            public readonly string TargetName;
-
-            public TutorialStep(string title, string body, string targetName)
-            {
-                Title = title;
-                Body = body;
-                TargetName = targetName;
-            }
-        }
     }
 }

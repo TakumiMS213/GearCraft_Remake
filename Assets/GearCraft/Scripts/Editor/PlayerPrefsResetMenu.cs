@@ -5,8 +5,8 @@ namespace GearCraft.Scripts.Editor
 {
     public static class PlayerPrefsResetMenu
     {
-        private const string CraftTutorialKey = "GearCraft.CraftTutorial.AutoPlayed.Craft.v3";
-        private const string WeaponCustomTutorialKey = "GearCraft.CraftTutorial.AutoPlayed.WeaponCustom.v2";
+        private const string CraftTutorialKey = "GearCraft.CraftTutorial.AutoPlayed.Craft.v4";
+        private const string WeaponCustomTutorialKey = "GearCraft.CraftTutorial.AutoPlayed.WeaponCustom.v3";
         private const string OpeningNoticeKey = "GearCraft.Main.OpeningNotice.Seen.v1";
 
         [MenuItem("GearCraft/PlayerPrefs/Reset First-Time Flags")]

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Weapon_SteamGatling_BulletSpeed
   m_EditorClassIdentifier: 
   cardName: "\u500D\u901F\u6A5F\u95A2"
-  cardImage: {fileID: -638043900989242246, guid: 951031652047f4267aba5f3ab2134c46, type: 3}
+  cardImage: {fileID: 21300000, guid: 951031652047f4267aba5f3ab2134c46, type: 3}
   cardPrefab: {fileID: 7209819227857435650, guid: 3c30fd99b86b84efc976c40a2ea3abb3, type: 3}
   weight: 0.25
   requiredWeaponNames:

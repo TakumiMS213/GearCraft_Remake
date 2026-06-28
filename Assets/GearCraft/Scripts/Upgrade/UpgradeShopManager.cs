@@ -1,10 +1,14 @@
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using Random = UnityEngine.Random;
 
 public class UpgradeShopManager : MonoBehaviour
 {
+    public event Action<UpgradePartSO> PartPlaced;
+
     [Header("Parts")]
     public UpgradePartSO[] allParts;
     public int shopSlotCount = 3;
@@ -113,49 +117,58 @@ public class UpgradeShopManager : MonoBehaviour
         }
     }
 
-    public void TryPurchase(UpgradePartSO part)
+    public UpgradePartSO FindPart(string partKey)
     {
-        if (part == null || MaterialManager.Instance == null)
+        if (string.IsNullOrWhiteSpace(partKey) || allParts == null)
+        {
+            return null;
+        }
+
+        for (int i = 0; i < allParts.Length; i++)
+        {
+            UpgradePartSO part = allParts[i];
+            if (PartMatches(part, partKey))
+            {
+                return part;
+            }
+        }
+
+        return null;
+    }
+
+    public void EnsureLineupContains(UpgradePartSO part)
+    {
+        if (part == null)
         {
             return;
         }
 
-        if (!MaterialManager.Instance.CanAfford(part.costs))
+        StartShopDayIfNeeded();
+        if (!hasGeneratedLineup)
         {
-            if (infoText != null)
-            {
-                infoText.text = "素材が足りません。";
-            }
+            GenerateLineupInternal();
+        }
 
-            if (errorSound != null)
-            {
-                errorSound.Play();
-            }
-
+        if (currentLineup.Contains(part))
+        {
+            currentLineup.Remove(part);
+            currentLineup.Insert(0, part);
+            RefreshShopUI();
             return;
         }
 
-        MaterialManager.Instance.SpendCosts(part.costs);
-        RefreshMaterialDisplays();
-        int inventoryIndex = StatusManager.Instance != null
-            ? StatusManager.Instance.AcquireUpgradePart(part)
-            : -1;
-
-        if (UpgradeGridManager.Instance != null && UpgradeGridManager.Instance.gridUI != null)
+        if (currentLineup.Count >= shopSlotCount && currentLineup.Count > 0)
         {
-            UpgradeGridManager.Instance.gridUI.SelectPart(part, inventoryIndex);
-            UpgradeGridManager.Instance.RefreshUI();
+            currentLineup[currentLineup.Count - 1] = part;
+            currentLineup.Remove(part);
+            currentLineup.Insert(0, part);
+        }
+        else
+        {
+            currentLineup.Insert(0, part);
         }
 
-        if (infoText != null)
-        {
-            infoText.text = $"{part.partName}を入手しました。グリッドに配置してください。";
-        }
-
-        if (purchaseSound != null)
-        {
-            purchaseSound.Play();
-        }
+        RefreshShopUI();
     }
 
     private void RefreshShopUI()
@@ -170,13 +183,14 @@ public class UpgradeShopManager : MonoBehaviour
         {
             UpgradePartSO part = currentLineup[i];
             GameObject item = Instantiate(shopItemPrefab, shopParent);
+            item.name = BuildShopItemName(part);
             shopItemObjects.Add(item);
 
             ApplyIcon(item, part);
             ApplyTexts(item, part);
             ApplyTooltip(item, part);
             ApplyDragHandler(item, part);
-            ApplyButton(item);
+            ClearButtonClick(item);
         }
 
         ConfigureShopScrollPadding();
@@ -384,6 +398,8 @@ public class UpgradeShopManager : MonoBehaviour
         {
             purchaseSound.Play();
         }
+
+        PartPlaced?.Invoke(part);
     }
 
     public void OnPartPlacementFailed(UpgradePartSO part)
@@ -434,13 +450,32 @@ public class UpgradeShopManager : MonoBehaviour
         }
     }
 
-    private void ApplyButton(GameObject item)
+    private static void ClearButtonClick(GameObject item)
     {
         Button button = item.GetComponent<Button>();
         if (button != null)
         {
             button.onClick.RemoveAllListeners();
         }
+    }
+
+    private static string BuildShopItemName(UpgradePartSO part)
+    {
+        string key = part != null && !string.IsNullOrWhiteSpace(part.name)
+            ? part.name
+            : part != null ? part.partName : "Unknown";
+        return "ShopItem_" + key;
+    }
+
+    private static bool PartMatches(UpgradePartSO part, string partKey)
+    {
+        if (part == null)
+        {
+            return false;
+        }
+
+        return string.Equals(part.name, partKey, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(part.partName, partKey, StringComparison.OrdinalIgnoreCase);
     }
 
     private static string BuildCostText(UpgradePartSO part)

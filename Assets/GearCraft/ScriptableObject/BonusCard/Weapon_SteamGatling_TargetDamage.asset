@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Weapon_SteamGatling_TargetDamage
   m_EditorClassIdentifier: 
   cardName: "\u5236\u5727\u5C04\u6483"
-  cardImage: {fileID: -638043900989242246, guid: 951031652047f4267aba5f3ab2134c46, type: 3}
+  cardImage: {fileID: 21300000, guid: 951031652047f4267aba5f3ab2134c46, type: 3}
   cardPrefab: {fileID: 4406262519367321191, guid: c59c54fc55ada4ac6a6116de801f2c3e, type: 3}
   weight: 0.25
   requiredWeaponNames:

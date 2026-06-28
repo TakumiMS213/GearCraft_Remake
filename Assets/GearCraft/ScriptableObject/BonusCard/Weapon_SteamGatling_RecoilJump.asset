@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Weapon_SteamGatling_RecoilJump
   m_EditorClassIdentifier: 
   cardName: "\u53CD\u52D5\u8DF3\u8E8D"
-  cardImage: {fileID: -638043900989242246, guid: 951031652047f4267aba5f3ab2134c46, type: 3}
+  cardImage: {fileID: 21300000, guid: 951031652047f4267aba5f3ab2134c46, type: 3}
   cardPrefab: {fileID: 5722633488799878047, guid: d8fc6f21cc2e54bca8a5ec9ffe918cf7, type: 3}
   weight: 0.25
   requiredWeaponNames:

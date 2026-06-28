@@ -10,7 +10,7 @@ public class UIHotkeyController : MonoBehaviour
         {
             if (uiSwitcher != null)
             {
-                uiSwitcher.ShowPanel();
+                uiSwitcher.TogglePanel();
             }
         }
 

@@ -105,7 +105,17 @@ public class PauseManager : MonoBehaviour
 
         if (!show)
         {
+            if (isPaused && pauseMenuPanel != null)
+            {
+                pauseMenuPanel.SetActive(true);
+            }
+
             return;
+        }
+
+        if (pauseMenuPanel != null)
+        {
+            pauseMenuPanel.SetActive(false);
         }
 
         InventoryUI inventoryUI = inventoryPanel.GetComponent<InventoryUI>();
@@ -120,6 +130,11 @@ public class PauseManager : MonoBehaviour
         if (inventoryPanel != null)
         {
             inventoryPanel.SetActive(false);
+        }
+
+        if (isPaused && pauseMenuPanel != null)
+        {
+            pauseMenuPanel.SetActive(true);
         }
     }
 

@@ -570,7 +570,7 @@ MonoBehaviour:
   ACC: 0
   GATE: 100
   defaultWeapon: {fileID: 11400000, guid: 7ea165434b8ce4244bec51255964e394, type: 2}
-  currentWeapon: {fileID: 11400000, guid: a789498952c12824e8f750ecfcf151bd, type: 2}
+  currentWeapon: {fileID: 11400000, guid: 7ea165434b8ce4244bec51255964e394, type: 2}
   ownedWeapons:
   - {fileID: 11400000, guid: 7ea165434b8ce4244bec51255964e394, type: 2}
   weaponCatalog:

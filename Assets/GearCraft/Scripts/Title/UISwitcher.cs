@@ -14,15 +14,25 @@ public class UISwitcher : MonoBehaviour
         if (panel != null)
         {
             panel.SetActive(true);
-            ClickSound.Play();
+            PlayClickSound();
         }
     }
+
     public void ShowPanel2()
     {
         if (panel2 != null)
         {
             panel2.SetActive(true);
-            ClickSound.Play();
+            PlayClickSound();
+        }
+    }
+
+    public void TogglePanel()
+    {
+        if (panel != null)
+        {
+            panel.SetActive(!panel.activeSelf);
+            PlayClickSound();
         }
     }
 
@@ -32,14 +42,23 @@ public class UISwitcher : MonoBehaviour
         if (panel != null)
         {
             panel.SetActive(false);
-            ClickSound.Play();
+            PlayClickSound();
         }
     }
+
     public void HidePanel2()
     {
         if (panel2 != null)
         {
             panel2.SetActive(false);
+            PlayClickSound();
+        }
+    }
+
+    private void PlayClickSound()
+    {
+        if (ClickSound != null)
+        {
             ClickSound.Play();
         }
     }

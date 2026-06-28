@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
 using GearCraft.Scripts.Craft;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -12,6 +13,8 @@ using TMPro;
 /// </summary>
 public class CraftManager : MonoBehaviour
 {
+    public event Action<CraftRecipeSO> RecipeCrafted;
+
     [Header("レシピ一覧")]
     public List<CraftRecipeSO> recipes;
 
@@ -78,6 +81,56 @@ public void SelectRecipe(int index)
         ApplyRecipeVisuals(selectedRecipe);
     }
 
+    public bool TrySelectRecipe(CraftRecipeSO recipe)
+    {
+        int index = unlockedRecipes.IndexOf(recipe);
+        if (index < 0)
+        {
+            return false;
+        }
+
+        SelectRecipe(index);
+        return true;
+    }
+
+    public CraftRecipeSO FindUnlockedRecipe(string recipeKey)
+    {
+        if (string.IsNullOrWhiteSpace(recipeKey))
+        {
+            return null;
+        }
+
+        for (int i = 0; i < unlockedRecipes.Count; i++)
+        {
+            CraftRecipeSO recipe = unlockedRecipes[i];
+            if (RecipeMatches(recipe, recipeKey))
+            {
+                return recipe;
+            }
+        }
+
+        return null;
+    }
+
+    public CraftRecipeSO FindRecipe(string recipeKey)
+    {
+        if (string.IsNullOrWhiteSpace(recipeKey) || recipes == null)
+        {
+            return null;
+        }
+
+        for (int i = 0; i < recipes.Count; i++)
+        {
+            CraftRecipeSO recipe = recipes[i];
+            if (RecipeMatches(recipe, recipeKey))
+            {
+                return recipe;
+            }
+        }
+
+        return null;
+    }
+
     /// <summary>
     /// 選択中のレシピが作成可能か判定
     /// </summary>
@@ -113,6 +166,19 @@ public void SelectRecipe(int index)
         return !string.IsNullOrEmpty(current.weaponName) && current.weaponName == required.weaponName;
     }
 
+    private static bool RecipeMatches(CraftRecipeSO recipe, string recipeKey)
+    {
+        if (recipe == null)
+        {
+            return false;
+        }
+
+        return string.Equals(recipe.UnlockId, recipeKey, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(recipe.DisplayName, recipeKey, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(recipe.recipeName, recipeKey, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(recipe.name, recipeKey, StringComparison.OrdinalIgnoreCase);
+    }
+
     /// <summary>
     /// クラフト実行（OnCraftButtonのOnClickに割り当て）
     /// </summary>
@@ -135,6 +201,7 @@ public void SelectRecipe(int index)
 
             // 結果を適用
             ApplyCraftResult(selectedRecipe);
+            RecipeCrafted?.Invoke(selectedRecipe);
 
             if (materialDisplay != null)
                 materialDisplay.UpdateMaterialAmount();

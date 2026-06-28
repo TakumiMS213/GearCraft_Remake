@@ -23,6 +23,7 @@ public class CraftTabController : MonoBehaviour
     [Header("References")]
     public MaterialDisplay materialDisplay;
     public UpgradeShopManager upgradeShopManager;
+    [SerializeField] private CraftTutorialDataSO tutorialData;
 
     [Header("Close")]
     [SerializeField] private Button craftCloseButton;
@@ -182,5 +183,7 @@ public class CraftTabController : MonoBehaviour
         {
             tutorialController = gameObject.AddComponent<CraftTutorialController>();
         }
+
+        tutorialController.Configure(tutorialData);
     }
 }
