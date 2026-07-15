@@ -234,6 +234,65 @@ public class StatusManager : MonoBehaviour
         savedUpgradePartPlacements.Clear();
     }
 
+    public void ResetRunProgress()
+    {
+        HP = 100;
+        SAN = 100;
+        STR = 0;
+        ACC = 0;
+        GATE = 100;
+
+        currentWeapon = defaultWeapon;
+        ownedWeapons.Clear();
+        ownedUpgradeParts.Clear();
+        savedUpgradePartPlacements.Clear();
+        selectWeapon = 0;
+
+        module_scrap = false;
+        module_repair = false;
+        module_barrier = false;
+        punkDrive = false;
+        craftWeaponDamagebuff = 0;
+
+        killAllEnemies = true;
+        UseCraftSpacebuff = false;
+        bossKillCount = 0;
+        upgradeShopDay = 0;
+        notifiedCraftUnlockIds.Clear();
+
+        bonusDamage = 0f;
+        attackSpeedMult = 1f;
+        hasBulletDouble = false;
+        spreadModifier = 0f;
+        ricochetCount = 0;
+        junkCollectorMult = 1f;
+        bulletSizeMult = 1f;
+        magnetRange = 3f;
+        selectedUniqueBonusCardIds.Clear();
+
+        gearCraftAxeSizeMultiplier = 1f;
+        gearCraftSwordMoveSpeedBonus = 0f;
+        gearCraftTransformGearGain = 0;
+        steamCannonBulletSpeedMultiplier = 1f;
+        steamCannonExplosionRadiusMultiplier = 1f;
+        steamCannonGiantBulletChance = 0f;
+        steamCannonDirectHitKnockback = 0f;
+        steamThrowerOverheatSlipDamage = 0f;
+        steamThrowerNoBulletGravity = false;
+        steamThrowerBoostDamageMultiplier = 1f;
+        steamThrowerBoostBurnDrops = false;
+        steamThrowerBoostBurnDropsActive = false;
+        railCraftBulletSizeMultiplier = 1f;
+        railCraftApplyOverheat = false;
+        railCraftRicochetMultiplier = 1f;
+        steamGatlingBulletSpeedMultiplier = 1f;
+        steamGatlingBossDamageMultiplier = 1f;
+        steamGatlingNormalDamageMultiplier = 1f;
+        steamGatlingDownwardRecoil = false;
+
+        InitializeWeapons();
+    }
+
     private void InitializeWeapons()
     {
         if (currentWeapon == null && defaultWeapon != null)

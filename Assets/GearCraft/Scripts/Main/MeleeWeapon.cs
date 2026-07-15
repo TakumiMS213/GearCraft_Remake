@@ -57,6 +57,18 @@ public class MeleeWeapon : MonoBehaviour
             if (ec != null)
             {
                 ec.TakeDamage(damage);
+                return;
+            }
+
+            EnemyProjectileDamageable projectile = other.GetComponent<EnemyProjectileDamageable>();
+            if (projectile == null)
+            {
+                projectile = other.GetComponentInParent<EnemyProjectileDamageable>();
+            }
+
+            if (projectile != null)
+            {
+                projectile.TakeDamage(damage);
             }
         }
 

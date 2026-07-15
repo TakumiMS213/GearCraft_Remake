@@ -181,7 +181,7 @@ Animator:
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_AnimatePhysics: 0
-  m_WarningMessage: 
+  m_WarningMessage:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
@@ -196,9 +196,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 434b45fcf8dd5cd4283048b25403793d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   enemyData: {fileID: 11400000, guid: ffdfa706cfe794a4db50b6e65aa64032, type: 2}
   isLastEnemy: 0
   deathEffect: {fileID: 6786343413224804731, guid: 309bfd18c797e4111b7470ea476e58ab, type: 3}
   highlightMarker: {fileID: 0}
+  bossSmokeEffectPrefab: {fileID: 2290013881886812106, guid: 5d0f705e82b941f78b042f9462fd8df7, type: 3}

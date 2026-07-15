@@ -13,9 +13,10 @@ GameObject:
   - component: {fileID: 8061131694452856930}
   - component: {fileID: 8647726196864157154}
   - component: {fileID: 1625529861310775856}
+  - component: {fileID: 680254412462312153}
   m_Layer: 3
   m_Name: Missile_AR-221
-  m_TagString: Bullet
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -105,7 +106,7 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDamping: 0
   m_AngularDamping: 0.05
-  m_GravityScale: 0.2
+  m_GravityScale: 0
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -173,8 +174,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f9a3c47e29e8f9043b65c796235597ef, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   bulletDamage: 15
   bulletLifeTime: 2
   destroyOnHit: 1
@@ -188,3 +189,18 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 0
   hitSound: {fileID: 0}
+--- !u!114 &680254412462312153
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5356958644387713917}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4dd1354bef7964e8e851bc7e1ba54451, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  maxHP: 20
+  contactDamage: 15
+  destroyEffect: {fileID: 6212548600704145139, guid: db8e0bb814c8c4767a406f22c227a31b, type: 3}

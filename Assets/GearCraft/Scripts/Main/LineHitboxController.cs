@@ -51,7 +51,23 @@ public class LineHitboxController : MonoBehaviour
             enemy = other.GetComponentInParent<EnemyController>();
         }
 
-        if (enemy == null || damagedEnemies.Contains(enemy)) return;
+        if (enemy == null)
+        {
+            EnemyProjectileDamageable projectile = other.GetComponent<EnemyProjectileDamageable>();
+            if (projectile == null)
+            {
+                projectile = other.GetComponentInParent<EnemyProjectileDamageable>();
+            }
+
+            if (projectile != null)
+            {
+                projectile.TakeDamage(damage);
+            }
+
+            return;
+        }
+
+        if (damagedEnemies.Contains(enemy)) return;
 
         damagedEnemies.Add(enemy);
         enemy.TakeDamage(damage);

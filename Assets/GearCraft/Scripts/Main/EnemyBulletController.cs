@@ -100,14 +100,22 @@ public class EnemyBulletController : MonoBehaviour
         // 爆発エフェクト生成
         if (bombEffect != null)
         {
-            Instantiate(bombEffect, transform.position, Quaternion.identity);
+            GameObject effect = Instantiate(bombEffect, transform.position, Quaternion.identity);
+            effect.transform.localScale = Vector3.one * Mathf.Max(0.1f, bombRadius);
         }
 
         // 範囲内のプレイヤー検出
-        Collider2D[] hitPlayers = Physics2D.OverlapCircleAll(transform.position, bombRadius, playerLayer);
+        Collider2D[] hitPlayers = playerLayer.value != 0
+            ? Physics2D.OverlapCircleAll(transform.position, bombRadius, playerLayer)
+            : Physics2D.OverlapCircleAll(transform.position, bombRadius);
 
         foreach (Collider2D col in hitPlayers)
         {
+            if (!col.CompareTag("Player"))
+            {
+                continue;
+            }
+
             PlayerController player = col.GetComponent<PlayerController>();
             if (player != null)
             {

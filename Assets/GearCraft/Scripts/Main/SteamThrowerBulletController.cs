@@ -86,6 +86,21 @@ namespace GearCraft.Scripts.Main
             EnemyController enemy = collision.GetComponent<EnemyController>();
             if (enemy == null)
             {
+                EnemyProjectileDamageable projectile = collision.GetComponent<EnemyProjectileDamageable>();
+                if (projectile == null)
+                {
+                    projectile = collision.GetComponentInParent<EnemyProjectileDamageable>();
+                }
+
+                if (projectile != null)
+                {
+                    projectile.TakeDamage(damage);
+                    if (impactParticlePrefab != null)
+                    {
+                        Instantiate(impactParticlePrefab, collision.ClosestPoint(transform.position), Quaternion.identity);
+                    }
+                }
+
                 return;
             }
 

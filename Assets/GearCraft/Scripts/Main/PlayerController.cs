@@ -45,6 +45,7 @@ public class PlayerController : MonoBehaviour
     private const float ENEMY_CONTACT_DAMAGE = 5f;
     private bool isBarrierActive;
     private bool isBarrierRecharging;
+    private bool isDeathRetrying;
 
     public int HP;
     public int SAN;
@@ -627,7 +628,10 @@ public class PlayerController : MonoBehaviour
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.collider.CompareTag("Ground")) isGrounded = true;
-        if (collision.collider.CompareTag("Enemy") && !isInvincible && collision.gameObject.activeSelf)
+        if (collision.collider.CompareTag("Enemy") &&
+            !MainDebugEnemySpawnWindow.IsDebugModeActive &&
+            !isInvincible &&
+            collision.gameObject.activeSelf)
         {
             TakeDamageByBullet(ENEMY_CONTACT_DAMAGE);
         }
@@ -650,6 +654,8 @@ public class PlayerController : MonoBehaviour
 
     public async void TakeDamageByBullet(float bulletDamage)
     {
+        if (MainDebugEnemySpawnWindow.IsDebugModeActive) return;
+        if (isDeathRetrying) return;
         if (isInvincible) return;
         if (TryBreakBarrier())
         {
@@ -659,13 +665,10 @@ public class PlayerController : MonoBehaviour
         if (runtimeStatus != null)
         {
             runtimeStatus.HP -= (int)bulletDamage;
-            if (runtimeStatus.HP < 0)
+            if (runtimeStatus.HP <= 0)
             {
+                isDeathRetrying = true;
                 AllBlack.SetAllToBlack();
-                runtimeStatus.punkDrive = false;
-                runtimeStatus.module_barrier = false;
-                runtimeStatus.module_repair = false;
-                runtimeStatus.module_scrap = false;
 
                 // 他の敵を破壊
                 foreach (var enemy in GameObject.FindGameObjectsWithTag("Enemy"))
@@ -681,7 +684,8 @@ public class PlayerController : MonoBehaviour
                     rb2d.constraints = RigidbodyConstraints2D.FreezeAll;
                 }
                 await UniTask.Delay(1000);
-                EndingManager.LoadEndingScene(1);
+                StageFlowManager.Instance?.RetryDayAfterPlayerDeath();
+                return;
             }
         }
         StartCoroutine(DamageCooldown());

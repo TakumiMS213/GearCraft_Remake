@@ -98,7 +98,15 @@ public class BulletController : MonoBehaviour
             return;
         }
 
-        if (TryDamageEnemy(collision))
+        if (TryDamageEnemyProjectile(collision))
+        {
+            SpawnHitEffect();
+            if (destroyOnHit)
+            {
+                Destroy(gameObject);
+            }
+        }
+        else if (TryDamageEnemy(collision))
         {
             SpawnHitEffect();
             if (isCannonBullet)
@@ -166,6 +174,19 @@ public class BulletController : MonoBehaviour
 
             if (hitCollider.GetComponentInParent<DroppedMaterialItem>() != null || hitCollider.CompareTag("Player"))
             {
+                continue;
+            }
+
+            if (TryDamageEnemyProjectile(hitCollider))
+            {
+                SpawnHitEffect(hit.point);
+                if (destroyOnHit)
+                {
+                    transform.position = hit.point;
+                    Destroy(gameObject);
+                    return;
+                }
+
                 continue;
             }
 
@@ -278,6 +299,23 @@ public class BulletController : MonoBehaviour
         }
 
         ApplyDirectHitKnockback(enemy);
+        return true;
+    }
+
+    private bool TryDamageEnemyProjectile(Collider2D collision)
+    {
+        EnemyProjectileDamageable projectile = collision.GetComponent<EnemyProjectileDamageable>();
+        if (projectile == null)
+        {
+            projectile = collision.GetComponentInParent<EnemyProjectileDamageable>();
+        }
+
+        if (projectile == null)
+        {
+            return false;
+        }
+
+        projectile.TakeDamage(bulletDamage);
         return true;
     }
 
@@ -430,6 +468,13 @@ public class BulletController : MonoBehaviour
                 if (ec != null)
                 {
                     ec.TakeDamage(bombDamage);
+                    continue;
+                }
+
+                EnemyProjectileDamageable projectile = hitCollider.GetComponent<EnemyProjectileDamageable>();
+                if (projectile != null)
+                {
+                    projectile.TakeDamage(bombDamage);
                 }
             }
         }

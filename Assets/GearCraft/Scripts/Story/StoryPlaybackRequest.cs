@@ -22,4 +22,10 @@ public static class StoryPlaybackRequest
     {
         ReturnSceneName = DefaultReturnSceneName;
     }
+
+    public static void ClearRequest()
+    {
+        ReturnSceneName = DefaultReturnSceneName;
+        HasArrivalMessageRequest = false;
+    }
 }

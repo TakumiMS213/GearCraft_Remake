@@ -7,6 +7,13 @@ using GearCraft.Scripts.Items;
 public class EnemyController : MonoBehaviour
 {
     private const string EnemyLayerName = "Enemy";
+    private const float BossSmokeStartHpRatio = 0.5f;
+    private const float BossSmokeMinEmission = 12f;
+    private const float BossSmokeMaxEmission = 60f;
+    private const float BossSmokeMinSizeMultiplier = 0.8f;
+    private const float BossSmokeMaxSizeMultiplier = 1.8f;
+    private static readonly Vector3 BossSmokeLocalOffset = Vector3.up * 0.45f;
+
     private static bool enemyLayerCollisionConfigured;
 
     [Header("敵データ（ScriptableObject）")]
@@ -20,6 +27,7 @@ public class EnemyController : MonoBehaviour
     [Header("表示設定")]
     public GameObject deathEffect;
     public GameObject highlightMarker;     // 強調表示用マーカー（ボス/ラスト敵）
+    [SerializeField] private GameObject bossSmokeEffectPrefab;
 
     private SpriteRenderer spriteRenderer;
     private Color originalColor;
@@ -30,6 +38,9 @@ public class EnemyController : MonoBehaviour
     private GameObject overheatEffectInstance;
     private float overheatSlipDamagePerSecond;
     private float nextOverheatSlipTime;
+    private float runtimeMaxHP;
+    private GameObject bossSmokeEffectInstance;
+    private ParticleSystem bossSmokeParticle;
 
     private void Awake()
     {
@@ -53,6 +64,7 @@ public class EnemyController : MonoBehaviour
             scalingStage = Mathf.Max(1, scalingStage);
             float stageBonus = scalingStage / 10f;
             HP = enemyData.baseHP + enemyData.baseHP * stageBonus;
+            runtimeMaxHP = HP;
 
             // AIアタッチ
             AttachAI(enemyData.aiType);
@@ -64,6 +76,7 @@ public class EnemyController : MonoBehaviour
         else
         {
             HP = 50f;
+            runtimeMaxHP = HP;
         }
 
         // StageFlowManagerに登録
@@ -77,6 +90,7 @@ public class EnemyController : MonoBehaviour
             currentAI.UpdateAI();
 
         UpdateOverheatStatus();
+        UpdateBossSmokeEffect();
     }
 
     public float GetMoveSpeed(float baseSpeed)
@@ -225,6 +239,9 @@ public class EnemyController : MonoBehaviour
         if (overheatEffectInstance != null)
             Destroy(overheatEffectInstance);
 
+        if (bossSmokeEffectInstance != null)
+            Destroy(bossSmokeEffectInstance);
+
         // エフェクト再生
         if (deathEffect != null)
         {
@@ -288,6 +305,115 @@ public class EnemyController : MonoBehaviour
         overheatEffectInstance = null;
         overheatSpeedMultiplier = 1f;
         overheatSlipDamagePerSecond = 0f;
+    }
+
+    private void UpdateBossSmokeEffect()
+    {
+        if (enemyData == null || !enemyData.IsBossType || runtimeMaxHP <= 0f)
+        {
+            return;
+        }
+
+        float hpRatio = Mathf.Clamp01(HP / runtimeMaxHP);
+        if (hpRatio > BossSmokeStartHpRatio)
+        {
+            DestroyBossSmokeEffect();
+            return;
+        }
+
+        if (bossSmokeEffectInstance == null)
+        {
+            bossSmokeEffectInstance = CreateBossSmokeEffect();
+            bossSmokeParticle = bossSmokeEffectInstance != null
+                ? bossSmokeEffectInstance.GetComponentInChildren<ParticleSystem>()
+                : null;
+        }
+
+        UpdateBossSmokeFollow();
+        ApplyBossSmokeIntensity(hpRatio);
+    }
+
+    private void DestroyBossSmokeEffect()
+    {
+        if (bossSmokeEffectInstance == null)
+        {
+            bossSmokeParticle = null;
+            return;
+        }
+
+        Destroy(bossSmokeEffectInstance);
+        bossSmokeEffectInstance = null;
+        bossSmokeParticle = null;
+    }
+
+    private void ApplyBossSmokeIntensity(float hpRatio)
+    {
+        if (bossSmokeParticle == null)
+        {
+            return;
+        }
+
+        float damageRatioBelowHalf = Mathf.InverseLerp(BossSmokeStartHpRatio, 0f, hpRatio);
+        float emissionRate = Mathf.Lerp(BossSmokeMinEmission, BossSmokeMaxEmission, damageRatioBelowHalf);
+        float sizeMultiplier = Mathf.Lerp(BossSmokeMinSizeMultiplier, BossSmokeMaxSizeMultiplier, damageRatioBelowHalf);
+
+        ParticleSystem.EmissionModule emission = bossSmokeParticle.emission;
+        emission.rateOverTime = emissionRate;
+
+        ParticleSystem.MainModule main = bossSmokeParticle.main;
+        main.maxParticles = Mathf.RoundToInt(Mathf.Lerp(50f, 180f, damageRatioBelowHalf));
+
+        ParticleSystem.SizeOverLifetimeModule size = bossSmokeParticle.sizeOverLifetime;
+        size.sizeMultiplier = sizeMultiplier;
+    }
+
+    private void UpdateBossSmokeFollow()
+    {
+        if (bossSmokeEffectInstance == null)
+        {
+            return;
+        }
+
+        Transform smokeTransform = bossSmokeEffectInstance.transform;
+        if (smokeTransform.parent != transform)
+        {
+            smokeTransform.SetParent(transform, false);
+        }
+
+        smokeTransform.localPosition = BossSmokeLocalOffset;
+        smokeTransform.localRotation = Quaternion.identity;
+    }
+
+    private GameObject CreateBossSmokeEffect()
+    {
+        if (bossSmokeEffectPrefab == null)
+        {
+            return null;
+        }
+
+        GameObject smokeObject = Instantiate(bossSmokeEffectPrefab, transform);
+        smokeObject.name = "BossHalfHpSmoke";
+        smokeObject.transform.SetParent(transform, false);
+        smokeObject.transform.localPosition = BossSmokeLocalOffset;
+
+        ParticleSystem particle = smokeObject.GetComponentInChildren<ParticleSystem>();
+        if (particle != null)
+        {
+            ParticleSystem.MainModule main = particle.main;
+            main.loop = true;
+            main.simulationSpace = ParticleSystemSimulationSpace.Local;
+
+            ParticleSystem.EmissionModule emission = particle.emission;
+            emission.enabled = true;
+            emission.rateOverTime = BossSmokeMinEmission;
+
+            if (!particle.isPlaying)
+            {
+                particle.Play();
+            }
+        }
+
+        return smokeObject;
     }
 
     /// <summary>

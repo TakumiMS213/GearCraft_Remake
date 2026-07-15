@@ -4,6 +4,7 @@ using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class StageFlowManager : MonoBehaviour
@@ -42,6 +43,7 @@ public class StageFlowManager : MonoBehaviour
     private bool gateWasHit;
     private bool stageLastEnemyKilled;
     private bool stageCompletionTriggered;
+    private bool dayRetryTriggered;
     private DayStartSnapshot dayStartSnapshot;
 
     public bool IsStageActive { get; private set; }
@@ -260,6 +262,22 @@ public class StageFlowManager : MonoBehaviour
         stageLastEnemyKilled = false;
         stageCompletionTriggered = false;
         gateWasHit = false;
+    }
+
+    public void RetryDayAfterPlayerDeath()
+    {
+        if (dayRetryTriggered)
+        {
+            return;
+        }
+
+        dayRetryTriggered = true;
+        Time.timeScale = 1f;
+        enemySpawner?.StopSpawning();
+        ClearBullets();
+        RestoreDayStartSnapshot();
+        StoryPlaybackRequest.ClearRequest();
+        SceneManager.LoadScene("Main");
     }
 
     private void CaptureDayStartSnapshot()

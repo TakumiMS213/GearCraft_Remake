@@ -17,7 +17,7 @@ MonoBehaviour:
   baseHP: 4000
   speed: 5
   attackInterval: 2
-  bulletSpeed: 5
+  bulletSpeed: 10
   aiType: 6
   bulletPrefabs:
   - {fileID: 5356958644387713917, guid: d776dc084600f412f986eef8822d3997, type: 3}
@@ -31,6 +31,9 @@ MonoBehaviour:
   chargeTime: 1
   explosionRadius: 3
   explosionDamage: 30
+  summonEnemyData: {fileID: 0}
+  summonCount: 0
+  summonInterval: 6
   drops:
   - type: 5
     minAmount: 1

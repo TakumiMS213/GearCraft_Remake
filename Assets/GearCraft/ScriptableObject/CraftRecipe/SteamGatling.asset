@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: SteamGatling
   m_EditorClassIdentifier: 
   recipeName: SteamGatling
-  icon: {fileID: -638043900989242246, guid: 951031652047f4267aba5f3ab2134c46, type: 3}
-  completedImage: {fileID: -638043900989242246, guid: 951031652047f4267aba5f3ab2134c46, type: 3}
+  icon: {fileID: 21300000, guid: 951031652047f4267aba5f3ab2134c46, type: 3}
+  completedImage: {fileID: 21300000, guid: 951031652047f4267aba5f3ab2134c46, type: 3}
   costs:
   - type: 1
     amount: 30
@@ -22,11 +22,12 @@ MonoBehaviour:
     amount: 1
   resultType: 0
   resultDescription: {fileID: 11400000, guid: 3d1db590db12c4d82b8b837d36fb6dff, type: 2}
+  weaponRarity: 2
   weaponResult: {fileID: 11400000, guid: a789498952c12824e8f750ecfcf151bd, type: 2}
   additionalWeaponResult: {fileID: 0}
   moduleFlag: 
   statBonus: 0
-  requiredWeapon: {fileID: 11400000, guid: 3001dfbf9db1bea4e828420f0224bd33, type: 2}
+  requiredWeapon: {fileID: 0}
   unlockBossKills: 2
   summary: "\u84B8\u6C17\u5F3E\u3092\u9023\u5C04\u3059\u308B\u9AD8\u706B\u529B\u306E\u9060\u8DDD\u96E2\u6B66\u5668\u3002"
   unlockId: SteamGatling

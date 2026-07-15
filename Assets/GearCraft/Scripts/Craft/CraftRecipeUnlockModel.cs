@@ -6,10 +6,19 @@ namespace GearCraft.Scripts.Craft
     public sealed class CraftRecipeUnlockModel
     {
         private readonly IReadOnlyList<CraftRecipeSO> recipes;
+        private readonly Dictionary<CraftRecipeSO, int> recipeOrder = new Dictionary<CraftRecipeSO, int>();
 
         public CraftRecipeUnlockModel(IReadOnlyList<CraftRecipeSO> recipes)
         {
             this.recipes = recipes ?? Array.Empty<CraftRecipeSO>();
+            for (int i = 0; i < this.recipes.Count; i++)
+            {
+                CraftRecipeSO recipe = this.recipes[i];
+                if (recipe != null && !recipeOrder.ContainsKey(recipe))
+                {
+                    recipeOrder.Add(recipe, i);
+                }
+            }
         }
 
         public void CollectUnlockedRecipes(int bossKillCount, List<CraftRecipeSO> results)
@@ -70,10 +79,48 @@ namespace GearCraft.Scripts.Craft
                 bossKillCount >= recipe.UnlockBossKills;
         }
 
-        private static int CompareRecipes(CraftRecipeSO left, CraftRecipeSO right)
+        private int CompareRecipes(CraftRecipeSO left, CraftRecipeSO right)
         {
-            int bossCompare = left.UnlockBossKills.CompareTo(right.UnlockBossKills);
-            return bossCompare != 0 ? bossCompare : left.UnlockSortOrder.CompareTo(right.UnlockSortOrder);
+            int categoryCompare = GetCategoryOrder(left).CompareTo(GetCategoryOrder(right));
+            if (categoryCompare != 0)
+            {
+                return categoryCompare;
+            }
+
+            int leftOrder = GetRecipeOrder(left);
+            int rightOrder = GetRecipeOrder(right);
+            if (leftOrder != rightOrder)
+            {
+                return leftOrder.CompareTo(rightOrder);
+            }
+
+            return left.UnlockSortOrder.CompareTo(right.UnlockSortOrder);
+        }
+
+        private int GetRecipeOrder(CraftRecipeSO recipe)
+        {
+            int order;
+            return recipe != null && recipeOrder.TryGetValue(recipe, out order) ? order : int.MaxValue;
+        }
+
+        private static int GetCategoryOrder(CraftRecipeSO recipe)
+        {
+            if (recipe == null)
+            {
+                return int.MaxValue;
+            }
+
+            switch (recipe.resultType)
+            {
+                case CraftResultType.Weapon:
+                    return 0;
+                case CraftResultType.PunkDrive:
+                    return 1;
+                case CraftResultType.Module:
+                    return 2;
+                default:
+                    return 3;
+            }
         }
     }
 }

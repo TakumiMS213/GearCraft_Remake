@@ -23,6 +23,8 @@ public class CraftRecipeSO : ScriptableObject
     public CraftResultDescriptionSO resultDescription;
 
     [Header("Weapon結果（resultType == Weapon のとき）")]
+    [Tooltip("武器レシピの表示用レアリティ。強化パーツとは別概念で、ゲームシステムには影響しない")]
+    public WeaponRarity weaponRarity = WeaponRarity.Common;
     public WeaponDataSO weaponResult;
     [Tooltip("同時に所持させる追加武器。GearCraft Sword/Axeのようなペア装備に使用")]
     public WeaponDataSO additionalWeaponResult;

@@ -16,9 +16,9 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: 951031652047f4267aba5f3ab2134c46, type: 3}
   description: "\u4F4E\u706B\u529B\u306E\u5F3E\u3092\u5E83\u7BC4\u56F2\u306B\u9AD8\u901F\u9023\u5C04\u3059\u308B\u30AC\u30C8\u30EA\u30F3\u30B0\u5F62\u306E\u5DE5\u623F\u6B66\u88C5\u3002"
   weaponType: 1
-  coolTime: 0.01
+  coolTime: 0.03
   baseDamage: 1
-  accDamageMultiplier: 0.25
+  accDamageMultiplier: 0.05
   attackRange: 3
   bulletSpeed: 30
   bulletPrefab: {fileID: 3699647882942459135, guid: 121af7298273e524e949e52363561d13, type: 3}

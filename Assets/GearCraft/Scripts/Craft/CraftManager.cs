@@ -308,10 +308,18 @@ private void InitializeUnlockedRecipes()
             {
                 label.font = dotGothicFont != null ? dotGothicFont : label.font;
                 label.text = recipe.DisplayName;
+                label.color = GetRecipeTextColor(recipe);
             }
 
             button.onClick.AddListener(() => SelectRecipe(recipeIndex));
         }
+    }
+
+    private static Color GetRecipeTextColor(CraftRecipeSO recipe)
+    {
+        return recipe != null && recipe.resultType == CraftResultType.Weapon
+            ? WeaponRarityColors.Get(recipe.weaponRarity)
+            : Color.white;
     }
 
     private void ResolveRecipeButtons()
@@ -582,7 +590,7 @@ private Image ShowRecipeVisualImage(string objectName)
         {
             case MaterialManager.MaterialType.Scrap: return "Material_Scrap";
             case MaterialManager.MaterialType.Gear: return "Material_Gear";
-            case MaterialManager.MaterialType.UpgradeCore: return "Material_lv1_drop";
+            case MaterialManager.MaterialType.UpgradeCore: return "Material_UpgradeCore";
             case MaterialManager.MaterialType.ModuleCore_lv1: return "Material_lv1_drop";
             case MaterialManager.MaterialType.ModuleCore_lv2: return "Material_lv2_drop";
             case MaterialManager.MaterialType.ModuleCore_lv3: return "Material_lv3_drop";

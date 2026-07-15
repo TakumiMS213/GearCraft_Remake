@@ -21,7 +21,7 @@ public class SceneTransitionManager : MonoBehaviour
     [SerializeField] private TMP_Text loadingTipText;
     [SerializeField] private LoadingTipData loadingTipData;
     [SerializeField] private float minLoadingSeconds = 1f;
-    [SerializeField] private float maxLoadingSeconds = 2f;
+    [SerializeField] private float maxLoadingSeconds = 1.5f;
     [SerializeField]
     private string[] loadingTips =
     {

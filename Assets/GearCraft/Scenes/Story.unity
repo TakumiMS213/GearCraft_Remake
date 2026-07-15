@@ -157,7 +157,7 @@ MonoBehaviour:
   loadingTipText: {fileID: 1105494232}
   loadingTipData: {fileID: 0}
   minLoadingSeconds: 1
-  maxLoadingSeconds: 2
+  maxLoadingSeconds: 1.5
   loadingTips:
   - "Tip: \u88C5\u5099\u306E\u76F8\u6027\u3092\u898B\u76F4\u3059\u3068\u6226\u6CC1\u304C\u5909\u308F\u308B\u3002"
   - "Tip: \u4F11\u606F\u524D\u306B\u7D20\u6750\u3092\u4F7F\u3044\u5207\u308B\u5224\u65AD\u3082\u5927\u5207\u3002"

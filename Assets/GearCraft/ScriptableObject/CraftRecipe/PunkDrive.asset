@@ -17,10 +17,12 @@ MonoBehaviour:
   completedImage: {fileID: 21300000, guid: 09122efdfb96c4c20b1383ac9085b204, type: 3}
   costs:
   - type: 1
-    amount: 4
+    amount: 2
+  - type: 1
+    amount: 2
   resultType: 2
   resultDescription: {fileID: 11400000, guid: 8e4f779c5926245f2a7fd3695b2b4dd9, type: 2}
-  weaponResult: {fileID: 11400000, guid: 3001dfbf9db1bea4e828420f0224bd33, type: 2}
+  weaponResult: {fileID: 0}
   additionalWeaponResult: {fileID: 0}
   moduleFlag: 
   statBonus: 0

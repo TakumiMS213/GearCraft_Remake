@@ -22,11 +22,12 @@ MonoBehaviour:
     amount: 1
   resultType: 0
   resultDescription: {fileID: 11400000, guid: f7dafb2a79c15456e892168407f4ecf6, type: 2}
+  weaponRarity: 2
   weaponResult: {fileID: 11400000, guid: 92cdc6d6319de9a44b3adc0255ea9310, type: 2}
   additionalWeaponResult: {fileID: 0}
   moduleFlag: 
   statBonus: 0
-  requiredWeapon: {fileID: 11400000, guid: a789498952c12824e8f750ecfcf151bd, type: 2}
+  requiredWeapon: {fileID: 0}
   unlockBossKills: 2
   summary: "\u30EC\u30FC\u30EB\u52A0\u901F\u3067\u8CAB\u901A\u5F3E\u3092\u6483\u3064\u9AD8\u5A01\u529B\u6B66\u5668\u3002"
   unlockId: RailCraft

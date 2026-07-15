@@ -68,9 +68,14 @@ public class GateManager : MonoBehaviour
         Debug.Log("衝突検出: " + collision.name);
         if (collision.CompareTag("Enemy") && ec != null)
         {
+            if (MainDebugEnemySpawnWindow.IsDebugModeActive)
+            {
+                return;
+            }
+
             // 円軌道型(旧AR)はゲートに衝突しない
             bool isCircleType = ec.enemyData != null && ec.enemyData.aiType == EnemyAIType.CircleMove;
-            if (!isCircleType)
+            if (!isCircleType && !IsGateCollisionImmuneBoss(ec))
             {
                 TakeDamage(10f);
                 await cameraShake.ShakeAsync(0.1f, 0.3f, 1, 9f);
@@ -84,8 +89,23 @@ public class GateManager : MonoBehaviour
         }
     }
 
+    private static bool IsGateCollisionImmuneBoss(EnemyController enemy)
+    {
+        if (enemy == null || enemy.enemyData == null)
+        {
+            return false;
+        }
+
+        string enemyName = enemy.enemyData.enemyName;
+        return enemy.enemyData.aiType == EnemyAIType.Boss_Speed ||
+            enemy.enemyData.aiType == EnemyAIType.Boss_Artillery ||
+            enemyName == "AR-227" ||
+            enemyName == "BB-413";
+    }
+
     public void TakeDamage(float damage)
     {
+        if (MainDebugEnemySpawnWindow.IsDebugModeActive) return;
         if (isInvincible) return;
 
         statusManager.GATE -= damage;
