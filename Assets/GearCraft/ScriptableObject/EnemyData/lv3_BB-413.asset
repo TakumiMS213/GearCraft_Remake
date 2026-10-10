@@ -20,7 +20,7 @@ MonoBehaviour:
   bulletSpeed: 5
   aiType: 7
   bulletPrefabs:
-  - {fileID: 4862418018048898471, guid: 559602de61450b8448624eb0d1850444, type: 3}
+  - {fileID: 4862418018048898471, guid: cc609e6bbe56406490041ab0afac0367, type: 3}
   isBoss: 1
   isHighlighted: 0
   circleRadius: 3

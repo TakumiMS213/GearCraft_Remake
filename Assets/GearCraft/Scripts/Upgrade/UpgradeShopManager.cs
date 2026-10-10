@@ -34,9 +34,9 @@ public class UpgradeShopManager : MonoBehaviour
 
     public void GenerateLineup()
     {
+        StartShopDayIfNeeded();
         if (!hasGeneratedLineup)
         {
-            StartShopDayIfNeeded();
             GenerateLineupInternal();
             return;
         }
@@ -46,6 +46,7 @@ public class UpgradeShopManager : MonoBehaviour
 
     public void TryRerollLineup()
     {
+        StartShopDayIfNeeded();
         if (MaterialManager.Instance == null || !MaterialManager.Instance.UseMaterial(MaterialManager.MaterialType.Gear, rerollGearCost))
         {
             if (infoText != null)
@@ -88,9 +89,9 @@ public class UpgradeShopManager : MonoBehaviour
 
     public void EnsureLineupInitialized()
     {
+        StartShopDayIfNeeded();
         if (!hasGeneratedLineup)
         {
-            StartShopDayIfNeeded();
             GenerateLineupInternal();
             return;
         }
@@ -173,6 +174,7 @@ public class UpgradeShopManager : MonoBehaviour
 
     private void RefreshShopUI()
     {
+        SaveLineup();
         ClearShopItems();
         if (shopParent == null || shopItemPrefab == null)
         {
@@ -431,14 +433,33 @@ public class UpgradeShopManager : MonoBehaviour
 
     private void StartShopDayIfNeeded()
     {
-        if (shopDay >= 0)
+        StatusManager status = StatusManager.Instance;
+        int currentDay = status != null ? status.BeginUpgradeShopDay() : 0;
+        if (shopDay == currentDay)
         {
             return;
         }
 
-        shopDay = StatusManager.Instance != null
-            ? StatusManager.Instance.BeginUpgradeShopDay()
-            : 0;
+        shopDay = currentDay;
+        currentLineup.Clear();
+        hasGeneratedLineup = status != null && status.hasSavedUpgradeShopLineup;
+        if (hasGeneratedLineup)
+        {
+            currentLineup.AddRange(status.savedUpgradeShopLineup);
+        }
+    }
+
+    private void SaveLineup()
+    {
+        StatusManager status = StatusManager.Instance;
+        if (status == null || !hasGeneratedLineup || shopDay != status.upgradeShopDay)
+        {
+            return;
+        }
+
+        status.savedUpgradeShopLineup.Clear();
+        status.savedUpgradeShopLineup.AddRange(currentLineup);
+        status.hasSavedUpgradeShopLineup = true;
     }
 
     private static void RefreshMaterialDisplays()

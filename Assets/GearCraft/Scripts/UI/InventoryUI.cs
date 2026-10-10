@@ -134,9 +134,7 @@ public class InventoryUI : MonoBehaviour
 
     private string BuildWeaponStatsText(WeaponDataSO weapon, StatusManager status)
     {
-        float bonusDamage = status != null ? status.bonusDamage : 0f;
-        float scaledBonus = weapon.GetScaledFlatDamageBonus(status != null ? status.ACC + bonusDamage : 0f);
-        float damage = weapon.baseDamage + scaledBonus;
+        float damage = status != null ? status.GetWeaponDamage(weapon) : weapon.baseDamage;
         float attackCooldown = status != null ? weapon.coolTime * status.attackSpeedMult : weapon.coolTime;
         float attackPerSecond = attackCooldown > 0f ? 1f / attackCooldown : 0f;
 

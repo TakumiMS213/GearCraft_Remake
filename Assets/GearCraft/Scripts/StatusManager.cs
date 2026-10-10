@@ -44,7 +44,17 @@ public class StatusManager : MonoBehaviour
     public bool UseCraftSpacebuff = false;
     public int bossKillCount = 0;
     public int upgradeShopDay = 0;
+    public bool hasSavedUpgradeShopLineup;
+    public List<UpgradePartSO> savedUpgradeShopLineup = new List<UpgradePartSO>();
     [SerializeField] private List<string> notifiedCraftUnlockIds = new List<string>();
+
+    [Header("Dorm Tasks")]
+    [SerializeField] private DormTaskProgress dormTaskProgress = new DormTaskProgress();
+    public DormTaskProgress DormTasks => dormTaskProgress ?? (dormTaskProgress = new DormTaskProgress());
+
+    [Header("Craft Tutorial")]
+    [SerializeField] private CraftTutorialRunProgress craftTutorialProgress = new CraftTutorialRunProgress();
+    public CraftTutorialRunProgress CraftTutorials => craftTutorialProgress ?? (craftTutorialProgress = new CraftTutorialRunProgress());
 
     public float bonusDamage = 0f;
     public float attackSpeedMult = 1f;
@@ -103,6 +113,7 @@ public class StatusManager : MonoBehaviour
         }
 
         AddUniqueWeapon(weaponCatalog, weapon);
+        GearCraft.Gallery.GalleryProgress.RecordWeapon(weapon);
     }
 
     public void EquipWeapon(WeaponDataSO weapon)
@@ -112,8 +123,150 @@ public class StatusManager : MonoBehaviour
             return;
         }
 
+        bool weaponTypeChanged = currentWeapon == null || currentWeapon.weaponType != weapon.weaponType;
+        float temporaryAttackSpeedMultiplier = 1f;
+        if (weaponTypeChanged)
+        {
+            float previousUpgradeSpeed = GetSavedUpgradeAttackSpeed(currentWeapon);
+            if (previousUpgradeSpeed > 0f)
+                temporaryAttackSpeedMultiplier = attackSpeedMult / previousUpgradeSpeed;
+        }
         currentWeapon = weapon;
         AddUniqueWeapon(weaponCatalog, weapon);
+
+        // The grid persists outside Craft, so changing weapon type must also refresh its effects.
+        // Keep temporary attack-speed effects such as Boost while recomputing the grid bonus.
+        if (weaponTypeChanged)
+        {
+            RecalculateUpgradeEffects();
+            attackSpeedMult *= temporaryAttackSpeedMultiplier;
+            UpgradeGridManager gridManager = UpgradeGridManager.Instance;
+            if (gridManager != null)
+            {
+                gridManager.RefreshUI();
+                gridManager.effectDisplay?.Refresh();
+            }
+        }
+    }
+
+    private float GetSavedUpgradeAttackSpeed(WeaponDataSO weapon)
+    {
+        float multiplier = 1f;
+        foreach (UpgradePartSO part in GetSavedUpgradeParts())
+        {
+            if (part == null || part.effects == null ||
+                (part.rangedOnly && (weapon == null || weapon.weaponType != WeaponType.Ranged)))
+                continue;
+
+            foreach (UpgradeEffect effect in part.effects)
+                if (effect != null && effect.type == UpgradeEffectType.AttackSpeedMult)
+                    multiplier *= effect.value;
+        }
+        return multiplier;
+    }
+
+    public float GetWeaponDamage(WeaponDataSO weapon)
+    {
+        return weapon != null ? weapon.baseDamage + GetWeaponDamageBonus(weapon) : 0f;
+    }
+
+    public float GetWeaponDamageBonus(WeaponDataSO weapon)
+    {
+        if (weapon == null) return 0f;
+
+        float damageBonus = weapon.weaponType == WeaponType.Melee
+            ? STR + weapon.GetScaledFlatDamageBonus(bonusDamage)
+            : weapon.GetScaledFlatDamageBonus(ACC + bonusDamage);
+
+        if (IsCraftedWeapon(weapon))
+            damageBonus += craftWeaponDamagebuff;
+
+        return damageBonus;
+    }
+
+    private static bool IsCraftedWeapon(WeaponDataSO weapon)
+    {
+        // AR is a supplied rifle even though its legacy isDefault flag is false.
+        switch (weapon.weaponName)
+        {
+            case "GearCraft":
+            case "GearCraft_Sword":
+            case "GearCraft_Axe":
+            case "SteamCannon":
+            case "RailCraft":
+            case "SteamGatling":
+            case "SteamThrower":
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public void RecalculateUpgradeEffects()
+    {
+        RecalculateUpgradeEffects(GetSavedUpgradeParts());
+    }
+
+    private IEnumerable<UpgradePartSO> GetSavedUpgradeParts()
+    {
+        if (savedUpgradePartPlacements == null) yield break;
+        foreach (SavedUpgradePartPlacement placement in savedUpgradePartPlacements)
+            if (placement != null) yield return placement.partData;
+    }
+
+    public void RecalculateUpgradeEffects(IEnumerable<UpgradePartSO> parts)
+    {
+        bonusDamage = 0f;
+        attackSpeedMult = 1f;
+        hasBulletDouble = false;
+        spreadModifier = 0f;
+        ricochetCount = 0;
+        junkCollectorMult = 1f;
+        bulletSizeMult = 1f;
+        magnetRange = 3f;
+
+        if (parts == null) return;
+        foreach (UpgradePartSO part in parts)
+        {
+            if (part == null || part.effects == null ||
+                (part.rangedOnly && (currentWeapon == null || currentWeapon.weaponType != WeaponType.Ranged)))
+                continue;
+
+            foreach (UpgradeEffect effect in part.effects)
+            {
+                if (effect == null) continue;
+                switch (effect.type)
+                {
+                    case UpgradeEffectType.DamageFlat:
+                        bonusDamage += effect.value;
+                        break;
+                    case UpgradeEffectType.AttackSpeedMult:
+                        attackSpeedMult *= effect.value;
+                        break;
+                    case UpgradeEffectType.BulletDouble:
+                        hasBulletDouble = true;
+                        break;
+                    case UpgradeEffectType.SpreadReduction:
+                        spreadModifier -= effect.value;
+                        break;
+                    case UpgradeEffectType.SpreadIncrease:
+                        spreadModifier += effect.value;
+                        break;
+                    case UpgradeEffectType.Ricochet:
+                        ricochetCount += (int)effect.value;
+                        break;
+                    case UpgradeEffectType.JunkCollector:
+                        junkCollectorMult += effect.value;
+                        break;
+                    case UpgradeEffectType.BulletSizeUp:
+                        bulletSizeMult += effect.value;
+                        break;
+                    case UpgradeEffectType.MagnetRangeUp:
+                        magnetRange += effect.value;
+                        break;
+                }
+            }
+        }
     }
 
     public WeaponDataSO FindOwnedWeaponByName(string weaponName)
@@ -165,7 +318,16 @@ public class StatusManager : MonoBehaviour
 
     public int BeginUpgradeShopDay()
     {
-        upgradeShopDay++;
+        int stage = StageCounter.Instance != null ? Mathf.Max(1, StageCounter.Instance.StageCount) : 1;
+        // Keep the stock on the same day shown by StageFlowManager, even after leaving Craft.
+        int day = ((stage - 1) / 3) + 1;
+        if (upgradeShopDay != day)
+        {
+            upgradeShopDay = day;
+            hasSavedUpgradeShopLineup = false;
+            savedUpgradeShopLineup.Clear();
+        }
+
         return upgradeShopDay;
     }
 
@@ -258,7 +420,11 @@ public class StatusManager : MonoBehaviour
         UseCraftSpacebuff = false;
         bossKillCount = 0;
         upgradeShopDay = 0;
+        hasSavedUpgradeShopLineup = false;
+        savedUpgradeShopLineup.Clear();
         notifiedCraftUnlockIds.Clear();
+        DormTasks.Reset();
+        CraftTutorials.Reset();
 
         bonusDamage = 0f;
         attackSpeedMult = 1f;
@@ -312,6 +478,7 @@ public class StatusManager : MonoBehaviour
         for (int i = 0; i < ownedWeapons.Count; i++)
         {
             AddUniqueWeapon(weaponCatalog, ownedWeapons[i]);
+            GearCraft.Gallery.GalleryProgress.RecordWeapon(ownedWeapons[i]);
         }
     }
 

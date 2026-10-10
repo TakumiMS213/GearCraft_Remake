@@ -12,25 +12,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 733a9a0744d2b7345998d5125f69f65f, type: 3}
   m_Name: lv3_FinalBoss
   m_EditorClassIdentifier: 
-  enemyName: Final Gear
+  enemyName: EK-9
   prefab: {fileID: 1105495981581323202, guid: fdfddfdc569204d49b37c090e9d42f18, type: 3}
   baseHP: 12000
-  speed: 4
+  speed: 0.7
   attackInterval: 2
-  bulletSpeed: 5
+  bulletSpeed: 12
   aiType: 8
   bulletPrefabs:
-  - {fileID: 5356958644387713917, guid: d776dc084600f412f986eef8822d3997, type: 3}
-  - {fileID: 5356958644387713917, guid: 647fb3c8ad480444b9d24dc288394320, type: 3}
-  - {fileID: 1960967463930943775, guid: b70f2d8599ab54153b9f62495fcfec44, type: 3}
+  - {fileID: 5356958644387713917, guid: 5d0c8a8791ffb49b68af8609e7e753ed, type: 3}
+  - {fileID: 5356958644387713917, guid: 0d5261d7364ba4a1bb84f0af1c4208d5, type: 3}
   isBoss: 1
   isHighlighted: 1
   circleRadius: 4
   circleDuration: 2
-  chargeDistance: 6
-  chargeTime: 0.8
+  chargeDistance: 0.9
+  chargeTime: 1.8
   explosionRadius: 4
-  explosionDamage: 40
+  explosionDamage: 60
   summonEnemyData: {fileID: 11400000, guid: 6cc88938c0229da4a9ee1fb3b6765482, type: 2}
   summonCount: 0
   summonInterval: 6

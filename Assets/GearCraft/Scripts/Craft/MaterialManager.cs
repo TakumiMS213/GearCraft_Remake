@@ -3,6 +3,7 @@ using UnityEngine;
 public class MaterialManager : MonoBehaviour
 {
     public static MaterialManager Instance { get; private set; }
+    public static event System.Action MaterialsChanged;
 
     // 素材の種類を列挙
     public enum MaterialType
@@ -24,6 +25,9 @@ public class MaterialManager : MonoBehaviour
     [SerializeField] public int moduleCore_lv3 = 0;
 
     private bool gearCheatWasPressed;
+    private bool hasNotifiedMaterials;
+    private int notificationBatchDepth;
+    private (int, int, int, int, int, int) lastNotifiedMaterials;
 
     private void Awake()
     {
@@ -34,6 +38,7 @@ public class MaterialManager : MonoBehaviour
         }
         Instance = this;
         DontDestroyOnLoad(gameObject);
+        NotifyMaterialsChanged();
     }
 
     private void Update()
@@ -47,10 +52,35 @@ public class MaterialManager : MonoBehaviour
         if (gearCheatPressed && !gearCheatWasPressed)
         {
             SetAllMaterials(99);
-            RefreshMaterialDisplays();
         }
 
         gearCheatWasPressed = gearCheatPressed;
+    }
+
+    private void LateUpdate()
+    {
+        // Preserve serialized/public fields while also observing Inspector edits and run rollback.
+        NotifyMaterialsChanged();
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance != this) return;
+        Instance = null;
+        MaterialsChanged?.Invoke();
+    }
+
+    private void NotifyMaterialsChanged()
+    {
+        if (Instance != this || notificationBatchDepth > 0) return;
+
+        var amounts = (scrap, gear, upgradeCore, moduleCore_lv1, moduleCore_lv2, moduleCore_lv3);
+        if (hasNotifiedMaterials && amounts.Equals(lastNotifiedMaterials)) return;
+
+        lastNotifiedMaterials = amounts;
+        hasNotifiedMaterials = true;
+        GearCraft.Gallery.GalleryProgress.RecordMaterials(scrap, gear);
+        MaterialsChanged?.Invoke();
     }
 
     // ===== 外部からアクセスするための関数 =====
@@ -87,6 +117,8 @@ public class MaterialManager : MonoBehaviour
         {
             StageFlowManager.Instance.RecordMaterialGained(type, amount);
         }
+
+        NotifyMaterialsChanged();
     }
 
     public bool UseMaterial(MaterialType type, int amount)
@@ -96,22 +128,22 @@ public class MaterialManager : MonoBehaviour
         switch (type)
         {
             case MaterialType.Scrap:
-                if (scrap >= amount) { scrap -= amount; return true; }
+                if (scrap >= amount) { scrap -= amount; NotifyMaterialsChanged(); return true; }
                 break;
             case MaterialType.Gear:
-                if (gear >= amount) { gear -= amount; return true; }
+                if (gear >= amount) { gear -= amount; NotifyMaterialsChanged(); return true; }
                 break;
             case MaterialType.UpgradeCore:
-                if (upgradeCore >= amount) { upgradeCore -= amount; return true; }
+                if (upgradeCore >= amount) { upgradeCore -= amount; NotifyMaterialsChanged(); return true; }
                 break;
             case MaterialType.ModuleCore_lv1:
-                if (moduleCore_lv1 >= amount) { moduleCore_lv1 -= amount; return true; }
+                if (moduleCore_lv1 >= amount) { moduleCore_lv1 -= amount; NotifyMaterialsChanged(); return true; }
                 break;
             case MaterialType.ModuleCore_lv2:
-                if (moduleCore_lv2 >= amount) { moduleCore_lv2 -= amount; return true; }
+                if (moduleCore_lv2 >= amount) { moduleCore_lv2 -= amount; NotifyMaterialsChanged(); return true; }
                 break;
             case MaterialType.ModuleCore_lv3:
-                if (moduleCore_lv3 >= amount) { moduleCore_lv3 -= amount; return true; }
+                if (moduleCore_lv3 >= amount) { moduleCore_lv3 -= amount; NotifyMaterialsChanged(); return true; }
                 break;
         }
         return false;
@@ -145,8 +177,19 @@ public class MaterialManager : MonoBehaviour
     public bool SpendCosts(CraftCost[] costs)
     {
         if (!CanAfford(costs)) return false;
-        foreach (var cost in costs)
-            UseMaterial(cost.type, cost.amount);
+        if (costs == null) return true;
+
+        notificationBatchDepth++;
+        try
+        {
+            foreach (var cost in costs)
+                UseMaterial(cost.type, cost.amount);
+        }
+        finally
+        {
+            notificationBatchDepth--;
+            NotifyMaterialsChanged();
+        }
         return true;
     }
 
@@ -158,6 +201,7 @@ public class MaterialManager : MonoBehaviour
         moduleCore_lv1 = 0;
         moduleCore_lv2 = 0;
         moduleCore_lv3 = 0;
+        NotifyMaterialsChanged();
     }
 
     public void SetAllMaterials(int amount)
@@ -168,15 +212,7 @@ public class MaterialManager : MonoBehaviour
         moduleCore_lv1 = amount;
         moduleCore_lv2 = amount;
         moduleCore_lv3 = amount;
-    }
-
-    private void RefreshMaterialDisplays()
-    {
-        MaterialDisplay[] displays = FindObjectsByType<MaterialDisplay>(FindObjectsSortMode.None);
-        for (int i = 0; i < displays.Length; i++)
-        {
-            displays[i].UpdateMaterialAmount();
-        }
+        NotifyMaterialsChanged();
     }
 
     /// <summary>

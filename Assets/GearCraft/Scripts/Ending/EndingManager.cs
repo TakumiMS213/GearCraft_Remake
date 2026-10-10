@@ -29,9 +29,23 @@ public class EndingManager : MonoBehaviour
     [SerializeField] private float fadeDuration = 2f;
 
     public static int PendingEndingNum { get; private set; }
+    public static bool IsLoadingEnding { get; private set; }
+    private bool galleryUnlockNoticePending;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetRuntimeState()
+    {
+        PendingEndingNum = 0;
+        IsLoadingEnding = false;
+    }
 
     private void Awake()
     {
+        IsLoadingEnding = false;
+        bool validEnding = PendingEndingNum >= 1 && PendingEndingNum <= 3;
+        galleryUnlockNoticePending = validEnding && !GearCraft.Gallery.GalleryProgress.IsUnlocked;
+        if (validEnding)
+            GearCraft.Gallery.GalleryProgress.RecordEnding(PendingEndingNum);
         // 全画像を非表示にする
         SetObjectActive(endingBad, false);
         SetObjectActive(endingNormal, false);
@@ -60,13 +74,27 @@ public class EndingManager : MonoBehaviour
         }
     }
 
+    public bool ConsumeGalleryUnlockNotice()
+    {
+        if (!galleryUnlockNoticePending) return false;
+        galleryUnlockNoticePending = false;
+        return true;
+    }
+
 
     /// <summary>
     /// シーンを跨いでエンディングを再生する
     /// </summary>
     public static void LoadEndingScene(int endNum)
     {
+        if (IsLoadingEnding || endNum < 1 || endNum > 3)
+        {
+            return;
+        }
+
+        IsLoadingEnding = true;
         PendingEndingNum = endNum;
+        Time.timeScale = 1f;
         SceneTransitionManager.LoadSceneWithTransition("Ending");
     }
 

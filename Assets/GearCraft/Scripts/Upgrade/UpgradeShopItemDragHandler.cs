@@ -24,6 +24,10 @@ public class UpgradeShopItemDragHandler : MonoBehaviour, IBeginDragHandler, IDra
         }
 
         dragging = gridUI != null && gridUI.BeginShopDrag(part, shopManager, eventData);
+        if (dragging)
+        {
+            FindFirstObjectByType<GearCraft.Scripts.Craft.CraftTutorialController>()?.BeginPractice();
+        }
     }
 
     public void OnDrag(PointerEventData eventData)

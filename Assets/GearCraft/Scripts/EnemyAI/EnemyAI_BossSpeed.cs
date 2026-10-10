@@ -2,8 +2,8 @@ using UnityEngine;
 using DG.Tweening;
 
 /// <summary>
-/// ボス2(Stage20): 高速移動・突進＋射撃型
-/// 旧AR型の円弧移動と突進を組み合わせ。Phaseが進むと高速化＆突進頻度UP。
+/// AR-227: 画面内で円弧移動・突進・復帰を繰り返す変則移動型。
+/// 連射・ミサイルのフェーズに定期的な爆弾投下を組み合わせ、登場と突進後の復帰を保証する。
 /// </summary>
 public class EnemyAI_BossSpeed : MonoBehaviour, IEnemyAI
 {
@@ -11,20 +11,23 @@ public class EnemyAI_BossSpeed : MonoBehaviour, IEnemyAI
     private const float ArBulletBurstInterval = 0.06f;
     private const float ArMissileSpeedMultiplier = 1.5f;
     private const float ChargeDurationMultiplier = 2f;
-    private const float FlightMinX = -8f;
-    private const float FlightMaxX = 14f;
-    private const float FlightMinY = -3f;
-    private const float FlightMaxY = 5f;
-    private const float ReturnDistanceThreshold = 8f;
+    private const float EntryDuration = 1.25f;
+    private const float ReturnDuration = 0.8f;
+    private const float FirstBombDelay = 4f;
+    private const float BombDropClearance = 0.15f;
+    private enum MovementState { Entering, Combat, Charging, Returning }
 
     private EnemyController owner;
     private EnemyDataSO data;
     private Transform playerTarget;
-    private Transform returnPoint;
+    private BossArena arena;
+    private MovementState movementState;
+    private Vector3 entryStart;
+    private float entryTimer;
     private float attackTimer;
+    private float bombTimer;
     private int phase = 0;
     private Tween currentTween;
-    private bool isCharging = false;
     private float chargeTimer;
     private float summonTimer;
     private int summonedCount;
@@ -37,6 +40,7 @@ public class EnemyAI_BossSpeed : MonoBehaviour, IEnemyAI
         this.data = data;
         runtimeMaxHp = owner != null ? owner.HP : data.baseHP;
         attackTimer = data.attackInterval;
+        bombTimer = FirstBombDelay;
         chargeTimer = data.attackInterval * 3f;
         summonTimer = data.summonInterval;
         summonedCount = 0;
@@ -45,20 +49,36 @@ public class EnemyAI_BossSpeed : MonoBehaviour, IEnemyAI
         if (playerObj != null)
             playerTarget = playerObj.transform;
 
-        GameObject returnGO = GameObject.FindGameObjectWithTag("AR_returnPoint");
-        if (returnGO != null)
-            returnPoint = returnGO.transform;
+        arena = new BossArena(owner, containSprite: true);
+        owner.transform.position = arena.GetPosition(1f, 0.68f);
+        entryStart = owner.transform.position;
+        movementState = MovementState.Entering;
+        entryTimer = 0f;
     }
 
     public void UpdateAI()
     {
-        if (owner == null || isCharging) return;
+        if (owner == null || owner.HP <= 0f) return;
 
-        if (ShouldReturnToFlightArea())
+        Vector3 position = owner.transform.position;
+        Vector3 boundedPosition = arena.Clamp(position);
+        // カメラ変更や外部のノックバックで範囲外に出た場合も、実行中のTweenを中断して復帰する。
+        if ((position - boundedPosition).sqrMagnitude > 0.01f)
         {
-            MoveToReturn();
+            currentTween?.Kill();
+            owner.transform.position = boundedPosition;
+            StartReturn();
             return;
         }
+
+        if (movementState == MovementState.Entering)
+        {
+            entryTimer += Time.deltaTime;
+            owner.transform.position = arena.Clamp(Vector3.Lerp(entryStart, GetHomePosition(), entryTimer / EntryDuration));
+            if (entryTimer >= EntryDuration) movementState = MovementState.Combat;
+            return;
+        }
+        if (movementState != MovementState.Combat) return;
 
         // フェーズ判定
         float hpRatio = runtimeMaxHp > 0f ? owner.HP / runtimeMaxHp : 1f;
@@ -75,6 +95,15 @@ public class EnemyAI_BossSpeed : MonoBehaviour, IEnemyAI
             attackTimer = data.attackInterval * intervalMult;
         }
 
+        // 爆弾はHPフェーズや通常射撃から独立して投下する。
+        // 突進・復帰中はタイマーを進めず、飛行に戻ってから再開する。
+        bombTimer -= Time.deltaTime;
+        if (bombTimer <= 0f)
+        {
+            DropArBomb();
+            bombTimer = phase == 2 ? 4f : phase == 1 ? 5f : 6f;
+        }
+
         // 突進タイマー
         chargeTimer -= Time.deltaTime;
         if (chargeTimer <= 0f)
@@ -89,7 +118,7 @@ public class EnemyAI_BossSpeed : MonoBehaviour, IEnemyAI
 
     public void OnAttack()
     {
-        if (playerTarget == null) return;
+        if (owner == null || owner.HP <= 0f || playerTarget == null || movementState != MovementState.Combat) return;
 
         // 円弧移動しながら射撃
         MoveInArc();
@@ -106,7 +135,6 @@ public class EnemyAI_BossSpeed : MonoBehaviour, IEnemyAI
             case 2:
                 ShootArBulletBurst();
                 ShootArMissile();
-                DropArBomb();
                 break;
         }
     }
@@ -133,7 +161,7 @@ public class EnemyAI_BossSpeed : MonoBehaviour, IEnemyAI
 
     private void ShootArBullet(GameObject bulletPrefab)
     {
-        if (owner == null || playerTarget == null || bulletPrefab == null)
+        if (owner == null || owner.HP <= 0f || playerTarget == null || bulletPrefab == null)
         {
             return;
         }
@@ -180,6 +208,15 @@ public class EnemyAI_BossSpeed : MonoBehaviour, IEnemyAI
         }
 
         GameObject bomb = Instantiate(bombPrefab, owner.transform.position, Quaternion.identity);
+        Collider2D ownerBody = owner.GetComponent<Collider2D>();
+        Collider2D bombBody = bomb.GetComponent<Collider2D>();
+        if (ownerBody != null && bombBody != null)
+        {
+            // 本体の中心に重ねず、腹部の当たり判定より下から落とす。
+            float bombTopOffset = bombBody.bounds.max.y - bomb.transform.position.y;
+            bomb.transform.position = new Vector3(ownerBody.bounds.center.x,
+                ownerBody.bounds.min.y - bombTopOffset - BombDropClearance, owner.transform.position.z);
+        }
         Rigidbody2D rb = bomb.GetComponent<Rigidbody2D>();
         if (rb != null)
         {
@@ -219,109 +256,74 @@ public class EnemyAI_BossSpeed : MonoBehaviour, IEnemyAI
     private void PerformCharge()
     {
         if (playerTarget == null) return;
-        isCharging = true;
+        movementState = MovementState.Charging;
         currentTween?.Kill();
 
-        Vector3 chargeTarget = playerTarget.position;
-        float chargeSpeed = phase == 2 ? 0.3f : phase == 1 ? 0.5f : 0.7f;
-
-        // 予備動作（少し引く）
+        Vector3 chargeTarget = arena.Clamp(playerTarget.position);
         Vector2 pullDir = (owner.transform.position - chargeTarget).normalized;
-        Vector3 pullPos = owner.transform.position + (Vector3)pullDir * 1.5f;
+        Vector3 pullPosition = arena.Clamp(owner.transform.position + (Vector3)pullDir * 1.5f);
+        float duration = (phase == 2 ? 0.3f : phase == 1 ? 0.5f : 0.7f) * ChargeDurationMultiplier;
 
-        Sequence seq = DOTween.Sequence();
-        seq.Append(owner.transform.DOMove(pullPos, 0.3f).SetEase(Ease.OutQuad));
-        seq.AppendInterval(0.2f);
-        seq.Append(owner.transform.DOMove(chargeTarget, chargeSpeed * ChargeDurationMultiplier).SetEase(Ease.InQuad));
-        seq.OnComplete(() =>
-        {
-            isCharging = false;
-            // 突進後に復帰
-            if (returnPoint != null)
+        Sequence sequence = DOTween.Sequence();
+        sequence.Append(CreateBoundedMove(pullPosition, 0.3f, Ease.OutQuad));
+        sequence.AppendInterval(0.2f);
+        sequence.Append(CreateBoundedMove(chargeTarget, duration, Ease.InQuad));
+        sequence.OnComplete(StartReturn);
+        currentTween = sequence;
+    }
+
+    private void StartReturn()
+    {
+        movementState = MovementState.Returning;
+        currentTween = CreateBoundedMove(GetHomePosition(), ReturnDuration, Ease.OutSine)
+            .OnComplete(() =>
             {
-                currentTween = owner.transform.DOMove(returnPoint.position, 1f).SetEase(Ease.OutSine);
-            }
-        });
-        currentTween = seq;
+                movementState = MovementState.Combat;
+                currentTween = null;
+            });
+    }
+
+    private Tween CreateBoundedMove(Vector3 target, float duration, Ease ease)
+    {
+        Vector3 start = owner.transform.position;
+        // Sequenceの後半では、直前の移動が終わった位置を開始点にする。
+        return DOVirtual.Float(0f, 1f, duration, t =>
+        {
+            if (owner == null || owner.HP <= 0f) return;
+            owner.transform.position = arena.Clamp(Vector3.Lerp(start, target, t));
+        }).SetEase(ease).OnStart(() => start = owner.transform.position);
     }
 
     private void MoveInArc()
     {
         if (currentTween != null && currentTween.IsActive()) return;
 
-        bool reverse = Random.value > 0.5f;
-        float radius = Mathf.Min(data.circleRadius, 2.5f);
-        float duration = data.circleDuration * (phase == 2 ? 0.4f : phase == 1 ? 0.6f : 1f);
-        Vector3 center = GetFlightCenter(radius);
+        Rect rect = arena.GetMovementRect();
+        float radius = Mathf.Max(0f, Mathf.Min(data.circleRadius, 2.5f, rect.width * 0.5f, rect.height * 0.5f));
+        if (radius < 0.05f) return;
+        Vector3 center = GetHomePosition();
+        center.x = Mathf.Clamp(center.x + Random.Range(-1.5f, 1.5f), rect.xMin + radius, rect.xMax - radius);
+        center.y = Mathf.Clamp(center.y + Random.Range(-0.75f, 0.75f), rect.yMin + radius, rect.yMax - radius);
         Vector3 relative = owner.transform.position - center;
-        float currentAngle = Mathf.Atan2(relative.x, relative.y) * Mathf.Rad2Deg;
-        float targetAngle = currentAngle + (reverse ? -180f : 180f);
+        float startRadius = relative.magnitude;
+        float startAngle = Mathf.Atan2(relative.y, relative.x) * Mathf.Rad2Deg;
+        float turn = Random.value > 0.5f ? -180f : 180f;
+        float duration = Mathf.Max(0.25f, data.circleDuration * (phase == 2 ? 0.4f : phase == 1 ? 0.6f : 1f));
 
-        currentTween = DOVirtual.Float(currentAngle, targetAngle, duration, angle =>
+        currentTween = DOVirtual.Float(0f, 1f, duration, t =>
         {
-            if (owner == null) { currentTween?.Kill(); return; }
-            float rad = angle * Mathf.Deg2Rad;
-            Vector3 offset = new Vector3(Mathf.Sin(rad) * radius, Mathf.Cos(rad) * radius, 0f);
-            owner.transform.position = ClampFlightPosition(center + offset);
+            if (owner == null || owner.HP <= 0f) return;
+            float angle = (startAngle + turn * t) * Mathf.Deg2Rad;
+            // 初回の更新で円周へ瞬間移動しないよう、現在の半径から滑らかに接続する。
+            float currentRadius = Mathf.Lerp(startRadius, radius, t);
+            Vector3 offset = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0f) * currentRadius;
+            owner.transform.position = arena.Clamp(center + offset);
         }).SetEase(Ease.InOutSine);
     }
 
-    private bool ShouldReturnToFlightArea()
+    private Vector3 GetHomePosition()
     {
-        Vector3 position = owner.transform.position;
-        if (position.x < FlightMinX ||
-            position.x > FlightMaxX ||
-            position.y < FlightMinY ||
-            position.y > FlightMaxY)
-        {
-            return true;
-        }
-
-        if (returnPoint == null)
-        {
-            return false;
-        }
-
-        return Vector2.Distance(position, returnPoint.position) > ReturnDistanceThreshold;
-    }
-
-    private void MoveToReturn()
-    {
-        if (returnPoint == null)
-        {
-            owner.transform.position = ClampFlightPosition(owner.transform.position);
-            return;
-        }
-
-        if (currentTween != null && currentTween.IsActive())
-        {
-            return;
-        }
-
-        float distance = Vector3.Distance(owner.transform.position, returnPoint.position);
-        float moveTime = Mathf.Max(0.2f, distance / Mathf.Max(owner.GetMoveSpeed(data.speed), 0.1f));
-        currentTween = owner.transform.DOMove(ClampFlightPosition(returnPoint.position), moveTime)
-            .SetEase(Ease.OutSine)
-            .OnComplete(() => currentTween = null);
-    }
-
-    private Vector3 GetFlightCenter(float radius)
-    {
-        Vector3 basePosition = returnPoint != null ? returnPoint.position : owner.transform.position;
-        float randomX = Random.Range(-2f, 2f);
-        float minCenterY = FlightMinY + radius;
-        float maxCenterY = FlightMaxY - radius;
-        float centerY = Mathf.Clamp(basePosition.y + Random.Range(-0.75f, 0.75f), minCenterY, maxCenterY);
-        float centerX = Mathf.Clamp(basePosition.x + randomX, FlightMinX + radius, FlightMaxX - radius);
-        return new Vector3(centerX, centerY, owner.transform.position.z);
-    }
-
-    private Vector3 ClampFlightPosition(Vector3 position)
-    {
-        position.x = Mathf.Clamp(position.x, FlightMinX, FlightMaxX);
-        position.y = Mathf.Clamp(position.y, FlightMinY, FlightMaxY);
-        position.z = owner != null ? owner.transform.position.z : position.z;
-        return position;
+        return arena.GetPosition(0.7f, 0.68f);
     }
 
     private void UpdateSummon()
@@ -371,7 +373,24 @@ public class EnemyAI_BossSpeed : MonoBehaviour, IEnemyAI
 
     public void OnDeath()
     {
+        StopTweens();
+    }
+
+    private void OnDisable()
+    {
+        StopTweens();
+    }
+
+    private void OnDestroy()
+    {
+        StopTweens();
+    }
+
+    private void StopTweens()
+    {
         attackSequence?.Kill();
         currentTween?.Kill();
+        attackSequence = null;
+        currentTween = null;
     }
 }

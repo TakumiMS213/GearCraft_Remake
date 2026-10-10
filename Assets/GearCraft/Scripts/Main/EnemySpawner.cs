@@ -192,7 +192,9 @@ public class EnemySpawner : MonoBehaviour
 
         if (!plan.HasBoss)
         {
-            Debug.LogWarning($"Boss data is missing for stage {stageNum}. The last minion will end the stage.");
+            Debug.LogWarning(stageConfig.IsFinalStage(stageNum)
+                ? $"Final boss data is missing for stage {stageNum}. EK must be configured before this stage can be cleared."
+                : $"Boss data is missing for stage {stageNum}. The last minion will end the stage.");
             return;
         }
 

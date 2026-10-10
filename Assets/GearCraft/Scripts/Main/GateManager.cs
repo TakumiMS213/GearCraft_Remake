@@ -97,8 +97,10 @@ public class GateManager : MonoBehaviour
         }
 
         string enemyName = enemy.enemyData.enemyName;
-        return enemy.enemyData.aiType == EnemyAIType.Boss_Speed ||
+        return enemy.enemyData.aiType == EnemyAIType.Boss_Tank ||
+            enemy.enemyData.aiType == EnemyAIType.Boss_Speed ||
             enemy.enemyData.aiType == EnemyAIType.Boss_Artillery ||
+            enemy.enemyData.aiType == EnemyAIType.Boss_Final ||
             enemyName == "AR-227" ||
             enemyName == "BB-413";
     }

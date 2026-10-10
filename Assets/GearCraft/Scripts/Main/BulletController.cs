@@ -38,6 +38,8 @@ public class BulletController : MonoBehaviour
     private Vector2 previousPosition;
     private Collider2D ignoredSurfaceAfterBounce;
     private float ignoreSurfaceUntilTime;
+    private GameObject smokeInstance;
+    private ParticleSystem[] smokeParticles;
 
     private void OnEnable()
     {
@@ -57,16 +59,65 @@ public class BulletController : MonoBehaviour
 
     private void Update()
     {
-        if (smoke == null || !DoSmoke) return;
-
-        GameObject effect = Instantiate(smoke, transform.position, Quaternion.identity);
-        effect.SetActive(true);
-        var ps = effect.GetComponent<ParticleSystem>();
-        if (ps != null)
+        if (!DoSmoke || smoke == null)
         {
-            ps.Simulate(0, true, true);
-            ps.Play();
+            StopSmoke();
+            return;
         }
+
+        if (smokeInstance == null)
+        {
+            // 発生源は弾ごとに一つ。弾と一緒に破棄されないよう親子にはしない。
+            // Prefab本来のスケールを保ち、既に出た煙はワールド空間に残す。
+            smokeInstance = Instantiate(smoke, transform.position, Quaternion.identity);
+            smokeInstance.SetActive(true);
+            smokeParticles = smokeInstance.GetComponentsInChildren<ParticleSystem>(true);
+            foreach (ParticleSystem particle in smokeParticles)
+            {
+                var main = particle.main;
+                main.stopAction = ParticleSystemStopAction.None;
+                main.loop = true;
+                main.simulationSpace = ParticleSystemSimulationSpace.World;
+                particle.Stop(false, ParticleSystemStopBehavior.StopEmittingAndClear);
+                particle.Play(false);
+            }
+        }
+        smokeInstance.transform.position = transform.position;
+    }
+
+    private void StopSmoke()
+    {
+        GameObject effect = smokeInstance;
+        ParticleSystem[] particles = smokeParticles;
+        smokeInstance = null;
+        smokeParticles = null;
+        if (effect == null) return;
+
+        float remainingLifetime = 0f;
+        if (particles != null)
+        {
+            foreach (ParticleSystem particle in particles)
+            {
+                if (particle == null) continue;
+                var main = particle.main;
+                // 自動破棄に頼らず、子の粒子も消えるまで残煙を保持する。
+                main.stopAction = ParticleSystemStopAction.None;
+                remainingLifetime = Mathf.Max(remainingLifetime,
+                    main.startLifetime.constantMax / Mathf.Max(0.01f, main.simulationSpeed));
+                particle.Stop(false, ParticleSystemStopBehavior.StopEmitting);
+            }
+        }
+        Destroy(effect, remainingLifetime + 0.1f);
+    }
+
+    private void OnDisable()
+    {
+        StopSmoke();
+    }
+
+    private void OnDestroy()
+    {
+        StopSmoke();
     }
 
     private void LateUpdate()
@@ -190,7 +241,7 @@ public class BulletController : MonoBehaviour
                 continue;
             }
 
-            if (TryDamageEnemy(hitCollider))
+            if (TryDamageEnemy(hitCollider, hit.point))
             {
                 SpawnHitEffect(hit.point);
                 if (isCannonBullet)
@@ -278,7 +329,7 @@ public class BulletController : MonoBehaviour
         return centerAtHit + normal.normalized * 0.02f;
     }
 
-    private bool TryDamageEnemy(Collider2D collision)
+    private bool TryDamageEnemy(Collider2D collision, Vector2? hitPosition = null)
     {
         EnemyController enemy = collision.GetComponent<EnemyController>();
         if (enemy == null)
@@ -292,7 +343,7 @@ public class BulletController : MonoBehaviour
         }
 
         damagedEnemies.Add(enemy);
-        enemy.TakeDamage(GetDamageForEnemy(enemy));
+        enemy.TakeDamage(GetDamageForEnemy(enemy), hitPosition ?? GetEnemyHitPoint(collision));
         if (applyOverheatOnHit)
         {
             enemy.ApplyOverheat(overheatDuration, overheatSpeedMultiplier, overheatEffectPrefab);
@@ -300,6 +351,23 @@ public class BulletController : MonoBehaviour
 
         ApplyDirectHitKnockback(enemy);
         return true;
+    }
+
+    private Vector2 GetEnemyHitPoint(Collider2D target)
+    {
+        Vector2 currentPosition = transform.position;
+        Vector2 movement = currentPosition - previousPosition;
+        if (useSweptHitDetection && movement.sqrMagnitude > 0.000001f)
+        {
+            // 高速弾はTrigger通知が掃引判定より先でも、通過後の位置を命中点にしない。
+            foreach (RaycastHit2D hit in Physics2D.CircleCastAll(previousPosition,
+                Mathf.Max(0.01f, sweptHitRadius), movement.normalized, movement.magnitude,
+                1 << target.gameObject.layer))
+            {
+                if (hit.collider == target) return hit.point;
+            }
+        }
+        return target.ClosestPoint(currentPosition);
     }
 
     private bool TryDamageEnemyProjectile(Collider2D collision)
@@ -467,7 +535,7 @@ public class BulletController : MonoBehaviour
                 EnemyController ec = hitCollider.GetComponent<EnemyController>();
                 if (ec != null)
                 {
-                    ec.TakeDamage(bombDamage);
+                    ec.TakeDamage(bombDamage, hitCollider.ClosestPoint(transform.position));
                     continue;
                 }
 

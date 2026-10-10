@@ -19,6 +19,7 @@ public class TransitionManager : MonoBehaviour
     void Start()
     {
         audioSource = GetComponent<AudioSource>();
+        if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
 
         // AudioSource初期設定
         audioSource.playOnAwake = false;

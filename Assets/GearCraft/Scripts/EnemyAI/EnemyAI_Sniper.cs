@@ -11,24 +11,35 @@ public class EnemyAI_Sniper : MonoBehaviour, IEnemyAI
     private float attackTimer;
     private bool hasPositioned = false;
     private Vector3 sniperPosition;
+    private BossArena arena;
+    private float sniperHorizontal;
+    private float spawnHeight;
 
     public void Initialize(EnemyController owner, EnemyDataSO data)
     {
         this.owner = owner;
         this.data = data;
+        hasPositioned = false;
         attackTimer = data.attackInterval * 1.5f; // 初弾は遅め
 
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj != null)
             playerTarget = playerObj.transform;
 
-        // 初期位置から少し動いて狙撃ポジションを取る
-        sniperPosition = owner.transform.position + new Vector3(Random.Range(-2f, 2f), 0, 0);
+        arena = new BossArena(owner, containSprite: true);
+        sniperHorizontal = Random.Range(0.7f, 0.9f);
+        spawnHeight = owner.transform.position.y;
+        sniperPosition = GetSniperPosition();
     }
 
     public void UpdateAI()
     {
         if (owner == null) return;
+
+        // カメラの移動やノックバック後も、画面・壁の内側の狙撃位置へ戻る。
+        sniperPosition = GetSniperPosition();
+        if ((owner.transform.position - sniperPosition).sqrMagnitude > 0.01f)
+            hasPositioned = false;
 
         // ポジショニング
         if (!hasPositioned)
@@ -46,6 +57,13 @@ public class EnemyAI_Sniper : MonoBehaviour, IEnemyAI
             OnAttack();
             attackTimer = data.attackInterval;
         }
+    }
+
+    private Vector3 GetSniperPosition()
+    {
+        Rect rect = arena.GetMovementRect();
+        return new Vector3(Mathf.Lerp(rect.xMin, rect.xMax, sniperHorizontal),
+            Mathf.Clamp(spawnHeight, rect.yMin, rect.yMax), owner.transform.position.z);
     }
 
     public void OnAttack()

@@ -63,19 +63,7 @@ public class BonusCardsManager : MonoBehaviour
 
     public async UniTask ShowBonusCardsAsync()
     {
-        int stageCount = StageCounter.Instance != null ? StageCounter.Instance.StageCount : 0;
-
-        // エンディング判定
-        if (stageCount >= 31)
-        {
-            bool trueEnd = StatusManager.Instance != null && StatusManager.Instance.killAllEnemies;
-            if (transitionManager != null)
-                transitionManager.PlayTransition(3);
-            await UniTask.Delay(TimeSpan.FromSeconds(2f));
-            EndingManager.LoadEndingScene(trueEnd ? 3 : 2);
-            return;
-        }
-
+        // Victory is decided by StageFlowManager after the final boss is defeated.
         ClearText();
         ClearCards();
 

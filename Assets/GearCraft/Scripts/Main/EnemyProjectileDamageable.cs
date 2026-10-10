@@ -7,14 +7,30 @@ public sealed class EnemyProjectileDamageable : MonoBehaviour
     [SerializeField] private GameObject destroyEffect;
 
     private float hp;
+    private bool destroyed;
+    private Collider2D projectileCollider;
+    private bool restoreColliderOnEnable;
 
     private void Awake()
     {
+        projectileCollider = GetComponent<Collider2D>();
+    }
+
+    private void OnEnable()
+    {
         hp = Mathf.Max(1f, maxHP);
+        destroyed = false;
+        if (restoreColliderOnEnable && projectileCollider != null)
+        {
+            projectileCollider.enabled = true;
+        }
+        restoreColliderOnEnable = false;
     }
 
     public void TakeDamage(float damage)
     {
+        if (destroyed) return;
+
         hp -= Mathf.Max(0f, damage);
         if (hp > 0f)
         {
@@ -26,7 +42,7 @@ public sealed class EnemyProjectileDamageable : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other == null)
+        if (destroyed || other == null)
         {
             return;
         }
@@ -52,9 +68,19 @@ public sealed class EnemyProjectileDamageable : MonoBehaviour
         }
     }
 
-    private void DestroyProjectile()
+    public void DestroyProjectile(bool showEffect = true)
     {
-        if (destroyEffect != null)
+        if (destroyed) return;
+        destroyed = true;
+
+        // Destroy is deferred until the end of the frame. Stop later hit callbacks immediately.
+        if (projectileCollider != null && projectileCollider.enabled)
+        {
+            projectileCollider.enabled = false;
+            restoreColliderOnEnable = true;
+        }
+
+        if (showEffect && destroyEffect != null)
         {
             Instantiate(destroyEffect, transform.position, Quaternion.identity);
         }

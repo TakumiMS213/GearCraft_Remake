@@ -18,7 +18,9 @@ public sealed class StageSpawnPlanner
 
         int minionCount = Mathf.Max(2, stageConfig.baseEnemyCount);
         EnemyDataSO bossData = ResolveBossData(stageNum);
-        bool markLastMinionAsStageEnd = bossData == null || bossData.prefab == null;
+        // The final battle can only be cleared by defeating EK, even if its asset is missing.
+        bool markLastMinionAsStageEnd = !stageConfig.IsFinalStage(stageNum) &&
+            (bossData == null || bossData.prefab == null);
         return new StageSpawnPlan(true, minionCount, bossData, markLastMinionAsStageEnd);
     }
 

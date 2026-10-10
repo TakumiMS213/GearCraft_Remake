@@ -6,6 +6,12 @@ public class UpgradeGridManager : MonoBehaviour
 {
     public static UpgradeGridManager Instance { get; private set; }
     public event Action<UpgradePartSO> PartPlaced;
+    public event Action<UpgradePartSO> PlacementFailed;
+
+    public void ReportPlacementFailure(UpgradePartSO part)
+    {
+        PlacementFailed?.Invoke(part);
+    }
 
     [System.Serializable]
     public class PlacedPart
@@ -74,7 +80,13 @@ public class UpgradeGridManager : MonoBehaviour
 
     public bool TryPlace(UpgradePartSO part, int posX, int posY, int rotation, int inventoryIndex)
     {
-        return TryPlaceInternal(part, posX, posY, rotation, inventoryIndex, false);
+        bool placed = TryPlaceInternal(part, posX, posY, rotation, inventoryIndex, false);
+        if (!placed)
+        {
+            ReportPlacementFailure(part);
+        }
+
+        return placed;
     }
 
     public bool TryPurchaseAndPlace(UpgradePartSO part, int posX, int posY, int rotation)
@@ -86,16 +98,19 @@ public class UpgradeGridManager : MonoBehaviour
     {
         if (part == null || MaterialManager.Instance == null)
         {
+            ReportPlacementFailure(part);
             return false;
         }
 
         if (!CanPlace(part, posX, posY, rotation))
         {
+            ReportPlacementFailure(part);
             return false;
         }
 
         if (!MaterialManager.Instance.CanAfford(part.costs))
         {
+            ReportPlacementFailure(part);
             return false;
         }
 
@@ -104,6 +119,10 @@ public class UpgradeGridManager : MonoBehaviour
         if (placed)
         {
             RefreshMaterialDisplays();
+        }
+        else
+        {
+            ReportPlacementFailure(part);
         }
 
         return placed;
@@ -151,6 +170,8 @@ public class UpgradeGridManager : MonoBehaviour
         RecalculateEffects();
         RefreshUI();
         SavePlacedParts();
+        if (StatusManager.Instance != null)
+            StatusManager.Instance.DormTasks.hasUpgradedWeapon = true;
         PartPlaced?.Invoke(part);
         return true;
     }
@@ -299,38 +320,7 @@ public class UpgradeGridManager : MonoBehaviour
             return;
         }
 
-        StatusManager status = StatusManager.Instance;
-        status.bonusDamage = 0f;
-        status.attackSpeedMult = 1f;
-        status.hasBulletDouble = false;
-        status.spreadModifier = 0f;
-        status.ricochetCount = 0;
-        status.junkCollectorMult = 1f;
-        status.bulletSizeMult = 1f;
-
-        float magnetBonus = 0f;
-
-        for (int i = 0; i < placedParts.Count; i++)
-        {
-            UpgradePartSO part = placedParts[i]?.partData;
-            if (part == null || part.effects == null)
-            {
-                continue;
-            }
-
-            for (int j = 0; j < part.effects.Length; j++)
-            {
-                UpgradeEffect effect = part.effects[j];
-                if (effect == null)
-                {
-                    continue;
-                }
-
-                ApplyEffect(status, effect, ref magnetBonus);
-            }
-        }
-
-        status.magnetRange = 3f + magnetBonus;
+        StatusManager.Instance.RecalculateUpgradeEffects(GetPlacedPartData());
 
         if (effectDisplay != null)
         {
@@ -487,37 +477,9 @@ public class UpgradeGridManager : MonoBehaviour
         }
     }
 
-    private static void ApplyEffect(StatusManager status, UpgradeEffect effect, ref float magnetBonus)
+    private IEnumerable<UpgradePartSO> GetPlacedPartData()
     {
-        switch (effect.type)
-        {
-            case UpgradeEffectType.DamageFlat:
-                status.bonusDamage += effect.value;
-                break;
-            case UpgradeEffectType.AttackSpeedMult:
-                status.attackSpeedMult *= effect.value;
-                break;
-            case UpgradeEffectType.BulletDouble:
-                status.hasBulletDouble = true;
-                break;
-            case UpgradeEffectType.SpreadReduction:
-                status.spreadModifier -= effect.value;
-                break;
-            case UpgradeEffectType.SpreadIncrease:
-                status.spreadModifier += effect.value;
-                break;
-            case UpgradeEffectType.Ricochet:
-                status.ricochetCount += (int)effect.value;
-                break;
-            case UpgradeEffectType.JunkCollector:
-                status.junkCollectorMult += effect.value;
-                break;
-            case UpgradeEffectType.BulletSizeUp:
-                status.bulletSizeMult += effect.value;
-                break;
-            case UpgradeEffectType.MagnetRangeUp:
-                magnetBonus += effect.value;
-                break;
-        }
+        for (int i = 0; i < placedParts.Count; i++)
+            if (placedParts[i] != null) yield return placedParts[i].partData;
     }
 }

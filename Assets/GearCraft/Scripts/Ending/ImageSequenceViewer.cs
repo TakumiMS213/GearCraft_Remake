@@ -24,8 +24,14 @@ public class ImageSequenceViewer : MonoBehaviour
     private bool[] perImageHideFlags;
     public ScoreManager scoreManager;
 
+    [Header("Gallery Unlock Notice")]
+    [SerializeField] private GameObject galleryUnlockNotice;
+    private bool showingGalleryUnlockNotice;
+    private float noticeReadyTime;
+
     void Start()
     {
+        if (galleryUnlockNotice != null) galleryUnlockNotice.SetActive(false);
         if (scoreManager != null)
         {
             scoreManager.GetScore();
@@ -55,6 +61,14 @@ public class ImageSequenceViewer : MonoBehaviour
 
     void Update()
     {
+        if (isTransitioning) return;
+        if (showingGalleryUnlockNotice)
+        {
+            // スコアを送ったクリックや連打で、解放案内を読み飛ばさない。
+            if (Time.unscaledTime >= noticeReadyTime && Input.GetMouseButtonDown(0))
+                ReturnToTitle();
+            return;
+        }
         // 画面タップ or 左クリック
         if (Input.GetMouseButtonDown(0))
         {
@@ -75,32 +89,23 @@ public class ImageSequenceViewer : MonoBehaviour
 
     private void ShowNextImage()
     {
+        if (isTransitioning || showingGalleryUnlockNotice) return;
         // 次へ
         currentIndex++;
 
         // 範囲外なら終了（ループさせたいならここを書き換える）
-        if (currentIndex >= images.Length)
+        if (images == null || currentIndex >= images.Length)
         {
-            Debug.Log("最後まで表示しました");
-            StatusManager.Instance.HP = 100;
-            StatusManager.Instance.STR = 0;
-            StatusManager.Instance.ACC = 0;
-            StatusManager.Instance.GATE = 1000;
-            StatusManager.Instance.selectWeapon = 0;
-            StatusManager.Instance.module_scrap = false;
-            StatusManager.Instance.module_repair = false;
-            StatusManager.Instance.module_barrier = false;
-            StatusManager.Instance.punkDrive = false;
-            StatusManager.Instance.craftWeaponDamagebuff = 0;
-            StatusManager.Instance.killAllEnemies = true;
-            StatusManager.Instance.UseCraftSpacebuff = false;
-            StageCounter.Instance.StageCount = 0;
-            MaterialManager.Instance.ClearAllMaterials();
-            if (!isTransitioning)
+            if (galleryUnlockNotice != null && endingManager != null && endingManager.ConsumeGalleryUnlockNotice())
             {
-                isTransitioning = true;
-                scenetransitionManager.LoadScene("Title"); // シーン遷移
+                ClearAllImages();
+                endingManager.HideAllEndingImages();
+                galleryUnlockNotice.SetActive(true);
+                showingGalleryUnlockNotice = true;
+                noticeReadyTime = Time.unscaledTime + 0.5f;
+                return;
             }
+            ReturnToTitle();
             return;
         }
 
@@ -156,6 +161,32 @@ public class ImageSequenceViewer : MonoBehaviour
                 // フェード完了時の処理（必要があれば）
                 Debug.Log($"Fade completed for {targetImage.name}");
             });
+    }
+
+    private void ReturnToTitle()
+    {
+        if (isTransitioning) return;
+        isTransitioning = true;
+        var status = StatusManager.Instance;
+        if (status != null)
+        {
+            status.HP = 100;
+            status.STR = 0;
+            status.ACC = 0;
+            status.GATE = 1000;
+            status.selectWeapon = 0;
+            status.module_scrap = false;
+            status.module_repair = false;
+            status.module_barrier = false;
+            status.punkDrive = false;
+            status.craftWeaponDamagebuff = 0;
+            status.killAllEnemies = true;
+            status.UseCraftSpacebuff = false;
+        }
+        if (StageCounter.Instance != null) StageCounter.Instance.StageCount = 0;
+        if (MaterialManager.Instance != null) MaterialManager.Instance.ClearAllMaterials();
+        if (scenetransitionManager != null) scenetransitionManager.LoadScene("Title");
+        else SceneTransitionManager.LoadSceneWithTransition("Title");
     }
 
     /// <summary>

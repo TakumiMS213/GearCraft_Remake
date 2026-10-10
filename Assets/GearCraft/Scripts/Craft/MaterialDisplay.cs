@@ -35,9 +35,15 @@ public class MaterialDisplay : MonoBehaviour
     private List<GameObject> dynamicEntries = new List<GameObject>();
     private CraftRecipeSO currentRecipe;
 
-    void Start()
+    private void OnEnable()
     {
+        MaterialManager.MaterialsChanged += UpdateMaterialAmount;
         UpdateMaterialAmount();
+    }
+
+    private void OnDisable()
+    {
+        MaterialManager.MaterialsChanged -= UpdateMaterialAmount;
     }
 
     /// <summary>
@@ -57,23 +63,12 @@ public class MaterialDisplay : MonoBehaviour
         // 動的リスト更新
         if (materialListParent != null && materialEntryPrefab != null)
         {
-            // 既存エントリをクリア
-            foreach (var entry in dynamicEntries)
-            {
-                DestroyEntry(entry);
-            }
-            dynamicEntries.Clear();
-
-            for (int i = materialListParent.childCount - 1; i >= 0; i--)
-            {
-                DestroyEntry(materialListParent.GetChild(i).gameObject);
-            }
-
             var allMats = GetMaterialsForDisplay();
-            foreach (var (type, count, name) in allMats)
+            EnsureMaterialEntries(allMats.Count);
+            for (int i = 0; i < allMats.Count; i++)
             {
-                GameObject entry = Instantiate(materialEntryPrefab, materialListParent);
-                dynamicEntries.Add(entry);
+                var (type, count, name) = allMats[i];
+                GameObject entry = dynamicEntries[i];
 
                 TMP_Text text = entry.GetComponentInChildren<TMP_Text>();
                 if (text != null)
@@ -91,6 +86,31 @@ public class MaterialDisplay : MonoBehaviour
         }
     }
 
+    private void EnsureMaterialEntries(int count)
+    {
+        bool valid = dynamicEntries.Count == count;
+        for (int i = 0; valid && i < dynamicEntries.Count; i++)
+        {
+            valid = dynamicEntries[i] != null && dynamicEntries[i].transform.parent == materialListParent;
+        }
+        if (valid) return;
+
+        var entriesToRemove = new HashSet<GameObject>(dynamicEntries);
+        for (int i = 0; i < materialListParent.childCount; i++)
+        {
+            entriesToRemove.Add(materialListParent.GetChild(i).gameObject);
+        }
+        foreach (GameObject entry in entriesToRemove)
+        {
+            DestroyEntry(entry);
+        }
+        dynamicEntries.Clear();
+        for (int i = 0; i < count; i++)
+        {
+            dynamicEntries.Add(Instantiate(materialEntryPrefab, materialListParent));
+        }
+    }
+
     private void DestroyEntry(GameObject entry)
     {
         if (entry == null)
@@ -100,6 +120,7 @@ public class MaterialDisplay : MonoBehaviour
 
         if (Application.isPlaying)
         {
+            entry.SetActive(false);
             Destroy(entry);
         }
         else

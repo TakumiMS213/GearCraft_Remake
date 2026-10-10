@@ -24,6 +24,11 @@ public class EnemyController : MonoBehaviour
     public float HP;
     public bool isLastEnemy = false;
 
+    public event Action<float> Damaged;
+    public Vector3 LastHitPosition => hasHitPosition
+        ? transform.TransformPoint(lastHitLocalPosition)
+        : transform.position;
+
     [Header("表示設定")]
     public GameObject deathEffect;
     public GameObject highlightMarker;     // 強調表示用マーカー（ボス/ラスト敵）
@@ -41,6 +46,11 @@ public class EnemyController : MonoBehaviour
     private float runtimeMaxHP;
     private GameObject bossSmokeEffectInstance;
     private ParticleSystem bossSmokeParticle;
+    private bool galleryEncounterRecorded;
+    private Camera galleryCamera;
+    private Plane[] galleryCameraPlanes;
+    private Vector3 lastHitLocalPosition;
+    private bool hasHitPosition;
 
     private void Awake()
     {
@@ -49,10 +59,11 @@ public class EnemyController : MonoBehaviour
 
     void Start()
     {
-        spriteRenderer = GetComponent<SpriteRenderer>();
+        spriteRenderer = GetComponentInChildren<SpriteRenderer>();
         if (spriteRenderer != null)
             originalColor = spriteRenderer.color;
         cameraShake = Camera.main != null ? Camera.main.GetComponent<CameraShake>() : null;
+        galleryEncounterRecorded = GearCraft.Gallery.GalleryProgress.HasEncountered(enemyData);
 
         // EnemyDataSOからパラメータを読み込み
         if (enemyData != null)
@@ -91,6 +102,22 @@ public class EnemyController : MonoBehaviour
 
         UpdateOverheatStatus();
         UpdateBossSmokeEffect();
+        RecordGalleryEncounterIfVisible();
+    }
+
+    private void RecordGalleryEncounterIfVisible()
+    {
+        if (galleryEncounterRecorded || enemyData == null || spriteRenderer == null || !spriteRenderer.enabled) return;
+        if (galleryCamera == null) galleryCamera = Camera.main;
+        if (galleryCamera == null || !galleryCamera.isActiveAndEnabled
+            || (galleryCamera.cullingMask & (1 << gameObject.layer)) == 0) return;
+
+        if (galleryCameraPlanes == null) galleryCameraPlanes = new Plane[6];
+        GeometryUtility.CalculateFrustumPlanes(galleryCamera, galleryCameraPlanes);
+        if (!GeometryUtility.TestPlanesAABB(galleryCameraPlanes, spriteRenderer.bounds)) return;
+
+        GearCraft.Gallery.GalleryProgress.RecordEnemy(enemyData);
+        galleryEncounterRecorded = true;
     }
 
     public float GetMoveSpeed(float baseSpeed)
@@ -200,8 +227,21 @@ public class EnemyController : MonoBehaviour
 
     // ---- ダメージ処理 ----
 
+    public void TakeDamage(float amount, Vector2 hitPosition)
+    {
+        if (amount > 0f && HP > 0f)
+        {
+            // 2Dの命中点を本体のZへ合わせる。継続ダメージ中も同じ被弾箇所を保つ。
+            Vector3 point = new Vector3(hitPosition.x, hitPosition.y, transform.position.z);
+            lastHitLocalPosition = transform.InverseTransformPoint(point);
+            hasHitPosition = true;
+        }
+        TakeDamage(amount);
+    }
+
     public void TakeDamage(float amount)
     {
+        RecordGalleryEncounterIfVisible();
         HP -= amount;
 
         if (HP <= 0f)
@@ -210,6 +250,7 @@ public class EnemyController : MonoBehaviour
         }
         else
         {
+            if (amount > 0f) Damaged?.Invoke(amount);
             if (spriteRenderer != null)
             {
                 spriteRenderer.color = originalColor;
@@ -224,7 +265,7 @@ public class EnemyController : MonoBehaviour
 
         // 見た目と当たり判定を即座に消す
         if (spriteRenderer == null)
-            spriteRenderer = GetComponent<SpriteRenderer>();
+            spriteRenderer = GetComponentInChildren<SpriteRenderer>();
         if (spriteRenderer == null || !spriteRenderer.enabled) return;
         spriteRenderer.enabled = false;
 
@@ -309,6 +350,13 @@ public class EnemyController : MonoBehaviour
 
     private void UpdateBossSmokeEffect()
     {
+        // 死亡演出の待機中もUpdateは続くため、煙を再生成させない。
+        if (HP <= 0f || spriteRenderer == null || !spriteRenderer.enabled)
+        {
+            DestroyBossSmokeEffect();
+            return;
+        }
+
         if (enemyData == null || !enemyData.IsBossType || runtimeMaxHP <= 0f)
         {
             return;

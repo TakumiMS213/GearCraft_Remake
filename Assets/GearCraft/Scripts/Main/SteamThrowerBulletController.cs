@@ -111,7 +111,8 @@ namespace GearCraft.Scripts.Main
             }
 
             lastHitTimes[enemy] = now;
-            enemy.TakeDamage(damage);
+            Vector2 hitPosition = collision.ClosestPoint(transform.position);
+            enemy.TakeDamage(damage, hitPosition);
             enemy.ApplyOverheat(overheatDuration, overheatSpeedMultiplier, overheatParticlePrefab);
             if (overheatSlipDamage > 0f)
             {
@@ -120,7 +121,7 @@ namespace GearCraft.Scripts.Main
 
             if (impactParticlePrefab != null)
             {
-                Instantiate(impactParticlePrefab, collision.ClosestPoint(transform.position), Quaternion.identity);
+                Instantiate(impactParticlePrefab, hitPosition, Quaternion.identity);
             }
         }
     }

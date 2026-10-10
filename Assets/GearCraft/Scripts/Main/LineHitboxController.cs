@@ -70,7 +70,20 @@ public class LineHitboxController : MonoBehaviour
         if (damagedEnemies.Contains(enemy)) return;
 
         damagedEnemies.Add(enemy);
-        enemy.TakeDamage(damage);
+        enemy.TakeDamage(damage, GetHitPosition(other));
+    }
+
+    private Vector2 GetHitPosition(Collider2D other)
+    {
+        Vector2 direction = transform.right;
+        Vector2 start = (Vector2)transform.position - direction * (size.x * 0.5f);
+        RaycastHit2D[] hits = Physics2D.BoxCastAll(start, new Vector2(0.01f, size.y),
+            transform.eulerAngles.z, direction, size.x, 1 << other.gameObject.layer);
+        foreach (RaycastHit2D hit in hits)
+        {
+            if (hit.collider == other) return hit.point;
+        }
+        return other.ClosestPoint(start);
     }
 
     private void CreateVisibleHitbox(GameObject visualPrefab, Sprite visualSprite)

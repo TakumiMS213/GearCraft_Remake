@@ -62,11 +62,12 @@ public class PunkDriveManager : MonoBehaviour
         while (true)
         {
             if (enemy == null) yield break; // 👈 Destroyされたら終了
-            enemy.TakeDamage(damageAmount + STR/10);
+            Vector2 hitPosition = target.ClosestPoint(transform.position);
+            enemy.TakeDamage(damageAmount + STR/10, hitPosition);
 
             if (HitEffect != null)
             {
-                Instantiate(HitEffect, target.ClosestPoint(transform.position), Quaternion.identity);
+                Instantiate(HitEffect, hitPosition, Quaternion.identity);
             }
 
             yield return new WaitForSeconds(damageInterval);

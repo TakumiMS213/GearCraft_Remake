@@ -357,6 +357,7 @@ public class PlayerController : MonoBehaviour
     {
         if (armRotation != null && currentWeapon != null)
         {
+            meleeWeapon?.BeginAttack(currentWeapon.meleeRotateDuration);
             armRotation.RotateArmOnce(currentWeapon.meleeRotateDuration);
         }
     }
@@ -428,7 +429,7 @@ public class PlayerController : MonoBehaviour
         float projectileDamage = currentDamage;
         if (runtimeStatus != null)
         {
-            projectileDamage += currentWeapon.GetScaledFlatDamageBonus(runtimeStatus.ACC + runtimeStatus.bonusDamage);
+            projectileDamage += runtimeStatus.GetWeaponDamageBonus(currentWeapon);
             if (runtimeStatus.bulletSizeMult > 1f)
             {
                 bullet.transform.localScale *= runtimeStatus.bulletSizeMult;
@@ -587,7 +588,7 @@ public class PlayerController : MonoBehaviour
 
         if (runtimeStatus != null)
         {
-            damage += currentWeapon.GetScaledFlatDamageBonus(runtimeStatus.ACC + runtimeStatus.bonusDamage);
+            damage += runtimeStatus.GetWeaponDamageBonus(currentWeapon);
         }
 
         Vector3 center = muzzlePosition + (Vector3)(direction.normalized * range * 0.5f);

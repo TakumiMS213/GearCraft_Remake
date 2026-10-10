@@ -51,7 +51,8 @@ public class RestResultReportUI : MonoBehaviour
         await UniTask.Delay(TimeSpan.FromSeconds(0.15f), cancellationToken: token);
         StartClickTextBlink();
 
-        await UniTask.WaitUntil(() => Input.GetMouseButtonDown(0) || Input.touchCount > 0, cancellationToken: token);
+        await UniTask.WaitUntil(() => !GearCraft.Gallery.GalleryNavigation.IsOpen
+            && (Input.GetMouseButtonDown(0) || Input.touchCount > 0), cancellationToken: token);
         StopClickTextBlink();
         canvasGroup.DOFade(0f, 0.25f);
         await UniTask.Delay(TimeSpan.FromSeconds(0.25f), cancellationToken: token);

@@ -22,6 +22,9 @@ public class EnemyBulletController : MonoBehaviour
 
     public AudioSource hitSound;
 
+    private GameObject smokeInstance;
+    private ParticleSystem[] smokeParticles;
+
     private void Start()
     {
         // 寿命タイマー
@@ -30,23 +33,83 @@ public class EnemyBulletController : MonoBehaviour
 
     private void Update()
     {
-        if (smoke == null) return;
-
-        if (DoSmoke)
+        if (!DoSmoke || smoke == null)
         {
-            GameObject effect = Instantiate(smoke, transform.position, Quaternion.identity);
-            effect.SetActive(true); // 念のため
-            var ps = effect.GetComponent<ParticleSystem>();
-            if (ps != null)
+            StopSmoke();
+            return;
+        }
+
+        if (smokeInstance == null)
+        {
+            // 発生源は弾ごとに一つ。弾と一緒に破棄されないよう親子にはしない。
+            // Prefab本来のスケールを保ち、既に出た煙はワールド空間に残す。
+            smokeInstance = Instantiate(smoke, transform.position, Quaternion.identity);
+            smokeInstance.SetActive(true);
+            smokeParticles = smokeInstance.GetComponentsInChildren<ParticleSystem>(true);
+            foreach (ParticleSystem particle in smokeParticles)
             {
-                ps.Simulate(0, true, true);
-                ps.Play();
+                var main = particle.main;
+                main.stopAction = ParticleSystemStopAction.None;
+                main.loop = true;
+                main.simulationSpace = ParticleSystemSimulationSpace.World;
+                particle.Stop(false, ParticleSystemStopBehavior.StopEmittingAndClear);
+                particle.Play(false);
             }
         }
+        smokeInstance.transform.position = transform.position;
+    }
+
+    private void StopSmoke()
+    {
+        GameObject effect = smokeInstance;
+        ParticleSystem[] particles = smokeParticles;
+        smokeInstance = null;
+        smokeParticles = null;
+        if (effect == null) return;
+
+        float remainingLifetime = 0f;
+        if (particles != null)
+        {
+            foreach (ParticleSystem particle in particles)
+            {
+                if (particle == null) continue;
+                var main = particle.main;
+                // 自動破棄に頼らず、子の粒子も消えるまで残煙を保持する。
+                main.stopAction = ParticleSystemStopAction.None;
+                remainingLifetime = Mathf.Max(remainingLifetime,
+                    main.startLifetime.constantMax / Mathf.Max(0.01f, main.simulationSpeed));
+                particle.Stop(false, ParticleSystemStopBehavior.StopEmitting);
+            }
+        }
+        Destroy(effect, remainingLifetime + 0.1f);
+    }
+
+    private void OnDisable()
+    {
+        StopSmoke();
+    }
+
+    private void OnDestroy()
+    {
+        StopSmoke();
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        if (collision == null) return;
+
+        // 迎撃できる通常弾は、接触ダメージと消滅演出を同じコンポーネントで一度だけ処理する。
+        // Player/Gateへの接触はEnemyProjectileDamageable側で受け、地面接触だけここから委譲する。
+        EnemyProjectileDamageable damageable = GetComponent<EnemyProjectileDamageable>();
+        if (damageable != null && !bombBullet)
+        {
+            if (destroyOnHit && collision.CompareTag("Ground"))
+            {
+                damageable.DestroyProjectile();
+            }
+            return;
+        }
+
         // 敵や壁などには反応しない
         if (!collision.CompareTag("Player") && !collision.CompareTag("Ground")) return;
 

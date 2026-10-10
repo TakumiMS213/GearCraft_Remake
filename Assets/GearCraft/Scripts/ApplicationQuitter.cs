@@ -8,6 +8,7 @@ public class ApplicationQuitter : MonoBehaviour
 
     void Update()
     {
+        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == GearCraft.Gallery.GalleryNavigation.SceneName) return;
         if (Input.GetKeyDown(quitKey))
         {
             QuitGame();

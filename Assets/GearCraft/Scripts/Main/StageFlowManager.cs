@@ -43,6 +43,7 @@ public class StageFlowManager : MonoBehaviour
     private bool gateWasHit;
     private bool stageLastEnemyKilled;
     private bool stageCompletionTriggered;
+    private bool finalBossDefeated;
     private bool dayRetryTriggered;
     private DayStartSnapshot dayStartSnapshot;
 
@@ -107,13 +108,30 @@ public class StageFlowManager : MonoBehaviour
         if (enemy != null && !activeEnemies.Contains(enemy))
         {
             activeEnemies.Add(enemy);
+
+            bool isFirstBoss = enemy.enemyData != null &&
+                (enemy.enemyData.aiType == EnemyAIType.Boss_Tank ||
+                 (stageConfig != null && stageConfig.bossPool != null && stageConfig.bossPool.Length > 0 &&
+                  enemy.enemyData == stageConfig.bossPool[0]));
+            if (isFirstBoss && !MainDebugEnemySpawnWindow.IsDebugModeActive && StatusManager.Instance != null)
+                StatusManager.Instance.DormTasks.hasEncounteredFirstBoss = true;
         }
     }
 
     public void OnEnemyKilled(EnemyController enemy, bool wasLastEnemy)
     {
-        activeEnemies.Remove(enemy);
+        if (enemy == null || !activeEnemies.Remove(enemy))
+        {
+            return;
+        }
+
         restDefeatedEnemies++;
+
+        if (wasLastEnemy && enemy.enemyData != null && enemy.enemyData.aiType == EnemyAIType.Boss_Final &&
+            enemy.HP <= 0f && stageConfig != null && stageConfig.IsFinalStage(currentStage))
+        {
+            finalBossDefeated = true;
+        }
 
         if (wasLastEnemy)
         {
@@ -149,6 +167,7 @@ public class StageFlowManager : MonoBehaviour
 
     private async UniTaskVoid OnStageComplete()
     {
+        var cancellationToken = this.GetCancellationTokenOnDestroy();
         IsStageActive = false;
         ClearBullets();
 
@@ -170,16 +189,21 @@ public class StageFlowManager : MonoBehaviour
             transitionManager.PlayTransition(0);
         }
 
-        await UniTask.Delay(TimeSpan.FromSeconds(2f));
+        await UniTask.Delay(TimeSpan.FromSeconds(2f), cancellationToken: cancellationToken);
+
+        if (dayRetryTriggered || EndingManager.IsLoadingEnding)
+        {
+            return;
+        }
 
         if (StatusManager.Instance != null && StatusManager.Instance.module_repair)
         {
             StatusManager.Instance.HP += 20;
         }
 
-        if (stageConfig != null && currentStage >= stageConfig.totalStages)
+        if (stageConfig != null && stageConfig.IsFinalStage(currentStage))
         {
-            HandleGameClear();
+            await HandleGameClearAsync();
             return;
         }
 
@@ -215,13 +239,13 @@ public class StageFlowManager : MonoBehaviour
                 transitionManager.PlayTransition(2);
             }
 
-            await UniTask.Delay(TimeSpan.FromSeconds(1f));
+            await UniTask.Delay(TimeSpan.FromSeconds(1f), cancellationToken: cancellationToken);
             sceneTransitionManager?.LoadScene("CraftSpace");
             return;
         }
 
         gateWasHit = false;
-        await UniTask.Delay(TimeSpan.FromSeconds(1f));
+        await UniTask.Delay(TimeSpan.FromSeconds(1f), cancellationToken: cancellationToken);
         StartNextStage();
     }
 
@@ -261,6 +285,7 @@ public class StageFlowManager : MonoBehaviour
         IsStageActive = false;
         stageLastEnemyKilled = false;
         stageCompletionTriggered = false;
+        finalBossDefeated = false;
         gateWasHit = false;
     }
 
@@ -287,9 +312,12 @@ public class StageFlowManager : MonoBehaviour
 
     private void StartNextStage()
     {
+        if (StatusManager.Instance != null)
+            StatusManager.Instance.DormTasks.hasStartedFirstDay = true;
         activeEnemies.RemoveAll(enemy => enemy == null);
         stageLastEnemyKilled = false;
         stageCompletionTriggered = false;
+        finalBossDefeated = false;
         IsStageActive = true;
         if (enemySpawner != null)
         {
@@ -301,7 +329,8 @@ public class StageFlowManager : MonoBehaviour
     {
         activeEnemies.RemoveAll(enemy => enemy == null);
 
-        if (stageCompletionTriggered || !stageLastEnemyKilled || activeEnemies.Count > 0)
+        if (!IsStageActive || stageCompletionTriggered || !stageLastEnemyKilled || activeEnemies.Count > 0 ||
+            (stageConfig != null && stageConfig.IsFinalStage(currentStage) && !finalBossDefeated))
         {
             return;
         }
@@ -328,7 +357,8 @@ public class StageFlowManager : MonoBehaviour
             .SetEase(Ease.InCirc);
 
         await UniTask.Delay(TimeSpan.FromSeconds(openingNoticeDuration));
-        await UniTask.WaitUntil(() => clicked || Input.GetMouseButtonDown(0), cancellationToken: this.GetCancellationTokenOnDestroy());
+        await UniTask.WaitUntil(() => !GearCraft.Gallery.GalleryNavigation.IsOpen
+            && (clicked || Input.GetMouseButtonDown(0)), cancellationToken: this.GetCancellationTokenOnDestroy());
 
         openingNoticePaper
             .DOAnchorPos(openingNoticeHiddenPosition, openingNoticeDuration)
@@ -364,14 +394,24 @@ public class StageFlowManager : MonoBehaviour
         stageNumText.text = "";
     }
 
-    private async void HandleGameClear()
+    private async UniTask HandleGameClearAsync()
     {
+        if (!finalBossDefeated || dayRetryTriggered || EndingManager.IsLoadingEnding)
+        {
+            return;
+        }
+
         if (transitionManager != null)
         {
             transitionManager.PlayTransition(3);
         }
 
-        await UniTask.Delay(TimeSpan.FromSeconds(2f));
+        await UniTask.Delay(TimeSpan.FromSeconds(2f), cancellationToken: this.GetCancellationTokenOnDestroy());
+
+        if (dayRetryTriggered || EndingManager.IsLoadingEnding)
+        {
+            return;
+        }
 
         bool trueRoute = StatusManager.Instance != null && StatusManager.Instance.killAllEnemies;
         EndingManager.LoadEndingScene(trueRoute ? 3 : 2);
@@ -402,6 +442,15 @@ public class StageFlowManager : MonoBehaviour
                 Destroy(bullets[i]);
             }
         }
+
+        // Shootable missiles use the Enemy tag so player weapons can intercept them.
+        foreach (EnemyProjectileDamageable projectile in FindObjectsByType<EnemyProjectileDamageable>(FindObjectsSortMode.None))
+        {
+            if (projectile != null)
+            {
+                Destroy(projectile.gameObject);
+            }
+        }
     }
 
     private sealed class DayStartSnapshot
@@ -426,6 +475,8 @@ public class StageFlowManager : MonoBehaviour
         private bool useCraftSpaceBuff;
         private int bossKillCount;
         private int upgradeShopDay;
+        private bool hasSavedUpgradeShopLineup;
+        private List<UpgradePartSO> savedUpgradeShopLineup;
         private float bonusDamage;
         private float attackSpeedMult;
         private bool hasBulletDouble;
@@ -491,6 +542,8 @@ public class StageFlowManager : MonoBehaviour
                 snapshot.useCraftSpaceBuff = status.UseCraftSpacebuff;
                 snapshot.bossKillCount = status.bossKillCount;
                 snapshot.upgradeShopDay = status.upgradeShopDay;
+                snapshot.hasSavedUpgradeShopLineup = status.hasSavedUpgradeShopLineup;
+                snapshot.savedUpgradeShopLineup = new List<UpgradePartSO>(status.savedUpgradeShopLineup);
                 snapshot.bonusDamage = status.bonusDamage;
                 snapshot.attackSpeedMult = status.attackSpeedMult;
                 snapshot.hasBulletDouble = status.hasBulletDouble;
@@ -565,6 +618,10 @@ public class StageFlowManager : MonoBehaviour
                 status.UseCraftSpacebuff = useCraftSpaceBuff;
                 status.bossKillCount = bossKillCount;
                 status.upgradeShopDay = upgradeShopDay;
+                status.hasSavedUpgradeShopLineup = hasSavedUpgradeShopLineup;
+                status.savedUpgradeShopLineup = savedUpgradeShopLineup != null
+                    ? new List<UpgradePartSO>(savedUpgradeShopLineup)
+                    : new List<UpgradePartSO>();
                 status.bonusDamage = bonusDamage;
                 status.attackSpeedMult = attackSpeedMult;
                 status.hasBulletDouble = hasBulletDouble;

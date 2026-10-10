@@ -71,7 +71,7 @@ namespace GearCraft.Scripts.Craft
                 case MaterialManager.MaterialType.Gear:
                     return "敵撃破時、またはステージ報酬で入手";
                 case MaterialManager.MaterialType.UpgradeCore:
-                    return "強敵やボス撃破時にドロップ";
+                    return "EG-33・EA-21・BB-12を倒すと、確率で入手できます。";
                 case MaterialManager.MaterialType.ModuleCore_lv1:
                     return "序盤エリアの敵やボス撃破時にドロップ";
                 case MaterialManager.MaterialType.ModuleCore_lv2:

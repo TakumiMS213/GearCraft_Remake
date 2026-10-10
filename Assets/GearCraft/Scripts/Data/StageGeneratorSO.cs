@@ -40,6 +40,11 @@ public class StageGeneratorSO : ScriptableObject
         return false;
     }
 
+    public bool IsFinalStage(int stageNum)
+    {
+        return stageNum >= Mathf.Max(1, totalStages);
+    }
+
     /// <summary>
     /// ボスステージのインデックス（何体目のボスか）を返す。ボスでなければ-1
     /// </summary>

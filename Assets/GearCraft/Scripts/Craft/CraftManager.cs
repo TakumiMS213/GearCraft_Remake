@@ -14,6 +14,12 @@ using TMPro;
 public class CraftManager : MonoBehaviour
 {
     public event Action<CraftRecipeSO> RecipeCrafted;
+    public event Action<CraftRecipeSO> CraftFailed;
+
+    public CraftRecipeSO SelectedRecipe => selectedRecipe;
+    public bool IsInitialized { get; private set; }
+    public bool IsReadyForTutorial { get; private set; }
+    public bool IsCrafting => transitionManager != null && transitionManager.IsPlaying;
 
     [Header("レシピ一覧")]
     public List<CraftRecipeSO> recipes;
@@ -22,6 +28,7 @@ public class CraftManager : MonoBehaviour
     public CraftTransitionManager transitionManager;
     public Button craftButton;
     public MaterialDisplay materialDisplay;
+    [SerializeField] private TMP_Text craftStatusText;
 
     [Header("効果音")]
     public AudioSource successSE;
@@ -38,9 +45,71 @@ public class CraftManager : MonoBehaviour
     [SerializeField] private TMP_FontAsset dotGothicFont;
 
     private readonly List<CraftRecipeSO> unlockedRecipes = new List<CraftRecipeSO>();
+    private readonly List<CraftRecipeSO> displayRecipes = new List<CraftRecipeSO>();
     private readonly List<CraftRecipeSO> pendingUnlockNotifications = new List<CraftRecipeSO>();
     private readonly List<Image> recipeVisualImages = new List<Image>();
     private CraftRecipeSO selectedRecipe;
+
+    private void OnEnable()
+    {
+        MaterialManager.MaterialsChanged += RefreshMaterialCountLabels;
+        if (transitionManager != null)
+            transitionManager.TransitionFinished += RefreshCraftControls;
+        RefreshMaterialCountLabels();
+        RefreshCraftControls();
+    }
+
+    private void OnDisable()
+    {
+        MaterialManager.MaterialsChanged -= RefreshMaterialCountLabels;
+        if (transitionManager != null)
+        {
+            transitionManager.TransitionFinished -= RefreshCraftControls;
+            transitionManager.CancelTransition();
+        }
+        if (errorImage != null)
+        {
+            errorImage.DOKill();
+            errorImage.gameObject.SetActive(false);
+        }
+    }
+
+    private void RefreshCraftControls()
+    {
+        bool alreadyOwned = HasCraftResult(selectedRecipe);
+        if (craftButton != null)
+        {
+            craftButton.gameObject.SetActive(selectedRecipe != null);
+            // Shortage clicks remain available so the tutorial can explain a failed attempt.
+            craftButton.interactable = selectedRecipe != null && !IsCrafting && !alreadyOwned;
+        }
+        if (craftStatusText != null)
+        {
+            craftStatusText.text = IsCrafting ? "作成中…" : alreadyOwned ? "作成済み" : string.Empty;
+            craftStatusText.gameObject.SetActive(!string.IsNullOrEmpty(craftStatusText.text));
+        }
+        for (int i = 0; i < recipeButtons.Count && i < displayRecipes.Count; i++)
+        {
+            if (recipeButtons[i] != null)
+                recipeButtons[i].interactable = !IsCrafting && unlockedRecipes.Contains(displayRecipes[i]);
+        }
+    }
+
+    private void RefreshMaterialCountLabels()
+    {
+        if (selectedRecipe == null || selectedRecipe.costs == null) return;
+
+        ResolveRecipeVisualImages();
+        foreach (CraftCost cost in selectedRecipe.costs)
+        {
+            if (cost == null) continue;
+            Image image = FindRecipeVisualImage(GetMaterialImageName(cost.type));
+            if (image != null)
+            {
+                UpdateMaterialCountLabel(image.rectTransform, cost);
+            }
+        }
+    }
 
 private IEnumerator Start()
     {
@@ -53,7 +122,9 @@ private IEnumerator Start()
             SelectRecipe(0);
         }
 
+        IsInitialized = true;
         yield return ShowUnlockNotificationsAsync();
+        IsReadyForTutorial = true;
     }
 
     /// <summary>
@@ -61,7 +132,7 @@ private IEnumerator Start()
     /// </summary>
 public void SelectRecipe(int index)
     {
-        if (index < 0 || index >= unlockedRecipes.Count)
+        if (IsCrafting || index < 0 || index >= unlockedRecipes.Count)
         {
             return;
         }
@@ -73,18 +144,14 @@ public void SelectRecipe(int index)
             materialDisplay.SetCurrentRecipe(selectedRecipe);
         }
 
-        if (craftButton != null)
-        {
-            craftButton.gameObject.SetActive(true);
-        }
-
         ApplyRecipeVisuals(selectedRecipe);
+        RefreshCraftControls();
     }
 
     public bool TrySelectRecipe(CraftRecipeSO recipe)
     {
         int index = unlockedRecipes.IndexOf(recipe);
-        if (index < 0)
+        if (IsCrafting || index < 0)
         {
             return false;
         }
@@ -136,12 +203,47 @@ public void SelectRecipe(int index)
     /// </summary>
     public bool CanCraft()
     {
-        return CanCraftRecipe(selectedRecipe);
+        return !IsCrafting && CanCraftRecipe(selectedRecipe);
     }
 
     public static bool CanCraftRecipe(CraftRecipeSO recipe)
     {
-        return HasEnoughMaterials(recipe) && MeetsRequiredWeapon(recipe);
+        return StatusManager.Instance != null && !HasCraftResult(recipe) &&
+            HasEnoughMaterials(recipe) && MeetsRequiredWeapon(recipe);
+    }
+
+    // Unique outcomes cannot benefit from another purchase; numerical modules can stack.
+    public static bool HasCraftResult(CraftRecipeSO recipe)
+    {
+        StatusManager status = StatusManager.Instance;
+        if (recipe == null || status == null) return false;
+        switch (recipe.resultType)
+        {
+            case CraftResultType.Weapon:
+                return (recipe.weaponResult != null || recipe.additionalWeaponResult != null) &&
+                    (recipe.weaponResult == null || OwnsWeapon(status, recipe.weaponResult)) &&
+                    (recipe.additionalWeaponResult == null || OwnsWeapon(status, recipe.additionalWeaponResult));
+            case CraftResultType.PunkDrive:
+                return status.punkDrive;
+            case CraftResultType.Module:
+                if (recipe.statBonus > 0) return false;
+                switch (recipe.moduleFlag)
+                {
+                    case "module_scrap": return status.module_scrap;
+                    case "module_repair": return status.module_repair;
+                    case "module_barrier": return status.module_barrier;
+                }
+                break;
+        }
+        return false;
+    }
+
+    private static bool OwnsWeapon(StatusManager status, WeaponDataSO weapon)
+    {
+        if (status.ownedWeapons == null) return false;
+        foreach (WeaponDataSO owned in status.ownedWeapons)
+            if (IsSameWeapon(owned, weapon)) return true;
+        return false;
     }
 
     public static bool HasEnoughMaterials(CraftRecipeSO recipe)
@@ -184,24 +286,22 @@ public void SelectRecipe(int index)
     /// </summary>
     public void OnCraftButton()
     {
-        if (CanCraft())
+        if (IsCrafting) return;
+        CraftRecipeSO recipe = selectedRecipe;
+        if (CanCraft() && MaterialManager.Instance.SpendCosts(recipe.costs))
         {
-            // 素材消費
-            MaterialManager.Instance.SpendCosts(selectedRecipe.costs);
-
-            // トランジション
+            // The result is committed once; cancelling its presentation does not undo crafting.
+            ApplyCraftResult(recipe);
             if (transitionManager != null)
                 transitionManager.StartTransition();
-
-            if (craftButton != null)
-                craftButton.gameObject.SetActive(false);
+            RefreshCraftControls();
 
             if (successSE != null)
                 successSE.Play();
 
-            // 結果を適用
-            ApplyCraftResult(selectedRecipe);
-            RecipeCrafted?.Invoke(selectedRecipe);
+            if (StatusManager.Instance != null)
+                StatusManager.Instance.DormTasks.hasCrafted = true;
+            RecipeCrafted?.Invoke(recipe);
 
             if (materialDisplay != null)
                 materialDisplay.UpdateMaterialAmount();
@@ -209,6 +309,8 @@ public void SelectRecipe(int index)
         else
         {
             // 失敗
+            RefreshCraftControls();
+            CraftFailed?.Invoke(recipe);
             if (errorSE != null)
                 errorSE.Play();
 
@@ -265,6 +367,7 @@ public void SelectRecipe(int index)
                     status.craftWeaponDamagebuff += recipe.statBonus;
                 break;
         }
+        GearCraft.Gallery.GalleryProgress.RecordCraft(recipe);
     }
 
 
@@ -273,6 +376,7 @@ private void InitializeUnlockedRecipes()
         int bossKillCount = StatusManager.Instance != null ? StatusManager.Instance.bossKillCount : 0;
         CraftRecipeUnlockModel model = new CraftRecipeUnlockModel(recipes);
         model.CollectUnlockedRecipes(bossKillCount, unlockedRecipes);
+        model.CollectDisplayRecipes(bossKillCount, displayRecipes);
         model.CollectNewUnlocks(
             bossKillCount,
             id => StatusManager.Instance != null && StatusManager.Instance.IsCraftUnlockNotified(id),
@@ -282,7 +386,7 @@ private void InitializeUnlockedRecipes()
     private void ConfigureRecipeButtons()
     {
         ResolveRecipeButtons();
-        EnsureRecipeButtonCapacity(unlockedRecipes.Count);
+        EnsureRecipeButtonCapacity(displayRecipes.Count);
         ResolveFont();
 
         for (int i = 0; i < recipeButtons.Count; i++)
@@ -293,25 +397,42 @@ private void InitializeUnlockedRecipes()
                 continue;
             }
 
-            bool hasRecipe = i < unlockedRecipes.Count;
+            bool hasRecipe = i < displayRecipes.Count;
             button.gameObject.SetActive(hasRecipe);
-            button.onClick.RemoveAllListeners();
+            // Serialized index listeners refer to the old list and must also be replaced.
+            button.onClick = new Button.ButtonClickedEvent();
             if (!hasRecipe)
             {
                 continue;
             }
 
-            int recipeIndex = i;
-            CraftRecipeSO recipe = unlockedRecipes[i];
+            CraftRecipeSO recipe = displayRecipes[i];
+            bool isUnlocked = unlockedRecipes.Contains(recipe);
+            button.name = "Recipe_" + (string.IsNullOrEmpty(recipe.UnlockId) ? recipe.name : recipe.UnlockId);
+            button.interactable = isUnlocked;
+
+            CanvasGroup group = button.GetComponent<CanvasGroup>();
+            if (group == null) group = button.gameObject.AddComponent<CanvasGroup>();
+            group.alpha = isUnlocked ? 1f : 0.5f;
+            group.interactable = isUnlocked;
+            group.blocksRaycasts = isUnlocked;
+
+            // Apply the same opacity to the whole row without a second disabled-state fade.
+            ColorBlock colors = button.colors;
+            colors.disabledColor = colors.normalColor;
+            button.colors = colors;
             TMP_Text label = button.GetComponentInChildren<TMP_Text>(true);
             if (label != null)
             {
                 label.font = dotGothicFont != null ? dotGothicFont : label.font;
-                label.text = recipe.DisplayName;
-                label.color = GetRecipeTextColor(recipe);
+                label.text = isUnlocked ? recipe.DisplayName : "？？？";
+                label.color = isUnlocked ? GetRecipeTextColor(recipe) : Color.white;
             }
 
-            button.onClick.AddListener(() => SelectRecipe(recipeIndex));
+            if (isUnlocked)
+            {
+                button.onClick.AddListener(() => TrySelectRecipe(recipe));
+            }
         }
     }
 
@@ -527,12 +648,31 @@ private void ShowResultImage(CraftRecipeSO recipe)
 
     private void ShowRequiredWeaponImage(CraftRecipeSO recipe)
     {
-        if (recipe.requiredWeapon == null)
+        if (recipe == null || recipe.requiredWeapon == null)
         {
             return;
         }
 
-        ShowRecipeVisualImage(recipe.DisplayName == "GearCraft" ? "Material_Sword" : "Material_Gun");
+        string imageName = recipe.requiredWeapon.weaponType == WeaponType.Melee ? "Material_Sword" : "Material_Gun";
+        Image image = ShowRecipeVisualImage(imageName);
+        ConfigureRequiredWeaponImage(image, recipe);
+    }
+
+    private static void ConfigureRequiredWeaponImage(Image image, CraftRecipeSO recipe)
+    {
+        if (image == null)
+        {
+            return;
+        }
+
+        image.raycastTarget = recipe != null && recipe.requiredWeapon != null;
+        CraftRequiredWeaponTooltipTrigger trigger = image.GetComponent<CraftRequiredWeaponTooltipTrigger>();
+        if (trigger == null)
+        {
+            trigger = image.gameObject.AddComponent<CraftRequiredWeaponTooltipTrigger>();
+        }
+
+        trigger.Configure(recipe);
     }
 
 private void ShowCostImages(CraftRecipeSO recipe)

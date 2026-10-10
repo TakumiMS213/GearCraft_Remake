@@ -41,6 +41,27 @@ namespace GearCraft.Scripts.Craft
             results.Sort(CompareRecipes);
         }
 
+        public void CollectDisplayRecipes(int bossKillCount, List<CraftRecipeSO> results)
+        {
+            if (results == null) return;
+
+            results.Clear();
+            foreach (CraftRecipeSO recipe in recipes)
+            {
+                if (recipe != null && !recipe.HiddenFromUnlockList)
+                {
+                    results.Add(recipe);
+                }
+            }
+
+            // Keep usable recipes within reach; undiscovered recipes follow as silhouettes.
+            results.Sort((left, right) =>
+            {
+                int unlockCompare = IsUnlocked(right, bossKillCount).CompareTo(IsUnlocked(left, bossKillCount));
+                return unlockCompare != 0 ? unlockCompare : CompareRecipes(left, right);
+            });
+        }
+
         public void CollectNewUnlocks(
             int bossKillCount,
             Predicate<string> isNotified,

@@ -380,6 +380,7 @@ public class UpgradeGridUI : MonoBehaviour
         if (shopManager != null && !shopManager.CanAfford(part))
         {
             shopManager.ShowCannotAfford(part);
+            UpgradeGridManager.Instance?.ReportPlacementFailure(part);
             return false;
         }
 
@@ -439,6 +440,11 @@ public class UpgradeGridUI : MonoBehaviour
         bool placed = hasCell &&
             UpgradeGridManager.Instance != null &&
             UpgradeGridManager.Instance.TryPurchaseAndPlace(partToPlace, gridX, gridY, rotation, shopManager != null, placedShopDay);
+
+        if (!hasCell && UpgradeGridManager.Instance != null)
+        {
+            UpgradeGridManager.Instance.ReportPlacementFailure(partToPlace);
+        }
 
         if (placed)
         {

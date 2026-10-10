@@ -16,11 +16,12 @@ public class Audio : MonoBehaviour
         //ミキサーのvolumeにスライダーのvolumeを入れてます。
 
         //BGM
-        audioMixer.GetFloat("BGM", out float bgmVolume);
-        BGMSlider.value = bgmVolume;
+        if (audioMixer == null) return;
+        if (BGMSlider != null && audioMixer.GetFloat("BGM", out float bgmVolume))
+            BGMSlider.SetValueWithoutNotify(bgmVolume);
         //SE
-        audioMixer.GetFloat("SE", out float seVolume);
-        SESlider.value = seVolume;
+        if (SESlider != null && audioMixer.GetFloat("SE", out float seVolume))
+            SESlider.SetValueWithoutNotify(seVolume);
     }
     
     public void SetBGM(float volume)
