@@ -1,0 +1,8 @@
+Automatic post-build identity restore match=True
+ProjectSettings disk differed only in 3 temporary identity fields after memory restore. Guarded file restore: exact original bytes now match.
+Native launch open session 84142/PID28741: initial probe only; no rendered screenshots. OS sample main thread waits in GfxDeviceMetal::WaitForLastPresentationAndGetTimestamp, frontend query returned false and no window names; bringing same process front did not advance log. Terminated this isolated test process with SIGTERM for configuration diagnosis. Not a UI/layout pass or claim of native render dimensions after startup.
+
+2026-10-13T14:07Z follow-up: OS reported CGSSessionScreenIsLocked=Yes. User unlock question remains pending. Native and windowed runs have no captured PNG and no finished.txt; final display layout is unconfirmed.
+Windowed probe PID 29033 command verified with ps, then SIGTERM sent to QA probe only. open -W exec session 94124 completed after termination. Unity Editor remained open, stopped on Title.
+A residual CS2001 referencing removed Assets/UXStandaloneDisplayProbe.cs was observed. Full asset refresh + compilation removed the stale source reference. Final console filter error CS = 0, Exception = 0; Editor idle.
+restoration-final.json verifies both original preference SHA-256 values and ProjectSettings exact bytes match backups. editor-final.json records original identity/render settings. git diff --check passed.

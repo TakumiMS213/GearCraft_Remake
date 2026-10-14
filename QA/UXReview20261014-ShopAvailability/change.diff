@@ -1,0 +1,84 @@
+--- before/UpgradeShopManager.cs
++++ after/UpgradeShopManager.cs
+@@ -20,6 +20,7 @@
+     public TMP_Text infoText;
+     public UpgradeGridUI targetGridUI;
+     public int shopContentBottomPadding = 96;
++    [Range(0f, 1f)] public float unaffordableItemAlpha = 0.45f;
+ 
+     [Header("Audio")]
+     public AudioSource purchaseSound;
+@@ -31,6 +32,17 @@
+     private int shopDay = -1;
+ 
+     public int ShopDay => shopDay;
++
++    private void OnEnable()
++    {
++        MaterialManager.MaterialsChanged += RefreshShopAvailability;
++        RefreshShopAvailability();
++    }
++
++    private void OnDisable()
++    {
++        MaterialManager.MaterialsChanged -= RefreshShopAvailability;
++    }
+ 
+     public void GenerateLineup()
+     {
+@@ -193,9 +205,53 @@
+             ApplyTooltip(item, part);
+             ApplyDragHandler(item, part);
+             ClearButtonClick(item);
+-        }
+-
++            if (item.GetComponent<CanvasGroup>() == null)
++            {
++                item.AddComponent<CanvasGroup>();
++            }
++        }
++
++        RefreshShopAvailability();
+         ConfigureShopScrollPadding();
++    }
++
++    private void RefreshShopAvailability()
++    {
++        if (shopParent == null) return;
++
++        // Reorder existing rows instead of rebuilding them: material events can
++        // arrive during a drag or purchase. Keep the saved lineup order intact.
++        int siblingIndex = 0;
++        bool orderChanged = false;
++        for (int pass = 0; pass < 2; pass++)
++        {
++            bool showAffordable = pass == 0;
++            for (int i = 0; i < currentLineup.Count && i < shopItemObjects.Count; i++)
++            {
++                GameObject item = shopItemObjects[i];
++                if (item == null) continue;
++
++                bool affordable = CanAfford(currentLineup[i]);
++                if (affordable != showAffordable) continue;
++
++                CanvasGroup group = item.GetComponent<CanvasGroup>();
++                if (group != null)
++                {
++                    // Retain raycasts so unavailable parts still expose their
++                    // effects, costs and the existing shortage feedback.
++                    group.alpha = affordable ? 1f : unaffordableItemAlpha;
++                }
++
++                if (item.transform.GetSiblingIndex() != siblingIndex)
++                {
++                    item.transform.SetSiblingIndex(siblingIndex);
++                    orderChanged = true;
++                }
++                siblingIndex++;
++            }
++        }
++
++        if (orderChanged) LayoutRebuilder.MarkLayoutForRebuild(shopParent);
+     }
+ 
+     private void ClearShopItems()

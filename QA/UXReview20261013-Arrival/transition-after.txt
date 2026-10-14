@@ -1,0 +1,29 @@
+Actual registered CraftTable action -> Craft UI Close -> real Dorm entry fade. Zone registration is a fixture; input handlers are called directly.
+0.01 phase=0 PASS normal Dorm departure fixture excludes arrival flags
+0.01 phase=0 PASS registered CraftTable action starts departure transition
+0.02 phase=0 PASS departure fade without arrival held right input stops horizontal motion/run and preserves vertical velocity
+0.02 phase=0 PASS departure fade without arrival blocks registered Freeze action
+0.02 phase=0 PASS departure fade without arrival blocks registered CraftTable action
+0.02 phase=0 PASS departure fade without arrival blocks registered Bed action
+0.02 phase=0 PASS departure fade without arrival blocks registered GateRepair action
+0.02 phase=0 PASS departure fade without arrival blocks registered Medical action
+0.02 phase=0 PASS departure fade without arrival covered five active world zones via registration fixture
+0.02 phase=0 PASS departure fade blocks menu toggle
+3.13 phase=1 PASS Craft Close is available
+3.14 phase=1 SUBMIT Canvas/CraftPanel/Close
+5.94 phase=2 PASS real Craft Close -> new Dorm entry fade is active
+5.94 phase=2 PASS normal return entry excludes both arrival flags
+5.94 phase=2 PASS entry fade without arrival held right input stops horizontal motion/run and preserves vertical velocity
+5.95 phase=2 PASS entry fade without arrival blocks registered Bed action
+5.95 phase=2 PASS entry fade without arrival blocks registered GateRepair action
+5.95 phase=2 PASS entry fade without arrival blocks registered Freeze action
+5.95 phase=2 PASS entry fade without arrival blocks registered CraftTable action
+5.95 phase=2 PASS entry fade without arrival blocks registered Medical action
+5.95 phase=2 PASS entry fade without arrival covered five active world zones via registration fixture
+5.95 phase=2 PASS entry fade without arrival blocks menu toggle
+6.02 phase=3 PASS unblocked movement input 1
+6.02 phase=3 PASS unblocked movement input -1
+6.02 phase=3 PASS unblocked movement input 0
+6.17 phase=4 PASS menu works again after entry fade
+6.32 phase=5 PASS CloseMenu works while paused and restores time
+6.32 phase=5 COMPLETE assertions=26

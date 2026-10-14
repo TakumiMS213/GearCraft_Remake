@@ -1,0 +1,13 @@
+{
+  "observedAtUtc": "2026-10-13T14:29:14.442558+00:00",
+  "allPreferenceEntriesEqual": false,
+  "differingKeys": [
+    "unity.player_session_count",
+    "unity.player_sessionid"
+  ],
+  "rawFileByteMatch": false,
+  "originalSha256": "5bd6a8dc1b3616f26e71517aefe5c874357943831dc06a9cbf9aaf8e32e6f6c1",
+  "currentSha256": "82753593793f823f130b9a88c3d92b9d6051a5d5a2264a3e06f5bbfbfcb4e73a",
+  "gearCraftNamedEntriesEqual": true,
+  "allOtherEntriesExceptRecordedSessionKeysEqual": true
+}

@@ -1,0 +1,39 @@
+パーツショップの素材不足専用ウィンドウ
+実施日: 2026-10-14 JST
+状態: 実装・静的レビュー・ローカルC#コンパイル完了。Unity MCP接続0件のため実表示/操作の検証は保留。
+
+ユーザー指定:
+半透明の購入不可パーツにカーソルを合わせると「素材が足りません」を表示する。
+パーツ説明への追記ではなく、タイトルの未解放Galleryと同じ形式の専用ウィンドウにする。
+
+変更:
+Craft.unityにCanvas/ShopMaterialShortageWindow/Messageをシーンオブジェクトとして配置。
+TitleのLockedTooltipを基に、340x72、背景RGBA(0.05,0.045,0.035,0.96)、縁取りRGBA(0.42,0.39,0.3,0.95)、
+縁の距離(1,-1)、白32pt・中央・左右18/上下12余白を共有。文言は「素材が足りません」。
+商品行のCanvasGroupやScrollRectの外に置き、通知自体の透明度と表示領域を維持する。
+既存パーツ説明を維持し、その実表示位置から12px上（上端に収まらない場合は下）に配置。
+Canvas端18pxを基準に位置を制限する。背景/文字ともraycast=falseで操作を遮らない。
+
+UpgradeShopManagerがserialized参照でこの窓を管理する。
+既存TooltipSystem.IsShowingForで表示中の説明の所有商品を特定し、購入不可の場合のみ表示。
+LateUpdateおよびMaterialsChanged後に更新。既存のPointerExit/OnDisable/BeginDragのHideに追随する。
+素材が揃ったら非表示、同じ説明を表示中に不足へ変化したら表示する。
+別の商品、装着済みパーツ、素材の説明では、このショップ商品向け通知は表示しない。
+
+検証:
+別担当のread-onlyレビューで今回source/scene差分を確認。修正必須の問題なし。
+Scene ID重複0、新9docsのローカル参照欠落0、Canvas/窓/Messageの親子関係とcomponent所有先正常。
+Title9docsをID置換して比較し、意図した名前/親/anchor/pivot/初期位置/文言以外のスタイルは一致。
+git diff --check合格。
+Unity同梱Roslynと既存Editor用response fileを使い、現行Assembly-CSharpの143ソースをQA専用出力へコンパイル。
+exit0・error0・warning7。compile.log/compile-result.jsonに保存。
+この独立コンパイルでUnityの実行DLLやビルド設定を書き換えていない。
+Unityのシーンインポート・実画面・実ホバー/消去/素材変化はMCP復旧後の確認が必要。
+極端に低いCanvasでは上下の空間が足りず位置制限後に説明との重なりが起こり得る。未確認範囲として残す。
+
+前回からの保全:
+QA/UXReview20261014-ShopAvailabilityの元8キー復元は引き続き未完了。バックアップは上書きしていない。
+/tmp/gearcraft-uxshopavailability-playerprefs-backup.txt と元plistを保持。
+MCP復旧後は保留中の購入/返却追試と今回の表示確認を行い、Play停止後にRestore.cs.txtで復元・独立照合する。
+
+追加指定（2026-10-14）: 専用Messageの文字色を赤 #FF7070（alpha1）へ変更。既存UIの負の効果と同色。背景・縁取り・他の文章は変更なし。実画面確認はMCP復旧待ち。

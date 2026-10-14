@@ -1,0 +1,10 @@
+Unity同梱Roslyn / Unity生成のAssembly-CSharp.rspでオフラインコンパイル
+出力先のみ /tmp/gearcraft-uxjourney-compile に変更。UnityのLibrary出力を上書きしていない。
+Exit code: 0
+Errors: 0
+Warnings: 7 (既存TMP_Text.enableWordWrapping廃止予定)
+Play動作およびEditorリロードの検証は含まない。
+
+6c06f902ba06bbb0f030f451f9a6180c51a15fa01a7b01bc42b5bbfdbeffa6f2  Assets/GearCraft/Scripts/Craft/CraftTutorialController.cs
+fbf04e9d179e9254067e7df637562dca0e31b76050984c32037a97ea2743c30f  Assets/GearCraft/Scripts/Craft/CraftTutorialProgress.cs
+fbc39d16cef22046190f1e4e16c90561544cbdd2bf7cc2a6b37774001435fc0b  Assets/GearCraft/Scripts/Craft/CraftTabController.cs

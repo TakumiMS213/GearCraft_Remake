@@ -1,0 +1,144 @@
+UX継続テスト・ターム15：前周回スコアと再開始初日ショップ
+実施日: 2026-10-13 JST
+環境: Unity Editor Play / macOS / GameView 1920x1080
+状態: 完了。Craft.unityの閉じる接続と共通処理の配置を修正し、117 assertions・runtimeErrors0で回帰完了。
+      前周回スコア・初日6商品・同日再入場・両Closeを確認。Play停止後、元8キーを復元し独立照合8/8。
+      元plistとの差分はUnityのセッション用2キーのみ。全ファイル同一とは扱わない。
+
+目的と既存記録との差分
+
+ターム8のED後再開始試験で未確認だった、前周回スコア表示の保持と、
+新周回初日に実際に生成されるショップ全6商品の表示・保存整合を確認する。
+購入・更新をせず同じ日に作業台を往復し、商品順と素材が保持されるかも確認する。
+3種類EDの全回帰や、全編を戦闘してクリアする試験の繰り返しではない。
+進行状態を準備するfixtureと実UIハンドラーの実行を区別し、物理入力の検証とは扱わない。
+
+先行した読取監査は ../UXReview20261013-StandaloneDisplay/NextRunSourceAudit.txt に記録済み。
+現行ソースから追加の初期化漏れは特定されなかったが、コード上の整合だけでは
+全商品の表示・保存配列や実スコア本文まで試験したことにはならないため、本タームで計測する。
+ターム14の実ビルド描画試験はロック解除後の再試行が必要なまま。本タームのEditor描画を
+Standaloneの描画成功や、ロックが前タームの唯一原因だった証拠に置き換えない。
+
+開始時の保全とEditor描画
+
+元Editor plistを /tmp/gearcraft-uxnewrunshop-original.plist へ退避し、
+preservation-before.jsonに元SHA-256と退避先を記録した。
+Backup.cs.txtはPlay前であることを要求し、Gallery進捗・チュートリアル計測/習得/自動実行・
+到着通知の計8キーについて、キーの有無・型・値を保存する。
+退避先 /tmp/gearcraft-uxnewrunshop-playerprefs-backup.txt の8行を確認してからPlayを開始した。
+初回試験の停止後にRestore.cs.txtで8キーを復元・照合した。
+修正後の回帰終了時にもPlay停止後に復元し、別呼出しで8キーの存在・値を照合した。
+
+担当はロック状態でもEditorのframeが進むことを確認し、MCPで00-title-readiness.pngを取得した。
+画像は1920x1080、PNG終端IEND有効との確認がある。記録担当も保存画像を閲覧し、
+TitleのGAME START/SETTINGSが描かれていることを確認した。
+GameViewは元のselected index3、target 1920x1080を維持し、寸法を追加・変更していない。
+この画像は実行準備の確認であり、以下の機能試験の合格画像ではない。
+
+初回試験で確認できたスコアと6商品
+
+1. 前周回のスコア
+  Run.cs.txtをC#6でコンパイルして実行した。旧Stage1・STR7・ACC5・killAll=false、
+  shopDay1・Damage+2のみの保存在庫、全素材7をfixtureで設定した。
+  Bad EDの実遷移とUGUI Submitによるページ進行でscore12500を維持し、
+  最終ページのTMP「YOUR SCORE : 12500」と画像を確認した。
+  ED帰還の実処理でSTR/ACC・保存在庫・素材を初期化した直後も、旧ScoreManagerの
+  保持済みscore/TMPは12500のまま。Titleロード後に旧Managerを破棄した。
+  リセット直後の値はEndingのunload前の同期観測であり、その瞬間の表示画像ではない。
+  記録担当もbefore-01-old-score.pngを閲覧し、12500のスコア表示を確認した。
+
+2. 新周回の初日6商品
+  同じPlay内でTitleのStartをSubmitし、Storyの通常再生を待って宿舎へ到達した。
+  プレイヤーの位置を作業台の外・内へ移して実physics triggerの登録と案内を確認し、
+  ExecuteActiveActionを呼んで入場した。物理Space入力や歩行による接近の試験ではない。
+  UpgradeタブをSubmitし、実Craftシーンのcatalog15件・shopSlotCount6を確認した。
+  currentLineup・Status保存配列・active ShopItem各6件について、順序/参照/表示名を照合。
+  価格は文字列が存在することを確認してログへ採取した。価格計算全体の再検証は行っていない。
+  全件非null・重複なし・catalog所属、Rare以上1件、保存フラグtrue・Day1を確認した。
+  初回生成前後とも全素材0で、初回生成による消費・補充なし。
+  所有/配置0・3x3・既定武器のみ・強化効果なしを確認し、習得済み条件で
+  チュートリアルによる在庫変更を避けた。
+  初回の順序はJunk Magnet++、Heavy Slug、Junk Magnet、Speed Gear++、Damage Plate+、Speed Gear+。
+  旧fixtureと同じDamage+2（表示名Damage Plate+）も正常な抽選結果に含まれる。
+  商品名が変わったことだけを初期化成功の根拠にせず、生成前の保存消去と全配列の一致を使用した。
+  記録担当もbefore-02/03-initial-shopの上端・下端画像を閲覧し、商品名と素材0の表示を確認した。
+
+初回試験で検出したCloseの重複処理
+
+初回実行ログはbefore-run.txt、元シーンはCraft.unity.beforeへ退避した。
+64 assertions通過後にCanvas/UpgradePanel/CloseをSubmitすると、非activeの
+CraftManagerObjectでSceneTransitionManager.LoadSceneのコルーチンを開始できないエラーが1件発生。
+ハーネスはruntimeErrors=1としてFAILで止まり、同日再入場の計測は完了しなかった。
+別のランタイム観測ではCraftSpaceへの帰還自体は実行された。帰還不能とは記載しない。
+
+Craft/Upgrade両方のCloseには旧永続LoadScene接続が残る一方、
+CraftTabControllerが現在のCloseCraftSceneを実行時にも接続していた。
+さらに、旧SceneTransitionManager/SoundButtonはタブ切替で非activeになるCraftManagerObject上にあった。
+この配置と重複をscene/sourceで確認し、通常の閉じる経路を一本化する修正を行った。
+
+今回の製品変更
+
+製品変更はAssets/GearCraft/Scenes/Craft.unityの1ファイルのみ。
+GameManagersの子にactiveなSceneActionsを追加し、既存SceneTransitionManagerとSoundButtonを移した。
+両Closeの旧永続LoadScene接続を削除し、既存CraftTabController.CloseCraftSceneへ一本化した。
+SoundButtonをGameManagersへ直付けするとタブ用AudioSourceのvolume0.5を共有するため、
+専用子のSceneActionsへ置き、以前と同じAwakeで独立AudioSource・default volume1を生成させる。
+既存component fileIDと音の接続・設定を保持した。scene-change.diffは別担当の読取レビューでも、
+fileID/owner、両Close、親子active、既存設定の保持に問題を検出していない。
+
+修正後の回帰結果
+
+RunAfter.cs.txt / run.txtは82.20秒でCOMPLETE、117 assertions、runtimeErrors=0。
+元のスコア・初日商品生成を再確認し、同日再入場と両Closeまで完了した。
+117はハーネスのassertion件数であり、117種類の独立した操作経路を意味しない。
+
+修正後の初日商品順はDamage Plate+、Speed Gear++、Speed Gear、Heavy Slug++、Twin Barrel、
+Junk Magnet++。同日再入場で全6件の同一参照・順序と保存配列・表示名を保持した。
+初回/再入場の全素材は0で、商品生成や出入りによる消費・補充はない。
+再入場のshop/gridは別Instanceであり、同じシーンオブジェクトを残しただけの一致ではない。
+旧score12500とTitle帰還時の初期化・旧ScoreManager破棄も修正後に再確認した。
+
+Upgrade/Craft両CloseともactiveなSceneActionsのSceneTransitionManagerを使用し、
+旧LoadSceneの永続イベントがなく、音用の永続接続だけを維持することを確認した。
+Submitで0.7秒フェードを開始して追加入力を遮断し、AudioSourceがactive/isPlaying、volume1。
+Upgradeからの宿舎帰還と同日再入場、Craftタブからの同日・素材非消費の帰還まで確認した。
+音源の状態確認は、実際の音量・聞き取りやすさの聴感評価とは区別する。
+
+回帰画像01-old-score、02-initial-shop-top、03-initial-shop-bottom、04-reentry-shopは、
+image-integrity.jsonで全4枚1920x1080・IENDを含む有効PNGと確認した。
+実行担当が4枚を閲覧し、12500・先頭/末尾の商品名・再入場の表示を確認した。
+記録担当も03/04を閲覧し、末尾側の4商品と再入場先頭側4商品、全素材0、空の強化枠を確認した。
+画像だけで全参照や保存配列の一致を判断せず、run.txtの計測と合わせて扱う。
+
+終了時の復元・照合
+
+Play停止後に元8キーを復元し、別呼出しで存在・値が8/8一致することを確認した。
+editor-final.jsonはTitle、playing=false、compiling=false、running=false、backupReady=false、
+passed=true、assertions117、GameView index3・1920x1080を記録している。
+
+preservation-after.jsonの全plist項目比較とバイト比較はfalse。
+元のplistと異なるキーはunity.player_session_countとunity.player_sessionidの2つだけで、
+対象8キーとそれ以外の項目は一致した。これらのセッション情報を含む全ファイルのハッシュは異なる。
+「plist全体が開始時と同一」とは記載せず、この差分を保存したまま、ファイル全体の巻き戻しはしない。
+最終Console検索はerror CS=0、Exception=0、Coroutine couldn't=0。git diff --checkも通過。
+
+公開資料と評価範囲
+
+Jakob Nielsen / 10 Usability Heuristics for User Interface Design
+https://www.nngroup.com/articles/ten-usability-heuristics/
+  状態の可視性と一貫性を観点に、周回終了時の成果表示と再開始後の実データの一致を確認する。
+安藤昌也教授インタビュー / HIP / 2018-03-05
+https://hiptokyo.jp/hiptalk/ux_design/2/
+  利用の前後を含む体験、試作と評価を重視する方針。EDから次周回へのつながりを検証する。
+担当が本タームに向けて両資料を再参照した。資料は観点の根拠であり、
+人間が周回初期化や商品保存を理解できること、快適さ、自力成功率を証明するものではない。
+
+証拠と検証範囲の限界
+
+preservation-before.json、Backup.cs.txt、Restore.cs.txt、00-title-readiness.png、先行読取監査、
+Run.cs.txt、before-run.txt、before-01/02/03画像、Craft.unity.before、scene-change.diff、RunAfter.cs.txt、
+run.txt、01〜04画像、image-integrity.json、preservation-after.json、editor-final.json。
+run.txtと通常名の画像は修正後の回帰結果。初回FAILの証拠と取り違えない。
+ターム8に残った前周回スコアと初日ショップの2項目を今回の1経路で補完した。
+非16:9実ビルドの表示、物理キー/マウスによる通し操作、聴感、人間の理解度評価は未完了のまま。
+記録担当はUnity MCPやプロセスを操作せず、保存証拠と担当の実行報告を照合して記録する。

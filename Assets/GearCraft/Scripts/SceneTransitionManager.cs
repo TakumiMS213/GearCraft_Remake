@@ -34,6 +34,9 @@ public class SceneTransitionManager : MonoBehaviour
     public string sceneName = "CraftSpace";
 
     private bool isLoading;
+    private bool isInputBlocked;
+
+    public bool IsLoading => isLoading || isInputBlocked;
 
     private void Awake()
     {
@@ -223,6 +226,7 @@ public class SceneTransitionManager : MonoBehaviour
 
     private void SetInputBlockerActive(bool active)
     {
+        isInputBlocked = active;
         if (fadeImage != null)
         {
             fadeImage.raycastTarget = active;

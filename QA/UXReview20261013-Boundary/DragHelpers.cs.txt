@@ -1,0 +1,33 @@
+
+var bf=System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance;
+var ui=UnityEngine.Object.FindFirstObjectByType<UpgradeGridUI>();
+var shop=UnityEngine.Object.FindFirstObjectByType<UpgradeShopManager>();
+var gm=UpgradeGridManager.Instance;var mm=MaterialManager.Instance;
+System.Action<string> log=message=>System.IO.File.AppendAllText("QA/UXReview20261013-Boundary/boundary.txt",message+"\n");
+System.Func<string,UpgradeShopItemDragHandler> item=delegate(string partName){
+foreach(var source in UnityEngine.Object.FindObjectsByType<UpgradeShopItemDragHandler>(FindObjectsSortMode.None)){
+var p=(UpgradePartSO)source.GetType().GetField("part",bf).GetValue(source);if(p.name==partName)return source;
+}throw new System.Exception("Missing item "+partName);};
+System.Func<Vector2,Vector2> gridScreen=delegate(Vector2 local){
+var canvas=ui.GetComponentInParent<Canvas>();return RectTransformUtility.WorldToScreenPoint(canvas.renderMode==RenderMode.ScreenSpaceOverlay?null:canvas.worldCamera,ui.gridParent.TransformPoint(local));};
+System.Action<string,Vector2,int> begin=delegate(string partName,Vector2 dest,int rotation){
+var source=item(partName);var ped=new UnityEngine.EventSystems.PointerEventData(UnityEngine.EventSystems.EventSystem.current);
+var rect=source.GetComponent<RectTransform>();var canvas=source.GetComponentInParent<Canvas>();ped.position=RectTransformUtility.WorldToScreenPoint(canvas.renderMode==RenderMode.ScreenSpaceOverlay?null:canvas.worldCamera,rect.TransformPoint(rect.rect.center));
+var hits=new System.Collections.Generic.List<UnityEngine.EventSystems.RaycastResult>();UnityEngine.EventSystems.EventSystem.current.RaycastAll(ped,hits);
+if(hits.Count==0||UnityEngine.EventSystems.ExecuteEvents.GetEventHandler<UnityEngine.EventSystems.IBeginDragHandler>(hits[0].gameObject)!=source.gameObject)throw new System.Exception("Source blocked "+partName+" pos="+ped.position);
+ped.pointerCurrentRaycast=hits[0];ped.pointerPressRaycast=hits[0];ped.button=UnityEngine.EventSystems.PointerEventData.InputButton.Left;
+UnityEngine.EventSystems.ExecuteEvents.Execute(source.gameObject,ped,UnityEngine.EventSystems.ExecuteEvents.beginDragHandler);
+if(rotation!=0){typeof(UpgradeGridUI).GetField("draggingRotation",bf).SetValue(ui,rotation);typeof(UpgradeGridUI).GetMethod("RebuildDragPreview",bf).Invoke(ui,null);}
+ped.position=dest;UnityEngine.EventSystems.ExecuteEvents.Execute(source.gameObject,ped,UnityEngine.EventSystems.ExecuteEvents.dragHandler);
+SessionState.SetString("UXBoundary20261013.part",partName);SessionState.SetFloat("UXBoundary20261013.x",dest.x);SessionState.SetFloat("UXBoundary20261013.y",dest.y);
+object[] args=new object[]{dest,0,0};bool inside=(bool)typeof(UpgradeGridUI).GetMethod("TryGetDragPlacementPosition",bf).Invoke(ui,args);
+log("BEGIN "+partName+" dest="+dest+" rotation="+rotation+" hasPlacement="+inside+" grid="+args[1]+","+args[2]+" scrap="+mm.scrap);
+};
+System.Action finish=delegate{
+var source=item(SessionState.GetString("UXBoundary20261013.part",""));var ped=new UnityEngine.EventSystems.PointerEventData(UnityEngine.EventSystems.EventSystem.current){position=new Vector2(SessionState.GetFloat("UXBoundary20261013.x",0),SessionState.GetFloat("UXBoundary20261013.y",0))};
+UnityEngine.EventSystems.ExecuteEvents.Execute(source.gameObject,ped,UnityEngine.EventSystems.ExecuteEvents.endDragHandler);
+log("END placed="+gm.PlacedParts.Count+" scrap="+mm.scrap+" damage="+StatusManager.Instance.bonusDamage+" info="+ui.infoText.text.Replace("\n"," / "));
+};
+float size=(float)typeof(UpgradeGridUI).GetField("currentCellSize",bf).GetValue(ui);
+float total=gm.GridSize*(size+ui.cellSpacing)-ui.cellSpacing;
+

@@ -1,0 +1,19 @@
+Real Dorm transition and arrival; direct input-handler boundary test, not physical input.
+2.40 phase=0 PASS new Dorm is still in entry fade
+2.42 phase=0 ENTRY message=True camera=True page=ここが、あなたの工房兼宿舎。 / 戦いの前に、装備を整える場所です。
+2.44 phase=0 ADVANCE during fade changedPage=True current=工具箱・冷蔵庫・救急箱から行動を１つだけ選択できます。
+2.44 phase=0 OBSERVED DIFFERENCE entry fade ignores a page-advance request
+2.72 phase=1 PASS arrival is visible after fade
+2.72 phase=1 HANDLER existing Tab branch delegate UISwitcher.TogglePanel
+2.87 phase=2 ARRIVAL menu=True scale=0
+2.87 phase=2 OBSERVED DIFFERENCE arrival ignores menu toggle
+3.17 phase=4 PASS cleanup returns menu/pause to idle
+3.17 phase=4 PASS visible arrival accepts page advance
+3.17 phase=4 PASS real finish camera tween is active
+3.17 phase=4 HANDLER existing Tab branch delegate UISwitcher.TogglePanel
+3.27 phase=5 CAMERA menu=True scale=0 camera=True
+3.27 phase=5 OBSERVED DIFFERENCE camera return ignores menu toggle
+3.99 phase=7 HANDLER existing Tab branch delegate UISwitcher.TogglePanel
+4.14 phase=8 PASS normal Dorm accepts menu toggle and pauses
+4.29 phase=9 PASS normal menu closes and resumes
+4.29 phase=9 COMPLETE before-fix observations captured

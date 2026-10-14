@@ -1,0 +1,86 @@
+--- before/UpgradeShopManager.cs
++++ after/UpgradeShopManager.cs
+@@ -21,6 +21,7 @@
+     public UpgradeGridUI targetGridUI;
+     public int shopContentBottomPadding = 96;
+     [Range(0f, 1f)] public float unaffordableItemAlpha = 0.45f;
++    [SerializeField] private RectTransform materialShortageWindow;
+ 
+     [Header("Audio")]
+     public AudioSource purchaseSound;
+@@ -30,6 +31,7 @@
+     private readonly List<GameObject> shopItemObjects = new List<GameObject>();
+     private bool hasGeneratedLineup;
+     private int shopDay = -1;
++    private readonly Vector3[] tooltipCorners = new Vector3[4];
+ 
+     public int ShopDay => shopDay;
+ 
+@@ -42,6 +44,12 @@
+     private void OnDisable()
+     {
+         MaterialManager.MaterialsChanged -= RefreshShopAvailability;
++        if (materialShortageWindow != null) materialShortageWindow.gameObject.SetActive(false);
++    }
++
++    private void LateUpdate()
++    {
++        RefreshMaterialShortageWindow();
+     }
+ 
+     public void GenerateLineup()
+@@ -252,6 +260,54 @@
+         }
+ 
+         if (orderChanged) LayoutRebuilder.MarkLayoutForRebuild(shopParent);
++        RefreshMaterialShortageWindow();
++    }
++
++    private void RefreshMaterialShortageWindow()
++    {
++        if (materialShortageWindow == null) return;
++
++        // Use the existing tooltip's owner so pointer exit, dragging, tab changes
++        // and rebuilt rows all dismiss this notice along with the part details.
++        TooltipSystem tooltip = TooltipSystem.FindInstance();
++        bool show = false;
++        if (isActiveAndEnabled && tooltip != null)
++        {
++            for (int i = 0; i < currentLineup.Count && i < shopItemObjects.Count; i++)
++            {
++                GameObject item = shopItemObjects[i];
++                if (item != null && item.activeInHierarchy &&
++                    tooltip.IsShowingFor(item.transform as RectTransform) && !CanAfford(currentLineup[i]))
++                {
++                    show = true;
++                    break;
++                }
++            }
++        }
++
++        materialShortageWindow.gameObject.SetActive(show);
++        if (!show) return;
++
++        RectTransform parent = materialShortageWindow.parent as RectTransform;
++        if (parent == null) return;
++
++        // Keep this separate window outside the part details and the dimmed,
++        // clipped shop list. Follow the detail panel after its screen-edge clamp.
++        tooltip.tooltipPanel.GetWorldCorners(tooltipCorners);
++        Vector3 topLeft = parent.InverseTransformPoint(tooltipCorners[1]);
++        Vector3 bottomLeft = parent.InverseTransformPoint(tooltipCorners[0]);
++        Rect bounds = parent.rect;
++        Vector2 size = materialShortageWindow.rect.size;
++        const float padding = 18f;
++        const float gap = 12f;
++        float left = Mathf.Clamp(topLeft.x, bounds.xMin + padding,
++            Mathf.Max(bounds.xMin + padding, bounds.xMax - size.x - padding));
++        float top = topLeft.y + gap + size.y;
++        if (top > bounds.yMax - padding) top = bottomLeft.y - gap;
++        top = Mathf.Clamp(top, Mathf.Min(bounds.yMin + size.y + padding, bounds.yMax - padding),
++            bounds.yMax - padding);
++        materialShortageWindow.anchoredPosition = new Vector2(left - bounds.xMin, top - bounds.yMax);
++        materialShortageWindow.SetAsLastSibling();
+     }
+ 
+     private void ClearShopItems()

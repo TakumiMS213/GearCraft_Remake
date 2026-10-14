@@ -188,6 +188,12 @@ public class TooltipSystem : MonoBehaviour
         tooltipPanel.SetAsLastSibling();
     }
 
+    public bool IsShowingFor(RectTransform anchor)
+    {
+        return anchor != null && currentAnchor == anchor && tooltipPanel != null &&
+            tooltipPanel.gameObject.activeInHierarchy;
+    }
+
     public void Hide()
     {
         if (tooltipPanel != null)

@@ -1,0 +1,178 @@
+Dorm task checks: three pending rows -> actual Craft/drag placement -> two checked rows -> one defense row.
+Last phase uses a boss-encounter DISPLAY FIXTURE, not an actual boss spawn.
+Parent restores preferences and validates screenshot files. No product edits or physical-input claims.
+0.02s phase=0 frame=1514 FIXTURE created persistent StageCounter test object; discard with Play
+0.02s phase=0 frame=1514 PASS fixture matches current GearCraft Gear10 and Damage+1 Scrap3 assets
+0.02s phase=0 frame=1514 PASS initial Katana satisfies recipe and result unowned
+0.02s phase=0 frame=1514 FIXTURE Stage2/firstDayStarted=true/boss0/noEncounter; no actual first day combat. Success flags false.
+2.94s phase=1 frame=2427 PASS PENDING task panel visible in Dorm
+2.94s phase=1 frame=2427 PASS PENDING panel and parent canvas rectangles exist
+2.94s phase=1 frame=2427 PASS PENDING Stage2 remains before actual configured first boss
+2.94s phase=1 frame=2427 PASS PENDING underlying progression matches expected task state
+2.94s phase=1 frame=2427 PASS PENDING task row0 exists
+2.94s phase=1 frame=2427 PASS PENDING row0 visibility=True
+2.94s phase=1 frame=2427 PASS PENDING row0 visible text/checkbox/mark structure
+2.94s phase=1 frame=2427 PASS PENDING row0 label and checked=False
+2.94s phase=1 frame=2427 PENDING ROW 0 text=門の防衛を続ける checkSelf=False checkVisible=False textColor=RGBA(0.950, 0.930, 0.870, 1.000)
+2.94s phase=1 frame=2427 PASS PENDING task row1 exists
+2.94s phase=1 frame=2427 PASS PENDING row1 visibility=True
+2.94s phase=1 frame=2427 PASS PENDING row1 visible text/checkbox/mark structure
+2.94s phase=1 frame=2427 PASS PENDING row1 label and checked=False
+2.94s phase=1 frame=2427 PENDING ROW 1 text=作業台でCRAFTを行う checkSelf=False checkVisible=False textColor=RGBA(0.950, 0.930, 0.870, 1.000)
+2.94s phase=1 frame=2427 PASS PENDING task row2 exists
+2.94s phase=1 frame=2427 PASS PENDING row2 visibility=True
+2.94s phase=1 frame=2427 PASS PENDING row2 visible text/checkbox/mark structure
+2.94s phase=1 frame=2427 PASS PENDING row2 label and checked=False
+2.95s phase=1 frame=2427 PENDING ROW 2 text=作業台で武器のアップグレードを行う checkSelf=False checkVisible=False textColor=RGBA(0.950, 0.930, 0.870, 1.000)
+2.95s phase=1 frame=2427 PASS PENDING visible task count=3
+2.95s phase=1 frame=2427 PASS PENDING background top-left flush with parent Canvas
+2.95s phase=1 frame=2427 PASS PENDING background is non-raycast Image
+2.95s phase=1 frame=2427 PASS PENDING non-raycast task graphic Canvas/DormTaskPanel
+2.95s phase=1 frame=2427 PASS PENDING non-raycast task graphic Canvas/DormTaskPanel/TaskRow_0/Checkbox/Top
+2.95s phase=1 frame=2427 PASS PENDING non-raycast task graphic Canvas/DormTaskPanel/TaskRow_0/Checkbox/Bottom
+2.95s phase=1 frame=2427 PASS PENDING non-raycast task graphic Canvas/DormTaskPanel/TaskRow_0/Checkbox/Left
+2.95s phase=1 frame=2427 PASS PENDING non-raycast task graphic Canvas/DormTaskPanel/TaskRow_0/Checkbox/Right
+2.95s phase=1 frame=2427 PASS PENDING non-raycast task graphic Canvas/DormTaskPanel/TaskRow_0/Checkbox/Checkmark/ShortStroke
+2.95s phase=1 frame=2427 PASS PENDING non-raycast task graphic Canvas/DormTaskPanel/TaskRow_0/Checkbox/Checkmark/LongStroke
+2.95s phase=1 frame=2427 PASS PENDING non-raycast task graphic Canvas/DormTaskPanel/TaskRow_0/TaskContent
+2.95s phase=1 frame=2427 PASS PENDING non-raycast task graphic Canvas/DormTaskPanel/TaskRow_1/Checkbox/Top
+2.95s phase=1 frame=2427 PASS PENDING non-raycast task graphic Canvas/DormTaskPanel/TaskRow_1/Checkbox/Bottom
+2.95s phase=1 frame=2427 PASS PENDING non-raycast task graphic Canvas/DormTaskPanel/TaskRow_1/Checkbox/Left
+2.95s phase=1 frame=2427 PASS PENDING non-raycast task graphic Canvas/DormTaskPanel/TaskRow_1/Checkbox/Right
+2.95s phase=1 frame=2427 PASS PENDING non-raycast task graphic Canvas/DormTaskPanel/TaskRow_1/Checkbox/Checkmark/ShortStroke
+2.95s phase=1 frame=2427 PASS PENDING non-raycast task graphic Canvas/DormTaskPanel/TaskRow_1/Checkbox/Checkmark/LongStroke
+2.95s phase=1 frame=2427 PASS PENDING non-raycast task graphic Canvas/DormTaskPanel/TaskRow_1/TaskContent
+2.95s phase=1 frame=2427 PASS PENDING non-raycast task graphic Canvas/DormTaskPanel/TaskRow_2/Checkbox/Top
+2.95s phase=1 frame=2427 PASS PENDING non-raycast task graphic Canvas/DormTaskPanel/TaskRow_2/Checkbox/Bottom
+2.95s phase=1 frame=2427 PASS PENDING non-raycast task graphic Canvas/DormTaskPanel/TaskRow_2/Checkbox/Left
+2.95s phase=1 frame=2427 PASS PENDING non-raycast task graphic Canvas/DormTaskPanel/TaskRow_2/Checkbox/Right
+2.95s phase=1 frame=2427 PASS PENDING non-raycast task graphic Canvas/DormTaskPanel/TaskRow_2/Checkbox/Checkmark/ShortStroke
+2.95s phase=1 frame=2427 PASS PENDING non-raycast task graphic Canvas/DormTaskPanel/TaskRow_2/Checkbox/Checkmark/LongStroke
+2.95s phase=1 frame=2427 PASS PENDING non-raycast task graphic Canvas/DormTaskPanel/TaskRow_2/TaskContent
+2.95s phase=1 frame=2427 PENDING GEOMETRY canvas=(x:-960.00, y:-540.00, width:1920.00, height:1080.00) panel=(x:0.00, y:-197.65, width:670.00, height:197.65) topLeftInCanvas=(-960.00, 540.00, 0.00) canvasTopLeft=(-960.00, 540.00, 0.00) backgroundColor=RGBA(0.055, 0.065, 0.085, 0.800) firstBossStage=9
+2.95s phase=1 frame=2427 PASS PENDING initial-bed arrow hidden after day started
+2.95s phase=1 frame=2427 SCREENSHOT_REQUEST 01-pending-tasks.png; parent verifies completed PNG
+3.14s phase=2 frame=2520 TELEPORT outside CraftTable (11.93, -2.50, 0.00); await physics trigger
+3.54s phase=3 frame=2932 PASS player outside CraftTable before entry
+3.54s phase=3 frame=2932 TELEPORT into CraftTable (5.63, -3.33, 0.00); await physics trigger
+3.95s phase=4 frame=3036 PASS actual CraftTable trigger and prompt registered
+3.95s phase=4 frame=3036 PASS CraftTable action available
+3.95s phase=4 frame=3036 ACTION registered CraftTable ExecuteActiveAction; no physical Space claim
+6.85s phase=5 frame=3797 PASS Craft has no DormTaskPanel, including inactive scene objects
+6.85s phase=5 frame=3797 PASS mastery fixture suppresses auto tutorial/supply
+6.85s phase=5 frame=3797 PASS initial GearCraft recipe selected and funded, no extra supplies
+6.85s phase=5 frame=3797 PASS both success flags false immediately before real craft
+6.85s phase=5 frame=3797 SUBMIT Canvas/CraftPanel/craft_button
+7.00s phase=6 frame=3824 PASS real craft alone marks craft task and spends Gear10 exactly once
+7.00s phase=6 frame=3824 PASS actual crafted weapon(s) acquired/equipped
+10.36s phase=7 frame=4843 SUBMIT Canvas/HeaderArea/UpgradeTabButton
+10.51s phase=8 frame=4944 PASS Craft has no DormTaskPanel, including inactive scene objects
+10.51s phase=8 frame=4944 PASS mastery fixture suppresses auto tutorial/supply
+10.51s phase=8 frame=4944 PASS empty initial upgrade grid
+10.51s phase=8 frame=4944 PASS shop scroll available
+10.52s phase=8 frame=4944 STOCK FIXTURE EnsureLineupContains(Damage+1) at first row; no purchase/place or success flag assignment
+10.72s phase=9 frame=5029 PASS funded part visible in actual shop
+10.72s phase=9 frame=5029 PASS actual shop drag handler exists
+10.73s phase=9 frame=5029 PASS pointer source raycast reaches actual Damage+1 drag handler
+10.74s phase=9 frame=5029 PASS begin drag accepted funded part
+10.74s phase=9 frame=5029 PASS begin drag has not purchased or completed upgrade task
+10.74s phase=9 frame=5029 BEGIN_DRAG raycast-confirmed source=Canvas/UpgradePanel/ShopArea/ShopScrollView/Viewport/ShopContent/ShopItem_Damage+1 target=(772.00, 779.00)
+10.87s phase=10 frame=5058 DRAG to free cell0,0 using UGUI handler
+11.04s phase=11 frame=5101 END_DRAG using UGUI handler; product performs purchase and placement
+11.17s phase=12 frame=5155 PASS actual pointer placement saved Damage+1 at0,0
+11.17s phase=12 frame=5155 PASS real placement spends Scrap3 once, adds damage1 and completes upgrade task
+11.17s phase=12 frame=5155 PASS Craft has no DormTaskPanel, including inactive scene objects
+11.17s phase=12 frame=5155 SUBMIT Canvas/UpgradePanel/Close
+13.99s phase=13 frame=5895 PASS actual craft/upgrade outcomes survive Dorm return
+13.99s phase=13 frame=5895 PASS ACHIEVED task panel visible in Dorm
+13.99s phase=13 frame=5895 PASS ACHIEVED panel and parent canvas rectangles exist
+13.99s phase=13 frame=5895 PASS ACHIEVED Stage2 remains before actual configured first boss
+13.99s phase=13 frame=5895 PASS ACHIEVED underlying progression matches expected task state
+13.99s phase=13 frame=5895 PASS ACHIEVED task row0 exists
+13.99s phase=13 frame=5895 PASS ACHIEVED row0 visibility=True
+13.99s phase=13 frame=5895 PASS ACHIEVED row0 visible text/checkbox/mark structure
+13.99s phase=13 frame=5895 PASS ACHIEVED row0 label and checked=False
+14.00s phase=13 frame=5895 ACHIEVED ROW 0 text=門の防衛を続ける checkSelf=False checkVisible=False textColor=RGBA(0.950, 0.930, 0.870, 1.000)
+14.00s phase=13 frame=5895 PASS ACHIEVED task row1 exists
+14.00s phase=13 frame=5895 PASS ACHIEVED row1 visibility=True
+14.00s phase=13 frame=5895 PASS ACHIEVED row1 visible text/checkbox/mark structure
+14.00s phase=13 frame=5895 PASS ACHIEVED row1 label and checked=True
+14.00s phase=13 frame=5895 ACHIEVED ROW 1 text=作業台でCRAFTを行う checkSelf=True checkVisible=True textColor=RGBA(0.650, 0.800, 0.690, 1.000)
+14.00s phase=13 frame=5895 PASS ACHIEVED task row2 exists
+14.00s phase=13 frame=5895 PASS ACHIEVED row2 visibility=True
+14.00s phase=13 frame=5895 PASS ACHIEVED row2 visible text/checkbox/mark structure
+14.00s phase=13 frame=5895 PASS ACHIEVED row2 label and checked=True
+14.00s phase=13 frame=5895 ACHIEVED ROW 2 text=作業台で武器のアップグレードを行う checkSelf=True checkVisible=True textColor=RGBA(0.650, 0.800, 0.690, 1.000)
+14.00s phase=13 frame=5895 PASS ACHIEVED visible task count=3
+14.00s phase=13 frame=5895 PASS ACHIEVED background top-left flush with parent Canvas
+14.00s phase=13 frame=5895 PASS ACHIEVED background is non-raycast Image
+14.00s phase=13 frame=5895 PASS ACHIEVED non-raycast task graphic Canvas/DormTaskPanel
+14.00s phase=13 frame=5895 PASS ACHIEVED non-raycast task graphic Canvas/DormTaskPanel/TaskRow_0/Checkbox/Top
+14.00s phase=13 frame=5895 PASS ACHIEVED non-raycast task graphic Canvas/DormTaskPanel/TaskRow_0/Checkbox/Bottom
+14.00s phase=13 frame=5895 PASS ACHIEVED non-raycast task graphic Canvas/DormTaskPanel/TaskRow_0/Checkbox/Left
+14.00s phase=13 frame=5895 PASS ACHIEVED non-raycast task graphic Canvas/DormTaskPanel/TaskRow_0/Checkbox/Right
+14.00s phase=13 frame=5895 PASS ACHIEVED non-raycast task graphic Canvas/DormTaskPanel/TaskRow_0/Checkbox/Checkmark/ShortStroke
+14.00s phase=13 frame=5895 PASS ACHIEVED non-raycast task graphic Canvas/DormTaskPanel/TaskRow_0/Checkbox/Checkmark/LongStroke
+14.00s phase=13 frame=5895 PASS ACHIEVED non-raycast task graphic Canvas/DormTaskPanel/TaskRow_0/TaskContent
+14.00s phase=13 frame=5895 PASS ACHIEVED non-raycast task graphic Canvas/DormTaskPanel/TaskRow_1/Checkbox/Top
+14.00s phase=13 frame=5895 PASS ACHIEVED non-raycast task graphic Canvas/DormTaskPanel/TaskRow_1/Checkbox/Bottom
+14.00s phase=13 frame=5895 PASS ACHIEVED non-raycast task graphic Canvas/DormTaskPanel/TaskRow_1/Checkbox/Left
+14.00s phase=13 frame=5895 PASS ACHIEVED non-raycast task graphic Canvas/DormTaskPanel/TaskRow_1/Checkbox/Right
+14.00s phase=13 frame=5895 PASS ACHIEVED non-raycast task graphic Canvas/DormTaskPanel/TaskRow_1/Checkbox/Checkmark/ShortStroke
+14.00s phase=13 frame=5895 PASS ACHIEVED non-raycast task graphic Canvas/DormTaskPanel/TaskRow_1/Checkbox/Checkmark/LongStroke
+14.00s phase=13 frame=5895 PASS ACHIEVED non-raycast task graphic Canvas/DormTaskPanel/TaskRow_1/TaskContent
+14.00s phase=13 frame=5895 PASS ACHIEVED non-raycast task graphic Canvas/DormTaskPanel/TaskRow_2/Checkbox/Top
+14.00s phase=13 frame=5895 PASS ACHIEVED non-raycast task graphic Canvas/DormTaskPanel/TaskRow_2/Checkbox/Bottom
+14.00s phase=13 frame=5895 PASS ACHIEVED non-raycast task graphic Canvas/DormTaskPanel/TaskRow_2/Checkbox/Left
+14.00s phase=13 frame=5895 PASS ACHIEVED non-raycast task graphic Canvas/DormTaskPanel/TaskRow_2/Checkbox/Right
+14.00s phase=13 frame=5895 PASS ACHIEVED non-raycast task graphic Canvas/DormTaskPanel/TaskRow_2/Checkbox/Checkmark/ShortStroke
+14.00s phase=13 frame=5895 PASS ACHIEVED non-raycast task graphic Canvas/DormTaskPanel/TaskRow_2/Checkbox/Checkmark/LongStroke
+14.00s phase=13 frame=5895 PASS ACHIEVED non-raycast task graphic Canvas/DormTaskPanel/TaskRow_2/TaskContent
+14.00s phase=13 frame=5895 ACHIEVED GEOMETRY canvas=(x:-960.00, y:-540.00, width:1920.00, height:1080.00) panel=(x:0.00, y:-197.65, width:670.00, height:197.65) topLeftInCanvas=(-960.00, 540.00, 0.00) canvasTopLeft=(-960.00, 540.00, 0.00) backgroundColor=RGBA(0.055, 0.065, 0.085, 0.800) firstBossStage=9
+14.00s phase=13 frame=5895 PASS ACHIEVED initial-bed arrow hidden after day started
+14.00s phase=13 frame=5895 SCREENSHOT_REQUEST 02-achieved-tasks.png; parent verifies completed PNG
+14.19s phase=14 frame=6015 DISPLAY FIXTURE hasEncounteredFirstBoss=true; did NOT run StageFlowManager boss registration/spawn or combat
+14.40s phase=15 frame=6224 PASS AFTER_BOSS_DISPLAY_FIXTURE task panel visible in Dorm
+14.40s phase=15 frame=6224 PASS AFTER_BOSS_DISPLAY_FIXTURE panel and parent canvas rectangles exist
+14.40s phase=15 frame=6224 PASS AFTER_BOSS_DISPLAY_FIXTURE Stage2 remains before actual configured first boss
+14.40s phase=15 frame=6224 PASS AFTER_BOSS_DISPLAY_FIXTURE underlying progression matches expected task state
+14.40s phase=15 frame=6224 PASS AFTER_BOSS_DISPLAY_FIXTURE task row0 exists
+14.40s phase=15 frame=6224 PASS AFTER_BOSS_DISPLAY_FIXTURE row0 visibility=True
+14.40s phase=15 frame=6224 PASS AFTER_BOSS_DISPLAY_FIXTURE row0 visible text/checkbox/mark structure
+14.40s phase=15 frame=6224 PASS AFTER_BOSS_DISPLAY_FIXTURE row0 label and checked=False
+14.40s phase=15 frame=6224 AFTER_BOSS_DISPLAY_FIXTURE ROW 0 text=門の防衛を続ける checkSelf=False checkVisible=False textColor=RGBA(0.950, 0.930, 0.870, 1.000)
+14.40s phase=15 frame=6224 PASS AFTER_BOSS_DISPLAY_FIXTURE task row1 exists
+14.40s phase=15 frame=6224 PASS AFTER_BOSS_DISPLAY_FIXTURE row1 visibility=False
+14.40s phase=15 frame=6224 AFTER_BOSS_DISPLAY_FIXTURE HIDDEN row1
+14.40s phase=15 frame=6224 PASS AFTER_BOSS_DISPLAY_FIXTURE task row2 exists
+14.40s phase=15 frame=6224 PASS AFTER_BOSS_DISPLAY_FIXTURE row2 visibility=False
+14.40s phase=15 frame=6224 AFTER_BOSS_DISPLAY_FIXTURE HIDDEN row2
+14.40s phase=15 frame=6224 PASS AFTER_BOSS_DISPLAY_FIXTURE visible task count=1
+14.40s phase=15 frame=6224 PASS AFTER_BOSS_DISPLAY_FIXTURE background top-left flush with parent Canvas
+14.40s phase=15 frame=6224 PASS AFTER_BOSS_DISPLAY_FIXTURE background is non-raycast Image
+14.40s phase=15 frame=6224 PASS AFTER_BOSS_DISPLAY_FIXTURE non-raycast task graphic Canvas/DormTaskPanel
+14.40s phase=15 frame=6224 PASS AFTER_BOSS_DISPLAY_FIXTURE non-raycast task graphic Canvas/DormTaskPanel/TaskRow_0/Checkbox/Top
+14.40s phase=15 frame=6224 PASS AFTER_BOSS_DISPLAY_FIXTURE non-raycast task graphic Canvas/DormTaskPanel/TaskRow_0/Checkbox/Bottom
+14.40s phase=15 frame=6224 PASS AFTER_BOSS_DISPLAY_FIXTURE non-raycast task graphic Canvas/DormTaskPanel/TaskRow_0/Checkbox/Left
+14.40s phase=15 frame=6224 PASS AFTER_BOSS_DISPLAY_FIXTURE non-raycast task graphic Canvas/DormTaskPanel/TaskRow_0/Checkbox/Right
+14.40s phase=15 frame=6224 PASS AFTER_BOSS_DISPLAY_FIXTURE non-raycast task graphic Canvas/DormTaskPanel/TaskRow_0/Checkbox/Checkmark/ShortStroke
+14.40s phase=15 frame=6224 PASS AFTER_BOSS_DISPLAY_FIXTURE non-raycast task graphic Canvas/DormTaskPanel/TaskRow_0/Checkbox/Checkmark/LongStroke
+14.40s phase=15 frame=6224 PASS AFTER_BOSS_DISPLAY_FIXTURE non-raycast task graphic Canvas/DormTaskPanel/TaskRow_0/TaskContent
+14.40s phase=15 frame=6224 PASS AFTER_BOSS_DISPLAY_FIXTURE non-raycast task graphic Canvas/DormTaskPanel/TaskRow_1/Checkbox/Top
+14.40s phase=15 frame=6224 PASS AFTER_BOSS_DISPLAY_FIXTURE non-raycast task graphic Canvas/DormTaskPanel/TaskRow_1/Checkbox/Bottom
+14.40s phase=15 frame=6224 PASS AFTER_BOSS_DISPLAY_FIXTURE non-raycast task graphic Canvas/DormTaskPanel/TaskRow_1/Checkbox/Left
+14.40s phase=15 frame=6224 PASS AFTER_BOSS_DISPLAY_FIXTURE non-raycast task graphic Canvas/DormTaskPanel/TaskRow_1/Checkbox/Right
+14.40s phase=15 frame=6224 PASS AFTER_BOSS_DISPLAY_FIXTURE non-raycast task graphic Canvas/DormTaskPanel/TaskRow_1/Checkbox/Checkmark/ShortStroke
+14.40s phase=15 frame=6224 PASS AFTER_BOSS_DISPLAY_FIXTURE non-raycast task graphic Canvas/DormTaskPanel/TaskRow_1/Checkbox/Checkmark/LongStroke
+14.40s phase=15 frame=6224 PASS AFTER_BOSS_DISPLAY_FIXTURE non-raycast task graphic Canvas/DormTaskPanel/TaskRow_1/TaskContent
+14.40s phase=15 frame=6224 PASS AFTER_BOSS_DISPLAY_FIXTURE non-raycast task graphic Canvas/DormTaskPanel/TaskRow_2/Checkbox/Top
+14.40s phase=15 frame=6224 PASS AFTER_BOSS_DISPLAY_FIXTURE non-raycast task graphic Canvas/DormTaskPanel/TaskRow_2/Checkbox/Bottom
+14.40s phase=15 frame=6224 PASS AFTER_BOSS_DISPLAY_FIXTURE non-raycast task graphic Canvas/DormTaskPanel/TaskRow_2/Checkbox/Left
+14.40s phase=15 frame=6224 PASS AFTER_BOSS_DISPLAY_FIXTURE non-raycast task graphic Canvas/DormTaskPanel/TaskRow_2/Checkbox/Right
+14.40s phase=15 frame=6224 PASS AFTER_BOSS_DISPLAY_FIXTURE non-raycast task graphic Canvas/DormTaskPanel/TaskRow_2/Checkbox/Checkmark/ShortStroke
+14.40s phase=15 frame=6224 PASS AFTER_BOSS_DISPLAY_FIXTURE non-raycast task graphic Canvas/DormTaskPanel/TaskRow_2/Checkbox/Checkmark/LongStroke
+14.40s phase=15 frame=6224 PASS AFTER_BOSS_DISPLAY_FIXTURE non-raycast task graphic Canvas/DormTaskPanel/TaskRow_2/TaskContent
+14.40s phase=15 frame=6224 AFTER_BOSS_DISPLAY_FIXTURE GEOMETRY canvas=(x:-960.00, y:-540.00, width:1920.00, height:1080.00) panel=(x:0.00, y:-80.55, width:670.00, height:80.55) topLeftInCanvas=(-960.00, 540.00, 0.00) canvasTopLeft=(-960.00, 540.00, 0.00) backgroundColor=RGBA(0.055, 0.065, 0.085, 0.800) firstBossStage=9
+14.40s phase=15 frame=6224 PASS AFTER_BOSS_DISPLAY_FIXTURE initial-bed arrow hidden after day started
+14.40s phase=15 frame=6224 SCREENSHOT_REQUEST 03-defense-only-fixture.png; parent verifies completed PNG
+14.60s phase=16 frame=6378 COMPLETE three pending rows -> real craft/upgrade checked rows -> display-fixture single unchecked defense row; assertions=146 runtimeErrors=0; Play retained, parent restores prefs/fixture state; no actual boss encounter tested

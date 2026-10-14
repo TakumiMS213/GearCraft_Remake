@@ -1,0 +1,83 @@
+punk=True; step=2; feedback=False; mastered=False; baseline=True; owned=ScrapModule,PunkDrive
+Craft resume success: mastered=True feedback=PunkDriveが完成しました。回転する歯車が周囲の敵を攻撃します。接近されたときの助けになるでしょう。
+今後も、戦況に合わせて装備を整えていきましょう。 gear=0
+8 original PlayerPrefs restored and verified from file
+PASS fresh Craft integration fixture
+STEP 0
+SUBMIT Canvas/HeaderArea/UpgradeTabButton
+STEP 1
+PASS practice supply
+PASS practice damage part
+PASS practice result
+STEP 2
+SUBMIT CraftTutorialCanvas/CraftTutorialRoot/TutorialMessagePanel/NextButton
+STEP 3
+PASS independent upgrade supplied exactly 6 Scrap
+SUBMIT CraftTutorialCanvas/CraftTutorialRoot/TutorialMessagePanel/CloseButton
+PASS remove restores damage and refunds 3 Scrap
+STEP 4
+PASS same practice part replaced
+SUBMIT Canvas/UpgradePanel/question
+STEP 5
+SUBMIT CraftTutorialCanvas/CraftTutorialConfirmRoot/ConfirmPanel/YesButton
+STEP 6
+PASS same part replacement does not pass
+PASS resume does not duplicate supply
+SUBMIT CraftTutorialCanvas/CraftTutorialRoot/TutorialMessagePanel/CloseButton
+PASS different damage part placed while paused
+SUBMIT Canvas/UpgradePanel/question
+STEP 7
+SUBMIT CraftTutorialCanvas/CraftTutorialConfirmRoot/ConfirmPanel/YesButton
+STEP 8
+PASS paused independent upgrade credited
+STEP 9
+SUBMIT CraftTutorialCanvas/CraftTutorialRoot/TutorialMessagePanel/NextButton
+SUBMIT Canvas/UpgradePanel/question
+FIXTURE new upgrade challenge with existing parts
+STEP 10
+SUBMIT CraftTutorialCanvas/CraftTutorialConfirmRoot/ConfirmPanel/YesButton
+STEP 11
+SUBMIT CraftTutorialCanvas/CraftTutorialRoot/TutorialMessagePanel/HintButton
+PASS hint recorded
+SUBMIT CraftTutorialCanvas/CraftTutorialRoot/TutorialMessagePanel/CloseButton
+PASS speed part placed while paused
+SUBMIT Canvas/UpgradePanel/question
+STEP 12
+SUBMIT CraftTutorialCanvas/CraftTutorialConfirmRoot/ConfirmPanel/YesButton
+STEP 13
+PASS hinted outcome acknowledged without mastery
+STEP 14
+SUBMIT CraftTutorialCanvas/CraftTutorialRoot/TutorialMessagePanel/NextButton
+SUBMIT CraftTutorialCanvas/CraftTutorialRoot/TutorialMessagePanel/CloseButton
+SUBMIT Canvas/UpgradePanel/question
+STEP 15
+SUBMIT CraftTutorialCanvas/CraftTutorialConfirmRoot/ConfirmPanel/YesButton
+STEP 16
+PASS previous improvement not counted twice
+SUBMIT CraftTutorialCanvas/CraftTutorialRoot/TutorialMessagePanel/CloseButton
+SUBMIT Canvas/HeaderArea/CraftTabButton
+SUBMIT Canvas/CraftPanel/question
+FIXTURE bossKillCount=2, fresh independent craft
+STEP 17
+SUBMIT CraftTutorialCanvas/CraftTutorialConfirmRoot/ConfirmPanel/YesButton
+STEP 18
+PASS existing ownership not credited as fresh craft
+SUBMIT CraftTutorialCanvas/CraftTutorialRoot/TutorialMessagePanel/CloseButton
+PASS upgrade module recipe selected
+FIXTURE supplied module recipe costs
+PASS module crafted while paused
+STEP 19
+SUBMIT Canvas/CraftPanel/question
+STEP 20
+SUBMIT CraftTutorialCanvas/CraftTutorialConfirmRoot/ConfirmPanel/YesButton
+STEP 21
+PASS paused repeatable module credited
+STEP 22
+SUBMIT Canvas/CraftPanel/Close
+PASS tutorial closed immediately on scene exit
+STEP 23
+ALL REMAINING CHECKS PASSED
+STEP 24
+8 original PlayerPrefs restored and verified from file
+CLEANUP COMPLETE
+After Play stop: 8 preferences match backup; scene=Title; backupActive=False

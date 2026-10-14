@@ -1,0 +1,18 @@
+var path="QA/UXReview20261013-GalleryReturn/standalone.txt";
+var gallery=UnityEngine.Object.FindFirstObjectByType<GearCraft.Gallery.GalleryController>();
+gallery.SetPreviewProgress(new GearCraft.Gallery.GalleryProgressData());
+UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(null);
+System.IO.File.WriteAllText(path,"Standalone Gallery with locked preview; synthetic InputSystem Escape, not OS input.\n");
+ScreenCapture.CaptureScreenshot("QA/UXReview20261013-GalleryReturn/standalone-locked.png");
+var kb=UnityEngine.InputSystem.InputSystem.AddDevice<UnityEngine.InputSystem.Keyboard>("UXGalleryStandalone");
+Resources.FindObjectsOfTypeAll<UnityEditor.EditorWindow>().First(w=>w.GetType().FullName=="UnityEditor.GameView").Focus();
+int performed=0,phase=0;double start=UnityEditor.EditorApplication.timeSinceStartup;
+System.Action<object,UnityEngine.InputSystem.InputActionChange> monitor=(o,c)=>{var a=o as UnityEngine.InputSystem.InputAction;if(a!=null&&a.name=="Cancel"&&c==UnityEngine.InputSystem.InputActionChange.ActionPerformed){performed++;System.IO.File.AppendAllText(path,"INPUT Cancel "+a.activeControl.path+"\n");}};
+UnityEngine.InputSystem.InputSystem.onActionChange+=monitor;
+UnityEditor.EditorApplication.CallbackFunction tick=null;
+System.Action<bool,string> finish=(ok,s)=>{UnityEditor.EditorApplication.update-=tick;UnityEngine.InputSystem.InputSystem.onActionChange-=monitor;UnityEngine.InputSystem.InputSystem.RemoveDevice(kb);UnityEditor.SessionState.SetBool("UXGalleryReturn20261013.standaloneRunning",false);System.IO.File.AppendAllText(path,(ok?"PASS ":"FAIL ")+s+"\n");};
+UnityEditor.SessionState.SetBool("UXGalleryReturn20261013.standaloneRunning",true);
+tick=()=>{try{var dt=UnityEditor.EditorApplication.timeSinceStartup-start;if(dt>12){finish(false,"12s deadline");return;}if(phase==0&&dt>.3){UnityEngine.InputSystem.InputSystem.QueueStateEvent(kb,new UnityEngine.InputSystem.LowLevel.KeyboardState(UnityEngine.InputSystem.Key.Escape));phase=1;}else if(phase==1&&dt>.6){UnityEngine.InputSystem.InputSystem.QueueStateEvent(kb,new UnityEngine.InputSystem.LowLevel.KeyboardState());phase=2;}else if(phase==2&&dt>5){var scene=UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;var transition=UnityEngine.Object.FindFirstObjectByType<SceneTransitionManager>();if(scene!="Title"||(transition!=null&&transition.IsLoading))return;finish(performed>0&&Time.timeScale==1&&UnityEditor.EditorApplication.isPlaying&&!GearCraft.Gallery.GalleryNavigation.IsOpen,"Configured Cancel reached Title, scale="+Time.timeScale+" play="+UnityEditor.EditorApplication.isPlaying+" performed="+performed);}}catch(System.Exception ex){finish(false,ex.ToString());}};
+UnityEditor.EditorApplication.update+=tick;
+return "Standalone Cancel scheduled";
+

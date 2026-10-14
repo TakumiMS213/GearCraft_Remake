@@ -1,0 +1,20 @@
+{
+  "success": true,
+  "message": "Code executed successfully.",
+  "data": {
+    "result": {
+      "scene": "Title",
+      "playing": false,
+      "compiling": false,
+      "preferencesMatched": 8,
+      "preferencesExpected": 8,
+      "running": false,
+      "backupReady": false,
+      "passed": true,
+      "assertions": 117,
+      "gameViewIndex": 3,
+      "gameViewSize": "(1920.00, 1080.00)"
+    },
+    "compiler": "codedom"
+  }
+}

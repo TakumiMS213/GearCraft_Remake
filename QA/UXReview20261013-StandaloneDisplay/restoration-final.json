@@ -1,0 +1,20 @@
+{
+  "observedAtUtc": "2026-10-13T14:04:18.164738+00:00",
+  "prefs": [
+    {
+      "name": "unity.Takumi.GearCraft_Remake.plist",
+      "exists": true,
+      "sha256": "5bd6a8dc1b3616f26e71517aefe5c874357943831dc06a9cbf9aaf8e32e6f6c1",
+      "matchesBefore": true
+    },
+    {
+      "name": "com.DefaultCompany.2D-URP.plist",
+      "exists": true,
+      "sha256": "22bdac4a691a6aa2187814503aa33c579e8ea66d2204aafd0485e44ced4a367e",
+      "matchesBefore": true
+    }
+  ],
+  "projectSettingsExactByteMatch": true,
+  "temporaryProbeSourceExists": false,
+  "temporaryProbeMetaExists": false
+}

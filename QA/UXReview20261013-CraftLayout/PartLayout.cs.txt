@@ -1,0 +1,229 @@
+const string folder = "QA/UXReview20261013-CraftLayout/";
+const string prefix = "UXCraftLayout20261013.";
+if (UnityEditor.SessionState.GetBool(prefix + "partLayoutRunning", false))
+    throw new System.Exception("Part layout diagnostics already running");
+if (!Application.isPlaying) throw new System.Exception("Enter Play mode and open the Upgrade tab first");
+var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static |
+    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic;
+var asm = typeof(UnityEditor.Editor).Assembly;
+var viewType = asm.GetType("UnityEditor.GameView");
+var view = Resources.FindObjectsOfTypeAll<UnityEditor.EditorWindow>().First(w => w.GetType() == viewType);
+var selectedSizeProperty = viewType.GetProperty("selectedSizeIndex", flags);
+int originalSize = (int)selectedSizeProperty.GetValue(view, null);
+var sizesType = asm.GetType("UnityEditor.GameViewSizes");
+var sizes = typeof(UnityEditor.ScriptableSingleton<>).MakeGenericType(sizesType)
+    .GetProperty("instance", flags).GetValue(null, null);
+var group = sizesType.GetProperty("currentGroup", flags).GetValue(sizes, null);
+var labels = (string[])group.GetType().GetMethod("GetDisplayTexts", flags).Invoke(group, null);
+int[] sizeIndices = { 3,
+    System.Array.FindIndex(labels, s => s.StartsWith("UXCraftLayout0")),
+    System.Array.FindIndex(labels, s => s.StartsWith("UXCraftLayout1")),
+    System.Array.FindIndex(labels, s => s.StartsWith("UXCraftLayout2")),
+    System.Array.FindIndex(labels, s => s.StartsWith("UXCraftLayout3")) };
+if (sizeIndices.Any(i => i < 0 || i >= labels.Length))
+    throw new System.Exception("Create the four UXCraftLayout GameView sizes first");
+var shop = UnityEngine.Object.FindFirstObjectByType<UpgradeShopManager>();
+var tip = TooltipSystem.FindInstance();
+if (shop == null || tip == null || shop.shopParent == null || !shop.shopParent.gameObject.activeInHierarchy)
+    throw new System.Exception("Active Upgrade shop and TooltipSystem are required");
+var parts = shop.allParts.Where(p => p != null).ToArray();
+if (parts.Length == 0) throw new System.Exception("Shop has no parts");
+var scroll = shop.shopParent.GetComponentInParent<UnityEngine.UI.ScrollRect>();
+if (scroll == null || scroll.viewport == null || scroll.content == null)
+    throw new System.Exception("Shop ScrollRect references are required");
+var maxCostPart = parts.OrderByDescending(p => p.costs == null ? 0 : p.costs.Count(c => c != null))
+    .ThenByDescending(p => p.costs == null ? 0 : p.costs.Where(c => c != null).Sum(c => c.amount)).First();
+string originalInfo = shop.infoText != null ? shop.infoText.text : null;
+float originalScroll = scroll.verticalNormalizedPosition;
+string path = folder + "part-layout.txt";
+System.IO.Directory.CreateDirectory(folder);
+System.IO.File.WriteAllText(path,
+    "GameView diagnostics of existing Upgrade parts, not a build-display or human-reading test.\n" +
+    "EnsureLineupContains, ScrollRect positioning, ShowPart and ShowCannotAfford are explicit diagnostic fixtures.\n" +
+    "Glyph mesh bounds exclude whitespace and renderer outline/shadow padding. Flags require visual interpretation.\n" +
+    "Requested sizes: index3 plus UXCraftLayout0..3. Actual target, Screen and canvas dimensions are logged.\n" +
+    "partCount=" + parts.Length + " maxCostPart=" + maxCostPart.name + "\n");
+System.Action<string> log = s => System.IO.File.AppendAllText(path, s + "\n");
+System.Func<TMPro.TMP_Text, RectTransform, Bounds?> glyphBounds = (text, relativeTo) => {
+    text.ForceMeshUpdate();
+    bool found = false;
+    Bounds result = new Bounds();
+    for (int i = 0; i < text.textInfo.characterCount; i++) {
+        var character = text.textInfo.characterInfo[i];
+        if (!character.isVisible) continue;
+        var vertices = text.textInfo.meshInfo[character.materialReferenceIndex].vertices;
+        for (int j = 0; j < 4; j++) {
+            Vector3 point = relativeTo.InverseTransformPoint(text.transform.TransformPoint(vertices[character.vertexIndex + j]));
+            if (!found) { result = new Bounds(point, Vector3.zero); found = true; }
+            else result.Encapsulate(point);
+        }
+    }
+    return found ? (Bounds?)result : null;
+};
+System.Func<Rect, Bounds, bool> outside = (rect, bounds) =>
+    bounds.min.x < rect.xMin - .5f || bounds.max.x > rect.xMax + .5f ||
+    bounds.min.y < rect.yMin - .5f || bounds.max.y > rect.yMax + .5f;
+System.Func<Bounds?, string> boundsText = bounds => bounds.HasValue
+    ? "min=" + bounds.Value.min + " max=" + bounds.Value.max : "no-visible-glyphs";
+int sizeIndex = 0, partIndex = 0, phase = 0, textObservations = 0, panelObservations = 0, infoObservations = 0;
+int overflowFlags = 0, truncatedFlags = 0, textOutsidePanelFlags = 0, panelOutsideCanvasFlags = 0, infoOutsideCanvasFlags = 0;
+bool finished = false;
+RectTransform currentAnchor = null;
+string pendingScreenshot = null;
+double start = UnityEditor.EditorApplication.timeSinceStartup, next = start;
+UnityEditor.EditorApplication.CallbackFunction tick = null;
+System.Action<bool, string> finish = (ok, message) => {
+    if (finished) return;
+    finished = true;
+    UnityEditor.EditorApplication.update -= tick;
+    UnityEditor.SessionState.SetBool(prefix + "partLayoutRunning", false);
+    try {
+        if (tip != null) tip.Hide();
+        if (shop != null && shop.infoText != null && originalInfo != null) shop.infoText.text = originalInfo;
+        if (scroll != null) { scroll.StopMovement(); scroll.verticalNormalizedPosition = originalScroll; }
+        if (view != null) { selectedSizeProperty.SetValue(view, originalSize, null); view.Repaint(); }
+    } catch (System.Exception cleanup) { log("CLEANUP " + cleanup); }
+    log((ok ? "COMPLETE " : "FAILED ") + message +
+        " textObservations=" + textObservations + " panelObservations=" + panelObservations +
+        " infoObservations=" + infoObservations + " overflowFlags=" + overflowFlags +
+        " truncatedFlags=" + truncatedFlags + " textOutsidePanelFlags=" + textOutsidePanelFlags +
+        " panelOutsideCanvasFlags=" + panelOutsideCanvasFlags + " infoOutsideCanvasFlags=" + infoOutsideCanvasFlags +
+        " elapsed=" + (UnityEditor.EditorApplication.timeSinceStartup - start).ToString("F2") + "s");
+};
+tick = () => { try {
+    double now = UnityEditor.EditorApplication.timeSinceStartup;
+    if (now - start > 60) throw new System.Exception("60 second deadline");
+    if (!Application.isPlaying || shop == null || tip == null) throw new System.Exception("Play/session ended");
+    if (now < next) return;
+    next = now + .06;
+    if (phase == 0) {
+        selectedSizeProperty.SetValue(view, sizeIndices[sizeIndex], null);
+        view.Repaint();
+        phase = 1;
+        next = now + .3;
+        return;
+    }
+    if (phase == 1) {
+        Canvas.ForceUpdateCanvases();
+        var canvas = shop.shopParent.GetComponentInParent<Canvas>().rootCanvas;
+        var target = viewType.GetProperty("targetSize", flags).GetValue(view, null);
+        log("SIZE " + sizeIndex + " label=" + labels[sizeIndices[sizeIndex]] + " target=" + target +
+            " Screen=" + Screen.width + "x" + Screen.height + " canvas=" + ((RectTransform)canvas.transform).rect +
+            " scale=" + canvas.scaleFactor + " camera=" + (canvas.worldCamera != null ? canvas.worldCamera.pixelRect.ToString() : "overlay"));
+        shop.ShowCannotAfford(maxCostPart);
+        log("INFO_FIXTURE part=" + maxCostPart.name + " canAfford=" + shop.CanAfford(maxCostPart));
+        if (MaterialManager.Instance != null && maxCostPart.costs != null)
+            foreach (var cost in maxCostPart.costs.Where(c => c != null))
+                log("INFO_COST " + cost.type + " current=" + MaterialManager.Instance.GetMaterial(cost.type) + " required=" + cost.amount);
+        phase = 2;
+        return;
+    }
+    if (phase == 2) {
+        Canvas.ForceUpdateCanvases();
+        if (shop.infoText != null) {
+            var text = shop.infoText;
+            var canvas = text.GetComponentInParent<Canvas>().rootCanvas;
+            var canvasRect = (RectTransform)canvas.transform;
+            var bounds = glyphBounds(text, canvasRect);
+            bool outsideCanvas = bounds.HasValue && outside(canvasRect.rect, bounds.Value);
+            log("INFO size=" + sizeIndex + " active=" + text.gameObject.activeInHierarchy + " text=" + text.text.Replace("\n", " | ") +
+                " font=" + text.fontSize + " px=" + text.fontSize * canvas.scaleFactor + " rect=" + text.rectTransform.rect +
+                " glyphCanvas=" + boundsText(bounds) + " canvas=" + canvasRect.rect + " outsideCanvas=" + outsideCanvas +
+                " overflow=" + text.isTextOverflowing + " truncated=" + text.isTextTruncated);
+            infoObservations++;
+            if (outsideCanvas) infoOutsideCanvasFlags++;
+        }
+        phase = 3;
+        return;
+    }
+    if (phase == 3) {
+        shop.EnsureLineupContains(parts[partIndex]);
+        phase = 4;
+        return;
+    }
+    if (phase == 4) {
+        Canvas.ForceUpdateCanvases();
+        string itemName = "ShopItem_" + parts[partIndex].name;
+        currentAnchor = null;
+        for (int i = 0; i < shop.shopParent.childCount; i++) {
+            var child = shop.shopParent.GetChild(i);
+            if (child.name == itemName && child.gameObject.activeInHierarchy) { currentAnchor = child as RectTransform; break; }
+        }
+        if (currentAnchor == null) throw new System.Exception("Missing real shop anchor " + itemName);
+        scroll.StopMovement();
+        var itemBounds = RectTransformUtility.CalculateRelativeRectTransformBounds(scroll.viewport, currentAnchor);
+        var contentBounds = RectTransformUtility.CalculateRelativeRectTransformBounds(scroll.viewport, scroll.content);
+        float scrollRange = contentBounds.size.y - scroll.viewport.rect.height;
+        if (scrollRange > .5f)
+            scroll.verticalNormalizedPosition = Mathf.Clamp01(scroll.verticalNormalizedPosition -
+                (scroll.viewport.rect.yMax - itemBounds.max.y) / scrollRange);
+        Canvas.ForceUpdateCanvases();
+        phase = 5;
+        return;
+    }
+    if (phase == 5) {
+        tip.ShowPart(parts[partIndex], currentAnchor);
+        phase = 6;
+        next = now + .08;
+        return;
+    }
+    if (phase == 6) {
+        Canvas.ForceUpdateCanvases();
+        var part = parts[partIndex];
+        var panel = tip.tooltipPanel;
+        var canvas = panel.GetComponentInParent<Canvas>().rootCanvas;
+        var canvasRect = (RectTransform)canvas.transform;
+        Vector3[] corners = new Vector3[4];
+        panel.GetWorldCorners(corners);
+        Bounds panelBounds = new Bounds(canvasRect.InverseTransformPoint(corners[0]), Vector3.zero);
+        for (int i = 1; i < 4; i++) panelBounds.Encapsulate(canvasRect.InverseTransformPoint(corners[i]));
+        bool panelOutside = outside(canvasRect.rect, panelBounds);
+        var anchorBounds = RectTransformUtility.CalculateRelativeRectTransformBounds(scroll.viewport, currentAnchor);
+        bool anchorFullHeight = anchorBounds.min.y >= scroll.viewport.rect.yMin - .5f && anchorBounds.max.y <= scroll.viewport.rect.yMax + .5f;
+        string requestedTitle = "【" + (string.IsNullOrEmpty(part.partName) ? "強化パーツ" : part.partName) + "】";
+        bool matchesRequested = tip.IsShowingFor(currentAnchor) && tip.titleText != null && tip.titleText.text == requestedTitle;
+        log("PART size=" + sizeIndex + " index=" + partIndex + " asset=" + part.name + " anchor=" + currentAnchor.name +
+            " matchesRequested=" + matchesRequested + " anchorFullHeightVisible=" + anchorFullHeight + " anchorViewport=" + anchorBounds +
+            " panelCanvas=" + boundsText(panelBounds) + " canvas=" + canvasRect.rect + " outsideCanvas=" + panelOutside);
+        panelObservations++;
+        if (panelOutside) panelOutsideCanvasFlags++;
+        foreach (var text in panel.GetComponentsInChildren<TMPro.TMP_Text>()) {
+            if (!text.gameObject.activeInHierarchy) continue;
+            var bounds = glyphBounds(text, panel);
+            bool textOutside = bounds.HasValue && outside(panel.rect, bounds.Value);
+            log("TEXT size=" + sizeIndex + " part=" + part.name + " field=" + text.name +
+                " value=" + text.text.Replace("\n", " | ") + " font=" + text.fontSize + " px=" + text.fontSize * canvas.scaleFactor +
+                " rect=" + text.rectTransform.rect + " glyphPanel=" + boundsText(bounds) + " panel=" + panel.rect +
+                " outsidePanel=" + textOutside + " overflow=" + text.isTextOverflowing + " truncated=" + text.isTextTruncated);
+            textObservations++;
+            if (text.isTextOverflowing) overflowFlags++;
+            if (text.isTextTruncated) truncatedFlags++;
+            if (textOutside) textOutsidePanelFlags++;
+        }
+        if (part.name == "UnstableChamber" || part.name == "HeavySlug++" || part.name == "SpeedGear++") {
+            pendingScreenshot = folder + "part-layout-" + sizeIndex + "-" + part.name.Replace("+", "plus") + ".png";
+            ScreenCapture.CaptureScreenshot(pendingScreenshot);
+            log("SCREENSHOT_REQUEST " + pendingScreenshot);
+            next = now + .12;
+        }
+        phase = 7;
+        return;
+    }
+    if (phase == 7) {
+        if (pendingScreenshot != null) {
+            log("SCREENSHOT_FILE exists=" + System.IO.File.Exists(pendingScreenshot) + " path=" + pendingScreenshot);
+            pendingScreenshot = null;
+        }
+        partIndex++;
+        if (partIndex == parts.Length) {
+            partIndex = 0;
+            sizeIndex++;
+            if (sizeIndex == sizeIndices.Length) { finish(true, "5 dimensions x " + parts.Length + " parts; diagnostics only."); return; }
+            phase = 0;
+        } else phase = 3;
+    }
+} catch (System.Exception ex) { finish(false, ex.ToString()); } };
+UnityEditor.SessionState.SetBool(prefix + "partLayoutRunning", true);
+UnityEditor.EditorApplication.update += tick;
+view.Focus();
+return "Scheduled 5 dimensions x " + parts.Length + " Upgrade parts with a 60 second deadline. No automatic visual pass/fail.";

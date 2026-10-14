@@ -1,0 +1,378 @@
+#if GEARCRAFT_UX_DISPLAY_PROBE && !UNITY_EDITOR
+using System;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Text;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+
+// Temporary, isolated-player display probe. This text file is not an imported project script.
+// The probe does not call Screen.SetResolution or perform craft, reward, unlock, or material actions.
+public sealed class UXStandaloneDisplayProbe : MonoBehaviour
+{
+    private const double DeadlineSeconds = 30.0;
+    private string outputDirectory;
+    private string logPath;
+    private string runId;
+    private string screenshotPath;
+    private string screenshotStage;
+    private double startTime;
+    private double nextTime;
+    private double screenshotRequestTime;
+    private int screenshotRequestFrame;
+    private int state;
+    private bool configured;
+    private bool finished;
+    private bool appQuitRequested;
+    private bool logWriteFailed;
+    private bool receivedUnityException;
+    private int savedScreenshotCount;
+    private AsyncOperation craftLoad;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    private static void Bootstrap()
+    {
+        string[] args = Environment.GetCommandLineArgs();
+        int argument = Array.IndexOf(args, "--ux-display-output");
+        if (argument < 0) return;
+
+        try
+        {
+            if (argument + 1 >= args.Length || string.IsNullOrWhiteSpace(args[argument + 1]))
+                throw new ArgumentException("--ux-display-output requires an output directory");
+            string destination = Path.GetFullPath(args[argument + 1]);
+            string id = DateTime.UtcNow.ToString("yyyyMMddTHHmmssfffZ", CultureInfo.InvariantCulture) +
+                "-" + Guid.NewGuid().ToString("N").Substring(0, 8);
+            string runDirectory = Path.Combine(destination, "run-" + id);
+            Directory.CreateDirectory(runDirectory);
+
+            var root = new GameObject("UXStandaloneDisplayProbe");
+            DontDestroyOnLoad(root);
+            var probe = root.AddComponent<UXStandaloneDisplayProbe>();
+            probe.Configure(runDirectory, id);
+        }
+        catch (Exception exception)
+        {
+            Debug.LogError("[UXStandaloneDisplayProbe] Bootstrap failed: " + exception);
+            Application.Quit(2);
+        }
+    }
+
+    private void Configure(string directory, string id)
+    {
+        outputDirectory = directory;
+        runId = id;
+        logPath = Path.Combine(directory, "probe.log");
+        startTime = Time.realtimeSinceStartupAsDouble;
+        nextTime = startTime + 3.0;
+        configured = true;
+        Application.logMessageReceived += OnUnityLog;
+        bool previousRunInBackground = Application.runInBackground;
+        Application.runInBackground = true;
+
+        Log("START run=" + runId + " utc=" + DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture));
+        Log("IDENTITY company=" + Application.companyName + " product=" + Application.productName +
+            " identifier=" + Application.identifier + " persistentDataPath=" + Application.persistentDataPath +
+            " unity=" + Application.unityVersion + " platform=" + Application.platform);
+        Log("SCOPE startup-display observation followed by direct Craft scene layout fixture and UGUI Submit fixture; " +
+            "not a gameplay journey, physical-input test, or human readability evaluation.");
+        Log("SETTINGS no Screen.SetResolution/fullScreen assignment; output=" + outputDirectory);
+        Log("PROBE_SETTING runInBackground=" + previousRunInBackground + " -> True; " +
+            "keeps the diagnostic/watchdog running if focus changes. Focus UX is outside this test scope.");
+        RecordDisplay("before-first-scene");
+
+        // The caller builds with a distinct company/product/application identifier to isolate PlayerPrefs.
+        PlayerPrefs.SetInt(CraftTutorialMetrics.CraftMasteryKey, 1);
+        PlayerPrefs.SetInt(CraftTutorialMetrics.WeaponMasteryKey, 1);
+        PlayerPrefs.Save();
+        Log("PREFS_FIXTURE " + CraftTutorialMetrics.CraftMasteryKey + "=1; " +
+            CraftTutorialMetrics.WeaponMasteryKey + "=1; suppress automatic tutorial in isolated player only.");
+        File.WriteAllText(Path.Combine(outputDirectory, "started.txt"), "run=" + runId + "\n");
+    }
+
+    private void Update()
+    {
+        if (!configured || finished) return;
+        try
+        {
+            double now = Time.realtimeSinceStartupAsDouble;
+            if (logWriteFailed) { Finish(false, "Log output failed"); return; }
+            if (now - startTime >= DeadlineSeconds)
+            {
+                Finish(false, "30 second watchdog; state=" + state + " pendingScreenshot=" + screenshotStage);
+                return;
+            }
+            if (now < nextTime) return;
+
+            if (state == 0)
+            {
+                string scene = SceneManager.GetActiveScene().name;
+                if (scene != "Title") throw new InvalidOperationException("Expected startup Title, observed " + scene);
+                RecordSnapshot("title");
+                BeginScreenshot("title");
+                state = 1;
+                return;
+            }
+            if (state == 1)
+            {
+                if (!ScreenshotSaved()) return;
+                Log("LAYOUT_FIXTURE SceneManager.LoadSceneAsync(Craft, Single); bypasses gameplay progression and title UI.");
+                craftLoad = SceneManager.LoadSceneAsync("Craft", LoadSceneMode.Single);
+                if (craftLoad == null) throw new InvalidOperationException("Craft load returned null");
+                nextTime = now + 1.0;
+                state = 2;
+                return;
+            }
+            if (state == 2)
+            {
+                if (!craftLoad.isDone || SceneManager.GetActiveScene().name != "Craft") return;
+                var craft = FindFirstObjectByType<CraftManager>();
+                var tabs = FindFirstObjectByType<CraftTabController>();
+                var transition = FindFirstObjectByType<SceneTransitionManager>();
+                if (craft == null || !craft.IsInitialized || !craft.IsReadyForTutorial || tabs == null ||
+                    tabs.craftPanel == null || !tabs.craftPanel.activeInHierarchy ||
+                    (transition != null && transition.IsLoading)) return;
+                RecordSnapshot("craft");
+                BeginScreenshot("craft");
+                state = 3;
+                return;
+            }
+            if (state == 3)
+            {
+                if (!ScreenshotSaved()) return;
+                var tabs = FindFirstObjectByType<CraftTabController>();
+                var button = tabs != null ? tabs.upgradeTabButton : null;
+                if (button == null || button.name != "UpgradeTabButton" || !button.IsActive() || !button.IsInteractable())
+                    throw new InvalidOperationException("Active, interactable UpgradeTabButton is required");
+                if (EventSystem.current == null) throw new InvalidOperationException("EventSystem is missing");
+                Log("UI_FIXTURE UpgradeTabButton.Select + OnSubmit(BaseEventData); no physical keyboard event.");
+                button.Select();
+                button.OnSubmit(new BaseEventData(EventSystem.current));
+                nextTime = now + 0.6;
+                state = 4;
+                return;
+            }
+            if (state == 4)
+            {
+                var tabs = FindFirstObjectByType<CraftTabController>();
+                if (tabs == null || tabs.upgradePanel == null || !tabs.upgradePanel.activeInHierarchy ||
+                    (tabs.craftPanel != null && tabs.craftPanel.activeInHierarchy))
+                    throw new InvalidOperationException("Upgrade tab did not become active");
+                RecordSnapshot("upgrade");
+                BeginScreenshot("upgrade");
+                state = 5;
+                return;
+            }
+            if (state == 5)
+            {
+                if (!ScreenshotSaved()) return;
+                Finish(!receivedUnityException, receivedUnityException
+                    ? "Display sequence saved, but Unity emitted an Exception or Assert; inspect log."
+                    : "Title, Craft and Upgrade captures saved; display/layout diagnostics completed.");
+            }
+        }
+        catch (Exception exception)
+        {
+            Log("PROBE_EXCEPTION " + exception);
+            Finish(false, "Exception in display probe state " + state);
+        }
+    }
+
+    private void RecordDisplay(string stage)
+    {
+        Resolution resolution = Screen.currentResolution;
+        Display display = Display.main;
+        Log("DISPLAY stage=" + stage + " scene=" + SceneManager.GetActiveScene().name +
+            " Screen=" + Screen.width + "x" + Screen.height + " fullScreenMode=" + Screen.fullScreenMode +
+            " fullScreen=" + Screen.fullScreen + " currentResolution=" + resolution +
+            " displayRendering=" + display.renderingWidth + "x" + display.renderingHeight +
+            " displaySystem=" + display.systemWidth + "x" + display.systemHeight +
+            " safeArea=" + Screen.safeArea + " dpi=" + Screen.dpi);
+    }
+
+    private void RecordSnapshot(string stage)
+    {
+        Canvas.ForceUpdateCanvases();
+        RecordDisplay(stage);
+        Log("SNAPSHOT stage=" + stage + " frame=" + Time.frameCount + " timeScale=" + Time.timeScale);
+        var materials = MaterialManager.Instance;
+        if (materials != null)
+            Log("MATERIAL_READONLY scrap=" + materials.scrap + " gear=" + materials.gear +
+                " upgradeCore=" + materials.upgradeCore + " module1=" + materials.moduleCore_lv1 +
+                " module2=" + materials.moduleCore_lv2 + " module3=" + materials.moduleCore_lv3);
+        if (StatusManager.Instance != null)
+            Log("STATUS_READONLY bossKillCount=" + StatusManager.Instance.bossKillCount +
+                " lastSelectedRecipe=" + StatusManager.Instance.LastSelectedCraftRecipeId);
+
+        foreach (Canvas canvas in FindObjectsByType<Canvas>(FindObjectsSortMode.None).OrderBy(c => HierarchyPath(c.transform)))
+        {
+            RectTransform rect = canvas.transform as RectTransform;
+            var scaler = canvas.GetComponent<CanvasScaler>();
+            Log("CANVAS stage=" + stage + " path=" + HierarchyPath(canvas.transform) +
+                " enabled=" + canvas.enabled + " active=" + canvas.gameObject.activeInHierarchy +
+                " mode=" + canvas.renderMode + " rect=" + (rect != null ? rect.rect.ToString() : "none") +
+                " scaleFactor=" + canvas.scaleFactor + " localScale=" + canvas.transform.localScale +
+                " root=" + HierarchyPath(canvas.rootCanvas.transform) +
+                " cameraPixelRect=" + (canvas.worldCamera != null ? canvas.worldCamera.pixelRect.ToString() : "none") +
+                (scaler != null ? " scalerMode=" + scaler.uiScaleMode + " reference=" + scaler.referenceResolution +
+                    " screenMatchMode=" + scaler.screenMatchMode + " widthHeightMatch=" + scaler.matchWidthOrHeight : " scaler=none"));
+        }
+
+        int buttonCount = 0;
+        foreach (Button button in FindObjectsByType<Button>(FindObjectsSortMode.None).OrderBy(b => HierarchyPath(b.transform)))
+        {
+            if (!button.gameObject.activeInHierarchy) continue;
+            RectTransform rect = button.transform as RectTransform;
+            if (rect == null) continue;
+            var canvas = button.GetComponentInParent<Canvas>();
+            if (canvas == null) continue;
+            var root = canvas.rootCanvas;
+            Camera camera = root.renderMode == RenderMode.ScreenSpaceOverlay ? null : root.worldCamera;
+            Vector3[] corners = new Vector3[4];
+            rect.GetWorldCorners(corners);
+            Vector2 minimum = new Vector2(float.PositiveInfinity, float.PositiveInfinity);
+            Vector2 maximum = new Vector2(float.NegativeInfinity, float.NegativeInfinity);
+            var screenCorners = new StringBuilder();
+            foreach (Vector3 world in corners)
+            {
+                Vector2 screen = RectTransformUtility.WorldToScreenPoint(camera, world);
+                minimum = Vector2.Min(minimum, screen);
+                maximum = Vector2.Max(maximum, screen);
+                screenCorners.Append(screen.ToString("F2")).Append(" ");
+            }
+            bool fullyInside = minimum.x >= -0.5f && minimum.y >= -0.5f &&
+                maximum.x <= Screen.width + 0.5f && maximum.y <= Screen.height + 0.5f;
+            bool scrollChild = button.GetComponentInParent<ScrollRect>() != null;
+            string role = button.name.Equals("Close", StringComparison.OrdinalIgnoreCase) ? "close" :
+                button.name.Equals("question", StringComparison.OrdinalIgnoreCase) ? "question" : "button";
+            Log("BUTTON stage=" + stage + " role=" + role + " path=" + HierarchyPath(button.transform) +
+                " enabled=" + button.enabled + " interactable=" + button.IsInteractable() +
+                " cornersBL_TL_TR_BR=" + screenCorners + " min=" + minimum + " max=" + maximum +
+                " fullyInsideScreen=" + fullyInside + " underScrollRect=" + scrollChild);
+            buttonCount++;
+        }
+        Log("SNAPSHOT_END stage=" + stage + " activeButtonCount=" + buttonCount +
+            "; screen bounds do not prove visibility, raycast access, clipping-mask visibility, or human readability.");
+    }
+
+    private void BeginScreenshot(string stage)
+    {
+        screenshotStage = stage;
+        screenshotPath = Path.Combine(outputDirectory, stage + ".png");
+        screenshotRequestTime = Time.realtimeSinceStartupAsDouble;
+        screenshotRequestFrame = Time.frameCount;
+        ScreenCapture.CaptureScreenshot(screenshotPath);
+        Log("SCREENSHOT_REQUEST stage=" + stage + " path=" + screenshotPath + " frame=" + screenshotRequestFrame);
+    }
+
+    private bool ScreenshotSaved()
+    {
+        if (Time.frameCount <= screenshotRequestFrame ||
+            Time.realtimeSinceStartupAsDouble - screenshotRequestTime < 0.12 || !File.Exists(screenshotPath)) return false;
+        try
+        {
+            using (var stream = new FileStream(screenshotPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            {
+                if (stream.Length < 45) return false;
+                byte[] header = new byte[24];
+                if (stream.Read(header, 0, header.Length) != header.Length) return false;
+                byte[] signature = { 137, 80, 78, 71, 13, 10, 26, 10 };
+                for (int i = 0; i < signature.Length; i++) if (header[i] != signature[i]) return false;
+                stream.Seek(-12, SeekOrigin.End);
+                byte[] tail = new byte[12];
+                if (stream.Read(tail, 0, tail.Length) != tail.Length) return false;
+                byte[] expectedEnd = { 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130 };
+                for (int i = 0; i < expectedEnd.Length; i++) if (tail[i] != expectedEnd[i]) return false;
+                int width = ReadBigEndianInt(header, 16);
+                int height = ReadBigEndianInt(header, 20);
+                Log("SCREENSHOT_SAVED stage=" + screenshotStage + " bytes=" + stream.Length +
+                    " png=" + width + "x" + height + " path=" + screenshotPath);
+            }
+            savedScreenshotCount++;
+            return true;
+        }
+        catch (IOException)
+        {
+            // CaptureScreenshot may still be writing. The global watchdog bounds this wait.
+            return false;
+        }
+    }
+
+    private static int ReadBigEndianInt(byte[] bytes, int offset)
+    {
+        return (bytes[offset] << 24) | (bytes[offset + 1] << 16) | (bytes[offset + 2] << 8) | bytes[offset + 3];
+    }
+
+    private static string HierarchyPath(Transform transform)
+    {
+        string path = transform.name;
+        while (transform.parent != null)
+        {
+            transform = transform.parent;
+            path = transform.name + "/" + path;
+        }
+        return path;
+    }
+
+    private void OnUnityLog(string condition, string stackTrace, LogType type)
+    {
+        if (type != LogType.Error && type != LogType.Exception && type != LogType.Assert) return;
+        if (type == LogType.Exception || type == LogType.Assert) receivedUnityException = true;
+        Log("UNITY_" + type + " " + condition + "\n" + stackTrace);
+    }
+
+    private void Log(string message)
+    {
+        try
+        {
+            File.AppendAllText(logPath, "t=" + (Time.realtimeSinceStartupAsDouble - startTime)
+                .ToString("F3", CultureInfo.InvariantCulture) + " " + message + "\n");
+        }
+        catch
+        {
+            // Do not call Debug.Log here: this method is also used by logMessageReceived.
+            logWriteFailed = true;
+        }
+    }
+
+    private void Finish(bool success, string reason)
+    {
+        if (finished) return;
+        finished = true;
+        success = success && !logWriteFailed && savedScreenshotCount == 3;
+        appQuitRequested = true;
+        string marker = (success ? "COMPLETE" : "FAILED") + " run=" + runId +
+            " reason=" + reason + " screenshotsSaved=" + savedScreenshotCount +
+            " elapsed=" + (Time.realtimeSinceStartupAsDouble - startTime).ToString("F3", CultureInfo.InvariantCulture) +
+            " appQuitRequested=True exitCode=" + (success ? 0 : 2);
+        Log(marker);
+        try { File.WriteAllText(Path.Combine(outputDirectory, "finished.txt"), marker + "\n"); }
+        catch (Exception exception) { Debug.LogError("[UXStandaloneDisplayProbe] Cannot write completion marker: " + exception); }
+        Application.Quit(success ? 0 : 2);
+    }
+
+    private void OnApplicationQuit()
+    {
+        if (!configured) return;
+        Log("APPLICATION_QUIT observed=True appQuitRequested=" + appQuitRequested + " finished=" + finished);
+        Application.logMessageReceived -= OnUnityLog;
+        if (!finished)
+        {
+            try
+            {
+                File.WriteAllText(Path.Combine(outputDirectory, "finished.txt"),
+                    "FAILED run=" + runId + " reason=External quit before completion appQuitRequested=False\n");
+            }
+            catch { }
+        }
+    }
+
+    private void OnDestroy()
+    {
+        Application.logMessageReceived -= OnUnityLog;
+    }
+}
+#endif

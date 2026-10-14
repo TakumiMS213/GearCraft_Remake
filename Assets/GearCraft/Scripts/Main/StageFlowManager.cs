@@ -4,6 +4,8 @@ using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -45,10 +47,28 @@ public class StageFlowManager : MonoBehaviour
     private bool stageCompletionTriggered;
     private bool finalBossDefeated;
     private bool dayRetryTriggered;
+    private bool isOpeningNoticeShowing;
+    private static int playerInputBlockedFrame = -1;
     private DayStartSnapshot dayStartSnapshot;
 
     public bool IsStageActive { get; private set; }
     public int EnemyScalingStage { get; private set; } = 1;
+    public bool IsBlockingGameplayUI => isOpeningNoticeShowing ||
+        (bonusCardsManager != null && bonusCardsManager.IsChoosingReward) ||
+        (restResultReportUI != null && restResultReportUI.IsShowing);
+    public static bool IsPlayerInputBlocked => Time.timeScale <= 0f ||
+        playerInputBlockedFrame == Time.frameCount || (Instance != null && Instance.IsBlockingGameplayUI);
+
+    public static void BlockPlayerInputForCurrentFrame()
+    {
+        playerInputBlockedFrame = Time.frameCount;
+    }
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetPlayerInputBlock()
+    {
+        playerInputBlockedFrame = -1;
+    }
 
     private void Awake()
     {
@@ -71,6 +91,15 @@ public class StageFlowManager : MonoBehaviour
         }
     }
 
+    private void Update()
+    {
+        // A background click clears UI selection; keep the visible notice operable by Submit.
+        if (isOpeningNoticeShowing && openingNoticeButton != null && openingNoticeButton.interactable &&
+            !GearCraft.Gallery.GalleryNavigation.IsOpen && EventSystem.current != null &&
+            EventSystem.current.currentSelectedGameObject == null)
+            openingNoticeButton.Select();
+    }
+
     private async void Start()
     {
         currentStage = GetStageFromCounter();
@@ -87,7 +116,15 @@ public class StageFlowManager : MonoBehaviour
 
         if (openingNoticeRoot != null && openingNoticePaper != null && !HasSeenOpeningNotice())
         {
-            await PlayOpeningNoticeAsync();
+            var token = this.GetCancellationTokenOnDestroy();
+            try
+            {
+                await PlayOpeningNoticeAsync();
+            }
+            catch (OperationCanceledException) when (token.IsCancellationRequested)
+            {
+                return;
+            }
         }
         else if (openingNoticeRoot != null)
         {
@@ -198,7 +235,7 @@ public class StageFlowManager : MonoBehaviour
 
         if (StatusManager.Instance != null && StatusManager.Instance.module_repair)
         {
-            StatusManager.Instance.HP += 20;
+            StatusManager.Instance.HP = Mathf.Min(100, StatusManager.Instance.HP + 20);
         }
 
         if (stageConfig != null && stageConfig.IsFinalStage(currentStage))
@@ -342,31 +379,81 @@ public class StageFlowManager : MonoBehaviour
 
     private async UniTask PlayOpeningNoticeAsync()
     {
+        if (openingNoticeButton == null) return;
         bool clicked = false;
-        openingNoticeRoot.SetActive(true);
-        openingNoticePaper.anchoredPosition = openingNoticeHiddenPosition;
-
-        if (openingNoticeButton != null)
+        bool ready = false;
+        var token = this.GetCancellationTokenOnDestroy();
+        GameObject previousSelection = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
+        Navigation previousNavigation = openingNoticeButton.navigation;
+        bool previousInteractable = openingNoticeButton.interactable;
+        Tween noticeTween = null;
+        UnityAction confirm = () =>
         {
-            openingNoticeButton.onClick.RemoveAllListeners();
-            openingNoticeButton.onClick.AddListener(() => clicked = true);
+            if (!ready || GearCraft.Gallery.GalleryNavigation.IsOpen) return;
+            clicked = true;
+            ready = false;
+            BlockPlayerInputForCurrentFrame();
+        };
+
+        isOpeningNoticeShowing = true;
+        try
+        {
+            openingNoticeRoot.SetActive(true);
+            openingNoticePaper.anchoredPosition = openingNoticeHiddenPosition;
+            openingNoticeButton.interactable = false;
+            openingNoticeButton.navigation = new Navigation
+            {
+                mode = Navigation.Mode.Explicit,
+                selectOnLeft = openingNoticeButton,
+                selectOnRight = openingNoticeButton,
+                selectOnUp = openingNoticeButton,
+                selectOnDown = openingNoticeButton
+            };
+            openingNoticeButton.onClick.AddListener(confirm);
+            if (EventSystem.current != null)
+                EventSystem.current.SetSelectedGameObject(openingNoticeButton.gameObject);
+
+            noticeTween = openingNoticePaper
+                .DOAnchorPos(openingNoticeShownPosition, openingNoticeDuration)
+                .SetEase(Ease.InCirc).SetUpdate(true);
+            await UniTask.Delay(TimeSpan.FromSeconds(openingNoticeDuration), ignoreTimeScale: true, cancellationToken: token);
+
+            ready = true;
+            openingNoticeButton.interactable = true;
+            openingNoticeButton.Select();
+            await UniTask.WaitUntil(() => !GearCraft.Gallery.GalleryNavigation.IsOpen && clicked, cancellationToken: token);
+            openingNoticeButton.interactable = false;
+
+            noticeTween = openingNoticePaper
+                .DOAnchorPos(openingNoticeHiddenPosition, openingNoticeDuration)
+                .SetEase(Ease.InCirc).SetUpdate(true);
+            await UniTask.Delay(TimeSpan.FromSeconds(openingNoticeDuration), ignoreTimeScale: true, cancellationToken: token);
+            MarkOpeningNoticeSeen();
         }
-
-        openingNoticePaper
-            .DOAnchorPos(openingNoticeShownPosition, openingNoticeDuration)
-            .SetEase(Ease.InCirc);
-
-        await UniTask.Delay(TimeSpan.FromSeconds(openingNoticeDuration));
-        await UniTask.WaitUntil(() => !GearCraft.Gallery.GalleryNavigation.IsOpen
-            && (clicked || Input.GetMouseButtonDown(0)), cancellationToken: this.GetCancellationTokenOnDestroy());
-
-        openingNoticePaper
-            .DOAnchorPos(openingNoticeHiddenPosition, openingNoticeDuration)
-            .SetEase(Ease.InCirc);
-
-        await UniTask.Delay(TimeSpan.FromSeconds(openingNoticeDuration));
-        openingNoticeRoot.SetActive(false);
-        MarkOpeningNoticeSeen();
+        finally
+        {
+            ready = false;
+            noticeTween?.Kill();
+            if (openingNoticeButton != null)
+            {
+                openingNoticeButton.onClick.RemoveListener(confirm);
+                openingNoticeButton.navigation = previousNavigation;
+                openingNoticeButton.interactable = previousInteractable;
+            }
+            EventSystem events = EventSystem.current;
+            GameObject selected = events != null ? events.currentSelectedGameObject : null;
+            bool restoreFocus = selected == null ||
+                (openingNoticeRoot != null && selected.transform.IsChildOf(openingNoticeRoot.transform));
+            if (openingNoticeRoot != null) openingNoticeRoot.SetActive(false);
+            if (restoreFocus && events != null && events.isActiveAndEnabled && !events.alreadySelecting)
+            {
+                Selectable previous = previousSelection != null ? previousSelection.GetComponent<Selectable>() : null;
+                events.SetSelectedGameObject(previous != null && previous.IsActive() && previous.IsInteractable()
+                    ? previous.gameObject : null);
+            }
+            isOpeningNoticeShowing = false;
+            BlockPlayerInputForCurrentFrame();
+        }
     }
 
     private static bool HasSeenOpeningNotice()

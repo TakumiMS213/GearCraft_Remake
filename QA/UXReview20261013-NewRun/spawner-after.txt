@@ -1,0 +1,6 @@
+Direct Main setup -> Gate.TakeDamage(100) -> actual Ending transition -> 12s observation -> UI Title return
+3.8s before defeat enemyCount=1 CTS cancelled=False
+3.8s Gate damage applied
+6.1s Ending entered; oldSpawnerDestroyed=True tokenCancelled=True
+18.1s 12s after unload: exceptions=0 enemies=0 score=500
+33.3s COMPLETE Title exceptions=0 Stage=1 GATE=100

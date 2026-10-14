@@ -1,0 +1,141 @@
+UX継続テスト・ターム14：macOS実ビルドの描画寸法とCraft/Upgrade表示
+実施日: 2026-10-13 JST
+環境: macOS / Unity 6000.0.67f1
+状態: 今回の作業を終了。専用ビルド成功、試験プロセス終了、元設定・元保存データの照合を完了。
+      起動は初期ログ後に進まず、描画寸法と画面画像は未取得。表示試験は未完了。
+      画面ロック解除後の再試行が必要。ターム14の製品変更なし。
+
+目的と前タームとの関係
+
+ターム13ではCraft素材の説明更新を2ファイルで修正し、18＋3項目の回帰を完了した。
+その際、非16:9のGameView画像でCraft/Upgrade周囲UIの欠けや重なりを確認したが、
+実ビルドで同じ描画状態になるかは確認していない。Expand単独の実行中試作は不採用とし、
+恒久レイアウト変更は行っていない。本タームは、その実ビルドでの到達性を確かめる。
+前タームのTMP診断結果を、実ビルドの対応解像度や人間の読みやすさの合格と解釈しない。
+
+開始設定と保全
+
+settings-before.txtに、company=Takumi、product=GearCraft_Remake、
+identifier=com.DefaultCompany.2D-URP、resolution=1920x1080、
+fullScreenMode=FullScreenWindow、resizable=Falseを記録した。
+ProjectSettings.assetのdefaultIsNativeResolutionは0、Standaloneの識別子上書きは有効。
+設定3点の退避ファイルは /tmp/gearcraft-uxstandalone-buildsettings-backup.txt、
+ProjectSettings全体は /tmp/gearcraft-uxstandalone-ProjectSettings.before に保存済み。
+
+original-pref-hashes.jsonには、以下の既存ファイルの存在とSHA-256を記録済み。
+  ~/Library/Preferences/unity.Takumi.GearCraft_Remake.plist（実際のEditor保存先）
+  ~/Library/Preferences/com.DefaultCompany.2D-URP.plist（既存Standalone識別子の保存先）
+記録時点で両方とも存在する。値そのものはこの報告に掲載しない。
+テスト用アプリの識別子を隔離してから実行した。
+終了後はrestoration-final.jsonで両ファイルのSHA-256が開始時と一致することを確認した。
+
+実ビルドの識別子を隔離する理由
+
+UnityのmacOS PlayerPrefs資料では、StandaloneはBundle Identifierに対応するplistを使う。
+現プロジェクトはcompany/productから導出する既定識別子を使わず、
+com.DefaultCompany.2D-URPを明示設定している。このためcompany/productだけを変更しても、
+Standaloneの元セーブから隔離できるとは判断できない。
+ビルド時はcompanyName、productName、Standalone applicationIdentifierの3点を一時QA名にし、
+完成した.appのContents/Info.plistでCFBundleIdentifierを確認してから起動した。
+プロジェクトの元設定への復帰と、完成したアプリの識別子の確認は別々に記録する。
+
+公式PlayerPrefs資料のEditor例はcom.Company.Product.plistだが、
+この環境の実ファイルはunity.Takumi.GearCraft_Remake.plistだった。
+読み取り調査では前タームの退避8キーと実ファイルの存在・値が8/8一致した。
+資料の例とローカルで確認できた保存先を区別する。
+
+専用ビルド・識別子・設定復元
+
+専用probeはextraScriptingDefinesで対象ビルドに限定し、BuildRunner.ScheduleBuildから作成した。
+build-result.jsonはStandaloneOSXのsucceeded、46.976727秒、errors=0、warnings=16。
+ビルド成功を描画・操作の合格と同一視しない。警告0とも記載しない。
+built-identity.jsonではCFBundleIdentifier=com.gearcraft.qa.uxdisplay20261013、
+CFBundleName/Executable=GearCraft_UXDisplayProbe_20261013を確認した。
+元アプリの識別子com.DefaultCompany.2D-URPとは分離している。
+
+自動復元後のメモリ上の3項目は元設定に一致したが、ProjectSettingsのディスクには
+一時的な3 identity fieldsだけの差分が残ったため、差分対象を確認して元ファイルへ復元した。
+observations.txtに、復元後の全バイトが元ProjectSettingsに一致したことを記録している。
+built-identity.jsonのoriginalProjectSettingsByteMatch=falseはその復元前の観測であり、
+最終復元結果を示す値ではない。原記録は書き換えず、確認の前後を分けて扱う。
+Assets内の一時probeとmetaは除去済み。元plistハッシュと最終Editor状態も終了時に照合した。
+
+初回起動と進まなかった範囲
+
+初回は解像度を指定するコマンドライン引数を付けず、Title/Craft/Upgradeの画像と描画値の
+取得を試みた。native/run-20261013T135051459Z-47cd4dfe/started.txtの起動記録はあるが、
+Updateで進める診断と実描画スクリーンショットには到達していない。
+担当がPID 28741をsampleしたplayer-native-sample.txtでは、メインスレッドが
+GfxDeviceMetal::WaitForLastPresentationAndGetTimestampで待っていた。
+同プロセスの前面化でもログは進まず、設定を切り分けるため、この隔離した試験プロセスだけを
+SIGTERMで終了した。製品UIの応答不良や特定レイアウト不具合として断定しない。
+
+続くwindowed起動（PID 29033、実行session 94124）も、
+windowed/run-20261013T135610411Z-f69d01eb/started.txtの初期ログ後に進んでいない。
+この比較起動は元のFullScreenWindow設定での初回試験と区別する。
+担当のioreg観測はCGSSessionScreenIsLocked=Yesを示し、ユーザーへの解除確認は保留中。
+画面ロックが唯一の原因かどうかは切り分けておらず、原因確定として記載しない。
+担当はpsでPID 29033のコマンドが今回のQA probeであることを再照合し、そのプロセスだけを
+SIGTERMで終了した。open -Wの実行session 94124はexit 0で完了した。
+これをゲームの正常な終了経路や表示試験の成功とは扱わない。
+
+描画寸法の評価条件
+
+取得する項目は次のとおりで、現時点では起動後の描画結果として確認できていない。
+Screen.width/height、Screen.fullScreenMode、Screen.currentResolution、
+Display.mainのrendering/system寸法、Camera/Canvasの範囲を分けて記録する。
+probeによる画面遷移や状態準備は、人間の物理入力による操作経路とは区別する。
+
+FullScreenWindowの公式仕様は、外側のウィンドウがネイティブ画面を覆い、
+設定された解像度で描画した結果を拡大し、縦横比が違う場合は黒帯を付けるというもの。
+外側の画面比率、表示機器の解像度、ゲームの描画解像度は同一とは限らない。
+したがって、開始設定1920x1080や実機の外寸だけから、GameViewで見た欠けの有無を推定しない。
+実際の起動結果を測定してから、レイアウト変更の必要範囲を判断する。
+
+公開資料とローカルAPI
+
+Unity 6000.0 / PlayerPrefs
+https://docs.unity3d.com/6000.0/Documentation/ScriptReference/PlayerPrefs.html
+  macOS Standaloneの保存先とBundle Identifierの関係。Editorのパス例は実環境の観測と区別。
+Unity 6000.0 / macOS Player settings
+https://docs.unity3d.com/6000.0/Documentation/Manual/PlayerSettings-macOS.html
+  FullScreenWindow、既定解像度、Bundle Identifier/Info.plistの仕様。
+Unity 6000.0 / FullScreenMode.FullScreenWindow
+https://docs.unity3d.com/6000.0/Documentation/ScriptReference/FullScreenMode.FullScreenWindow.html
+  ネイティブ外寸とゲーム描画解像度、拡大・黒帯の関係。
+Unity 6000.0 / PlayerSettings.SetApplicationIdentifier
+https://docs.unity3d.com/6000.0/Documentation/ScriptReference/PlayerSettings.SetApplicationIdentifier.html
+  Standaloneを明示した識別子の設定API。
+UnityCsReference / 6000.0 / PlayerSettings.bindings.cs
+https://raw.githubusercontent.com/Unity-Technologies/UnityCsReference/6000.0/Editor/Mono/PlayerSettings.bindings.cs
+  defaultIsNativeResolutionとNamedBuildTarget指定の識別子APIを確認。
+ローカル6000.0.67f1のUnityEditor.CoreModule.xmlでも、
+GetApplicationIdentifier/SetApplicationIdentifier(NamedBuildTarget)を確認した。
+これらは試験条件を定める技術資料であり、このゲームの表示合格を示す資料ではない。
+
+終了時の復元と確認
+
+restoration-final.jsonは、元Editor/Standaloneの両plistについてmatchesBefore=true、
+projectSettingsExactByteMatch=true、一時probe source/metaの存在=falseを記録している。
+editor-final.jsonでは、company=Takumi、product=GearCraft_Remake、
+identifier=com.DefaultCompany.2D-URP、1920x1080、FullScreenWindow、
+isNative=false、resizable=falseを再確認した。
+シーンはTitle、playing/compiling/buildは全てfalse。Editorは開いたまま停止状態。
+
+一時probe削除後にAssets/UXStandaloneDisplayProbe.csを参照するCS2001が残ったが、
+全Assetsのrefreshと再コンパイルで古い参照を解消した。
+最終Console検索はerror CS=0、Exception=0。全警告なし・全エラーなしという判定には広げない。
+git diff --checkも通過した。実ビルドの試験結果と、元状態への復元完了は区別して記録する。
+
+証拠と残る表示試験
+
+settings-before.txt、original-pref-hashes.json、UXStandaloneDisplayProbe.cs.txt、Build.cs.txt、
+probe-source.sha256、probe-compile.txt、build-job.txt、build-result.json、built-identity.json、
+observations.txt、player-native-sample.txt、native/windowedのstarted.txt、
+restoration-final.json、editor-final.json。
+専用ビルドと識別子確認、試験プロセス終了、元ProjectSettings・元plist・Editor状態の照合は完了。
+画面ロック解除の質問は未回答で、両試行ともPNGとfinished.txtはない。
+解除後に初回設定で再起動し、描画が進むかを確かめた上で、Title/Craft/Upgradeの
+実描画画像と寸法を取得する必要がある。ロックだけが原因とは未確定。
+今回の作業は終了したが、画面比率の問題を解決済み・未発生とは判断できない。
+記録担当はUnity MCPを使用せず、担当からの実行報告と保存ログ・画像を照合して記録する。

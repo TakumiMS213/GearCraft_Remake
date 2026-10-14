@@ -171,6 +171,22 @@ public class MaterialManager : MonoBehaviour
         return true;
     }
 
+    public string GetShortageText(CraftCost[] costs)
+    {
+        var missing = new System.Collections.Generic.List<string>();
+        var materials = GetAllMaterials();
+        if (costs == null) return string.Empty;
+        foreach (var cost in costs)
+        {
+            if (cost == null) continue;
+            int shortage = cost.amount - GetMaterial(cost.type);
+            if (shortage <= 0) continue;
+            string name = materials.Find(material => material.type == cost.type).name;
+            missing.Add($"{name} あと{shortage}");
+        }
+        return string.Join(" / ", missing);
+    }
+
     /// <summary>
     /// CraftCost配列で一括消費
     /// </summary>

@@ -30,6 +30,7 @@ public sealed class CraftTutorialTrackProgress
     public bool baselineCaptured;
     public float baselineDamage;
     public float baselineAttackSpeed;
+    public int baselineCraftWeaponDamageBuff;
     public string practicePartName;
     public List<UpgradePartSO> baselineParts = new List<UpgradePartSO>();
     public List<string> craftedRecipeIds = new List<string>();

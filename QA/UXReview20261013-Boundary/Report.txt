@@ -1,0 +1,230 @@
+UX継続テスト・ターム9：強化パーツの境界操作・課題と選択レシピの往復
+実施日: 2026-10-13 JST
+環境: Unity Editor Play / macOS / Game画面1920×1080
+状態: 境界操作と取消案内、未完課題の宿舎往復、選択レシピ保持の修正回帰を完了。
+      未知/未解放レシピからの復帰と周回初期化も確認。Play停止後の元データ復元・照合済み。
+
+目的
+
+ショップのパーツを境界へ運んだとき、配置先・成功/失敗・消費結果が実際の状態と
+一致して伝わるかを確認する。取り外しと取消のあと、再操作できる状態に戻れるかも確認する。
+ターム1から残っていた「ポインターは内側で形状だけがはみ出す」検証候補を、
+現在のショップドラッグが実際に使う座標計算と照合した。
+
+実際に使用した経路と条件
+
+DragHelpers.cs.txtは商品の画面中心でEventSystem.RaycastAllを行い、最上位ヒットから
+得たIBeginDragHandlerが対象商品と一致することを確認してからUGUIの
+BeginDrag/Drag/EndDragイベントを送る。配置処理を直接呼ぶだけの試験とは区別する。
+一方で、OSマウスの移動・押下・離上げを通した物理入力E2Eではない。
+2セルパーツの取り外しは、配置済み1セルへのUGUI Submitを使用。
+回転1の条件はprivateのdraggingRotationへ値を入れ、プレビューを再構築したfixture。
+物理Rキーまたは右クリックを通した回転は、このタームでは未実施。
+
+画像01の初期条件は3×3グリッド、配置なし、各素材30、強化効果なし。
+以降は同じ状態を引き継いで、配置・拒否・取り外し・再配置・取消・タブ往復を試した。
+テストで準備した素材・商品条件であり、敵のドロップから揃えた通しプレイとは区別する。
+
+確認できた挙動
+
+1. 右端の2×1パーツは、枠内に収まる位置へ補正される。
+   Damage+2（表示名Damage Plate+）を右上側の画面座標(1212,863)へドラッグ。
+   補正後の配置原点は(1,0)。プレビューと実配置は上段の右2セルに一致した。
+   Scrap30→24、配置1個、bonusDamage=3。商品が一覧から除かれ、装備結果を表示。
+   証拠: boundary.txt、画像02/03。
+
+2. 重なりは理由と復帰手段を表示し、素材・商品を消費しない。
+   Damage+1（表示名Damage Plate）を同じ右上の配置済みセルへドラッグ。
+   プレビューは赤。確定しても配置1個・Scrap24・bonusDamage3のままで商品は維持。
+   「ほかのパーツと重なっています」と、空きへ移す/既存パーツを外す案内を確認。
+   証拠: boundary.txt、画像04/05。
+
+3. 2セル分のパーツを一度の取り外しで解除し、返金も一度だけ行う。
+   配置済みの1セルへのSubmitで同じパーツ全体を除去。
+   Scrap24→30（返金6）、bonusDamage=0。返却商品へショップをスクロールして再操作。
+   画像06では回転後のプレビュー以外の配置がなく、効果なし・Scrap30も確認できる。
+   証拠: boundary.txt。取り外し直後の専用画像は採取していない。
+
+4. 回転した1×2パーツも下端へ補正される。
+   Damage+2をrotation=1のfixtureで左下側の画面座標(688,339)へドラッグ。
+   補正後の配置原点は(0,1)。左列の下2セルにプレビューと実配置が一致。
+   Scrap30→24、配置1個、bonusDamage=3。
+   証拠: boundary.txt、画像06/07。回転入力そのものの合格とはしない。
+
+5. 遠い枠外で離すと取消になり、全費用種別を消費しない。
+   SpeedGear++を画面座標(1680,540)へドラッグ。配置先なし、赤プレビューを確認。
+   終了後は配置数・効果・各素材が変わらず、商品も維持。
+   取消、素材の非消費、再度枠内へドラッグする方法を表示。
+   証拠: boundary.txt、画像08/09。
+
+6. 修正前はドラッグ中のタブ変更で配置を中断しても、案内が状態と一致しなかった。
+   SpeedGear++をドラッグ中にCraftタブへ移り、Upgradeへ戻る。
+   dragging=False・preview=Falseで素材を消費しないことを確認。
+   ただし「Speed Gear++: グリッドへドラッグ。右クリックまたはRキーで回転。」が残る。
+   証拠: boundary.txtのAfter tab roundtrip行、画像10。
+
+境界の解釈とコード根拠
+
+Assets/GearCraft/Scripts/Upgrade/UpgradeGridUI.csのTryGetDragPlacementPositionは、
+回転後形状の占有範囲を計算し、形状サイズ分だけ拡張した受付範囲で判定したあと、
+配置原点を0〜(グリッドサイズ−占有幅/高さ)へClampする。
+このため、グリッド内へ収まる形状をショップからドラッグする現行経路では、
+端に近づけて形状だけを枠からはみ出させる入力は、収まる配置へ補正される。
+今回の右端/下端は境界補正の検証であり、純粋なはみ出し拒否を実行できたとはしない。
+グリッドより大きい形状の拒否、所有一覧からのクリック配置など別経路は別途確認対象。
+
+実再現した不具合と修正状況
+
+タブ復帰後は操作中のパーツもプレビューもないのに、選択中のパーツ名と回転指示が残る。
+初回確認時のCancelShopDragは参照・回転値・プレビューを消去するだけで、infoTextを更新しない。
+OnDisableからもこの処理を呼ぶため、タブ往復で処理は中断しても前の説明が残っていた。
+修正前の表示は、中断結果・素材の非消費・再操作の手段を示していなかった。
+
+この案内修正の対象はUpgradeGridUI.cs。
+CancelShopDragは、開始時のwasDraggingがtrueの場合だけ、操作案内を取消結果へ更新する。
+枠外ドロップ時も共通のDragCancelledMessageを用いる。
+これにより、通常のタブ切替のたびに、既に表示済みの成功・失敗結果を無条件で上書きしない。
+recipe-after.txtのphase0で、非ドラッグ中のCancelShopDragが既存の装備成功文を保持することも確認。
+全成功/失敗ケースの修正後再実行を意味しない。
+
+修正後の回帰:
+  新しいPlayでDamage+2をドラッグし、Craftタブ→Upgradeタブを往復。
+  dragging=False、preview=False、Scrap30、配置0を確認。
+  結果文は「装着を取り消しました。装着用の素材は消費していません。」と、
+  「パーツを選び直して、枠内へドラッグしてください。」へ変化した。
+  boundary.txtのAFTER FIXと画像11で、実行状態と取消案内の一致を確認。
+
+接続復旧と保存データの扱い
+
+途中のMCP切断は一時Editorコードで復旧。recovery.txtには元のPlayerPrefs8キーの
+復元・Play停止後照合、Title/Play=false/backup=false、reconnect=Trueを記録した。
+担当は復旧に使用した一時cs/metaを削除済み。
+その後、同じ元データのバックアップを再び有効にして新しいPlayで上記回帰を実施した。
+このため、recovery.txtをターム全体の最終復元の証拠としては扱わない。
+その後、担当の復元照合が一度不一致となった。Play停止時のOnDestroyによる計測値書込みの後、
+改めて元の8キーを復元・照合し一致したことを担当が確認した。
+追加検証後の最終復元はPlay停止後に実施した。完了結果は末尾の終了確認に記載。
+
+未完課題を残した宿舎往復
+
+tutorial-roundtrip.txtで34フェーズ（0〜33）・45アサーション、22.73秒でCOMPLETE。
+  Craft: 素材不足を判断する課題からGear3と低級モジュールコア1を配布。
+  課題を保留してClose→宿舎→実際のCraftTableトリガーからCraftへ再入場。
+  新しいシーンのControllerで同じ未完ステップ1に復帰し、配布量と配布済みフラグを保持。
+  再配布・自動的な作成成功・習得判定がなく、再選択後の実クラフトで費用を一度だけ消費。
+  ScrapModule作成の練習成功フィードバックへ進み、早すぎる習得完了にならないことを確認。
+  Upgrade: 配置なしでScrap3を配布後、同じく課題を保留して宿舎往復。
+  未完ステップ0と素材を保持し、配置や習得成功を作らず、再配布もしない。
+  再入場後の対象商品がRaycastで届くことを確認し、UGUIドラッグでDamage+1を配置。
+  Scrap3の一度だけの消費、damage+1、配置保存、練習フィードバックへの遷移を確認。
+宿舎では座標移動後に実際の物理トリガーを待ち、ExecuteActiveActionを使用した。
+課題・ボタン・ドラッグはUGUIイベント。徒歩・物理入力での通し操作ではない。
+
+この成功に含まれない点:
+  phase14でScrapModuleのレシピButtonを改めてSubmitしていたため、再入場直後の
+  選択レシピが保たれたかは検証していなかった。課題と素材が戻ったことは確認できるが、
+  再選択せずに直ちに作成を再開できる状態まで証明したものではない。
+
+追加で再現・修正した選択レシピの復帰ずれ
+
+recipe-continuity.txtの独立操作で、PunkDriveをレシピButtonのSubmitで選び、
+Close→宿舎のCraftTable→Craftへ戻ると、SelectedRecipeがGearCraftへ変わることを確認。
+前述の課題往復試験が途中で再選択したため隠れていた、別の表示・選択状態の問題。
+進行と素材の保持が成功していることと、直前に見ていたレシピが戻らないことを区別する。
+
+追加修正の対象:
+  Assets/GearCraft/Scripts/StatusManager.cs
+    ラン中だけ使うLastSelectedCraftRecipeIdを追加し、ResetRunProgressで空へ戻す。
+  Assets/GearCraft/Scripts/Craft/CraftManager.cs
+    SelectRecipeで選択中のUnlockIdを保存。Startで解放済み一覧から同じIDを検索し、
+    見つかる場合はそのレシピ、見つからない場合は先頭を選択する。
+この保持範囲は同じラン内。アプリ再起動後にも選択を保存する変更とはしない。
+画像12でも、装置を作成した課題フィードバックの背面にGearCraftの完成品と材料が表示され、
+課題の内容と選択レシピが食い違う状態を確認した。
+今回の製品変更対象はUpgradeGridUI、StatusManager、CraftManagerの3ファイル。
+
+修正後、再選択せずに課題へ戻る回帰:
+  TutorialRoundTripAfter.cs.txtではphase14のレシピ再選択を撤去し、4条件の確認へ置換。
+  1. 選択中のScrapModuleが宿舎往復後も保持されている。
+  2. StatusManagerの保持IDがそのレシピと一致する。
+  3. MaterialDisplay.currentRecipeが同じレシピを指す。
+  4. Result_ScrapModuleが有効、Result_GearCraftが無効。
+  tutorial-roundtrip-after.txtで34フェーズ・49アサーション、24.92秒でCOMPLETE。
+  再選択せず実クラフトへ進み、素材の一度だけの消費と練習フィードバックまで確認。
+  Upgradeの宿舎往復・再配布なし・装着/消費/効果/保存も改めて通した。
+  tutorial-after-02では装置を仕上げる課題、モジュール画像、Gear3/3・低級コア1/1が一致。
+  tutorial-after-07では装着効果とdamage+1の練習フィードバックを確認。
+  両画像と旧不具合の画像12は、担当と記録担当が閲覧した。
+
+通常レシピ・無効選択・周回初期化の追加回帰:
+  recipe-after.txtで14フェーズ（0〜13）・14アサーション、9.56秒でCOMPLETE。
+  PunkDriveのButtonをSubmit→Close→宿舎の実CraftTableトリガー→Craftを通し、
+  素材不足のままでも選択と完成品画像を保持。画像13でもPunkDriveとGear0/4を確認。
+  以降は保持IDとシーンロードを直接設定するfixtureとして、未知のUX-missing-recipe、
+  bossKillCount=0で未解放のSteamShootを入力。両方ともGearCraftへ復帰した。
+  PunkDriveを再選択後、ResetRunProgressを直接呼び、保持IDが空になることを確認。
+  Title→Craftを直接ロードして初期レシピGearCraftを確認し、旧Craftの破棄によって
+  前の選択が書き戻されないことも確認した。画像14を担当と記録担当が閲覧した。
+  この周回初期化検証は、ED3分岐をもう一度通した試験とは区別する。
+
+判断の根拠
+
+NN/g / Jakob Nielsen: 10 Usability Heuristics for User Interface Design
+https://www.nngroup.com/articles/ten-usability-heuristics/
+状態の可視性、取り消して戻れる操作、問題の原因と復帰方法を伝える原則を参照。
+今回の対象は、実行状態と食い違う操作中の案内を、取消結果に合わせること。
+選択レシピについては、画面往復の前後で扱っていた対象を継続し、一貫した操作状態に戻す観点を適用。
+公開原則は改善判断の根拠として扱い、初見の人の理解が改善したという実測結果とはしない。
+既存の境界補正・費用・返金ルールの変更を、この資料だけから要求するものではない。
+
+NN/g / Visibility of System Status
+https://www.nngroup.com/articles/visibility-system-status/
+現在の操作状態と結果が分かるフィードバックを用意する観点を、取消表示と表示対象の整合に適用。
+安藤昌也教授インタビュー / HIP
+https://hiptokyo.jp/hiptalk/ux_design/2/
+個々の画面だけでなく、作業の前後を含む体験と利用者による評価を扱う観点を参照。
+上記2本文は実装担当が再取得・確認済み。今回の往復試験は機能の整合性の確認であり、
+人間による理解度・快適さ・自力再現の評価を代替しない。
+
+証拠
+
+boundary.txt: 各ドラッグ座標、補正原点、素材・効果・配置数、結果文、タブ中断後の状態。
+DragHelpers.cs.txt: 商品のRaycast確認とUGUIドラッグ、回転fixture、終了ログの補助コード。
+01-upgrade-baseline.png: 3×3・素材30・初期効果なし。
+02-right-edge-preview.png / 03-right-edge-placed.png: 右端の補正前後ではなく、補正済み予告と実配置。
+04-overlap-preview.png / 05-overlap-failure.png: 赤予告と重なり理由・復帰案内。
+06-bottom-edge-rotated-preview.png / 07-bottom-edge-placed.png: 回転fixtureの下端予告と実配置。
+08-cancel-preview.png / 09-cancel-result.png: 遠い枠外の赤予告、取消・非消費の結果。
+10-tab-cancel-stale-guidance.png: タブ復帰後、プレビューがない状態で残るドラッグ案内。
+11-tab-cancel-fixed.png: 新Playのタブ往復後、装着取消・非消費・再選択の案内。
+recovery.txt: 検証途中の復元・停止後照合とMCP接続復旧。最終復元とは別。
+TutorialRoundTrip.cs.txt / tutorial-roundtrip.txt: 未完課題の宿舎往復、配布/進行保持と再入場後の実践。
+recipe-continuity.txt: PunkDriveを選んで宿舎往復するとGearCraftへ変わる独立再現。
+12-recipe-selection-lost.png: 装置の課題フィードバックとGearCraftの表示が食い違う修正前の画面。
+TutorialRoundTripAfter.cs.txt / tutorial-roundtrip-after.txt: 再選択を撤去した49アサーションの回帰。
+tutorial-after-02-craft-resumed.png: 課題・選択レシピ・完成品・素材表示が一致した再入場。
+tutorial-after-07-upgrade-completed-after-return.png: 再入場後の装着結果と課題フィードバック。
+RecipeSelectionAfter.cs.txt / recipe-after.txt: 通常レシピ・無効選択・周回初期化の14アサーション。
+13-recipe-selection-retained.png: 宿舎往復後も素材不足のPunkDrive選択・画像を保持。
+14-recipe-new-run-initial.png: ResetRunProgressと直接ロード後の初期GearCraft。
+observations.txt末尾: Play停止後の元PlayerPrefs8キー照合と、Title/Play=false/backup=false。
+画像01〜11は記録担当も閲覧し、ログに対応する配置・表示を確認した。
+
+終了確認
+
+全追加検証を終えてPlayを停止してから、元のバックアップファイルのPlayerPrefs8キーを復元。
+各キーの存在/値を別のツール呼出しでも照合し、全一致を確認した。
+Title、Play=false、backup=false。最終Consoleの検索「error CS」「Exception」はそれぞれ0件。
+全error一覧の0件という意味ではない。git diff --checkは出力なし。
+復旧用の一時Restore.cs/metaは検索0件で、残っていないことを担当が確認した。
+
+未実施・別途確認対象
+
+・課題往復の全画像の個別閲覧。修正後02/07と旧不具合12は確認済み。
+・修正後に、すべての成功/失敗結果から非ドラッグ中にタブを往復する網羅確認。
+・物理入力によるドラッグと回転。別解像度、ゲームパッド、実機ビルド。
+・境界補正や取消文を初見で理解できるか、誤配置から補助なしに復帰できるかの人間評価。
+
+人間の理解度・快適さ・自力成功率は未測定。H-02の配置判断・失敗からの復帰、
+H-05の課題理解・中断から補助なしで作業へ戻れるかの評価対象として残す。
+この未測定を理由に、新しい明示承認ゲートは設けていない。

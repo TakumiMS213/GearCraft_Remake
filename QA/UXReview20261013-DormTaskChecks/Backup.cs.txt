@@ -1,0 +1,16 @@
+const string prefix="UXDormTaskChecks20261013.";
+const string path="/tmp/gearcraft-uxdormtaskchecks-playerprefs-backup.txt";
+if(UnityEditor.EditorApplication.isPlaying) throw new System.Exception("Back up before Play");
+if(System.IO.File.Exists(path)) throw new System.Exception("Existing backup must not be overwritten");
+string[] keys={"GearCraft.Gallery.Progress.v1","GearCraft.CraftTutorial.Metrics.Craft.v5","GearCraft.CraftTutorial.Metrics.WeaponCustom.v5","GearCraft.Main.OpeningNotice.Seen.v1","GearCraft.CraftTutorial.Mastery.Craft.v5","GearCraft.CraftTutorial.Mastery.WeaponCustom.v5","GearCraft.CraftTutorial.AutoPlayed.Craft.v4","GearCraft.CraftTutorial.AutoPlayed.WeaponCustom.v3"};
+var lines=new System.Collections.Generic.List<string>();
+for(int i=0;i<keys.Length;i++){
+ string key=keys[i];bool exists=PlayerPrefs.HasKey(key);bool isText=i<3;
+ string value=isText?System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(PlayerPrefs.GetString(key,""))):PlayerPrefs.GetInt(key,0).ToString();
+ lines.Add(key+"|"+exists+"|"+(isText?"string":"int")+"|"+value);
+}
+System.IO.File.WriteAllLines(path,lines.ToArray());
+if(!System.IO.File.Exists(path)||System.IO.File.ReadAllLines(path).Length!=8)throw new System.Exception("Backup file not complete");
+UnityEditor.SessionState.SetBool(prefix+"backupReady",true);
+UnityEditor.SessionState.SetBool(prefix+"stop",false);
+return "8 PlayerPrefs backed up to file before Play; original plist also preserved";

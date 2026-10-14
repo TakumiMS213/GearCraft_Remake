@@ -33,6 +33,8 @@ namespace GearCraft.Scripts.Main
         [SerializeField] private Sprite spaceKeySprite;
         [SerializeField] private Sprite jumpTextSprite;
 
+        public bool IsManualOpen => manualPanel != null && manualPanel.activeSelf;
+
         private void Awake()
         {
             ResolveReferences();
@@ -50,6 +52,9 @@ namespace GearCraft.Scripts.Main
 
         public void ShowOption()
         {
+            if (StageFlowManager.Instance != null && StageFlowManager.Instance.IsBlockingGameplayUI) return;
+            PauseManager pause = FindFirstObjectByType<PauseManager>();
+            if (pause != null && pause.pauseMenuPanel == optionPanel) pause.Pause();
             if (optionPanel != null)
             {
                 optionPanel.SetActive(true);
@@ -59,6 +64,8 @@ namespace GearCraft.Scripts.Main
 
         public void HideOption()
         {
+            PauseManager pause = FindFirstObjectByType<PauseManager>();
+            if (pause != null && pause.IsPaused && pause.pauseMenuPanel == optionPanel) pause.Resume();
             if (optionPanel != null)
             {
                 optionPanel.SetActive(false);
@@ -67,6 +74,7 @@ namespace GearCraft.Scripts.Main
 
         public void ShowManual()
         {
+            if (StageFlowManager.Instance != null && StageFlowManager.Instance.IsBlockingGameplayUI) return;
             if (manualPanel != null)
             {
                 manualPanel.SetActive(true);

@@ -1,0 +1,21 @@
+{
+  "success": true,
+  "message": "Code executed successfully.",
+  "data": {
+    "result": {
+      "scene": "Title",
+      "playing": false,
+      "compiling": false,
+      "company": "Takumi",
+      "product": "GearCraft_Remake",
+      "identifier": "com.DefaultCompany.2D-URP",
+      "width": 1920,
+      "height": 1080,
+      "mode": "FullScreenWindow",
+      "resizable": false,
+      "isNative": false,
+      "build": false
+    },
+    "compiler": "codedom"
+  }
+}

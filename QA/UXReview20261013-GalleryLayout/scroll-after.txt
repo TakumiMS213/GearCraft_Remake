@@ -1,0 +1,361 @@
+All25 rows: partial discovery preview, synthetic Mouse/Keyboard action pipeline.
+0.17 row=0 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+0.17 row=0 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+0.25 row=0 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+0.25 row=0 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+0.33 row=0 phase=4 PASS Pointer selects scrollbar
+0.33 row=0 phase=4 PASS Pointer preserves viewed details
+0.33 row=0 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+0.33 row=0 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+0.41 row=0 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+0.41 row=0 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+0.49 row=0 phase=6 PASS Left returns Entry_0
+0.49 row=0 phase=6 PASS Left preserves known/unknown details
+0.49 row=0 phase=6 PASS Returned row fully visible
+0.73 row=1 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+0.73 row=1 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+0.81 row=1 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+0.81 row=1 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+0.89 row=1 phase=4 PASS Pointer selects scrollbar
+0.89 row=1 phase=4 PASS Pointer preserves viewed details
+0.89 row=1 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+0.89 row=1 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+0.97 row=1 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+0.97 row=1 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+1.05 row=1 phase=6 PASS Left returns Entry_1
+1.05 row=1 phase=6 PASS Left preserves known/unknown details
+1.05 row=1 phase=6 PASS Returned row fully visible
+1.05 row=1 phase=6 PASS Unknown entry does not reveal name/description/artwork
+1.29 row=2 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+1.29 row=2 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+1.37 row=2 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+1.37 row=2 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+1.46 row=2 phase=4 PASS Pointer selects scrollbar
+1.46 row=2 phase=4 PASS Pointer preserves viewed details
+1.46 row=2 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+1.46 row=2 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+1.54 row=2 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+1.54 row=2 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+1.62 row=2 phase=6 PASS Left returns Entry_2
+1.62 row=2 phase=6 PASS Left preserves known/unknown details
+1.62 row=2 phase=6 PASS Returned row fully visible
+1.86 row=3 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+1.86 row=3 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+1.94 row=3 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+1.94 row=3 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+2.02 row=3 phase=4 PASS Pointer selects scrollbar
+2.02 row=3 phase=4 PASS Pointer preserves viewed details
+2.02 row=3 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+2.02 row=3 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+2.10 row=3 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+2.10 row=3 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+2.18 row=3 phase=6 PASS Left returns Entry_3
+2.18 row=3 phase=6 PASS Left preserves known/unknown details
+2.18 row=3 phase=6 PASS Returned row fully visible
+2.18 row=3 phase=6 PASS Unknown entry does not reveal name/description/artwork
+2.42 row=4 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+2.42 row=4 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+2.50 row=4 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+2.50 row=4 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+2.58 row=4 phase=4 PASS Pointer selects scrollbar
+2.58 row=4 phase=4 PASS Pointer preserves viewed details
+2.58 row=4 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+2.58 row=4 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+2.66 row=4 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+2.66 row=4 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+2.74 row=4 phase=6 PASS Left returns Entry_4
+2.74 row=4 phase=6 PASS Left preserves known/unknown details
+2.74 row=4 phase=6 PASS Returned row fully visible
+2.98 row=5 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+2.98 row=5 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+3.06 row=5 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+3.07 row=5 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+3.15 row=5 phase=4 PASS Pointer selects scrollbar
+3.15 row=5 phase=4 PASS Pointer preserves viewed details
+3.15 row=5 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+3.15 row=5 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+3.23 row=5 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+3.23 row=5 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+3.31 row=5 phase=6 PASS Left returns Entry_5
+3.31 row=5 phase=6 PASS Left preserves known/unknown details
+3.31 row=5 phase=6 PASS Returned row fully visible
+3.31 row=5 phase=6 PASS Unknown entry does not reveal name/description/artwork
+3.55 row=6 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+3.55 row=6 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+3.63 row=6 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+3.63 row=6 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+3.71 row=6 phase=4 PASS Pointer selects scrollbar
+3.71 row=6 phase=4 PASS Pointer preserves viewed details
+3.71 row=6 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+3.71 row=6 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+3.79 row=6 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+3.79 row=6 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+3.87 row=6 phase=6 PASS Left returns Entry_6
+3.87 row=6 phase=6 PASS Left preserves known/unknown details
+3.87 row=6 phase=6 PASS Returned row fully visible
+4.11 row=7 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+4.11 row=7 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+4.19 row=7 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+4.19 row=7 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+4.27 row=7 phase=4 PASS Pointer selects scrollbar
+4.27 row=7 phase=4 PASS Pointer preserves viewed details
+4.27 row=7 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+4.27 row=7 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+4.35 row=7 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+4.35 row=7 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+4.43 row=7 phase=6 PASS Left returns Entry_7
+4.43 row=7 phase=6 PASS Left preserves known/unknown details
+4.43 row=7 phase=6 PASS Returned row fully visible
+4.43 row=7 phase=6 PASS Unknown entry does not reveal name/description/artwork
+4.67 row=8 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+4.67 row=8 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+4.75 row=8 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+4.75 row=8 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+4.83 row=8 phase=4 PASS Pointer selects scrollbar
+4.83 row=8 phase=4 PASS Pointer preserves viewed details
+4.83 row=8 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+4.83 row=8 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+4.92 row=8 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+4.92 row=8 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+5.00 row=8 phase=6 PASS Left returns Entry_8
+5.00 row=8 phase=6 PASS Left preserves known/unknown details
+5.00 row=8 phase=6 PASS Returned row fully visible
+5.24 row=9 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+5.24 row=9 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+5.32 row=9 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+5.32 row=9 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+5.40 row=9 phase=4 PASS Pointer selects scrollbar
+5.40 row=9 phase=4 PASS Pointer preserves viewed details
+5.40 row=9 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+5.40 row=9 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+5.48 row=9 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+5.48 row=9 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+5.56 row=9 phase=6 PASS Left returns Entry_9
+5.56 row=9 phase=6 PASS Left preserves known/unknown details
+5.56 row=9 phase=6 PASS Returned row fully visible
+5.56 row=9 phase=6 PASS Unknown entry does not reveal name/description/artwork
+5.80 row=10 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+5.80 row=10 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+5.88 row=10 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+5.88 row=10 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+5.96 row=10 phase=4 PASS Pointer selects scrollbar
+5.96 row=10 phase=4 PASS Pointer preserves viewed details
+5.96 row=10 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+5.96 row=10 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+6.04 row=10 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+6.04 row=10 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+6.12 row=10 phase=6 PASS Left returns Entry_10
+6.12 row=10 phase=6 PASS Left preserves known/unknown details
+6.12 row=10 phase=6 PASS Returned row fully visible
+6.36 row=11 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+6.36 row=11 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+6.44 row=11 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+6.44 row=11 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+6.52 row=11 phase=4 PASS Pointer selects scrollbar
+6.53 row=11 phase=4 PASS Pointer preserves viewed details
+6.53 row=11 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+6.53 row=11 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+6.61 row=11 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+6.61 row=11 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+6.69 row=11 phase=6 PASS Left returns Entry_11
+6.69 row=11 phase=6 PASS Left preserves known/unknown details
+6.69 row=11 phase=6 PASS Returned row fully visible
+6.69 row=11 phase=6 PASS Unknown entry does not reveal name/description/artwork
+6.93 row=12 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+6.93 row=12 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+7.01 row=12 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+7.01 row=12 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+7.09 row=12 phase=4 PASS Pointer selects scrollbar
+7.09 row=12 phase=4 PASS Pointer preserves viewed details
+7.09 row=12 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+7.09 row=12 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+7.17 row=12 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+7.17 row=12 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+7.25 row=12 phase=6 PASS Left returns Entry_12
+7.25 row=12 phase=6 PASS Left preserves known/unknown details
+7.25 row=12 phase=6 PASS Returned row fully visible
+7.49 row=13 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+7.49 row=13 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+7.57 row=13 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+7.57 row=13 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+7.65 row=13 phase=4 PASS Pointer selects scrollbar
+7.65 row=13 phase=4 PASS Pointer preserves viewed details
+7.65 row=13 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+7.65 row=13 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+7.73 row=13 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+7.73 row=13 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+7.81 row=13 phase=6 PASS Left returns Entry_13
+7.81 row=13 phase=6 PASS Left preserves known/unknown details
+7.81 row=13 phase=6 PASS Returned row fully visible
+7.81 row=13 phase=6 PASS Unknown entry does not reveal name/description/artwork
+8.05 row=14 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+8.05 row=14 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+8.13 row=14 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+8.13 row=14 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+8.21 row=14 phase=4 PASS Pointer selects scrollbar
+8.22 row=14 phase=4 PASS Pointer preserves viewed details
+8.22 row=14 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+8.22 row=14 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+8.30 row=14 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+8.30 row=14 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+8.38 row=14 phase=6 PASS Left returns Entry_14
+8.38 row=14 phase=6 PASS Left preserves known/unknown details
+8.38 row=14 phase=6 PASS Returned row fully visible
+8.62 row=15 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+8.62 row=15 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+8.70 row=15 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+8.70 row=15 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+8.78 row=15 phase=4 PASS Pointer selects scrollbar
+8.78 row=15 phase=4 PASS Pointer preserves viewed details
+8.78 row=15 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+8.78 row=15 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+8.86 row=15 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+8.86 row=15 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+8.94 row=15 phase=6 PASS Left returns Entry_15
+8.94 row=15 phase=6 PASS Left preserves known/unknown details
+8.94 row=15 phase=6 PASS Returned row fully visible
+8.94 row=15 phase=6 PASS Unknown entry does not reveal name/description/artwork
+9.18 row=16 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+9.18 row=16 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+9.26 row=16 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+9.26 row=16 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+9.34 row=16 phase=4 PASS Pointer selects scrollbar
+9.34 row=16 phase=4 PASS Pointer preserves viewed details
+9.34 row=16 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+9.34 row=16 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+9.42 row=16 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+9.42 row=16 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+9.50 row=16 phase=6 PASS Left returns Entry_16
+9.50 row=16 phase=6 PASS Left preserves known/unknown details
+9.50 row=16 phase=6 PASS Returned row fully visible
+9.74 row=17 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+9.74 row=17 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+9.82 row=17 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+9.82 row=17 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+9.90 row=17 phase=4 PASS Pointer selects scrollbar
+9.91 row=17 phase=4 PASS Pointer preserves viewed details
+9.91 row=17 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+9.91 row=17 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+9.99 row=17 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+9.99 row=17 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+10.07 row=17 phase=6 PASS Left returns Entry_17
+10.07 row=17 phase=6 PASS Left preserves known/unknown details
+10.07 row=17 phase=6 PASS Returned row fully visible
+10.07 row=17 phase=6 PASS Unknown entry does not reveal name/description/artwork
+10.31 row=18 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+10.31 row=18 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+10.39 row=18 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+10.39 row=18 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+10.47 row=18 phase=4 PASS Pointer selects scrollbar
+10.47 row=18 phase=4 PASS Pointer preserves viewed details
+10.47 row=18 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+10.47 row=18 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+10.55 row=18 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+10.55 row=18 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+10.63 row=18 phase=6 PASS Left returns Entry_18
+10.63 row=18 phase=6 PASS Left preserves known/unknown details
+10.63 row=18 phase=6 PASS Returned row fully visible
+10.87 row=19 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+10.87 row=19 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+10.95 row=19 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+10.95 row=19 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+11.03 row=19 phase=4 PASS Pointer selects scrollbar
+11.03 row=19 phase=4 PASS Pointer preserves viewed details
+11.03 row=19 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+11.03 row=19 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+11.11 row=19 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+11.11 row=19 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+11.19 row=19 phase=6 PASS Left returns Entry_19
+11.19 row=19 phase=6 PASS Left preserves known/unknown details
+11.19 row=19 phase=6 PASS Returned row fully visible
+11.19 row=19 phase=6 PASS Unknown entry does not reveal name/description/artwork
+11.43 row=20 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+11.43 row=20 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+11.51 row=20 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+11.51 row=20 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+11.59 row=20 phase=4 PASS Pointer selects scrollbar
+11.59 row=20 phase=4 PASS Pointer preserves viewed details
+11.59 row=20 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+11.59 row=20 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+11.67 row=20 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+11.67 row=20 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+11.75 row=20 phase=6 PASS Left returns Entry_20
+11.75 row=20 phase=6 PASS Left preserves known/unknown details
+11.75 row=20 phase=6 PASS Returned row fully visible
+12.00 row=21 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+12.00 row=21 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+12.08 row=21 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+12.08 row=21 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+12.16 row=21 phase=4 PASS Pointer selects scrollbar
+12.16 row=21 phase=4 PASS Pointer preserves viewed details
+12.16 row=21 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+12.16 row=21 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+12.24 row=21 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+12.24 row=21 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+12.32 row=21 phase=6 PASS Left returns Entry_21
+12.32 row=21 phase=6 PASS Left preserves known/unknown details
+12.32 row=21 phase=6 PASS Returned row fully visible
+12.32 row=21 phase=6 PASS Unknown entry does not reveal name/description/artwork
+12.56 row=22 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+12.56 row=22 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+12.64 row=22 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+12.64 row=22 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+12.72 row=22 phase=4 PASS Pointer selects scrollbar
+12.72 row=22 phase=4 PASS Pointer preserves viewed details
+12.72 row=22 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+12.72 row=22 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+12.80 row=22 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+12.80 row=22 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+12.88 row=22 phase=6 PASS Left returns Entry_22
+12.88 row=22 phase=6 PASS Left preserves known/unknown details
+12.88 row=22 phase=6 PASS Returned row fully visible
+13.12 row=23 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+13.12 row=23 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+13.20 row=23 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+13.20 row=23 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+13.28 row=23 phase=4 PASS Pointer selects scrollbar
+13.29 row=23 phase=4 PASS Pointer preserves viewed details
+13.29 row=23 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+13.29 row=23 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+13.37 row=23 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+13.37 row=23 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+13.45 row=23 phase=6 PASS Left returns Entry_23
+13.45 row=23 phase=6 PASS Left preserves known/unknown details
+13.45 row=23 phase=6 PASS Returned row fully visible
+13.45 row=23 phase=6 PASS Unknown entry does not reveal name/description/artwork
+13.69 row=24 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+13.69 row=24 phase=3 INPUT Click /UXGalleryLayoutMouse/leftButton
+13.77 row=24 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+13.77 row=24 phase=4 INPUT Click /UXGalleryLayoutMouse/leftButton
+13.85 row=24 phase=4 PASS Pointer selects scrollbar
+13.85 row=24 phase=4 PASS Pointer preserves viewed details
+13.85 row=24 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+13.85 row=24 phase=5 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+13.93 row=24 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+13.93 row=24 phase=6 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+14.01 row=24 phase=6 PASS Left returns Entry_24
+14.01 row=24 phase=6 PASS Left preserves known/unknown details
+14.01 row=24 phase=6 PASS Returned row fully visible
+14.21 row=13 phase=11 INPUT Navigate /UXGalleryLayoutKeyboard/upArrow
+14.21 row=13 phase=11 INPUT Navigate /UXGalleryLayoutKeyboard/upArrow
+14.29 row=13 phase=12 INPUT Navigate /UXGalleryLayoutKeyboard/upArrow
+14.29 row=13 phase=12 INPUT Navigate /UXGalleryLayoutKeyboard/upArrow
+14.37 row=13 phase=12 PASS Up scrolls and keeps scrollbar focus
+14.37 row=13 phase=12 PASS Up preserves viewed entry
+14.38 row=13 phase=13 INPUT Navigate /UXGalleryLayoutKeyboard/downArrow
+14.38 row=13 phase=13 INPUT Navigate /UXGalleryLayoutKeyboard/downArrow
+14.45 row=13 phase=14 INPUT Navigate /UXGalleryLayoutKeyboard/downArrow
+14.45 row=13 phase=14 INPUT Navigate /UXGalleryLayoutKeyboard/downArrow
+14.53 row=13 phase=14 PASS Down scrolls and keeps scrollbar focus
+14.53 row=13 phase=14 PASS Down preserves viewed entry
+14.53 row=13 phase=15 INPUT Navigate /UXGalleryLayoutKeyboard/rightArrow
+14.53 row=13 phase=15 INPUT Navigate /UXGalleryLayoutKeyboard/rightArrow
+14.61 row=13 phase=16 INPUT Navigate /UXGalleryLayoutKeyboard/rightArrow
+14.61 row=13 phase=16 INPUT Navigate /UXGalleryLayoutKeyboard/rightArrow
+14.69 row=13 phase=16 PASS Right moves to return button
+14.69 row=13 phase=17 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+14.69 row=13 phase=17 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+14.77 row=13 phase=18 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+14.77 row=13 phase=18 INPUT Navigate /UXGalleryLayoutKeyboard/leftArrow
+14.86 row=13 phase=18 PASS Return Left restores original viewed entry
+14.86 row=13 phase=18 COMPLETE 143 checks 25 mouse-to-key paths, unknown privacy, vertical scroll and return navigation

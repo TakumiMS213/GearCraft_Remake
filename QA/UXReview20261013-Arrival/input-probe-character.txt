@@ -1,0 +1,10 @@
+Editor GameView.SendEvent probe, not OS input
+0.00 step=0 oldD=False axis=0 newD=False x=-5 menu=False scale=1
+0.15 step=1 oldD=False axis=0 newD=False x=-5 menu=False scale=1
+SEND D True accepted=True focused=True frame=222422\n0.55 step=2 oldD=False axis=0 newD=False x=-5 menu=False scale=1
+SEND D False accepted=True focused=True frame=223092\n0.70 step=3 oldD=False axis=0 newD=False x=-5 menu=False scale=1
+SEND Tab True accepted=True focused=True frame=223334\n0.85 step=4 oldD=False axis=0 newD=False x=-5 menu=False scale=1
+SEND Tab False accepted=True focused=True frame=223580\n1.00 step=5 oldD=False axis=0 newD=False x=-5 menu=False scale=1
+SEND Escape True accepted=True focused=True frame=223814\n1.16 step=6 oldD=False axis=0 newD=False x=-5 menu=False scale=1
+SEND Escape False accepted=True focused=True frame=224032\n1.31 step=7 oldD=False axis=0 newD=False x=-5 menu=False scale=1
+1.31 COMPLETE dx=0

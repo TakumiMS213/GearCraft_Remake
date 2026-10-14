@@ -1,0 +1,37 @@
+if(!UnityEditor.SessionState.GetBool("UXArrival20261013.active",false))throw new System.Exception("Backup inactive");
+var gameView=System.Array.Find(Resources.FindObjectsOfTypeAll<UnityEditor.EditorWindow>(),delegate(UnityEditor.EditorWindow w){return w.GetType().Name=="GameView";});
+var movement=UnityEngine.Object.FindFirstObjectByType<PlayerMovement>();
+if(gameView==null||movement==null)throw new System.Exception("Dorm GameView/player required");
+var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
+var hotkey=UnityEngine.Object.FindFirstObjectByType<UIHotkeyController>();
+var panel=(GameObject)typeof(UISwitcher).GetField("panel",flags).GetValue(hotkey.uiSwitcher);
+var logPath="QA/UXReview20261013-Arrival/input-probe.txt";
+System.IO.File.WriteAllText(logPath,"Editor GameView.SendEvent probe, not OS input\n");
+float startX=movement.transform.position.x;
+double started=UnityEditor.EditorApplication.timeSinceStartup;
+double nextAt=started;
+int step=0;
+UnityEditor.EditorApplication.CallbackFunction tick=null;
+System.Action<KeyCode,bool> key=delegate(KeyCode c,bool down){gameView.SendEvent(new Event{type=down?EventType.KeyDown:EventType.KeyUp,keyCode=c});};
+System.Action<string> log=delegate(string s){System.IO.File.AppendAllText(logPath,(UnityEditor.EditorApplication.timeSinceStartup-started).ToString("F2")+" "+s+"\n");};
+UnityEditor.SessionState.SetBool("UXArrival20261013.probeRunning",true);
+tick=delegate{
+ try{
+  double now=UnityEditor.EditorApplication.timeSinceStartup;
+  if(now-started>8)throw new System.Exception("Deadline");
+  if(now<nextAt)return;
+  nextAt=now+0.15;
+  log("step="+step+" oldD="+Input.GetKey(KeyCode.D)+" axis="+Input.GetAxisRaw("Horizontal")+" newD="+(UnityEngine.InputSystem.Keyboard.current!=null&&UnityEngine.InputSystem.Keyboard.current.dKey.isPressed)+" x="+movement.transform.position.x+" menu="+panel.activeSelf+" scale="+Time.timeScale);
+  if(step==0){gameView.Focus();gameView.Repaint();}
+  if(step==1){key(KeyCode.D,true);nextAt=now+0.4;}
+  if(step==2)key(KeyCode.D,false);
+  if(step==3)key(KeyCode.Tab,true);
+  if(step==4)key(KeyCode.Tab,false);
+  if(step==5)key(KeyCode.Escape,true);
+  if(step==6)key(KeyCode.Escape,false);
+  if(step==7){log("COMPLETE dx="+(movement.transform.position.x-startX));UnityEditor.EditorApplication.update-=tick;UnityEditor.SessionState.SetBool("UXArrival20261013.probeRunning",false);}
+  step++;
+ }catch(System.Exception e){key(KeyCode.D,false);key(KeyCode.Tab,false);key(KeyCode.Escape,false);UnityEditor.EditorApplication.update-=tick;UnityEditor.SessionState.SetBool("UXArrival20261013.probeRunning",false);log("FAIL "+e);}
+};
+UnityEditor.EditorApplication.update+=tick;
+return "GameView input probe scheduled";

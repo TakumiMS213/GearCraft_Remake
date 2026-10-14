@@ -1,0 +1,186 @@
+UX継続テスト・ターム13：クラフト素材の表示更新と情報レイアウト
+実施日: 2026-10-13 JST
+環境: Unity Editor Play / macOS
+状態: 素材説明を修正し、18項目＋実Katana説明3項目の回帰と5寸法の表示診断を完了。
+      元8キー・GameView設定の復元と停止後照合も完了。Title・Play停止。
+      画像で確認した非16:9 GameViewの周囲UI欠けは未修正で、次段階の検証対象として残す。
+
+目的
+
+プレイヤーが素材の入手方法や所持数を確認しながらクラフトするとき、
+操作結果と表示されている所持数が一致し、次の作成可否を判断できるかを確認する。
+併せて、Craft画面の文字と情報レイアウトを複数のGameView寸法で診断する。
+操作結果の整合と、人間が情報を理解できるかの評価は別に記録する。
+
+開始時の保全
+
+元PlayerPrefs8キーは /tmp/gearcraft-uxcraftlayout-playerprefs-backup.txt、
+元GameViewサイズ一覧と選択は /tmp/gearcraft-uxcraftlayout-gameview-backup.txt に退避した。
+テスト用に追加したUXCraftLayout0〜3の4サイズと習得状態fixtureは、終了時に復元・照合済み。
+記録担当はUnity MCPを使用せず、担当の実行結果と保存ログ、画像、コードから記録した。
+
+修正前の実クラフトによる再現
+
+担当はチュートリアルの素材不足への回答をUGUI Submitで選び、実際の配布でGear3を受け取った。
+その後チュートリアルを閉じ、CraftButtonへフォーカスを置いてGear素材へPointerEnterを送り、
+所持数3の説明を開いたままCraftButtonをUGUI Submitで実行した。
+craft-consumption-before.txtでは、素材消費後のActualGear=0に対し、説明本文は
+「現在の個数: 3」のまま。IsCrafting=Trueで作成中の値であることも記録されている。
+
+記録担当は以下の3画像を閲覧した。
+  craft-consumption-before.png: 作成前、材料の必要数3/3と下部Gear x3、説明も個数3。
+  craft-consumption-stale.png: 「作成中…」、材料0/3と下部Gear x0、説明だけ個数3。
+  craft-consumption-stale-complete.png: 「作成済み」になった後も説明だけ個数3を維持。
+表示が1フレーム遅れるだけではなく、完成後まで開いた説明が古い数を示すことを確認した。
+UGUIイベントと実チュートリアル配布・実作成処理を組み合わせた検証であり、
+OSマウスや物理Enterによる通し操作の合格ではない。
+
+補助観測と再現範囲の区別
+
+material-before.txtでは、表示中に実素材数を直接0→3へ加算しても説明が個数0のままになる。
+これは更新契機の補助診断であり、実際の報酬取得を通した操作の再現ではない。
+チュートリアルの配布と同時に素材をhoverする経路は、チュートリアル中の非interactable状態が
+あるため自然な操作として再現できていない。その未再現条件を製品不具合の根拠にはしない。
+今回の根拠は、配布を終えてチュートリアルを閉じた後の実クラフトによる消費と表示の不一致。
+
+今回の素材説明の変更
+
+CraftMaterialTooltipTriggerは有効化時にMaterialsChangedを購読し、無効化時に解除する。
+TooltipSystem.IsShowingFor(anchor)で自分の素材説明が表示中か確認し、該当時のみ本文を作り直す。
+PointerExit/OnDisableで閉じる場合も同じ対象判定を通し、別素材・別パーツの説明へ干渉しない。
+TooltipSystem側には現在のanchorと表示中状態を照合するIsShowingForを追加した。
+
+修正後の表示更新・競合回帰
+
+TooltipRegression.cs.txt / tooltip-after.txtは18 PASSで完了。
+  非表示の説明は素材加算で勝手に開かず、hover時に現在の数を示す。
+  表示中の加算・消費・全素材リセットで個数を更新する。
+  無関係の素材のExit/Disableでは現在の説明を閉じない。
+  別素材へ説明を移した後、古い素材の変更/Exitで上書き・非表示にしない。
+  本人のExit/Disableでは閉じ、無効時の変更では復活せず、再有効化後は更新を再開。
+  再有効化後のMaterialsChanged購読数は1件。
+  別anchorに表示した構造化パーツ説明は素材変更/古い素材Exitで書き換わらず表示を維持。
+  実CraftButtonのSubmitで素材が消費され、表示中のGear説明も個数0になる。
+
+この回帰の素材数準備にはSetAllMaterials/AddMaterial等のfixtureを使い、
+hover/exitは実ハンドラー直接呼出し、作成はUGUI Submitを使用した。
+修正前のチュートリアル配布を全て繰り返した試験ではなく、素材変更と表示更新の境界回帰である。
+担当と記録担当がcraft-consumption-after.png / craft-consumption-after-complete.pngを閲覧し、
+作成中・作成済みとも、材料0/3・下部Gear x0・説明個数0が一致していることを確認した。
+さらにweapon-owner-after.txtは、実際のKatana説明を開き、素材変更・別素材triggerのDisable・Exitで
+表示を保持する3項目に合格したと記録する。構造化パーツのfixtureだけに頼らない実説明の対照。
+
+無効な試験条件で生じた最初の失敗
+
+tooltip-invalid-fixture.txtの最初の試行は、構造化パーツ説明のanchorに別素材trigger自身のRectを
+流用したため、素材変更時にその素材の説明が更新される条件を作って失敗した。
+実際のパーツ表示を再現する条件ではないので、この失敗を製品不具合とは判定しない。
+素材triggerではない別Rectへanchorを変えた再実行で18項目が合格。無効な試行のログも保持する。
+
+チュートリアルの5寸法診断と、画面全体の画像観測
+
+TutorialLayout.cs.txt / tutorial-layout.txtは1920×1080、1280×720、1600×1000、1024×768、
+2560×1080で3状態（Craftの課題、対象レシピを確認する返答、Upgradeの具体ヒント）を表示した。
+StartTutorial/ShowNextHintの直接呼出し、習得フラグ/課題状態のfixtureを含む表示試験。
+自然な習得過程を通した理解度の試験ではない。
+messagePanelのCanvas外判定と、その子TMPのoverflow/truncatedを調べ、100 TMP観測・
+diagnosticFlags=0で完了。これはチュートリアルpanel内部の診断に限定される。
+
+画像を独立に閲覧したところ、黒いチュートリアル本文・ボタンは枠内にある一方、
+周囲のCraft/Upgrade UIには次の欠けや重なりが見える。
+  tutorial-2-0/1（1600×1000）: Craftの左見出しが左端で欠け、赤い閉じる×の一部が右端外。
+  tutorial-2-2: Upgrade左右見出しの端が欠け、Damage Plateの名前上部が見出し帯に一部隠れる。
+  tutorial-3-0（1024×768）: レシピ名の左端が欠け、Craftの閉じる×が見えず、?も端の一部のみ。
+  tutorial-3-2: Upgradeの左右見出しが画面外、ショップ第1行上部が見出し帯に隠れる。
+  tutorial-4-0/1（2560×1080）: Craft見出し上部が画面上で欠け、Craft!下部が素材帯と重なる。
+担当は4:3 Craftの左右欠けと横長Upgradeの上部欠けも確認し、16:9の2寸法では同じ欠損なしと報告。
+これらの画像結果をTMP診断の0件で打ち消さない。画面全体の配置は今回恒久変更していない。
+
+この観測はGameViewの指定描画寸法でのもの。ProjectSettingsはdefault1920×1080・
+defaultIsNativeResolution0・FullScreenWindow（fullscreenMode1）・resizable0だが、
+実ビルドで非16:9表示時に同じ欠けが起きることは未検証。
+実機の外形比率から描画比率を断定せず、対応解像度や人間の可読性が合格とも判断しない。
+
+強化パーツ説明と不足表示の5寸法診断
+
+PartLayout.cs.txt / part-layout.txtは5寸法×全15パーツを27.20秒で完了した。
+75パネル、280 TMP、5つの不足表示を観測。全75件でmatchesRequested=True、
+anchorFullHeightVisible=Trueとなり、要求したパーツと実ショップのanchorを使っていることを確認。
+EnsureLineupContains・ScrollRect位置調整・ShowPart・ShowCannotAffordは診断用の直接呼出しであり、
+全パーツを自然に購入・hoverして表示した試験ではない。
+
+結果はtruncatedFlags=0、textOutsidePanelFlags=0、panelOutsideCanvasFlags=0、
+infoOutsideCanvasFlags=0。ただしTMPのoverflowFlagsは205であり、全フラグ0ではない。
+主にtitle/costの行メトリクスがTMPの文字Rectを超える判定。表示glyphのメッシュ境界が
+説明パネル内にあることと、各TMPのoverflow判定は異なる尺度として記録する。
+glyph判定は空白、outline、shadowの余白を含まない。205件を自動的な不具合件数にも、
+単なる誤検出として一括無視した件数にもせず、画像観測と分けて残す。
+
+担当はFull HDのUnstable ChamberとSpeed Gear++を閲覧し、表示glyphの欠損なしと確認。
+記録担当は4:3のSpeed Gear++（素材3種類）・Heavy Slug++と、横長のUnstable Chamberを閲覧し、
+該当popupの名前・本文・費用が描かれていることを確認した。周囲UIの欠けは画像にも残る。
+横長画像では画面下部の不足案内が素材帯と重なっており、infoOutsideCanvas=Falseだけでは
+他要素による遮蔽や読める状態まで保証できないことも確認した。
+全15枚の画像が作成されているが、記録担当が全画像を読んで可読性を採点したわけではない。
+
+レイアウト試作と残す課題
+
+実行中だけCanvasScalerのExpandを試したexpand-preview-upgrade-4x3.pngでは、
+固定された背景枠とショップ・見出し等の位置ずれが増えたため、この案を採用しなかった。
+担当が元のモードへ戻してからPlayを停止。記録担当も画像で、ショップ上部の帯や
+強化グリッド・状態欄が固定背景枠とずれる状態を確認した。
+製品の恒久変更は素材tooltipの2ファイルのみで、シーンやレイアウト設定を変更していない。
+
+次段階では実ビルドで今回の非16:9描画状態へ到達するかを確認し、対応する表示範囲を確定する。
+そのうえで、背景と操作UIを単一の16:9 content rootへまとめて同じ比率でfitさせる案を検証候補にする。
+これは背景と操作対象を揃えるための比較候補であり、実装・採用は確定していない。
+現時点で新しいユーザー承認ゲートは設けず、広い配置変更が必要になれば具体的な試作と比較を記録する。
+
+公開資料と適用範囲
+
+NN/g / Visibility of System Status
+https://www.nngroup.com/articles/visibility-system-status/
+操作後の現在状態を適切なタイミングで伝えるという観点を、消費後の素材表示の更新に適用する。
+記録担当も今回本文を取得し、操作結果のフィードバックを扱っていることを確認した。
+資料は設計判断の根拠であり、この修正による人間の理解度や快適さの向上を実測した証拠ではない。
+
+Microsoft / Xbox Accessibility Guideline 101: Text display
+https://learn.microsoft.com/en-us/xbox/accessibility/xbox-accessibility-guidelines/101
+表示寸法・読みやすさの検討に参照。TMPフラグやglyph境界の診断を、規格適合や人間の可読性の証明にしない。
+
+証拠
+
+craft-consumption-before.txt: チュートリアルで受け取ったGearを実クラフトで消費した後の表示不一致。
+craft-consumption-before.png / craft-consumption-stale.png / craft-consumption-stale-complete.png:
+  作成前・作成中・作成済みと、素材数説明の差。
+material-before.txt: 素材の直接加算時にも表示が古いままになる補助診断。
+TooltipRegression.cs.txt / tooltip-after.txt: 素材更新・表示対象の所有・購読数・実作成の18項目回帰。
+weapon-owner-after.txt: 実Katana説明を素材イベント・別素材Disable/Exitから保持する3項目。
+tooltip-invalid-fixture.txt: パーツ説明のanchorを素材triggerと重ねた無効な初回試行。
+craft-consumption-after.png / craft-consumption-after-complete.png: 作成中・作成済みの個数一致。
+TutorialLayout.cs.txt / tutorial-layout.txt: 5寸法・3状態のtutorial panel内部の文字診断。
+tutorial-2-0/1/2.png、tutorial-3-0/2.png、tutorial-4-0/1.png: 記録担当が閲覧した周囲UIの欠け・重なり。
+PartLayout.cs.txt / part-layout.txt: 5寸法×15パーツのパネル・TMP・不足表示診断。overflow205を保持。
+part-layout-3-SpeedGearplusplus.png / part-layout-3-HeavySlugplusplus.png / part-layout-4-UnstableChamber.png:
+  記録担当が閲覧した説明パネルと周囲UI。
+expand-preview-upgrade-4x3.png: 不採用の実行中Expand試作。
+Restore.cs.txt / Verify.cs.txt / RestoreView.cs.txt / observations.txt: 元8キー・GameView設定の復元と照合。
+Assets/GearCraft/Scripts/Craft/CraftMaterialTooltipTrigger.cs: 素材説明の表示契機と本文生成。
+Assets/GearCraft/Scripts/UI/TooltipSystem.cs: 説明対象の識別と表示。
+
+終了確認
+
+実行中のレイアウト試作を元に戻し、Play停止後に元8キーを専用ファイルから復元。
+別呼出しのVerify.cs.txtで存在と値を照合し、Title・play=False・backup=Falseを記録した。
+GameViewの試験用4サイズを削除し、元一覧・選択index3が完全一致、target1920×1080を確認。
+observations.txtでactive/sizesActive/layoutRunning/partLayoutRunningの4フラグがFalse。
+最終Consoleの検索「error CS」「Exception」は各0件。全error一覧が0件という意味ではない。
+git diff --check成功。製品変更はCraftMaterialTooltipTrigger.cs / TooltipSystem.csの2ファイル。
+
+未実施・別途確認対象
+
+・画像で見つかったCraft/Upgradeの寸法依存の欠けと重なりの追加調査。
+・実ビルドでの描画寸法への到達性と、背景/UIを同じ比率で収める比較試作。
+・OS/物理入力、実機ビルド、初見の人による素材数の理解・読みやすさ。
+
+今回の変更に新しい明示承認ゲートは設けていない。

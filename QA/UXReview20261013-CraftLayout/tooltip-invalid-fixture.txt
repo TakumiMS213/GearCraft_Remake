@@ -1,0 +1,18 @@
+PASS hidden popup stays hidden on grant
+PASS hover shows current amount
+PASS grant refreshes shown amount
+PASS spend refreshes shown amount
+PASS reset refreshes shown amount
+PASS unrelated material exit does not hide current popup
+PASS unrelated material disable does not hide current popup
+PASS old material does not overwrite another material
+PASS old material exit preserves new material
+PASS own exit hides popup
+PASS own disable hides popup
+PASS disabled trigger does not resurrect popup
+PASS re-enabled trigger refreshes
+PASS re-enable has exactly one subscription
+FAIL material event preserves structured part content
+ERROR System.Exception: material event preserves structured part content
+  at MCPDynamicCode+<Execute>c__AnonStorey0.<>m__0 (System.Boolean ok, System.String s) [0x0003b] in <c0288da0293f4b188c8692526d2b27aa>:0 
+  at MCPDynamicCode.Execute () [0x00474] in <c0288da0293f4b188c8692526d2b27aa>:0 

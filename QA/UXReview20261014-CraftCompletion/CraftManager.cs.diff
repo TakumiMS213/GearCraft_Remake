@@ -1,0 +1,98 @@
+--- before
++++ Assets/GearCraft/Scripts/Craft/CraftManager.cs
+@@ -19,7 +19,8 @@
+     public CraftRecipeSO SelectedRecipe => selectedRecipe;
+     public bool IsInitialized { get; private set; }
+     public bool IsReadyForTutorial { get; private set; }
+-    public bool IsCrafting => transitionManager != null && transitionManager.IsPlaying;
++    public bool IsCrafting => pendingCraftRecipe != null ||
++        (transitionManager != null && transitionManager.IsPlaying);
+ 
+     [Header("レシピ一覧")]
+     public List<CraftRecipeSO> recipes;
+@@ -50,13 +51,14 @@
+     private readonly List<CraftRecipeSO> pendingUnlockNotifications = new List<CraftRecipeSO>();
+     private readonly List<Image> recipeVisualImages = new List<Image>();
+     private CraftRecipeSO selectedRecipe;
++    private CraftRecipeSO pendingCraftRecipe;
+     private bool showCraftFailure;
+ 
+     private void OnEnable()
+     {
+         MaterialManager.MaterialsChanged += RefreshMaterialCountLabels;
+         if (transitionManager != null)
+-            transitionManager.TransitionFinished += RefreshCraftControls;
++            transitionManager.TransitionFinished += OnCraftTransitionFinished;
+         RefreshMaterialCountLabels();
+         RefreshCraftControls();
+     }
+@@ -64,10 +66,11 @@
+     private void OnDisable()
+     {
+         showCraftFailure = false;
++        pendingCraftRecipe = null;
+         MaterialManager.MaterialsChanged -= RefreshMaterialCountLabels;
+         if (transitionManager != null)
+         {
+-            transitionManager.TransitionFinished -= RefreshCraftControls;
++            transitionManager.TransitionFinished -= OnCraftTransitionFinished;
+             transitionManager.CancelTransition();
+         }
+         if (errorImage != null)
+@@ -75,6 +78,16 @@
+             errorImage.DOKill();
+             errorImage.gameObject.SetActive(false);
+         }
++    }
++
++    private void OnCraftTransitionFinished()
++    {
++        CraftRecipeSO completedRecipe = pendingCraftRecipe;
++        pendingCraftRecipe = null;
++        RefreshCraftControls();
++        // Hidden/cancelled presentations are reconciled when the tutorial is resumed.
++        if (completedRecipe != null && isActiveAndEnabled)
++            RecipeCrafted?.Invoke(completedRecipe);
+     }
+ 
+     private void RefreshCraftControls()
+@@ -88,7 +101,7 @@
+         }
+         if (craftStatusText != null)
+         {
+-            craftStatusText.text = IsCrafting ? "作成中…" : alreadyOwned ? "作成済み" :
++            craftStatusText.text = IsCrafting ? string.Empty : alreadyOwned ? "作成済み" :
+                 showCraftFailure ? GetCraftFeedback() : string.Empty;
+             craftStatusText.gameObject.SetActive(!string.IsNullOrEmpty(craftStatusText.text));
+             if (craftFeedbackPanel != null)
+@@ -311,7 +324,11 @@
+     {
+         if (IsCrafting) return;
+         CraftRecipeSO recipe = selectedRecipe;
+-        if (CanCraft() && MaterialManager.Instance.SpendCosts(recipe.costs))
++        bool canCraft = CanCraft();
++        // Material/result changes can refresh the UI before the animation starts.
++        // Keep all completion feedback pending until its final fade has finished.
++        if (canCraft) pendingCraftRecipe = recipe;
++        if (canCraft && MaterialManager.Instance.SpendCosts(recipe.costs))
+         {
+             showCraftFailure = false;
+             // The result is committed once; cancelling its presentation does not undo crafting.
+@@ -325,13 +342,15 @@
+ 
+             if (StatusManager.Instance != null)
+                 StatusManager.Instance.DormTasks.hasCrafted = true;
+-            RecipeCrafted?.Invoke(recipe);
+-
+             if (materialDisplay != null)
+                 materialDisplay.UpdateMaterialAmount();
++
++            if (transitionManager == null || !transitionManager.IsPlaying)
++                OnCraftTransitionFinished();
+         }
+         else
+         {
++            pendingCraftRecipe = null;
+             showCraftFailure = true;
+             RefreshCraftControls();
+             CraftFailed?.Invoke(recipe);

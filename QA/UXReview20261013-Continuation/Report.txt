@@ -1,0 +1,122 @@
+GearCraft UX観点の継続テスト
+実施日: 2026-10-13 JST
+環境: Unity 6000.0.67f1 / macOS Editor
+確認画像: 1920 x 1080
+
+目的と方法
+前回のクラフト・アップグレード検証に続き、画面の開閉、選択の移動、
+取り消し、ギャラリー往復、音量設定の反映を確認した。
+実画面の観察と、EventSystemへのPointer / Move / Submitイベント送信を使用。
+Escapeは実装されているHandleEscapeまたはBackを呼び出した。
+物理キーボードからの入力経路全体や、人間の初見操作を測ったものではない。
+操作ログ: actions.txt / 状態の観測結果: observations.txt
+
+今回の判断基準
+Microsoft Xbox Accessibility Guideline 112: UI navigation
+https://learn.microsoft.com/en-us/xbox/accessibility/xbox-accessibility-guidelines/112
+  ゲーム内の移動方法を一貫させ、選択の移動先を予測できるようにすること、
+  前の画面へ戻る手段を確保することを参照した。
+Jakob Nielsen, 10 Usability Heuristics for User Interface Design
+https://www.nngroup.com/articles/ten-usability-heuristics/
+  状態を伝える、取り消しや復帰を可能にする、操作の一貫性を保つ、
+  誤操作を防ぐ、という原則を参照した。
+前回の安藤昌也教授インタビューを含む設計方針は、
+../UXReview20261013/Report.txtを参照。
+原則への適合と、人間にとっての理解度・満足度の実測は区別する。
+
+発見・修正1: 前面に画面を開いても背後の項目が選択される
+再現した事実:
+  タイトルでSETTINGSをクリックしても、選択はSettingButtonのまま。
+  上方向のMoveでStartButtonへ移り、Submitすると設定画面からゲームが開始した。
+  また、タイトルの初期選択はnullだった。
+  戦闘メニューのやり直し確認では、初期選択のNoButtonから上方向に移動すると、
+  背後のSEsliderが選択された。
+  操作説明を開いても選択が背後の呼び出しボタンに残っていた。
+証拠:
+  02-settings.png / 03-settings-focus-before.png / 04-settings-submit-started-game.png
+  09-confirm-focus-before.png / observations.txt
+変更:
+  既存のシーンオブジェクトへPanelFocusを追加。
+  前面パネルを開くと、その画面で使う項目へ選択を移す。
+  ナビゲーションの接続先をシーン内で明示し、前面画面の外へ抜けないようにした。
+  閉じた際は呼び出し元へ戻す。装備一覧経由でメニューへ戻った場合も復帰先を維持。
+  タイトルの初期選択をGAME STARTに設定。
+修正後の確認:
+  タイトル初期選択 -> SETTINGS -> BGM -> SE -> 閉じる、の操作が成立。
+  BGM/SEの左右操作は音量調整として働き、背後のボタンへ移動しない。
+  操作説明では四方向とも「閉じる」以外へ選択が出ない。
+  やり直し確認では「やり直す」と「やめる」の間だけを左右移動する。
+  確認を取り消すと、やり直し／タイトル復帰それぞれの呼び出し元へ戻る。
+  装備一覧と操作説明を閉じた後も、対応するメニューボタンへ戻る。
+  装備一覧を経由してメニューを閉じるとOptionButtonへ戻り、Time.timeScale=1で再開。
+  14-settings-keyboard-after.png / 17-confirm-focus-after.png / 18-manual-focus-after.png
+注記:
+  初回修正では親のOnEnable時に子SelectableのIsActive判定が成立せず、
+  選択移動が起きなかった。子の有効化順序に対応して修正し、再検証した。
+
+発見・修正2: ギャラリー一覧から戻るボタンへ移動できない
+再現した事実:
+  一覧の明示的な接続先は上下のみ。先頭・末尾の外側と左右に接続がなく、
+  一覧からキー移動だけで「タイトルへ戻る」へ到達できなかった。
+  戻るボタンを選択して下方向のMoveを送ると、非表示のタイトル側Manualへ移った。
+  元シーンのCanvasを非表示にしてもSelectableは有効なままだった。
+変更:
+  全25項目の右方向を戻るボタンへ接続。
+  戻るボタンの左／下方向を直前に見ていた項目へ接続。
+  ギャラリー表示中は元シーンのSelectableも無効化し、閉じる際に復元。
+修正後の確認:
+  全25項目を順番に移動でき、末尾まで選択項目がスクロールで見える。
+  一覧 -> 戻る -> 元の項目、がRight / LeftまたはDownで成立。
+  非表示のTitle/Mainに有効なSelectableが残っていないことを確認。
+  タイトルへ戻るとGalleryIconの選択、各ボタン、Time.timeScale=1を復元。
+  Mainから戻ると同一のPauseManagerインスタンス、所持Gear、一時停止状態、
+  GalleryButtonの選択が維持される。
+  15-gallery-navigation-after.png / 19-main-gallery-return-after.png / 20-main-restored-after.png
+併せて確認:
+  未解放のタイトルアイコンに「ED達成後に解放」が表示される。
+  発見済み項目の後に未発見項目を選ぶと、画像・説明が残らず「？」になる。
+  06-gallery-locked-tooltip.png / 16-gallery-unknown-after.png
+
+発見・修正3: 戦闘中のBGM/SEスライダーが機能していない
+再現した事実:
+  MainのBGMスライダーは-40、MixerのBGM設定は-20で不一致。
+  右方向の操作でスライダーが-39になっても、Mixerは-20のままだった。
+  BGM/SE両方のOnValueChangedの参照先がnullで、MainにはAudioコンポーネントがなかった。
+変更:
+  MainのTransitionCanvasへ既存のAudioコンポーネントを配置。
+  タイトルと共通のAudioMixerを指定し、BGM/SE両スライダーの変更イベントを接続。
+  シーン開始時にMixerの現在値を読み取る既存処理も動作するようになった。
+修正後の確認:
+  BGM/SEとも表示値とMixerが-20で一致。
+  右方向の操作で表示値とMixerがともに-19へ変化。
+  メニューを閉じて開き直しても値を保持。
+  タイトルへ移動しても両スライダーが変更後のMixer値を表示。
+  21-main-audio-before.png / 22-main-audio-after.png
+限界:
+  確認対象はUIとAudioMixerパラメーターの反映。実際の聴感による音量評価は未実施。
+
+変更した実装（今回分）
+Assets/GearCraft/Scenes/Title.unity
+Assets/GearCraft/Scenes/Main.unity
+Assets/GearCraft/Scenes/Gallery.unity
+Assets/GearCraft/Scripts/UI/PanelFocus.cs と .meta
+Assets/GearCraft/Scripts/Main/PauseManager.cs
+Assets/GearCraft/Scripts/Gallery/GalleryController.cs
+Assets/GearCraft/Scripts/Gallery/GalleryNavigation.cs
+前回までの変更を維持した。新しい画面をランタイム生成する変更はない。
+
+終了時の検証・復元
+Unityスクリプトのコンパイルエラー0件。git diff --check成功。
+UIテストのログ監視中、ゲームスクリプトのError/Exceptionを検出していない。
+Consoleには既存のRender Graph互換モードおよびmemoryless depth surface関連の
+描画メッセージがあった。今回のUI修正とは別に扱い、解消したとはしていない。
+自動操作コードのスコープ衝突や同一フレーム内クリックのRaycast失敗は、
+テスト手順を直して再実行した。これらをゲームの不具合件数には含めない。
+テスト用のED解放・発見情報・チュートリアル等、8つのPlayerPrefsを、
+キーの有無と値の双方で退避前と照合して復元した。
+BGM/SEは検証前の-20/-20へ戻した。EditorはTitleシーン、Play停止状態。
+
+未検証
+物理キーからの入力経路全体、実機ビルド、別解像度、すべての画面の網羅、
+ゲームパッド、聴感、人間の初見操作時間・理解度・自力成功率。
+実画面とUIイベントでの動作確認を、人間によるユーザビリティテストとは呼ばない。

@@ -1,0 +1,3 @@
+8 original PlayerPrefs match after Play stop; scene=Title play=False backup=False
+Final normal menu visible with scale=0; screenshot captured without closing in same frame
+8 original PlayerPrefs match after Play stop; scene=Title play=False backup=False

@@ -1,0 +1,21 @@
+BEGIN Damage+2 dest=(1212.00, 863.00) rotation=0 hasPlacement=True grid=1,0 scrap=30
+END placed=1 scrap=24 damage=3 info=Damage Plate+を装備しました。 / 装着したパーツをクリックすると外せます。
+PASS right edge snapped (1,0), cost6, damage+3
+BEGIN Damage+1 dest=(1212.00, 863.00) rotation=0 hasPlacement=True grid=2,0 scrap=24
+END placed=1 scrap=24 damage=3 info=ほかのパーツと重なっています。 / 空いた場所へ移すか、装着済みのパーツをクリックして外してください。
+PASS overlap non-consumption, reason shown, shop item retained
+PASS one cell Submit removed whole 2-cell part, refunded6 once, damage0
+SCROLL shop to returned part
+BEGIN Damage+2 dest=(688.00, 339.00) rotation=1 hasPlacement=True grid=0,1 scrap=30
+END placed=1 scrap=24 damage=3 info=Damage Plate+を装備しました。 / 装着したパーツをクリックすると外せます。
+PASS rotation=1 fixture lower left snapped (0,1), cost6, damage3; physical rotation input untested
+BEGIN SpeedGear++ dest=(1680.00, 540.00) rotation=0 hasPlacement=False grid=-1,-1 scrap=24
+END placed=1 scrap=24 damage=3 info=配置を取り消しました。素材は消費していません。 / 装着するには、パーツを枠内へドラッグしてください。
+PASS far outside cancellation; all cost types unchanged; item retained=True
+BEGIN SpeedGear++ dest=(1212.00, 339.00) rotation=0 hasPlacement=True grid=2,1 scrap=24
+PASS tab switch while dragging cancels preview/non-consumption
+After tab roundtrip dragging=False preview=False info=Speed Gear++: グリッドへドラッグ。右クリックまたはRキーで回転。
+BEGIN Damage+2 dest=(950.00, 601.00) rotation=0 hasPlacement=True grid=0,1 scrap=30
+AFTER FIX tab return: dragging=False preview=False scrap=30 placed=0 text=装着を取り消しました。装着用の素材は消費していません。
+パーツを選び直して、枠内へドラッグしてください。
+PASS after-fix real placement success text retained; idle CancelShopDrag preserves result

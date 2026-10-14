@@ -1,0 +1,22 @@
+{
+  "observedAtUtc": "2026-10-13T14:07:35.815013+00:00",
+  "runs": [
+    {
+      "run": "QA/UXReview20261013-StandaloneDisplay/native/run-20261013T135051459Z-47cd4dfe",
+      "pngCount": 0,
+      "finishedMarker": false,
+      "probeLogPresent": true
+    },
+    {
+      "run": "QA/UXReview20261013-StandaloneDisplay/windowed/run-20261013T135610411Z-f69d01eb",
+      "pngCount": 0,
+      "finishedMarker": false,
+      "probeLogPresent": true
+    }
+  ],
+  "probeProcessStopped": true,
+  "executionSession94124ExitCode": 0,
+  "consoleErrorCSCount": 0,
+  "consoleExceptionCount": 0,
+  "interpretation": "No completed rendering evidence. Display verification remains pending screen unlock and a fresh run."
+}

@@ -1,0 +1,3 @@
+Before restore: Gallery saved key presence/value unchanged=True
+GameView restored exact original list/selected index=3, removed=4, target=(1920.00, 1080.00)
+8 original PlayerPrefs match after Play stop; scene=Title play=False backup=False

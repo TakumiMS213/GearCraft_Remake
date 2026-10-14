@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace GearCraft.Scripts.Craft
@@ -20,6 +21,8 @@ namespace GearCraft.Scripts.Craft
         private readonly List<Rect> highlightBounds = new List<Rect>();
         private TMP_Text stateText, titleText, bodyText, pageText, confirmText;
         private Button nextButton, closeButton, hintButton, practiceButton, affordableButton, shortageButton;
+        private Button confirmYesButton, confirmNoButton;
+        private GameObject confirmOpener;
         private TMP_FontAsset fontAsset;
         private GameObject tutorialRoot, confirmRoot;
         private int currentTab, openTab;
@@ -71,7 +74,7 @@ namespace GearCraft.Scripts.Craft
             UpdateHighlight();
         }
 
-        private void OnDisable() { PauseTutorial(); }
+        private void OnDisable() { OnCraftSceneLeaving(); }
         private void OnDestroy()
         {
             PauseTutorial();
@@ -91,6 +94,12 @@ namespace GearCraft.Scripts.Craft
 
         public void OnCraftSceneEntered() { TryAutoStartTutorial(CraftTab); }
 
+        public void OnCraftSceneLeaving()
+        {
+            PauseTutorial();
+            HideConfirm();
+        }
+
         private void TryAutoStartTutorial(int tabIndex)
         {
             if (tabIndex < 0 || tabIndex > 1 || IsTutorialActive() || autoStarted[tabIndex] ||
@@ -108,7 +117,7 @@ namespace GearCraft.Scripts.Craft
                 if (openTab != tabIndex) break;
                 ResolveTutorialReferences();
                 bool ready = StatusManager.Instance != null && MaterialManager.Instance != null &&
-                    (tabIndex == CraftTab ? craftManager != null && craftManager.IsReadyForTutorial
+                    (tabIndex == CraftTab ? craftManager != null && craftManager.IsReadyForTutorial && !craftManager.IsCrafting
                         : upgradeShopManager != null && upgradeGridManager != null && upgradeGridManager.GridSize > 0);
                 if (!ready) continue;
                 autoStartCoroutine = null;
@@ -124,23 +133,33 @@ namespace GearCraft.Scripts.Craft
         private void ShowConfirm()
         {
             EnsureLayout();
+            if (!confirmRoot.activeSelf)
+                confirmOpener = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
             confirmRoot.SetActive(true);
             confirmText.text = PlayerPrefs.GetInt(MasteryKey(currentTab), 0) == 1
                 ? "作成や強化の手順を、もう一度確認しますか？"
                 : "次の戦いに向けて、作成と強化の手順を確かめましょう。\n中断したところから続けられます。";
+            confirmYesButton.Select();
         }
 
         private void StartTutorial(int tabIndex)
         {
             if (autoStartCoroutine != null) { StopCoroutine(autoStartCoroutine); autoStartCoroutine = null; }
+            ResolveTutorialReferences();
+            if (tabIndex == CraftTab && craftManager != null && craftManager.IsCrafting)
+            {
+                // Resume from committed results only after their crafting presentation ends.
+                HideConfirm();
+                autoStartCoroutine = StartCoroutine(StartTutorialWhenReady(tabIndex));
+                return;
+            }
             currentTab = tabIndex;
             autoStarted[tabIndex] = true;
-            ResolveTutorialReferences();
             currentSteps = GetSteps(tabIndex);
             progress = tabIndex == CraftTab ? RunProgress.craft : RunProgress.weaponCustom;
-            // Only ownership is reconciled on resume. Retain the original upgrade baseline so
-            // removing and replacing an existing part cannot pass an independent challenge.
-            RememberOwnedRecipes();
+            // Keep the pre-task ownership and upgrade baselines until resumed outcomes are checked.
+            // Otherwise a result made while guidance was paused becomes an already-owned item.
+            if (!progress.baselineCaptured) RememberOwnedRecipes();
             referenceOnly = progress.mastered || PlayerPrefs.GetInt(MasteryKey(tabIndex), 0) == 1 ||
                 (tabIndex == CraftTab && AllRecipesOwned());
             referenceStepIndex = 0;
@@ -151,8 +170,53 @@ namespace GearCraft.Scripts.Craft
             else UnsubscribeTutorialEvents();
             notice = "";
             segmentSeconds = 0f;
-            if (!referenceOnly && !progress.showingFeedback) PrepareCurrentStep();
+            if (!referenceOnly && !progress.showingFeedback)
+            {
+                ReconcilePausedOutcomes();
+                if (!progress.showingFeedback) PrepareCurrentStep();
+            }
             ShowCurrentStep();
+        }
+
+        private void ReconcilePausedOutcomes()
+        {
+            if (!progress.baselineCaptured || Step == null) return;
+            if (currentTab == CraftTab && craftManager != null && craftManager.recipes != null)
+            {
+                foreach (var recipe in craftManager.recipes)
+                {
+                    if (recipe == null) continue;
+                    bool addedCraftBonus = recipe.resultType == CraftResultType.Module && recipe.statBonus > 0 &&
+                        StatusManager.Instance != null && StatusManager.Instance.craftWeaponDamagebuff -
+                        progress.baselineCraftWeaponDamageBuff >= recipe.statBonus;
+                    if (!RecipeAlreadyOwned(recipe) && !addedCraftBonus) continue;
+                    bool completedPractice = Step.WaitCondition == CraftTutorialWaitCondition.CraftScrapModule &&
+                        recipe == tutorialScrapModuleRecipe;
+                    bool completedChallenge = Step.WaitCondition == CraftTutorialWaitCondition.CraftDifferentRecipe &&
+                        recipe != tutorialScrapModuleRecipe && !progress.craftedRecipeIds.Contains(RecipeId(recipe));
+                    if (!completedPractice && !completedChallenge) continue;
+                    OnRecipeCrafted(recipe);
+                    return;
+                }
+            }
+            else if (currentTab == WeaponCustomTab && upgradeGridManager != null && StatusManager.Instance != null)
+            {
+                var status = StatusManager.Instance;
+                bool damageUp = status.bonusDamage > progress.baselineDamage + 0.001f;
+                bool faster = status.attackSpeedMult < progress.baselineAttackSpeed - 0.001f;
+                foreach (var placed in upgradeGridManager.PlacedParts)
+                {
+                    var part = placed.partData;
+                    if (part == null) continue;
+                    bool completedPractice = Step.WaitCondition == CraftTutorialWaitCondition.PlaceDamagePart &&
+                        HasEffect(part, UpgradeEffectType.DamageFlat) && damageUp;
+                    bool completedChallenge = Step.WaitCondition == CraftTutorialWaitCondition.ImproveWeapon &&
+                        IsNewWeaponImprovement(part, damageUp, faster);
+                    if (!completedPractice && !completedChallenge) continue;
+                    OnPartPlaced(part);
+                    return;
+                }
+            }
         }
 
         private CraftTutorialStepData[] GetSteps(int tabIndex)
@@ -232,6 +296,7 @@ namespace GearCraft.Scripts.Craft
             var status = StatusManager.Instance;
             progress.baselineDamage = status != null ? status.bonusDamage : 0f;
             progress.baselineAttackSpeed = status != null ? status.attackSpeedMult : 1f;
+            progress.baselineCraftWeaponDamageBuff = status != null ? status.craftWeaponDamagebuff : 0;
             progress.baselineParts.Clear();
             if (upgradeGridManager != null)
                 foreach (var item in upgradeGridManager.PlacedParts) progress.baselineParts.Add(item.partData);
@@ -458,10 +523,7 @@ namespace GearCraft.Scripts.Craft
             }
             else if (IsWaitingFor(CraftTutorialWaitCondition.ImproveWeapon))
             {
-                int before = progress.baselineParts.FindAll(p => p == part).Count;
-                int after = upgradeGridManager.PlacedParts.FindAll(p => p.partData == part).Count;
-                if (part.name == progress.practicePartName || after <= before ||
-                    !(damageUp && HasEffect(part, UpgradeEffectType.DamageFlat) || faster && HasEffect(part, UpgradeEffectType.AttackSpeedMult)))
+                if (!IsNewWeaponImprovement(part, damageUp, faster))
                 { Fail("先ほどとは違うパーツで、今より威力か速さを伸ばしましょう。効果を見比べてみてください。"); return; }
             }
             else return;
@@ -470,6 +532,15 @@ namespace GearCraft.Scripts.Craft
                 : "パーツが組み込まれ、次の攻撃までの待ち時間が短くなりました。";
             if (damageUp && faster) result += "\n次の攻撃までの待ち時間も短くなっています。";
             Succeed(result);
+        }
+
+        private bool IsNewWeaponImprovement(UpgradePartSO part, bool damageUp, bool faster)
+        {
+            int before = progress.baselineParts.FindAll(p => p == part).Count;
+            int after = upgradeGridManager.PlacedParts.FindAll(p => p.partData == part).Count;
+            return part.name != progress.practicePartName && after > before &&
+                (damageUp && HasEffect(part, UpgradeEffectType.DamageFlat) ||
+                 faster && HasEffect(part, UpgradeEffectType.AttackSpeedMult));
         }
 
         private static bool HasEffect(UpgradePartSO part, UpgradeEffectType type)
@@ -567,7 +638,21 @@ namespace GearCraft.Scripts.Craft
             UnsubscribeTutorialEvents();
             referenceOnly = false;
         }
-        private void HideConfirm() { if (confirmRoot != null) confirmRoot.SetActive(false); }
+        private void HideConfirm()
+        {
+            if (confirmRoot == null || !confirmRoot.activeSelf) return;
+            EventSystem events = EventSystem.current;
+            GameObject selected = events != null ? events.currentSelectedGameObject : null;
+            bool restoreFocus = selected == null || selected.transform.IsChildOf(confirmRoot.transform);
+            confirmRoot.SetActive(false);
+            if (restoreFocus && events != null && events.isActiveAndEnabled && !events.alreadySelecting)
+            {
+                Selectable opener = confirmOpener != null ? confirmOpener.GetComponent<Selectable>() : null;
+                events.SetSelectedGameObject(opener != null && opener.IsActive() && opener.IsInteractable()
+                    ? opener.gameObject : null);
+            }
+            confirmOpener = null;
+        }
         private bool IsTutorialActive() => tutorialRoot != null && tutorialRoot.activeSelf;
         private bool IsWaitingFor(CraftTutorialWaitCondition condition) => IsTutorialActive() && !referenceOnly && !progress.showingFeedback && Step != null && Step.WaitCondition == condition;
         private void Record(string outcome)
@@ -1046,12 +1131,26 @@ namespace GearCraft.Scripts.Craft
             confirmText = CreateText("ConfirmText", panel, 28f, FontStyles.Bold, new Vector2(40f, -32f), new Vector2(-40f, -150f));
             confirmText.alignment = TextAlignmentOptions.Center;
 
-            Button yesButton = CreateButton("YesButton", panel, "確認する", new Vector2(-164f, 36f), new Vector2(144f, 58f));
-            Button noButton = CreateButton("NoButton", panel, "あとで", new Vector2(164f, 36f), new Vector2(144f, 58f));
-            CenterButton(yesButton, new Vector2(-90f, -72f));
-            CenterButton(noButton, new Vector2(90f, -72f));
-            yesButton.onClick.AddListener(() => StartTutorial(currentTab));
-            noButton.onClick.AddListener(HideConfirm);
+            confirmYesButton = CreateButton("YesButton", panel, "確認する", new Vector2(-164f, 36f), new Vector2(144f, 58f));
+            confirmNoButton = CreateButton("NoButton", panel, "あとで", new Vector2(164f, 36f), new Vector2(144f, 58f));
+            CenterButton(confirmYesButton, new Vector2(-90f, -72f));
+            CenterButton(confirmNoButton, new Vector2(90f, -72f));
+            confirmYesButton.navigation = ConfirmNavigation(confirmNoButton);
+            confirmNoButton.navigation = ConfirmNavigation(confirmYesButton);
+            confirmYesButton.onClick.AddListener(() => StartTutorial(currentTab));
+            confirmNoButton.onClick.AddListener(HideConfirm);
+        }
+
+        private static Navigation ConfirmNavigation(Selectable other)
+        {
+            return new Navigation
+            {
+                mode = Navigation.Mode.Explicit,
+                selectOnLeft = other,
+                selectOnRight = other,
+                selectOnUp = other,
+                selectOnDown = other
+            };
         }
 
         private static Image CreateImage(string objectName, Transform parent, Color color)

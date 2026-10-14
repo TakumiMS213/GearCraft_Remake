@@ -1,0 +1,360 @@
+// C#6 execute_code method body. Run in Play mode on Title after one Main visit.
+// Uses actual EndingManager.LoadEndingScene and UGUI Submit events only.
+// Existing /tmp/gearcraft-uxending-playerprefs-backup.txt is deliberately untouched.
+if (!UnityEditor.EditorApplication.isPlaying || UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "Title")
+    return "ERROR: Play mode on Title required";
+if (StatusManager.Instance == null || StageCounter.Instance == null)
+    return "ERROR: root must visit Main and return to Title before this run";
+if (!System.IO.File.Exists("/tmp/gearcraft-uxending-playerprefs-backup.txt"))
+    return "ERROR: existing PlayerPrefs backup not found; no fixture was modified";
+
+var outputDirectory = System.IO.Path.GetFullPath("QA/UXReview20261013-Ending");
+System.IO.Directory.CreateDirectory(outputDirectory);
+var logPath = System.IO.Path.Combine(outputDirectory, "EndingJourneyChecks.log");
+System.IO.File.WriteAllText(logPath, "Ending journey checks: real scene loading, UGUI Submit; six cases; score fixture=9000; deadline=180 seconds.\n");
+var reflectionFlags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
+var indexField = typeof(ImageSequenceViewer).GetField("currentIndex", reflectionFlags);
+var imagesField = typeof(ImageSequenceViewer).GetField("images", reflectionFlags);
+var normalButtonField = typeof(ImageSequenceViewer).GetField("advanceButton", reflectionFlags);
+var noticeButtonField = typeof(ImageSequenceViewer).GetField("galleryNoticeButton", reflectionFlags);
+var hintField = typeof(ImageSequenceViewer).GetField("advanceHint", reflectionFlags);
+var noticeField = typeof(ImageSequenceViewer).GetField("showingGalleryUnlockNotice", reflectionFlags);
+var noticeRootField = typeof(ImageSequenceViewer).GetField("galleryUnlockNotice", reflectionFlags);
+var noticeReadyField = typeof(ImageSequenceViewer).GetField("noticeReadyTime", reflectionFlags);
+var transitioningField = typeof(ImageSequenceViewer).GetField("isTransitioning", reflectionFlags);
+var tweenField = typeof(ImageSequenceViewer).GetField("currentTween", reflectionFlags);
+var galleryCache = typeof(GearCraft.Gallery.GalleryProgress).GetField("data", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+if (indexField == null || imagesField == null || normalButtonField == null || noticeButtonField == null || hintField == null ||
+    noticeField == null || noticeRootField == null || noticeReadyField == null || transitioningField == null || tweenField == null || galleryCache == null)
+    return "ERROR: expected read-only inspection fields missing; no fixture was modified";
+
+var catalog = UnityEditor.AssetDatabase.LoadAssetAtPath<GearCraft.Gallery.GalleryCatalogSO>("Assets/GearCraft/ScriptableObject/Gallery/GalleryCatalog.asset");
+EnemyDataSO seedEnemy = null;
+WeaponDataSO seedWeapon = null;
+if (catalog != null && catalog.entries != null) foreach (var entry in catalog.entries) {
+    if (entry == null) continue;
+    if (seedEnemy == null && entry.enemy != null) seedEnemy = entry.enemy;
+    if (seedWeapon == null && entry.weapon != null) seedWeapon = entry.weapon;
+}
+if (seedEnemy == null || seedWeapon == null)
+    return "ERROR: Gallery catalog needs an enemy and a weapon for discovery fixtures";
+
+const string sessionPrefix = "UXEndingJourney20261013.";
+int generation = UnityEditor.SessionState.GetInt(sessionPrefix + "generation", 0) + 1;
+UnityEditor.SessionState.SetInt(sessionPrefix + "generation", generation);
+UnityEditor.SessionState.SetBool(sessionPrefix + "done", false);
+UnityEditor.SessionState.SetBool(sessionPrefix + "completed", false);
+UnityEditor.SessionState.SetInt(sessionPrefix + "cases", 0);
+UnityEditor.SessionState.SetBool(sessionPrefix + "stop", false);
+UnityEditor.SessionState.SetInt(sessionPrefix + "failures", 0);
+UnityEngine.Time.timeScale = 1f;
+UnityEditor.EditorApplication.isPaused = false;
+int failures = 0;
+int assertions = 0;
+int caseIndex = 0;
+int phase = 0;
+int sequenceLength = 0;
+int lastOperationFrame = -1;
+int screenshotFrame = -1;
+string caseName = "";
+bool firstEnding = true;
+int endingNumber = 1;
+bool loadingCheckObserved = false;
+bool backgroundClickPerformed = false;
+double startTime = UnityEditor.EditorApplication.timeSinceStartup;
+double phaseStart = startTime;
+double nextTick = startTime;
+ImageSequenceViewer viewer = null;
+UnityEngine.UI.Button normalButton = null;
+UnityEngine.UI.Button noticeButton = null;
+UnityEngine.GameObject[] images = null;
+System.Action<string> log = message => System.IO.File.AppendAllText(logPath,
+    (UnityEditor.EditorApplication.timeSinceStartup - startTime).ToString("F2") + "s " + message + "\n");
+System.Action<bool, string> check = (ok, message) => {
+    assertions++;
+    if (!ok) failures++;
+    log((ok ? "PASS " : "FAIL ") + caseName + " " + message);
+    UnityEditor.SessionState.SetInt(sessionPrefix + "failures", failures);
+};
+System.Action<UnityEngine.UI.Button> submit = button => {
+    if (button == null || UnityEngine.EventSystems.EventSystem.current == null)
+        throw new System.InvalidOperationException("Submit requires the wired Button and an EventSystem");
+    UnityEngine.EventSystems.ExecuteEvents.Execute<UnityEngine.EventSystems.ISubmitHandler>(button.gameObject,
+        new UnityEngine.EventSystems.BaseEventData(UnityEngine.EventSystems.EventSystem.current),
+        UnityEngine.EventSystems.ExecuteEvents.submitHandler);
+    lastOperationFrame = UnityEngine.Time.frameCount;
+};
+System.Action<int, double> nextPhase = (value, delay) => {
+    phase = value;
+    phaseStart = UnityEditor.EditorApplication.timeSinceStartup;
+    nextTick = phaseStart + delay;
+    UnityEditor.SessionState.SetString(sessionPrefix + "progress", caseName + " phase=" + phase);
+};
+UnityEditor.EditorApplication.CallbackFunction tick = null;
+System.Action<bool, string> finish = (completed, reason) => {
+    UnityEditor.EditorApplication.update -= tick;
+    UnityEditor.SessionState.SetBool(sessionPrefix + "done", true);
+    UnityEditor.SessionState.SetBool(sessionPrefix + "completed", completed);
+    UnityEditor.SessionState.SetString(sessionPrefix + "progress", reason);
+    log("SUMMARY cases=" + caseIndex + "/6 assertions=" + assertions + " failures=" + failures + " completed=" + completed + " reason=" + reason);
+    // Keep Play active on Title. Root restores prefs, stops Play, and verifies restoration.
+    // On a failure/exception, leave the scene inspectable; no callbacks remain.
+};
+tick = () => {
+    try {
+        if (UnityEditor.SessionState.GetInt(sessionPrefix + "generation", 0) != generation) {
+            UnityEditor.EditorApplication.update -= tick;
+            log("ABORT superseded by another harness generation");
+            return;
+        }
+        double now = UnityEditor.EditorApplication.timeSinceStartup;
+        if (now - startTime > 180)
+            throw new System.TimeoutException("180-second deadline exceeded in " + caseName + " phase=" + phase);
+        if (!UnityEditor.EditorApplication.isPlaying || UnityEditor.SessionState.GetBool(sessionPrefix + "stop", false)) {
+            check(false, "run interrupted");
+            finish(false, "interrupted");
+            return;
+        }
+        if (now < nextTick) return;
+        nextTick = now + 0.04;
+        string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        if (phase == 0) {
+            if (sceneName != "Title") throw new System.InvalidOperationException("Expected Title before fixture setup, got " + sceneName);
+            var transition = UnityEngine.Object.FindFirstObjectByType<SceneTransitionManager>();
+            if (transition != null && transition.IsLoading) return;
+            endingNumber = caseIndex / 2 + 1;
+            firstEnding = caseIndex % 2 == 0;
+            string endingName = endingNumber == 1 ? "Bad" : endingNumber == 2 ? "Normal" : "True";
+            caseName = (caseIndex + 1).ToString("00") + "-" + endingName + "-" + (firstEnding ? "first" : "repeat");
+            log("CASE " + caseName);
+            loadingCheckObserved = false;
+            backgroundClickPerformed = false;
+            if (firstEnding) {
+                // Reset only Gallery progress; the existing backup is never overwritten.
+                UnityEngine.PlayerPrefs.DeleteKey(GearCraft.Gallery.GalleryProgress.SaveKey);
+                UnityEngine.PlayerPrefs.Save();
+                galleryCache.SetValue(null, null);
+                check(!GearCraft.Gallery.GalleryProgress.IsUnlocked, "first-ending fixture starts locked");
+                GearCraft.Gallery.GalleryProgress.RecordEnemy(seedEnemy);
+                GearCraft.Gallery.GalleryProgress.RecordWeapon(seedWeapon);
+                GearCraft.Gallery.GalleryProgress.RecordMaterials(2, 1);
+                check(!GearCraft.Gallery.GalleryProgress.IsUnlocked && GearCraft.Gallery.GalleryProgress.Data.HasEnemy(seedEnemy.name) &&
+                    GearCraft.Gallery.GalleryProgress.Data.HasWeapon(seedWeapon.name) &&
+                    GearCraft.Gallery.GalleryProgress.Data.HasMaterial(GearCraft.Gallery.GalleryMaterial.Scrap) &&
+                    GearCraft.Gallery.GalleryProgress.Data.HasMaterial(GearCraft.Gallery.GalleryMaterial.Gear), "locked discovery fixture seeded through public Record methods");
+            } else {
+                check(GearCraft.Gallery.GalleryProgress.IsUnlocked, "repeat fixture retains prior clear");
+            }
+            StatusManager.Instance.STR = 2;
+            StatusManager.Instance.ACC = 1;
+            StatusManager.Instance.killAllEnemies = true;
+            StageCounter.Instance.StageCount = 3;
+            EndingManager.LoadEndingScene(endingNumber);
+            lastOperationFrame = UnityEngine.Time.frameCount;
+            nextPhase(1, 0.08);
+            return;
+        }
+        if (phase == 1) {
+            if (sceneName != "Ending") return;
+            viewer = UnityEngine.Object.FindFirstObjectByType<ImageSequenceViewer>();
+            if (viewer == null) return;
+            normalButton = normalButtonField.GetValue(viewer) as UnityEngine.UI.Button;
+            noticeButton = noticeButtonField.GetValue(viewer) as UnityEngine.UI.Button;
+            images = imagesField.GetValue(viewer) as UnityEngine.GameObject[];
+            if (normalButton == null || noticeButton == null || images == null)
+                throw new System.InvalidOperationException("Ending scene is missing controls or sequence wiring");
+            if (viewer.scenetransitionManager != null && viewer.scenetransitionManager.IsLoading) {
+                if (!loadingCheckObserved) {
+                    int beforeLoadingSubmit = (int)indexField.GetValue(viewer);
+                    submit(normalButton);
+                    check((int)indexField.GetValue(viewer) == beforeLoadingSubmit, "observed loading Submit leaves sequence index unchanged");
+                    loadingCheckObserved = true;
+                }
+                return;
+            }
+            if (!normalButton.gameObject.activeInHierarchy || !normalButton.interactable) return;
+            if (UnityEngine.Time.frameCount <= lastOperationFrame) return;
+            if (!loadingCheckObserved) log("SKIP " + caseName + " loading window not observed; no pass counted");
+            sequenceLength = images.Length;
+            check(sequenceLength >= 2, "ending-specific sequence has images and score (length=" + sequenceLength + ")");
+            if (sequenceLength < 2) throw new System.InvalidOperationException("Sequence too short for fade/score tests");
+            check(EndingManager.PendingEndingNum == endingNumber, "correct ending selected through real loader");
+            check(viewer.endingManager != null && viewer.endingManager.HasPendingGalleryUnlockNotice == firstEnding, "unlock notice pending flag matches first/repeat");
+            check((int)indexField.GetValue(viewer) == -1, "sequence starts at index -1");
+            check(UnityEngine.EventSystems.EventSystem.current != null && UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject == normalButton.gameObject, "normal advance button has initial focus");
+            check(viewer.scoreManager != null && viewer.scoreManager.score == 9000, "fixture score computed as 9000");
+            check(GearCraft.Gallery.GalleryProgress.IsUnlocked, "ending records Gallery unlock");
+            submit(normalButton);
+            submit(normalButton);
+            check((int)indexField.GetValue(viewer) == 0, "two same-frame Submit events advance only -1 to 0");
+            check(!(bool)noticeField.GetValue(viewer), "same-frame duplicate does not reach notice");
+            nextPhase(2, 0.20);
+            return;
+        }
+        if (phase == 2) {
+            if (UnityEngine.Time.frameCount <= lastOperationFrame) return;
+            check((int)indexField.GetValue(viewer) == 0, "first image still selected before fade completion input");
+            var fadeHint = hintField.GetValue(viewer) as TMPro.TMP_Text;
+            check(fadeHint != null && fadeHint.text == "クリック / Enterで表示を完了", "active fade hint explains completion input");
+            submit(normalButton);
+            check(fadeHint != null && fadeHint.text == "クリック / Enterで次へ", "completed fade hint changes to next image");
+            check((int)indexField.GetValue(viewer) == 0 && tweenField.GetValue(viewer) == null, "Submit at 0.2 seconds completes fade only");
+            var firstImage = images[0] == null ? null : images[0].GetComponent<UnityEngine.UI.Image>();
+            if (firstImage == null && images[0] != null) firstImage = images[0].GetComponentInChildren<UnityEngine.UI.Image>();
+            check(firstImage != null && firstImage.color.a >= 0.999f, "completed first image is fully visible");
+            nextPhase(3, 1.15);
+            return;
+        }
+        if (phase == 3) {
+            if (UnityEngine.Time.frameCount <= lastOperationFrame) return;
+            int currentIndex = (int)indexField.GetValue(viewer);
+            if (currentIndex < sequenceLength - 1) {
+                submit(normalButton);
+                check((int)indexField.GetValue(viewer) == currentIndex + 1, "normal Submit advances to image " + (currentIndex + 1));
+                nextPhase(3, 1.15);
+                return;
+            }
+            check(currentIndex == sequenceLength - 1, "final score image reached");
+            var hint = hintField.GetValue(viewer) as TMPro.TMP_Text;
+            string expectedHint = firstEnding ? "クリック / Enterで続ける" : "クリック / Enterでタイトルへ";
+            check(hint != null && hint.text == expectedHint, "final score hint=" + expectedHint);
+            check(viewer.scoreManager != null && viewer.scoreManager.scoreText != null && viewer.scoreManager.scoreText.text == "YOUR SCORE : 9000", "visible score text=9000");
+            UnityEngine.ScreenCapture.CaptureScreenshot(System.IO.Path.Combine(outputDirectory, caseName + "-score.png"));
+            screenshotFrame = UnityEngine.Time.frameCount;
+            log("CAPTURE " + caseName + "-score.png frame=" + screenshotFrame);
+            nextPhase(4, 0.25);
+            return;
+        }
+        if (phase == 4) {
+            if (UnityEngine.Time.frameCount <= screenshotFrame) return;
+            submit(normalButton);
+            if (firstEnding) {
+                check((bool)noticeField.GetValue(viewer), "first clear reaches unlock notice");
+                var root = noticeRootField.GetValue(viewer) as UnityEngine.GameObject;
+                check(root != null && root.activeInHierarchy && !normalButton.gameObject.activeInHierarchy, "notice shown and normal button/hint hidden");
+                check(UnityEngine.EventSystems.EventSystem.current != null && UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject == noticeButton.gameObject, "MessageWindow has notice focus");
+                check(!noticeButton.interactable, "notice button disabled during first 0.5 seconds");
+                submit(noticeButton);
+                check((bool)noticeField.GetValue(viewer) && !(bool)transitioningField.GetValue(viewer) && UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Ending", "immediate Submit cannot skip notice");
+                nextPhase(5, 0.12);
+            } else {
+                check(!(bool)noticeField.GetValue(viewer) && (bool)transitioningField.GetValue(viewer), "repeat clear returns directly without notice");
+                check(!normalButton.interactable && !noticeButton.interactable, "return transition disables both buttons");
+                nextPhase(7, 0.08);
+            }
+            return;
+        }
+        if (phase == 5) {
+            if (UnityEngine.Time.frameCount <= lastOperationFrame) return;
+            var eventSystem = UnityEngine.EventSystems.EventSystem.current;
+            if (eventSystem == null) throw new System.InvalidOperationException("Notice background check requires EventSystem");
+            var pointer = new UnityEngine.EventSystems.PointerEventData(eventSystem);
+            pointer.position = new UnityEngine.Vector2(UnityEngine.Screen.width * 0.05f, UnityEngine.Screen.height * 0.05f);
+            pointer.button = UnityEngine.EventSystems.PointerEventData.InputButton.Left;
+            pointer.pointerId = -1;
+            var hits = new System.Collections.Generic.List<UnityEngine.EventSystems.RaycastResult>();
+            eventSystem.RaycastAll(pointer, hits);
+            UnityEngine.GameObject hit = hits.Count > 0 ? hits[0].gameObject : null;
+            check(hit != null, "notice background raycast has a hit");
+            if (hit != null) {
+                var clickHandler = UnityEngine.EventSystems.ExecuteEvents.GetEventHandler<UnityEngine.EventSystems.IPointerClickHandler>(hit);
+                check(clickHandler == null, "notice background has no pointer-click handler (hit=" + hit.name + ")");
+                int beforeIndex = (int)indexField.GetValue(viewer);
+                bool beforeTransition = (bool)transitioningField.GetValue(viewer);
+                pointer.pointerCurrentRaycast = hits[0];
+                pointer.pointerPressRaycast = hits[0];
+                pointer.pressPosition = pointer.position;
+                pointer.eligibleForClick = true;
+                // Match StandaloneInputModule: a non-selectable background clears selection.
+                var selectHandler = UnityEngine.EventSystems.ExecuteEvents.GetEventHandler<UnityEngine.EventSystems.ISelectHandler>(hit);
+                if (selectHandler != eventSystem.currentSelectedGameObject)
+                    eventSystem.SetSelectedGameObject(null, pointer);
+                var pressed = UnityEngine.EventSystems.ExecuteEvents.ExecuteHierarchy<UnityEngine.EventSystems.IPointerDownHandler>(hit, pointer, UnityEngine.EventSystems.ExecuteEvents.pointerDownHandler);
+                if (pressed == null) pressed = clickHandler;
+                pointer.pointerPress = pressed;
+                pointer.rawPointerPress = hit;
+                // Only raycast hits enter this press/release route; null handlers do not dispatch.
+                if (pressed != null)
+                    UnityEngine.EventSystems.ExecuteEvents.Execute<UnityEngine.EventSystems.IPointerUpHandler>(pressed, pointer, UnityEngine.EventSystems.ExecuteEvents.pointerUpHandler);
+                if (pressed != null && pressed == clickHandler && pointer.eligibleForClick)
+                    UnityEngine.EventSystems.ExecuteEvents.Execute<UnityEngine.EventSystems.IPointerClickHandler>(pressed, pointer, UnityEngine.EventSystems.ExecuteEvents.pointerClickHandler);
+                pointer.eligibleForClick = false;
+                pointer.pointerPress = null;
+                pointer.rawPointerPress = null;
+                backgroundClickPerformed = true;
+                lastOperationFrame = UnityEngine.Time.frameCount;
+                check(eventSystem.currentSelectedGameObject == null, "background pointer press clears selection like StandaloneInputModule");
+                check((int)indexField.GetValue(viewer) == beforeIndex && (bool)transitioningField.GetValue(viewer) == beforeTransition &&
+                    (bool)noticeField.GetValue(viewer), "background pointer route leaves index and transition unchanged");
+            } else {
+                log("SKIP " + caseName + " background pointer events not sent because raycast had no hit");
+            }
+            nextPhase(8, 0.12);
+            return;
+        }
+        if (phase == 8) {
+            if (UnityEngine.Time.frameCount <= lastOperationFrame) return;
+            UnityEngine.ScreenCapture.CaptureScreenshot(System.IO.Path.Combine(outputDirectory, caseName + "-notice.png"));
+            screenshotFrame = UnityEngine.Time.frameCount;
+            log("CAPTURE " + caseName + "-notice.png frame=" + screenshotFrame);
+            nextPhase(6, 0.20);
+            return;
+        }
+        if (phase == 6) {
+            if (UnityEngine.Time.frameCount <= screenshotFrame) return;
+            float ready = (float)noticeReadyField.GetValue(viewer);
+            if (UnityEngine.Time.unscaledTime < ready + 0.05f || !noticeButton.interactable) return;
+            check(UnityEngine.EventSystems.EventSystem.current != null && UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject == noticeButton.gameObject, backgroundClickPerformed ? "notice focus recovers after background click" : "notice retains focus after lockout");
+            submit(noticeButton);
+            check((bool)transitioningField.GetValue(viewer), "Submit after 0.5 seconds starts Title return");
+            check(!normalButton.interactable && !noticeButton.interactable, "notice return disables both buttons");
+            nextPhase(7, 0.08);
+            return;
+        }
+        if (phase == 7) {
+            if (sceneName != "Title") return;
+            var transition = UnityEngine.Object.FindFirstObjectByType<SceneTransitionManager>();
+            if (transition != null && transition.IsLoading) return;
+            bool titleGalleryEnabled = false;
+            var entrances = UnityEngine.Object.FindObjectsByType<GearCraft.Gallery.GalleryEntranceButton>(UnityEngine.FindObjectsInactive.Include, UnityEngine.FindObjectsSortMode.None);
+            foreach (var entrance in entrances) {
+                if (entrance.gameObject.scene.name != "Title" || !entrance.gameObject.activeInHierarchy) continue;
+                var button = entrance.GetComponent<UnityEngine.UI.Button>();
+                if (button != null && button.interactable) titleGalleryEnabled = true;
+            }
+            check(titleGalleryEnabled, "Title Gallery entrance enabled");
+            check(GearCraft.Gallery.GalleryProgress.IsUnlocked && GearCraft.Gallery.GalleryProgress.Data.hasReachedEnding, "Gallery runtime progress records clear");
+            string saved = UnityEngine.PlayerPrefs.GetString(GearCraft.Gallery.GalleryProgress.SaveKey, "");
+            var savedProgress = string.IsNullOrEmpty(saved) ? null : UnityEngine.JsonUtility.FromJson<GearCraft.Gallery.GalleryProgressData>(saved);
+            check(savedProgress != null && savedProgress.hasReachedEnding, "Gallery unlock persisted to PlayerPrefs");
+            var runtimeProgress = GearCraft.Gallery.GalleryProgress.Data;
+            check(runtimeProgress.HasEnemy(seedEnemy.name) && runtimeProgress.HasWeapon(seedWeapon.name) &&
+                runtimeProgress.HasMaterial(GearCraft.Gallery.GalleryMaterial.Scrap) && runtimeProgress.HasMaterial(GearCraft.Gallery.GalleryMaterial.Gear),
+                "return preserves seeded enemy, weapon, Scrap and Gear discoveries");
+            check(savedProgress != null && savedProgress.HasEnemy(seedEnemy.name) && savedProgress.HasWeapon(seedWeapon.name) &&
+                savedProgress.HasMaterial(GearCraft.Gallery.GalleryMaterial.Scrap) && savedProgress.HasMaterial(GearCraft.Gallery.GalleryMaterial.Gear),
+                "seeded discoveries remain in persisted progress");
+            check(StatusManager.Instance != null && StatusManager.Instance.STR == 0 && StatusManager.Instance.ACC == 0 && StageCounter.Instance != null && StageCounter.Instance.StageCount == 0, "existing return reset clears fixture combat stats and stage");
+            log("CASE COMPLETE " + caseName);
+            caseIndex++;
+            UnityEditor.SessionState.SetInt(sessionPrefix + "cases", caseIndex);
+            if (caseIndex >= 6) {
+                finish(true, failures == 0 ? "six cases passed; Title retained in Play; root must restore prefs" : "six cases completed with failed checks; Title retained in Play; root must restore prefs");
+                return;
+            }
+            nextPhase(0, 0.20);
+        }
+    } catch (System.Exception ex) {
+        UnityEditor.EditorApplication.update -= tick;
+        try {
+            check(false, "EXCEPTION " + ex.ToString());
+            finish(false, "exception in " + caseName + " phase=" + phase);
+        } catch (System.Exception loggingError) {
+            UnityEditor.SessionState.SetBool(sessionPrefix + "done", true);
+            UnityEditor.SessionState.SetBool(sessionPrefix + "completed", false);
+            UnityEngine.Debug.LogError("EndingJourneyChecks stopped: " + ex + "\nLogging also failed: " + loggingError);
+        }
+    }
+};
+UnityEditor.EditorApplication.update += tick;
+return "Scheduled six Ending cases. SessionState prefix UXEndingJourney20261013.; log=" + logPath + ". Completion leaves Title in Play; root restores the existing prefs backup, then stops and verifies.";

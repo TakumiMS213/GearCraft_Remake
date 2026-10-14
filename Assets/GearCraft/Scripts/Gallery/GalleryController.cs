@@ -33,6 +33,7 @@ namespace GearCraft.Gallery
         [SerializeField] private TMP_Text caption;
         [SerializeField] private TMP_Text count;
         [SerializeField] private TMP_Text accessState;
+        [SerializeField] private Button returnButton;
         [Tooltip("Scene buttons in the catalogue's level 1 / level 2 / level 3 / weapon order.")]
         [SerializeField] private List<Row> rows = new List<Row>();
 
@@ -151,6 +152,21 @@ namespace GearCraft.Gallery
         private void ShowEntry(int index)
         {
             selectedIndex = index;
+            if (returnButton != null && index >= 0 && index < rows.Count)
+            {
+                Navigation navigation = returnButton.navigation;
+                navigation.mode = Navigation.Mode.Explicit;
+                navigation.selectOnLeft = rows[index].Button;
+                navigation.selectOnDown = rows[index].Button;
+                returnButton.navigation = navigation;
+            }
+            if (scroll.verticalScrollbar != null && index >= 0 && index < rows.Count)
+            {
+                // Return from the scrollbar to the entry being viewed, keeping its other navigation links.
+                Navigation navigation = scroll.verticalScrollbar.navigation;
+                navigation.selectOnLeft = rows[index].Button;
+                scroll.verticalScrollbar.navigation = navigation;
+            }
             bool unlocked = shownProgress != null && shownProgress.hasReachedEnding;
             GalleryEntry entry = index >= 0 && index < entries.Count ? entries[index] : null;
             bool known = entry != null && entry.IsDiscovered(shownProgress);

@@ -127,6 +127,7 @@ public class CraftTabController : MonoBehaviour
 
     private void CloseCraftScene()
     {
+        tutorialController?.OnCraftSceneLeaving();
         SceneTransitionManager.LoadSceneWithTransition(closeSceneName);
     }
 

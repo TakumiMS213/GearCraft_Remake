@@ -1,0 +1,1 @@
+grid=3 placed=0 ownedParts=0 weapon=Katana tutorial=False

@@ -1,0 +1,8 @@
+Post-ED new run: actual Bed trigger -> Space handler -> Main -> Gate.TakeDamage fixture -> Ending score -> UGUI Submit -> Title
+0.3s Bed actual trigger registered; invoking Space action handler
+3.4s Day1 text observed
+4.5s rawStage=1 scalingStage=1 GATE=100 HP=100 SAN=100 STR=0 ACC=0 bedTaskStarted=True debug=False
+4.5s Dorm task UI absent in Main
+4.8s Gate.TakeDamage(100) test fixture; killAll=false
+7.4s ending=1 score=500
+21.3s COMPLETE Title; rawStage=1 sawDay1=True

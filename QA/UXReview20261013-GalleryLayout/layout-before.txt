@@ -1,0 +1,757 @@
+GameView layout robustness, preview all entries, not build display support/human reading test.
+SIZE Full HD (1920x1080) target=(1920.00, 1080.00) canvas=(x:-960.00, y:-540.00, width:1920.00, height:1080.00) camera=(x:0.00, y:0.00, width:1920.00, height:1080.00)
+ROW 0 G-1 FIELD EntryName font=50.4 px=50.4 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 0 G-1 FIELD EntrySubtitle font=26 px=26 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 0 G-1 FIELD EntryDesignation font=20 px=20 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 0 G-1 FIELD EntryDescription font=24 px=24 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=73.34399 overflow=False truncated=False
+ROW 0 G-1 FIELD EntryState font=28 px=28 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 0 selectedFullHeightVisible=True
+ROW 1 A-1 FIELD EntryName font=50.4 px=50.4 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 1 A-1 FIELD EntrySubtitle font=26 px=26 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 1 A-1 FIELD EntryDesignation font=20 px=20 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 1 A-1 FIELD EntryDescription font=24 px=24 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=73.34399 overflow=False truncated=False
+ROW 1 A-1 FIELD EntryState font=28 px=28 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 1 selectedFullHeightVisible=True
+ROW 2 B-1 FIELD EntryName font=50.4 px=50.4 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 2 B-1 FIELD EntrySubtitle font=26 px=26 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 2 B-1 FIELD EntryDesignation font=20 px=20 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 2 B-1 FIELD EntryDescription font=24 px=24 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 2 B-1 FIELD EntryState font=28 px=28 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 2 selectedFullHeightVisible=True
+ROW 3 EG-33 FIELD EntryName font=50.4 px=50.4 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 3 EG-33 FIELD EntrySubtitle font=26 px=26 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 3 EG-33 FIELD EntryDesignation font=20 px=20 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 3 EG-33 FIELD EntryDescription font=24 px=24 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=73.34399 overflow=False truncated=False
+ROW 3 EG-33 FIELD EntryState font=28 px=28 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 3 selectedFullHeightVisible=True
+ROW 4 EA-21 FIELD EntryName font=50.4 px=50.4 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 4 EA-21 FIELD EntrySubtitle font=26 px=26 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 4 EA-21 FIELD EntryDesignation font=20 px=20 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 4 EA-21 FIELD EntryDescription font=24 px=24 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=73.34399 overflow=False truncated=False
+ROW 4 EA-21 FIELD EntryState font=28 px=28 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 4 selectedFullHeightVisible=True
+ROW 5 BB-12 FIELD EntryName font=50.4 px=50.4 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 5 BB-12 FIELD EntrySubtitle font=26 px=26 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 5 BB-12 FIELD EntryDesignation font=20 px=20 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 5 BB-12 FIELD EntryDescription font=24 px=24 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 5 BB-12 FIELD EntryState font=28 px=28 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 5 selectedFullHeightVisible=True
+ROW 6 IC-408 FIELD EntryName font=50.4 px=50.4 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 6 IC-408 FIELD EntrySubtitle font=26 px=26 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 6 IC-408 FIELD EntryDesignation font=20 px=20 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 6 IC-408 FIELD EntryDescription font=24 px=24 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=148.608 overflow=False truncated=False
+ROW 6 IC-408 FIELD EntryState font=28 px=28 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 6 selectedFullHeightVisible=True
+ROW 7 BB-413 FIELD EntryName font=50.4 px=50.4 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 7 BB-413 FIELD EntrySubtitle font=26 px=26 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 7 BB-413 FIELD EntryDesignation font=20 px=20 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 7 BB-413 FIELD EntryDescription font=24 px=24 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=185.28 overflow=False truncated=False
+ROW 7 BB-413 FIELD EntryState font=28 px=28 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 7 selectedFullHeightVisible=True
+ROW 8 AR-227 FIELD EntryName font=50.4 px=50.4 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 8 AR-227 FIELD EntrySubtitle font=26 px=26 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 8 AR-227 FIELD EntryDesignation font=20 px=20 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 8 AR-227 FIELD EntryDescription font=24 px=24 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 8 AR-227 FIELD EntryState font=28 px=28 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 8 selectedFullHeightVisible=True
+ROW 9 EK-9 FIELD EntryName font=50.4 px=50.4 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 9 EK-9 FIELD EntrySubtitle font=26 px=26 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 9 EK-9 FIELD EntryDesignation font=20 px=20 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 9 EK-9 FIELD EntryDescription font=23.8 px=23.8 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=187.544 overflow=False truncated=False
+ROW 9 EK-9 FIELD EntryState font=28 px=28 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 9 selectedFullHeightVisible=True
+ROW 10 Katana FIELD EntryName font=50.4 px=50.4 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 10 Katana FIELD EntrySubtitle font=26 px=26 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 10 Katana FIELD EntryDesignation font=20 px=20 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 10 Katana FIELD EntryDescription font=24 px=24 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 10 Katana FIELD EntryState font=28 px=28 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 10 selectedFullHeightVisible=True
+ROW 11 AR FIELD EntryName font=50.4 px=50.4 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 11 AR FIELD EntrySubtitle font=26 px=26 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 11 AR FIELD EntryDesignation font=20 px=20 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 11 AR FIELD EntryDescription font=24 px=24 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 11 AR FIELD EntryState font=28 px=28 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 11 selectedFullHeightVisible=True
+ROW 12 GearCraft（剣） FIELD EntryName font=50.4 px=50.4 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 12 GearCraft（剣） FIELD EntrySubtitle font=26 px=26 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 12 GearCraft（剣） FIELD EntryDesignation font=20 px=20 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 12 GearCraft（剣） FIELD EntryDescription font=24 px=24 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 12 GearCraft（剣） FIELD EntryState font=28 px=28 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 12 selectedFullHeightVisible=True
+ROW 13 GearCraft（斧） FIELD EntryName font=50.4 px=50.4 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 13 GearCraft（斧） FIELD EntrySubtitle font=26 px=26 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 13 GearCraft（斧） FIELD EntryDesignation font=20 px=20 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 13 GearCraft（斧） FIELD EntryDescription font=24 px=24 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 13 GearCraft（斧） FIELD EntryState font=28 px=28 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 13 selectedFullHeightVisible=True
+ROW 14 SteamCannon FIELD EntryName font=50.4 px=50.4 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 14 SteamCannon FIELD EntrySubtitle font=26 px=26 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 14 SteamCannon FIELD EntryDesignation font=20 px=20 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 14 SteamCannon FIELD EntryDescription font=24 px=24 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 14 SteamCannon FIELD EntryState font=28 px=28 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 14 selectedFullHeightVisible=True
+ROW 15 SteamThrower FIELD EntryName font=50.4 px=50.4 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 15 SteamThrower FIELD EntrySubtitle font=26 px=26 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 15 SteamThrower FIELD EntryDesignation font=20 px=20 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 15 SteamThrower FIELD EntryDescription font=24 px=24 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 15 SteamThrower FIELD EntryState font=28 px=28 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 15 selectedFullHeightVisible=True
+ROW 16 SteamGatling FIELD EntryName font=50.4 px=50.4 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 16 SteamGatling FIELD EntrySubtitle font=26 px=26 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 16 SteamGatling FIELD EntryDesignation font=20 px=20 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 16 SteamGatling FIELD EntryDescription font=24 px=24 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=110.016 overflow=False truncated=False
+ROW 16 SteamGatling FIELD EntryState font=28 px=28 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 16 selectedFullHeightVisible=True
+ROW 17 RailCraft FIELD EntryName font=50.4 px=50.4 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 17 RailCraft FIELD EntrySubtitle font=26 px=26 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 17 RailCraft FIELD EntryDesignation font=20 px=20 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 17 RailCraft FIELD EntryDescription font=24 px=24 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=148.608 overflow=False truncated=False
+ROW 17 RailCraft FIELD EntryState font=28 px=28 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 17 selectedFullHeightVisible=True
+ROW 18 PunkDrive FIELD EntryName font=50.4 px=50.4 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 18 PunkDrive FIELD EntrySubtitle font=26 px=26 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 18 PunkDrive FIELD EntryDesignation font=20 px=20 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 18 PunkDrive FIELD EntryDescription font=24 px=24 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 18 PunkDrive FIELD EntryState font=28 px=28 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 18 selectedFullHeightVisible=True
+ROW 19 スクラップモジュール FIELD EntryName font=40.5 px=40.5 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=58.644 overflow=False truncated=False
+ROW 19 スクラップモジュール FIELD EntrySubtitle font=26 px=26 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 19 スクラップモジュール FIELD EntryDesignation font=20 px=20 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 19 スクラップモジュール FIELD EntryDescription font=24 px=24 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 19 スクラップモジュール FIELD EntryState font=28 px=28 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 19 selectedFullHeightVisible=True
+ROW 20 リペアモジュール FIELD EntryName font=50.4 px=50.4 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 20 リペアモジュール FIELD EntrySubtitle font=26 px=26 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 20 リペアモジュール FIELD EntryDesignation font=20 px=20 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 20 リペアモジュール FIELD EntryDescription font=24 px=24 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 20 リペアモジュール FIELD EntryState font=28 px=28 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 20 selectedFullHeightVisible=True
+ROW 21 バリアモジュール FIELD EntryName font=50.4 px=50.4 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 21 バリアモジュール FIELD EntrySubtitle font=26 px=26 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 21 バリアモジュール FIELD EntryDesignation font=20 px=20 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 21 バリアモジュール FIELD EntryDescription font=24 px=24 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 21 バリアモジュール FIELD EntryState font=28 px=28 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 21 selectedFullHeightVisible=True
+ROW 22 アップグレードモジュール FIELD EntryName font=33.75 px=33.75 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=48.87 overflow=False truncated=False
+ROW 22 アップグレードモジュール FIELD EntrySubtitle font=26 px=26 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 22 アップグレードモジュール FIELD EntryDesignation font=20 px=20 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 22 アップグレードモジュール FIELD EntryDescription font=24 px=24 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 22 アップグレードモジュール FIELD EntryState font=28 px=28 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 22 selectedFullHeightVisible=True
+ROW 23 スクラップ FIELD EntryName font=50.4 px=50.4 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 23 スクラップ FIELD EntrySubtitle font=26 px=26 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 23 スクラップ FIELD EntryDesignation font=20 px=20 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 23 スクラップ FIELD EntryDescription font=24 px=24 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=73.34399 overflow=False truncated=False
+ROW 23 スクラップ FIELD EntryState font=28 px=28 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 23 selectedFullHeightVisible=True
+ROW 24 歯車 FIELD EntryName font=50.4 px=50.4 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 24 歯車 FIELD EntrySubtitle font=26 px=26 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 24 歯車 FIELD EntryDesignation font=20 px=20 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 24 歯車 FIELD EntryDescription font=24 px=24 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=148.608 overflow=False truncated=False
+ROW 24 歯車 FIELD EntryState font=28 px=28 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 24 selectedFullHeightVisible=True
+SIZE UXGalleryLayout0 (1280x720) target=(1280.00, 720.00) canvas=(x:-960.00, y:-540.00, width:1920.00, height:1080.00) camera=(x:0.00, y:0.00, width:1280.00, height:720.00)
+ROW 0 G-1 FIELD EntryName font=50.4 px=33.6 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 0 G-1 FIELD EntrySubtitle font=26 px=17.33333 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 0 G-1 FIELD EntryDesignation font=20 px=13.33333 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 0 G-1 FIELD EntryDescription font=24 px=16 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=73.34399 overflow=False truncated=False
+ROW 0 G-1 FIELD EntryState font=28 px=18.66667 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 0 selectedFullHeightVisible=True
+ROW 1 A-1 FIELD EntryName font=50.4 px=33.6 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 1 A-1 FIELD EntrySubtitle font=26 px=17.33333 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 1 A-1 FIELD EntryDesignation font=20 px=13.33333 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 1 A-1 FIELD EntryDescription font=24 px=16 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=73.34399 overflow=False truncated=False
+ROW 1 A-1 FIELD EntryState font=28 px=18.66667 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 1 selectedFullHeightVisible=True
+ROW 2 B-1 FIELD EntryName font=50.4 px=33.6 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 2 B-1 FIELD EntrySubtitle font=26 px=17.33333 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 2 B-1 FIELD EntryDesignation font=20 px=13.33333 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 2 B-1 FIELD EntryDescription font=24 px=16 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 2 B-1 FIELD EntryState font=28 px=18.66667 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 2 selectedFullHeightVisible=True
+ROW 3 EG-33 FIELD EntryName font=50.4 px=33.6 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 3 EG-33 FIELD EntrySubtitle font=26 px=17.33333 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 3 EG-33 FIELD EntryDesignation font=20 px=13.33333 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 3 EG-33 FIELD EntryDescription font=24 px=16 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=73.34399 overflow=False truncated=False
+ROW 3 EG-33 FIELD EntryState font=28 px=18.66667 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 3 selectedFullHeightVisible=True
+ROW 4 EA-21 FIELD EntryName font=50.4 px=33.6 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 4 EA-21 FIELD EntrySubtitle font=26 px=17.33333 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 4 EA-21 FIELD EntryDesignation font=20 px=13.33333 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 4 EA-21 FIELD EntryDescription font=24 px=16 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=73.34399 overflow=False truncated=False
+ROW 4 EA-21 FIELD EntryState font=28 px=18.66667 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 4 selectedFullHeightVisible=True
+ROW 5 BB-12 FIELD EntryName font=50.4 px=33.6 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 5 BB-12 FIELD EntrySubtitle font=26 px=17.33333 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 5 BB-12 FIELD EntryDesignation font=20 px=13.33333 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 5 BB-12 FIELD EntryDescription font=24 px=16 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 5 BB-12 FIELD EntryState font=28 px=18.66667 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 5 selectedFullHeightVisible=True
+ROW 6 IC-408 FIELD EntryName font=50.4 px=33.6 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 6 IC-408 FIELD EntrySubtitle font=26 px=17.33333 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 6 IC-408 FIELD EntryDesignation font=20 px=13.33333 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 6 IC-408 FIELD EntryDescription font=24 px=16 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=148.608 overflow=False truncated=False
+ROW 6 IC-408 FIELD EntryState font=28 px=18.66667 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 6 selectedFullHeightVisible=True
+ROW 7 BB-413 FIELD EntryName font=50.4 px=33.6 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 7 BB-413 FIELD EntrySubtitle font=26 px=17.33333 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 7 BB-413 FIELD EntryDesignation font=20 px=13.33333 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 7 BB-413 FIELD EntryDescription font=24 px=16 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=185.28 overflow=False truncated=False
+ROW 7 BB-413 FIELD EntryState font=28 px=18.66667 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 7 selectedFullHeightVisible=True
+ROW 8 AR-227 FIELD EntryName font=50.4 px=33.6 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 8 AR-227 FIELD EntrySubtitle font=26 px=17.33333 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 8 AR-227 FIELD EntryDesignation font=20 px=13.33333 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 8 AR-227 FIELD EntryDescription font=24 px=16 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 8 AR-227 FIELD EntryState font=28 px=18.66667 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 8 selectedFullHeightVisible=True
+ROW 9 EK-9 FIELD EntryName font=50.4 px=33.6 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 9 EK-9 FIELD EntrySubtitle font=26 px=17.33333 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 9 EK-9 FIELD EntryDesignation font=20 px=13.33333 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 9 EK-9 FIELD EntryDescription font=23.8 px=15.86667 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=187.544 overflow=False truncated=False
+ROW 9 EK-9 FIELD EntryState font=28 px=18.66667 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 9 selectedFullHeightVisible=True
+ROW 10 Katana FIELD EntryName font=50.4 px=33.6 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 10 Katana FIELD EntrySubtitle font=26 px=17.33333 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 10 Katana FIELD EntryDesignation font=20 px=13.33333 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 10 Katana FIELD EntryDescription font=24 px=16 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 10 Katana FIELD EntryState font=28 px=18.66667 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 10 selectedFullHeightVisible=True
+ROW 11 AR FIELD EntryName font=50.4 px=33.6 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 11 AR FIELD EntrySubtitle font=26 px=17.33333 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 11 AR FIELD EntryDesignation font=20 px=13.33333 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 11 AR FIELD EntryDescription font=24 px=16 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 11 AR FIELD EntryState font=28 px=18.66667 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 11 selectedFullHeightVisible=True
+ROW 12 GearCraft（剣） FIELD EntryName font=50.4 px=33.6 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 12 GearCraft（剣） FIELD EntrySubtitle font=26 px=17.33333 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 12 GearCraft（剣） FIELD EntryDesignation font=20 px=13.33333 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 12 GearCraft（剣） FIELD EntryDescription font=24 px=16 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 12 GearCraft（剣） FIELD EntryState font=28 px=18.66667 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 12 selectedFullHeightVisible=True
+ROW 13 GearCraft（斧） FIELD EntryName font=50.4 px=33.6 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 13 GearCraft（斧） FIELD EntrySubtitle font=26 px=17.33333 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 13 GearCraft（斧） FIELD EntryDesignation font=20 px=13.33333 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 13 GearCraft（斧） FIELD EntryDescription font=24 px=16 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 13 GearCraft（斧） FIELD EntryState font=28 px=18.66667 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 13 selectedFullHeightVisible=True
+ROW 14 SteamCannon FIELD EntryName font=50.4 px=33.6 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 14 SteamCannon FIELD EntrySubtitle font=26 px=17.33333 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 14 SteamCannon FIELD EntryDesignation font=20 px=13.33333 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 14 SteamCannon FIELD EntryDescription font=24 px=16 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 14 SteamCannon FIELD EntryState font=28 px=18.66667 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 14 selectedFullHeightVisible=True
+ROW 15 SteamThrower FIELD EntryName font=50.4 px=33.6 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 15 SteamThrower FIELD EntrySubtitle font=26 px=17.33333 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 15 SteamThrower FIELD EntryDesignation font=20 px=13.33333 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 15 SteamThrower FIELD EntryDescription font=24 px=16 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 15 SteamThrower FIELD EntryState font=28 px=18.66667 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 15 selectedFullHeightVisible=True
+ROW 16 SteamGatling FIELD EntryName font=50.4 px=33.6 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 16 SteamGatling FIELD EntrySubtitle font=26 px=17.33333 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 16 SteamGatling FIELD EntryDesignation font=20 px=13.33333 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 16 SteamGatling FIELD EntryDescription font=24 px=16 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=110.016 overflow=False truncated=False
+ROW 16 SteamGatling FIELD EntryState font=28 px=18.66667 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 16 selectedFullHeightVisible=True
+ROW 17 RailCraft FIELD EntryName font=50.4 px=33.6 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 17 RailCraft FIELD EntrySubtitle font=26 px=17.33333 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 17 RailCraft FIELD EntryDesignation font=20 px=13.33333 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 17 RailCraft FIELD EntryDescription font=24 px=16 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=148.608 overflow=False truncated=False
+ROW 17 RailCraft FIELD EntryState font=28 px=18.66667 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 17 selectedFullHeightVisible=True
+ROW 18 PunkDrive FIELD EntryName font=50.4 px=33.6 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 18 PunkDrive FIELD EntrySubtitle font=26 px=17.33333 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 18 PunkDrive FIELD EntryDesignation font=20 px=13.33333 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 18 PunkDrive FIELD EntryDescription font=24 px=16 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 18 PunkDrive FIELD EntryState font=28 px=18.66667 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 18 selectedFullHeightVisible=True
+ROW 19 スクラップモジュール FIELD EntryName font=40.5 px=27 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=58.644 overflow=False truncated=False
+ROW 19 スクラップモジュール FIELD EntrySubtitle font=26 px=17.33333 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 19 スクラップモジュール FIELD EntryDesignation font=20 px=13.33333 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 19 スクラップモジュール FIELD EntryDescription font=24 px=16 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 19 スクラップモジュール FIELD EntryState font=28 px=18.66667 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 19 selectedFullHeightVisible=True
+ROW 20 リペアモジュール FIELD EntryName font=50.4 px=33.6 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 20 リペアモジュール FIELD EntrySubtitle font=26 px=17.33333 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 20 リペアモジュール FIELD EntryDesignation font=20 px=13.33333 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 20 リペアモジュール FIELD EntryDescription font=24 px=16 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 20 リペアモジュール FIELD EntryState font=28 px=18.66667 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 20 selectedFullHeightVisible=True
+ROW 21 バリアモジュール FIELD EntryName font=50.4 px=33.6 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 21 バリアモジュール FIELD EntrySubtitle font=26 px=17.33333 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 21 バリアモジュール FIELD EntryDesignation font=20 px=13.33333 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 21 バリアモジュール FIELD EntryDescription font=24 px=16 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 21 バリアモジュール FIELD EntryState font=28 px=18.66667 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 21 selectedFullHeightVisible=True
+ROW 22 アップグレードモジュール FIELD EntryName font=33.75 px=22.5 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=48.87 overflow=False truncated=False
+ROW 22 アップグレードモジュール FIELD EntrySubtitle font=26 px=17.33333 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 22 アップグレードモジュール FIELD EntryDesignation font=20 px=13.33333 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 22 アップグレードモジュール FIELD EntryDescription font=24 px=16 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 22 アップグレードモジュール FIELD EntryState font=28 px=18.66667 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 22 selectedFullHeightVisible=True
+ROW 23 スクラップ FIELD EntryName font=50.4 px=33.6 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 23 スクラップ FIELD EntrySubtitle font=26 px=17.33333 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 23 スクラップ FIELD EntryDesignation font=20 px=13.33333 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 23 スクラップ FIELD EntryDescription font=24 px=16 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=73.34399 overflow=False truncated=False
+ROW 23 スクラップ FIELD EntryState font=28 px=18.66667 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 23 selectedFullHeightVisible=True
+ROW 24 歯車 FIELD EntryName font=50.4 px=33.6 rect=(x:-202.54, y:-36.50, width:405.07, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 24 歯車 FIELD EntrySubtitle font=26 px=17.33333 rect=(x:-202.54, y:-33.50, width:405.07, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 24 歯車 FIELD EntryDesignation font=20 px=13.33333 rect=(x:-202.54, y:-18.00, width:405.07, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 24 歯車 FIELD EntryDescription font=24 px=16 rect=(x:-393.28, y:-111.00, width:786.57, height:222.00) rendered=148.608 overflow=False truncated=False
+ROW 24 歯車 FIELD EntryState font=28 px=18.66667 rect=(x:-621.82, y:-35.00, width:1243.64, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 24 selectedFullHeightVisible=True
+SIZE UXGalleryLayout1 (1600x1000) target=(1600.00, 1000.00) canvas=(x:-910.74, y:-569.21, width:1821.47, height:1138.42) camera=(x:0.00, y:0.00, width:1600.00, height:1000.00)
+ROW 0 G-1 FIELD EntryName font=50.4 px=44.27189 rect=(x:-190.29, y:-36.50, width:380.59, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 0 G-1 FIELD EntrySubtitle font=26 px=22.83867 rect=(x:-190.29, y:-33.50, width:380.59, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 0 G-1 FIELD EntryDesignation font=20 px=17.56821 rect=(x:-190.29, y:-18.00, width:380.59, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 0 G-1 FIELD EntryDescription font=24 px=21.08185 rect=(x:-370.55, y:-111.00, width:741.10, height:222.00) rendered=110.016 overflow=False truncated=False
+ROW 0 G-1 FIELD EntryState font=28 px=24.59549 rect=(x:-586.84, y:-35.00, width:1173.69, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 0 selectedFullHeightVisible=True
+ROW 1 A-1 FIELD EntryName font=50.4 px=44.27189 rect=(x:-190.29, y:-36.50, width:380.59, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 1 A-1 FIELD EntrySubtitle font=26 px=22.83867 rect=(x:-190.29, y:-33.50, width:380.59, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 1 A-1 FIELD EntryDesignation font=20 px=17.56821 rect=(x:-190.29, y:-18.00, width:380.59, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 1 A-1 FIELD EntryDescription font=24 px=21.08185 rect=(x:-370.55, y:-111.00, width:741.10, height:222.00) rendered=73.34399 overflow=False truncated=False
+ROW 1 A-1 FIELD EntryState font=28 px=24.59549 rect=(x:-586.84, y:-35.00, width:1173.69, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 1 selectedFullHeightVisible=True
+ROW 2 B-1 FIELD EntryName font=50.4 px=44.27189 rect=(x:-190.29, y:-36.50, width:380.59, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 2 B-1 FIELD EntrySubtitle font=26 px=22.83867 rect=(x:-190.29, y:-33.50, width:380.59, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 2 B-1 FIELD EntryDesignation font=20 px=17.56821 rect=(x:-190.29, y:-18.00, width:380.59, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 2 B-1 FIELD EntryDescription font=24 px=21.08185 rect=(x:-370.55, y:-111.00, width:741.10, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 2 B-1 FIELD EntryState font=28 px=24.59549 rect=(x:-586.84, y:-35.00, width:1173.69, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 2 selectedFullHeightVisible=True
+ROW 3 EG-33 FIELD EntryName font=50.4 px=44.27189 rect=(x:-190.29, y:-36.50, width:380.59, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 3 EG-33 FIELD EntrySubtitle font=26 px=22.83867 rect=(x:-190.29, y:-33.50, width:380.59, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 3 EG-33 FIELD EntryDesignation font=20 px=17.56821 rect=(x:-190.29, y:-18.00, width:380.59, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 3 EG-33 FIELD EntryDescription font=24 px=21.08185 rect=(x:-370.55, y:-111.00, width:741.10, height:222.00) rendered=73.34399 overflow=False truncated=False
+ROW 3 EG-33 FIELD EntryState font=28 px=24.59549 rect=(x:-586.84, y:-35.00, width:1173.69, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 3 selectedFullHeightVisible=True
+ROW 4 EA-21 FIELD EntryName font=50.4 px=44.27189 rect=(x:-190.29, y:-36.50, width:380.59, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 4 EA-21 FIELD EntrySubtitle font=26 px=22.83867 rect=(x:-190.29, y:-33.50, width:380.59, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 4 EA-21 FIELD EntryDesignation font=20 px=17.56821 rect=(x:-190.29, y:-18.00, width:380.59, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 4 EA-21 FIELD EntryDescription font=24 px=21.08185 rect=(x:-370.55, y:-111.00, width:741.10, height:222.00) rendered=73.34399 overflow=False truncated=False
+ROW 4 EA-21 FIELD EntryState font=28 px=24.59549 rect=(x:-586.84, y:-35.00, width:1173.69, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 4 selectedFullHeightVisible=True
+ROW 5 BB-12 FIELD EntryName font=50.4 px=44.27189 rect=(x:-190.29, y:-36.50, width:380.59, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 5 BB-12 FIELD EntrySubtitle font=26 px=22.83867 rect=(x:-190.29, y:-33.50, width:380.59, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 5 BB-12 FIELD EntryDesignation font=20 px=17.56821 rect=(x:-190.29, y:-18.00, width:380.59, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 5 BB-12 FIELD EntryDescription font=24 px=21.08185 rect=(x:-370.55, y:-111.00, width:741.10, height:222.00) rendered=148.608 overflow=False truncated=False
+ROW 5 BB-12 FIELD EntryState font=28 px=24.59549 rect=(x:-586.84, y:-35.00, width:1173.69, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 5 selectedFullHeightVisible=True
+ROW 6 IC-408 FIELD EntryName font=50.4 px=44.27189 rect=(x:-190.29, y:-36.50, width:380.59, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 6 IC-408 FIELD EntrySubtitle font=26 px=22.83867 rect=(x:-190.29, y:-33.50, width:380.59, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 6 IC-408 FIELD EntryDesignation font=20 px=17.56821 rect=(x:-190.29, y:-18.00, width:380.59, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 6 IC-408 FIELD EntryDescription font=24 px=21.08185 rect=(x:-370.55, y:-111.00, width:741.10, height:222.00) rendered=148.608 overflow=False truncated=False
+ROW 6 IC-408 FIELD EntryState font=28 px=24.59549 rect=(x:-586.84, y:-35.00, width:1173.69, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 6 selectedFullHeightVisible=True
+ROW 7 BB-413 FIELD EntryName font=50.4 px=44.27189 rect=(x:-190.29, y:-36.50, width:380.59, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 7 BB-413 FIELD EntrySubtitle font=26 px=22.83867 rect=(x:-190.29, y:-33.50, width:380.59, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 7 BB-413 FIELD EntryDesignation font=20 px=17.56821 rect=(x:-190.29, y:-18.00, width:380.59, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 7 BB-413 FIELD EntryDescription font=24 px=21.08185 rect=(x:-370.55, y:-111.00, width:741.10, height:222.00) rendered=185.28 overflow=False truncated=False
+ROW 7 BB-413 FIELD EntryState font=28 px=24.59549 rect=(x:-586.84, y:-35.00, width:1173.69, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 7 selectedFullHeightVisible=True
+ROW 8 AR-227 FIELD EntryName font=50.4 px=44.27189 rect=(x:-190.29, y:-36.50, width:380.59, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 8 AR-227 FIELD EntrySubtitle font=26 px=22.83867 rect=(x:-190.29, y:-33.50, width:380.59, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 8 AR-227 FIELD EntryDesignation font=20 px=17.56821 rect=(x:-190.29, y:-18.00, width:380.59, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 8 AR-227 FIELD EntryDescription font=24 px=21.08185 rect=(x:-370.55, y:-111.00, width:741.10, height:222.00) rendered=148.608 overflow=False truncated=False
+ROW 8 AR-227 FIELD EntryState font=28 px=24.59549 rect=(x:-586.84, y:-35.00, width:1173.69, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 8 selectedFullHeightVisible=True
+ROW 9 EK-9 FIELD EntryName font=50.4 px=44.27189 rect=(x:-190.29, y:-36.50, width:380.59, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 9 EK-9 FIELD EntrySubtitle font=26 px=22.83867 rect=(x:-190.29, y:-33.50, width:380.59, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 9 EK-9 FIELD EntryDesignation font=20 px=17.56821 rect=(x:-190.29, y:-18.00, width:380.59, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 9 EK-9 FIELD EntryDescription font=23.55 px=20.68657 rect=(x:-370.55, y:-111.00, width:741.10, height:222.00) rendered=221.5584 overflow=False truncated=False
+ROW 9 EK-9 FIELD EntryState font=28 px=24.59549 rect=(x:-586.84, y:-35.00, width:1173.69, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 9 selectedFullHeightVisible=True
+ROW 10 Katana FIELD EntryName font=50.4 px=44.27189 rect=(x:-190.29, y:-36.50, width:380.59, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 10 Katana FIELD EntrySubtitle font=26 px=22.83867 rect=(x:-190.29, y:-33.50, width:380.59, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 10 Katana FIELD EntryDesignation font=20 px=17.56821 rect=(x:-190.29, y:-18.00, width:380.59, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 10 Katana FIELD EntryDescription font=24 px=21.08185 rect=(x:-370.55, y:-111.00, width:741.10, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 10 Katana FIELD EntryState font=28 px=24.59549 rect=(x:-586.84, y:-35.00, width:1173.69, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 10 selectedFullHeightVisible=True
+ROW 11 AR FIELD EntryName font=50.4 px=44.27189 rect=(x:-190.29, y:-36.50, width:380.59, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 11 AR FIELD EntrySubtitle font=26 px=22.83867 rect=(x:-190.29, y:-33.50, width:380.59, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 11 AR FIELD EntryDesignation font=20 px=17.56821 rect=(x:-190.29, y:-18.00, width:380.59, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 11 AR FIELD EntryDescription font=24 px=21.08185 rect=(x:-370.55, y:-111.00, width:741.10, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 11 AR FIELD EntryState font=28 px=24.59549 rect=(x:-586.84, y:-35.00, width:1173.69, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 11 selectedFullHeightVisible=True
+ROW 12 GearCraft（剣） FIELD EntryName font=50.4 px=44.27189 rect=(x:-190.29, y:-36.50, width:380.59, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 12 GearCraft（剣） FIELD EntrySubtitle font=26 px=22.83867 rect=(x:-190.29, y:-33.50, width:380.59, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 12 GearCraft（剣） FIELD EntryDesignation font=20 px=17.56821 rect=(x:-190.29, y:-18.00, width:380.59, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 12 GearCraft（剣） FIELD EntryDescription font=24 px=21.08185 rect=(x:-370.55, y:-111.00, width:741.10, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 12 GearCraft（剣） FIELD EntryState font=28 px=24.59549 rect=(x:-586.84, y:-35.00, width:1173.69, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 12 selectedFullHeightVisible=True
+ROW 13 GearCraft（斧） FIELD EntryName font=50.4 px=44.27189 rect=(x:-190.29, y:-36.50, width:380.59, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 13 GearCraft（斧） FIELD EntrySubtitle font=26 px=22.83867 rect=(x:-190.29, y:-33.50, width:380.59, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 13 GearCraft（斧） FIELD EntryDesignation font=20 px=17.56821 rect=(x:-190.29, y:-18.00, width:380.59, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 13 GearCraft（斧） FIELD EntryDescription font=24 px=21.08185 rect=(x:-370.55, y:-111.00, width:741.10, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 13 GearCraft（斧） FIELD EntryState font=28 px=24.59549 rect=(x:-586.84, y:-35.00, width:1173.69, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 13 selectedFullHeightVisible=True
+ROW 14 SteamCannon FIELD EntryName font=50.4 px=44.27189 rect=(x:-190.29, y:-36.50, width:380.59, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 14 SteamCannon FIELD EntrySubtitle font=26 px=22.83867 rect=(x:-190.29, y:-33.50, width:380.59, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 14 SteamCannon FIELD EntryDesignation font=20 px=17.56821 rect=(x:-190.29, y:-18.00, width:380.59, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 14 SteamCannon FIELD EntryDescription font=24 px=21.08185 rect=(x:-370.55, y:-111.00, width:741.10, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 14 SteamCannon FIELD EntryState font=28 px=24.59549 rect=(x:-586.84, y:-35.00, width:1173.69, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 14 selectedFullHeightVisible=True
+ROW 15 SteamThrower FIELD EntryName font=50.4 px=44.27189 rect=(x:-190.29, y:-36.50, width:380.59, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 15 SteamThrower FIELD EntrySubtitle font=26 px=22.83867 rect=(x:-190.29, y:-33.50, width:380.59, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 15 SteamThrower FIELD EntryDesignation font=20 px=17.56821 rect=(x:-190.29, y:-18.00, width:380.59, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 15 SteamThrower FIELD EntryDescription font=24 px=21.08185 rect=(x:-370.55, y:-111.00, width:741.10, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 15 SteamThrower FIELD EntryState font=28 px=24.59549 rect=(x:-586.84, y:-35.00, width:1173.69, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 15 selectedFullHeightVisible=True
+ROW 16 SteamGatling FIELD EntryName font=50.4 px=44.27189 rect=(x:-190.29, y:-36.50, width:380.59, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 16 SteamGatling FIELD EntrySubtitle font=26 px=22.83867 rect=(x:-190.29, y:-33.50, width:380.59, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 16 SteamGatling FIELD EntryDesignation font=20 px=17.56821 rect=(x:-190.29, y:-18.00, width:380.59, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 16 SteamGatling FIELD EntryDescription font=24 px=21.08185 rect=(x:-370.55, y:-111.00, width:741.10, height:222.00) rendered=110.016 overflow=False truncated=False
+ROW 16 SteamGatling FIELD EntryState font=28 px=24.59549 rect=(x:-586.84, y:-35.00, width:1173.69, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 16 selectedFullHeightVisible=True
+ROW 17 RailCraft FIELD EntryName font=50.4 px=44.27189 rect=(x:-190.29, y:-36.50, width:380.59, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 17 RailCraft FIELD EntrySubtitle font=26 px=22.83867 rect=(x:-190.29, y:-33.50, width:380.59, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 17 RailCraft FIELD EntryDesignation font=20 px=17.56821 rect=(x:-190.29, y:-18.00, width:380.59, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 17 RailCraft FIELD EntryDescription font=24 px=21.08185 rect=(x:-370.55, y:-111.00, width:741.10, height:222.00) rendered=185.28 overflow=False truncated=False
+ROW 17 RailCraft FIELD EntryState font=28 px=24.59549 rect=(x:-586.84, y:-35.00, width:1173.69, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 17 selectedFullHeightVisible=True
+ROW 18 PunkDrive FIELD EntryName font=50.4 px=44.27189 rect=(x:-190.29, y:-36.50, width:380.59, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 18 PunkDrive FIELD EntrySubtitle font=26 px=22.83867 rect=(x:-190.29, y:-33.50, width:380.59, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 18 PunkDrive FIELD EntryDesignation font=20 px=17.56821 rect=(x:-190.29, y:-18.00, width:380.59, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 18 PunkDrive FIELD EntryDescription font=24 px=21.08185 rect=(x:-370.55, y:-111.00, width:741.10, height:222.00) rendered=148.608 overflow=False truncated=False
+ROW 18 PunkDrive FIELD EntryState font=28 px=24.59549 rect=(x:-586.84, y:-35.00, width:1173.69, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 18 selectedFullHeightVisible=True
+ROW 19 スクラップモジュール FIELD EntryName font=38.05 px=33.42352 rect=(x:-190.29, y:-36.50, width:380.59, height:73.00) rendered=55.0964 overflow=False truncated=False
+ROW 19 スクラップモジュール FIELD EntrySubtitle font=26 px=22.83867 rect=(x:-190.29, y:-33.50, width:380.59, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 19 スクラップモジュール FIELD EntryDesignation font=20 px=17.56821 rect=(x:-190.29, y:-18.00, width:380.59, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 19 スクラップモジュール FIELD EntryDescription font=24 px=21.08185 rect=(x:-370.55, y:-111.00, width:741.10, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 19 スクラップモジュール FIELD EntryState font=28 px=24.59549 rect=(x:-586.84, y:-35.00, width:1173.69, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 19 selectedFullHeightVisible=True
+ROW 20 リペアモジュール FIELD EntryName font=47.55 px=41.76842 rect=(x:-190.29, y:-36.50, width:380.59, height:73.00) rendered=68.85239 overflow=False truncated=False
+ROW 20 リペアモジュール FIELD EntrySubtitle font=26 px=22.83867 rect=(x:-190.29, y:-33.50, width:380.59, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 20 リペアモジュール FIELD EntryDesignation font=20 px=17.56821 rect=(x:-190.29, y:-18.00, width:380.59, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 20 リペアモジュール FIELD EntryDescription font=24 px=21.08185 rect=(x:-370.55, y:-111.00, width:741.10, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 20 リペアモジュール FIELD EntryState font=28 px=24.59549 rect=(x:-586.84, y:-35.00, width:1173.69, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 20 selectedFullHeightVisible=True
+ROW 21 バリアモジュール FIELD EntryName font=47.55 px=41.76842 rect=(x:-190.29, y:-36.50, width:380.59, height:73.00) rendered=68.85239 overflow=False truncated=False
+ROW 21 バリアモジュール FIELD EntrySubtitle font=26 px=22.83867 rect=(x:-190.29, y:-33.50, width:380.59, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 21 バリアモジュール FIELD EntryDesignation font=20 px=17.56821 rect=(x:-190.29, y:-18.00, width:380.59, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 21 バリアモジュール FIELD EntryDescription font=24 px=21.08185 rect=(x:-370.55, y:-111.00, width:741.10, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 21 バリアモジュール FIELD EntryState font=28 px=24.59549 rect=(x:-586.84, y:-35.00, width:1173.69, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 21 selectedFullHeightVisible=True
+ROW 22 アップグレードモジュール FIELD EntryName font=31.7 px=27.84561 rect=(x:-190.29, y:-36.50, width:380.59, height:73.00) rendered=45.9016 overflow=False truncated=False
+ROW 22 アップグレードモジュール FIELD EntrySubtitle font=26 px=22.83867 rect=(x:-190.29, y:-33.50, width:380.59, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 22 アップグレードモジュール FIELD EntryDesignation font=20 px=17.56821 rect=(x:-190.29, y:-18.00, width:380.59, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 22 アップグレードモジュール FIELD EntryDescription font=24 px=21.08185 rect=(x:-370.55, y:-111.00, width:741.10, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 22 アップグレードモジュール FIELD EntryState font=28 px=24.59549 rect=(x:-586.84, y:-35.00, width:1173.69, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 22 selectedFullHeightVisible=True
+ROW 23 スクラップ FIELD EntryName font=50.4 px=44.27189 rect=(x:-190.29, y:-36.50, width:380.59, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 23 スクラップ FIELD EntrySubtitle font=26 px=22.83867 rect=(x:-190.29, y:-33.50, width:380.59, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 23 スクラップ FIELD EntryDesignation font=20 px=17.56821 rect=(x:-190.29, y:-18.00, width:380.59, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 23 スクラップ FIELD EntryDescription font=24 px=21.08185 rect=(x:-370.55, y:-111.00, width:741.10, height:222.00) rendered=73.34399 overflow=False truncated=False
+ROW 23 スクラップ FIELD EntryState font=28 px=24.59549 rect=(x:-586.84, y:-35.00, width:1173.69, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 23 selectedFullHeightVisible=True
+ROW 24 歯車 FIELD EntryName font=50.4 px=44.27189 rect=(x:-190.29, y:-36.50, width:380.59, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 24 歯車 FIELD EntrySubtitle font=26 px=22.83867 rect=(x:-190.29, y:-33.50, width:380.59, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 24 歯車 FIELD EntryDesignation font=20 px=17.56821 rect=(x:-190.29, y:-18.00, width:380.59, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 24 歯車 FIELD EntryDescription font=24 px=21.08185 rect=(x:-370.55, y:-111.00, width:741.10, height:222.00) rendered=148.608 overflow=False truncated=False
+ROW 24 歯車 FIELD EntryState font=28 px=24.59549 rect=(x:-586.84, y:-35.00, width:1173.69, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 24 selectedFullHeightVisible=True
+SIZE UXGalleryLayout2 (1024x768) target=(1024.00, 768.00) canvas=(x:-831.38, y:-623.54, width:1662.77, height:1247.08) camera=(x:0.00, y:0.00, width:1024.00, height:768.00)
+ROW 0 G-1 FIELD EntryName font=50.4 px=31.03836 rect=(x:-170.58, y:-36.50, width:341.15, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 0 G-1 FIELD EntrySubtitle font=26 px=16.01185 rect=(x:-170.58, y:-33.50, width:341.15, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 0 G-1 FIELD EntryDesignation font=20 px=12.31681 rect=(x:-170.58, y:-18.00, width:341.15, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 0 G-1 FIELD EntryDescription font=24 px=14.78017 rect=(x:-333.93, y:-111.00, width:667.85, height:222.00) rendered=110.016 overflow=False truncated=False
+ROW 0 G-1 FIELD EntryState font=28 px=17.24353 rect=(x:-530.50, y:-35.00, width:1061.01, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 0 selectedFullHeightVisible=True
+ROW 1 A-1 FIELD EntryName font=50.4 px=31.03836 rect=(x:-170.58, y:-36.50, width:341.15, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 1 A-1 FIELD EntrySubtitle font=26 px=16.01185 rect=(x:-170.58, y:-33.50, width:341.15, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 1 A-1 FIELD EntryDesignation font=20 px=12.31681 rect=(x:-170.58, y:-18.00, width:341.15, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 1 A-1 FIELD EntryDescription font=24 px=14.78017 rect=(x:-333.93, y:-111.00, width:667.85, height:222.00) rendered=73.34399 overflow=False truncated=False
+ROW 1 A-1 FIELD EntryState font=28 px=17.24353 rect=(x:-530.50, y:-35.00, width:1061.01, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 1 selectedFullHeightVisible=True
+ROW 2 B-1 FIELD EntryName font=50.4 px=31.03836 rect=(x:-170.58, y:-36.50, width:341.15, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 2 B-1 FIELD EntrySubtitle font=26 px=16.01185 rect=(x:-170.58, y:-33.50, width:341.15, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 2 B-1 FIELD EntryDesignation font=20 px=12.31681 rect=(x:-170.58, y:-18.00, width:341.15, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 2 B-1 FIELD EntryDescription font=24 px=14.78017 rect=(x:-333.93, y:-111.00, width:667.85, height:222.00) rendered=148.608 overflow=False truncated=False
+ROW 2 B-1 FIELD EntryState font=28 px=17.24353 rect=(x:-530.50, y:-35.00, width:1061.01, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 2 selectedFullHeightVisible=True
+ROW 3 EG-33 FIELD EntryName font=50.4 px=31.03836 rect=(x:-170.58, y:-36.50, width:341.15, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 3 EG-33 FIELD EntrySubtitle font=26 px=16.01185 rect=(x:-170.58, y:-33.50, width:341.15, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 3 EG-33 FIELD EntryDesignation font=20 px=12.31681 rect=(x:-170.58, y:-18.00, width:341.15, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 3 EG-33 FIELD EntryDescription font=24 px=14.78017 rect=(x:-333.93, y:-111.00, width:667.85, height:222.00) rendered=73.34399 overflow=False truncated=False
+ROW 3 EG-33 FIELD EntryState font=28 px=17.24353 rect=(x:-530.50, y:-35.00, width:1061.01, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 3 selectedFullHeightVisible=True
+ROW 4 EA-21 FIELD EntryName font=50.4 px=31.03836 rect=(x:-170.58, y:-36.50, width:341.15, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 4 EA-21 FIELD EntrySubtitle font=26 px=16.01185 rect=(x:-170.58, y:-33.50, width:341.15, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 4 EA-21 FIELD EntryDesignation font=20 px=12.31681 rect=(x:-170.58, y:-18.00, width:341.15, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 4 EA-21 FIELD EntryDescription font=24 px=14.78017 rect=(x:-333.93, y:-111.00, width:667.85, height:222.00) rendered=73.34399 overflow=False truncated=False
+ROW 4 EA-21 FIELD EntryState font=28 px=17.24353 rect=(x:-530.50, y:-35.00, width:1061.01, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 4 selectedFullHeightVisible=True
+ROW 5 BB-12 FIELD EntryName font=50.4 px=31.03836 rect=(x:-170.58, y:-36.50, width:341.15, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 5 BB-12 FIELD EntrySubtitle font=26 px=16.01185 rect=(x:-170.58, y:-33.50, width:341.15, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 5 BB-12 FIELD EntryDesignation font=20 px=12.31681 rect=(x:-170.58, y:-18.00, width:341.15, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 5 BB-12 FIELD EntryDescription font=24 px=14.78017 rect=(x:-333.93, y:-111.00, width:667.85, height:222.00) rendered=148.608 overflow=False truncated=False
+ROW 5 BB-12 FIELD EntryState font=28 px=17.24353 rect=(x:-530.50, y:-35.00, width:1061.01, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 5 selectedFullHeightVisible=True
+ROW 6 IC-408 FIELD EntryName font=50.4 px=31.03836 rect=(x:-170.58, y:-36.50, width:341.15, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 6 IC-408 FIELD EntrySubtitle font=26 px=16.01185 rect=(x:-170.58, y:-33.50, width:341.15, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 6 IC-408 FIELD EntryDesignation font=20 px=12.31681 rect=(x:-170.58, y:-18.00, width:341.15, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 6 IC-408 FIELD EntryDescription font=24 px=14.78017 rect=(x:-333.93, y:-111.00, width:667.85, height:222.00) rendered=185.28 overflow=False truncated=False
+ROW 6 IC-408 FIELD EntryState font=28 px=17.24353 rect=(x:-530.50, y:-35.00, width:1061.01, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 6 selectedFullHeightVisible=True
+ROW 7 BB-413 FIELD EntryName font=50.4 px=31.03836 rect=(x:-170.58, y:-36.50, width:341.15, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 7 BB-413 FIELD EntrySubtitle font=26 px=16.01185 rect=(x:-170.58, y:-33.50, width:341.15, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 7 BB-413 FIELD EntryDesignation font=20 px=12.31681 rect=(x:-170.58, y:-18.00, width:341.15, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 7 BB-413 FIELD EntryDescription font=24 px=14.78017 rect=(x:-333.93, y:-111.00, width:667.85, height:222.00) rendered=185.28 overflow=False truncated=False
+ROW 7 BB-413 FIELD EntryState font=28 px=17.24353 rect=(x:-530.50, y:-35.00, width:1061.01, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 7 selectedFullHeightVisible=True
+ROW 8 AR-227 FIELD EntryName font=50.4 px=31.03836 rect=(x:-170.58, y:-36.50, width:341.15, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 8 AR-227 FIELD EntrySubtitle font=26 px=16.01185 rect=(x:-170.58, y:-33.50, width:341.15, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 8 AR-227 FIELD EntryDesignation font=20 px=12.31681 rect=(x:-170.58, y:-18.00, width:341.15, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 8 AR-227 FIELD EntryDescription font=24 px=14.78017 rect=(x:-333.93, y:-111.00, width:667.85, height:222.00) rendered=185.28 overflow=False truncated=False
+ROW 8 AR-227 FIELD EntryState font=28 px=17.24353 rect=(x:-530.50, y:-35.00, width:1061.01, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 8 selectedFullHeightVisible=True
+ROW 9 EK-9 FIELD EntryName font=50.4 px=31.03836 rect=(x:-170.58, y:-36.50, width:341.15, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 9 EK-9 FIELD EntrySubtitle font=26 px=16.01185 rect=(x:-170.58, y:-33.50, width:341.15, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 9 EK-9 FIELD EntryDesignation font=20 px=12.31681 rect=(x:-170.58, y:-18.00, width:341.15, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 9 EK-9 FIELD EntryDescription font=22.25 px=13.70245 rect=(x:-333.93, y:-111.00, width:667.85, height:222.00) rendered=209.328 overflow=False truncated=False
+ROW 9 EK-9 FIELD EntryState font=28 px=17.24353 rect=(x:-530.50, y:-35.00, width:1061.01, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 9 selectedFullHeightVisible=True
+ROW 10 Katana FIELD EntryName font=50.4 px=31.03836 rect=(x:-170.58, y:-36.50, width:341.15, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 10 Katana FIELD EntrySubtitle font=26 px=16.01185 rect=(x:-170.58, y:-33.50, width:341.15, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 10 Katana FIELD EntryDesignation font=20 px=12.31681 rect=(x:-170.58, y:-18.00, width:341.15, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 10 Katana FIELD EntryDescription font=24 px=14.78017 rect=(x:-333.93, y:-111.00, width:667.85, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 10 Katana FIELD EntryState font=28 px=17.24353 rect=(x:-530.50, y:-35.00, width:1061.01, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 10 selectedFullHeightVisible=True
+ROW 11 AR FIELD EntryName font=50.4 px=31.03836 rect=(x:-170.58, y:-36.50, width:341.15, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 11 AR FIELD EntrySubtitle font=26 px=16.01185 rect=(x:-170.58, y:-33.50, width:341.15, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 11 AR FIELD EntryDesignation font=20 px=12.31681 rect=(x:-170.58, y:-18.00, width:341.15, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 11 AR FIELD EntryDescription font=24 px=14.78017 rect=(x:-333.93, y:-111.00, width:667.85, height:222.00) rendered=148.608 overflow=False truncated=False
+ROW 11 AR FIELD EntryState font=28 px=17.24353 rect=(x:-530.50, y:-35.00, width:1061.01, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 11 selectedFullHeightVisible=True
+ROW 12 GearCraft（剣） FIELD EntryName font=45.45 px=27.98995 rect=(x:-170.58, y:-36.50, width:341.15, height:73.00) rendered=65.8116 overflow=False truncated=False
+ROW 12 GearCraft（剣） FIELD EntrySubtitle font=26 px=16.01185 rect=(x:-170.58, y:-33.50, width:341.15, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 12 GearCraft（剣） FIELD EntryDesignation font=20 px=12.31681 rect=(x:-170.58, y:-18.00, width:341.15, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 12 GearCraft（剣） FIELD EntryDescription font=24 px=14.78017 rect=(x:-333.93, y:-111.00, width:667.85, height:222.00) rendered=148.608 overflow=False truncated=False
+ROW 12 GearCraft（剣） FIELD EntryState font=28 px=17.24353 rect=(x:-530.50, y:-35.00, width:1061.01, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 12 selectedFullHeightVisible=True
+ROW 13 GearCraft（斧） FIELD EntryName font=45.45 px=27.98995 rect=(x:-170.58, y:-36.50, width:341.15, height:73.00) rendered=65.8116 overflow=False truncated=False
+ROW 13 GearCraft（斧） FIELD EntrySubtitle font=26 px=16.01185 rect=(x:-170.58, y:-33.50, width:341.15, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 13 GearCraft（斧） FIELD EntryDesignation font=20 px=12.31681 rect=(x:-170.58, y:-18.00, width:341.15, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 13 GearCraft（斧） FIELD EntryDescription font=24 px=14.78017 rect=(x:-333.93, y:-111.00, width:667.85, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 13 GearCraft（斧） FIELD EntryState font=28 px=17.24353 rect=(x:-530.50, y:-35.00, width:1061.01, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 13 selectedFullHeightVisible=True
+ROW 14 SteamCannon FIELD EntryName font=50.4 px=31.03836 rect=(x:-170.58, y:-36.50, width:341.15, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 14 SteamCannon FIELD EntrySubtitle font=26 px=16.01185 rect=(x:-170.58, y:-33.50, width:341.15, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 14 SteamCannon FIELD EntryDesignation font=20 px=12.31681 rect=(x:-170.58, y:-18.00, width:341.15, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 14 SteamCannon FIELD EntryDescription font=24 px=14.78017 rect=(x:-333.93, y:-111.00, width:667.85, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 14 SteamCannon FIELD EntryState font=28 px=17.24353 rect=(x:-530.50, y:-35.00, width:1061.01, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 14 selectedFullHeightVisible=True
+ROW 15 SteamThrower FIELD EntryName font=50.4 px=31.03836 rect=(x:-170.58, y:-36.50, width:341.15, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 15 SteamThrower FIELD EntrySubtitle font=26 px=16.01185 rect=(x:-170.58, y:-33.50, width:341.15, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 15 SteamThrower FIELD EntryDesignation font=20 px=12.31681 rect=(x:-170.58, y:-18.00, width:341.15, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 15 SteamThrower FIELD EntryDescription font=24 px=14.78017 rect=(x:-333.93, y:-111.00, width:667.85, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 15 SteamThrower FIELD EntryState font=28 px=17.24353 rect=(x:-530.50, y:-35.00, width:1061.01, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 15 selectedFullHeightVisible=True
+ROW 16 SteamGatling FIELD EntryName font=50.4 px=31.03836 rect=(x:-170.58, y:-36.50, width:341.15, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 16 SteamGatling FIELD EntrySubtitle font=26 px=16.01185 rect=(x:-170.58, y:-33.50, width:341.15, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 16 SteamGatling FIELD EntryDesignation font=20 px=12.31681 rect=(x:-170.58, y:-18.00, width:341.15, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 16 SteamGatling FIELD EntryDescription font=24 px=14.78017 rect=(x:-333.93, y:-111.00, width:667.85, height:222.00) rendered=110.016 overflow=False truncated=False
+ROW 16 SteamGatling FIELD EntryState font=28 px=17.24353 rect=(x:-530.50, y:-35.00, width:1061.01, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 16 selectedFullHeightVisible=True
+ROW 17 RailCraft FIELD EntryName font=50.4 px=31.03836 rect=(x:-170.58, y:-36.50, width:341.15, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 17 RailCraft FIELD EntrySubtitle font=26 px=16.01185 rect=(x:-170.58, y:-33.50, width:341.15, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 17 RailCraft FIELD EntryDesignation font=20 px=12.31681 rect=(x:-170.58, y:-18.00, width:341.15, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 17 RailCraft FIELD EntryDescription font=24 px=14.78017 rect=(x:-333.93, y:-111.00, width:667.85, height:222.00) rendered=185.28 overflow=False truncated=False
+ROW 17 RailCraft FIELD EntryState font=28 px=17.24353 rect=(x:-530.50, y:-35.00, width:1061.01, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 17 selectedFullHeightVisible=True
+ROW 18 PunkDrive FIELD EntryName font=50.4 px=31.03836 rect=(x:-170.58, y:-36.50, width:341.15, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 18 PunkDrive FIELD EntrySubtitle font=26 px=16.01185 rect=(x:-170.58, y:-33.50, width:341.15, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 18 PunkDrive FIELD EntryDesignation font=20 px=12.31681 rect=(x:-170.58, y:-18.00, width:341.15, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 18 PunkDrive FIELD EntryDescription font=24 px=14.78017 rect=(x:-333.93, y:-111.00, width:667.85, height:222.00) rendered=148.608 overflow=False truncated=False
+ROW 18 PunkDrive FIELD EntryState font=28 px=17.24353 rect=(x:-530.50, y:-35.00, width:1061.01, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 18 selectedFullHeightVisible=True
+ROW 19 スクラップモジュール FIELD EntryName font=34.1 px=21.00016 rect=(x:-170.58, y:-36.50, width:341.15, height:73.00) rendered=49.3768 overflow=False truncated=False
+ROW 19 スクラップモジュール FIELD EntrySubtitle font=26 px=16.01185 rect=(x:-170.58, y:-33.50, width:341.15, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 19 スクラップモジュール FIELD EntryDesignation font=20 px=12.31681 rect=(x:-170.58, y:-18.00, width:341.15, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 19 スクラップモジュール FIELD EntryDescription font=24 px=14.78017 rect=(x:-333.93, y:-111.00, width:667.85, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 19 スクラップモジュール FIELD EntryState font=28 px=17.24353 rect=(x:-530.50, y:-35.00, width:1061.01, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 19 selectedFullHeightVisible=True
+ROW 20 リペアモジュール FIELD EntryName font=42.6 px=26.2348 rect=(x:-170.58, y:-36.50, width:341.15, height:73.00) rendered=61.6848 overflow=False truncated=False
+ROW 20 リペアモジュール FIELD EntrySubtitle font=26 px=16.01185 rect=(x:-170.58, y:-33.50, width:341.15, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 20 リペアモジュール FIELD EntryDesignation font=20 px=12.31681 rect=(x:-170.58, y:-18.00, width:341.15, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 20 リペアモジュール FIELD EntryDescription font=24 px=14.78017 rect=(x:-333.93, y:-111.00, width:667.85, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 20 リペアモジュール FIELD EntryState font=28 px=17.24353 rect=(x:-530.50, y:-35.00, width:1061.01, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 20 selectedFullHeightVisible=True
+ROW 21 バリアモジュール FIELD EntryName font=42.6 px=26.2348 rect=(x:-170.58, y:-36.50, width:341.15, height:73.00) rendered=61.6848 overflow=False truncated=False
+ROW 21 バリアモジュール FIELD EntrySubtitle font=26 px=16.01185 rect=(x:-170.58, y:-33.50, width:341.15, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 21 バリアモジュール FIELD EntryDesignation font=20 px=12.31681 rect=(x:-170.58, y:-18.00, width:341.15, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 21 バリアモジュール FIELD EntryDescription font=24 px=14.78017 rect=(x:-333.93, y:-111.00, width:667.85, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 21 バリアモジュール FIELD EntryState font=28 px=17.24353 rect=(x:-530.50, y:-35.00, width:1061.01, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 21 selectedFullHeightVisible=True
+ROW 22 アップグレードモジュール FIELD EntryName font=28.4 px=17.48987 rect=(x:-170.58, y:-36.50, width:341.15, height:73.00) rendered=41.1232 overflow=False truncated=False
+ROW 22 アップグレードモジュール FIELD EntrySubtitle font=26 px=16.01185 rect=(x:-170.58, y:-33.50, width:341.15, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 22 アップグレードモジュール FIELD EntryDesignation font=20 px=12.31681 rect=(x:-170.58, y:-18.00, width:341.15, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 22 アップグレードモジュール FIELD EntryDescription font=24 px=14.78017 rect=(x:-333.93, y:-111.00, width:667.85, height:222.00) rendered=148.608 overflow=False truncated=False
+ROW 22 アップグレードモジュール FIELD EntryState font=28 px=17.24353 rect=(x:-530.50, y:-35.00, width:1061.01, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 22 selectedFullHeightVisible=True
+ROW 23 スクラップ FIELD EntryName font=50.4 px=31.03836 rect=(x:-170.58, y:-36.50, width:341.15, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 23 スクラップ FIELD EntrySubtitle font=26 px=16.01185 rect=(x:-170.58, y:-33.50, width:341.15, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 23 スクラップ FIELD EntryDesignation font=20 px=12.31681 rect=(x:-170.58, y:-18.00, width:341.15, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 23 スクラップ FIELD EntryDescription font=24 px=14.78017 rect=(x:-333.93, y:-111.00, width:667.85, height:222.00) rendered=73.34399 overflow=False truncated=False
+ROW 23 スクラップ FIELD EntryState font=28 px=17.24353 rect=(x:-530.50, y:-35.00, width:1061.01, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 23 selectedFullHeightVisible=True
+ROW 24 歯車 FIELD EntryName font=50.4 px=31.03836 rect=(x:-170.58, y:-36.50, width:341.15, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 24 歯車 FIELD EntrySubtitle font=26 px=16.01185 rect=(x:-170.58, y:-33.50, width:341.15, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 24 歯車 FIELD EntryDesignation font=20 px=12.31681 rect=(x:-170.58, y:-18.00, width:341.15, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 24 歯車 FIELD EntryDescription font=24 px=14.78017 rect=(x:-333.93, y:-111.00, width:667.85, height:222.00) rendered=148.608 overflow=False truncated=False
+ROW 24 歯車 FIELD EntryState font=28 px=17.24353 rect=(x:-530.50, y:-35.00, width:1061.01, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 24 selectedFullHeightVisible=True
+SIZE UXGalleryLayout3 (2560x1080) target=(2560.00, 1080.00) canvas=(x:-1108.51, y:-467.65, width:2217.03, height:935.31) camera=(x:0.00, y:0.00, width:2560.00, height:1080.00)
+ROW 0 G-1 FIELD EntryName font=50.4 px=58.19691 rect=(x:-239.44, y:-36.50, width:478.88, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 0 G-1 FIELD EntrySubtitle font=26 px=30.02221 rect=(x:-239.44, y:-33.50, width:478.88, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 0 G-1 FIELD EntryDesignation font=20 px=23.09401 rect=(x:-239.44, y:-18.00, width:478.88, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 0 G-1 FIELD EntryDescription font=24 px=27.71281 rect=(x:-461.82, y:-111.00, width:923.64, height:222.00) rendered=73.34399 overflow=False truncated=False
+ROW 0 G-1 FIELD EntryState font=28 px=32.33162 rect=(x:-727.26, y:-35.00, width:1454.53, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 0 selectedFullHeightVisible=True
+ROW 1 A-1 FIELD EntryName font=50.4 px=58.19691 rect=(x:-239.44, y:-36.50, width:478.88, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 1 A-1 FIELD EntrySubtitle font=26 px=30.02221 rect=(x:-239.44, y:-33.50, width:478.88, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 1 A-1 FIELD EntryDesignation font=20 px=23.09401 rect=(x:-239.44, y:-18.00, width:478.88, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 1 A-1 FIELD EntryDescription font=24 px=27.71281 rect=(x:-461.82, y:-111.00, width:923.64, height:222.00) rendered=73.34399 overflow=False truncated=False
+ROW 1 A-1 FIELD EntryState font=28 px=32.33162 rect=(x:-727.26, y:-35.00, width:1454.53, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 1 selectedFullHeightVisible=True
+ROW 2 B-1 FIELD EntryName font=50.4 px=58.19691 rect=(x:-239.44, y:-36.50, width:478.88, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 2 B-1 FIELD EntrySubtitle font=26 px=30.02221 rect=(x:-239.44, y:-33.50, width:478.88, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 2 B-1 FIELD EntryDesignation font=20 px=23.09401 rect=(x:-239.44, y:-18.00, width:478.88, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 2 B-1 FIELD EntryDescription font=24 px=27.71281 rect=(x:-461.82, y:-111.00, width:923.64, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 2 B-1 FIELD EntryState font=28 px=32.33162 rect=(x:-727.26, y:-35.00, width:1454.53, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 2 selectedFullHeightVisible=True
+ROW 3 EG-33 FIELD EntryName font=50.4 px=58.19691 rect=(x:-239.44, y:-36.50, width:478.88, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 3 EG-33 FIELD EntrySubtitle font=26 px=30.02221 rect=(x:-239.44, y:-33.50, width:478.88, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 3 EG-33 FIELD EntryDesignation font=20 px=23.09401 rect=(x:-239.44, y:-18.00, width:478.88, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 3 EG-33 FIELD EntryDescription font=24 px=27.71281 rect=(x:-461.82, y:-111.00, width:923.64, height:222.00) rendered=73.34399 overflow=False truncated=False
+ROW 3 EG-33 FIELD EntryState font=28 px=32.33162 rect=(x:-727.26, y:-35.00, width:1454.53, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 3 selectedFullHeightVisible=True
+ROW 4 EA-21 FIELD EntryName font=50.4 px=58.19691 rect=(x:-239.44, y:-36.50, width:478.88, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 4 EA-21 FIELD EntrySubtitle font=26 px=30.02221 rect=(x:-239.44, y:-33.50, width:478.88, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 4 EA-21 FIELD EntryDesignation font=20 px=23.09401 rect=(x:-239.44, y:-18.00, width:478.88, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 4 EA-21 FIELD EntryDescription font=24 px=27.71281 rect=(x:-461.82, y:-111.00, width:923.64, height:222.00) rendered=73.34399 overflow=False truncated=False
+ROW 4 EA-21 FIELD EntryState font=28 px=32.33162 rect=(x:-727.26, y:-35.00, width:1454.53, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 4 selectedFullHeightVisible=True
+ROW 5 BB-12 FIELD EntryName font=50.4 px=58.19691 rect=(x:-239.44, y:-36.50, width:478.88, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 5 BB-12 FIELD EntrySubtitle font=26 px=30.02221 rect=(x:-239.44, y:-33.50, width:478.88, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 5 BB-12 FIELD EntryDesignation font=20 px=23.09401 rect=(x:-239.44, y:-18.00, width:478.88, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 5 BB-12 FIELD EntryDescription font=24 px=27.71281 rect=(x:-461.82, y:-111.00, width:923.64, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 5 BB-12 FIELD EntryState font=28 px=32.33162 rect=(x:-727.26, y:-35.00, width:1454.53, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 5 selectedFullHeightVisible=True
+ROW 6 IC-408 FIELD EntryName font=50.4 px=58.19691 rect=(x:-239.44, y:-36.50, width:478.88, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 6 IC-408 FIELD EntrySubtitle font=26 px=30.02221 rect=(x:-239.44, y:-33.50, width:478.88, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 6 IC-408 FIELD EntryDesignation font=20 px=23.09401 rect=(x:-239.44, y:-18.00, width:478.88, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 6 IC-408 FIELD EntryDescription font=24 px=27.71281 rect=(x:-461.82, y:-111.00, width:923.64, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 6 IC-408 FIELD EntryState font=28 px=32.33162 rect=(x:-727.26, y:-35.00, width:1454.53, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 6 selectedFullHeightVisible=True
+ROW 7 BB-413 FIELD EntryName font=50.4 px=58.19691 rect=(x:-239.44, y:-36.50, width:478.88, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 7 BB-413 FIELD EntrySubtitle font=26 px=30.02221 rect=(x:-239.44, y:-33.50, width:478.88, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 7 BB-413 FIELD EntryDesignation font=20 px=23.09401 rect=(x:-239.44, y:-18.00, width:478.88, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 7 BB-413 FIELD EntryDescription font=24 px=27.71281 rect=(x:-461.82, y:-111.00, width:923.64, height:222.00) rendered=185.28 overflow=False truncated=False
+ROW 7 BB-413 FIELD EntryState font=28 px=32.33162 rect=(x:-727.26, y:-35.00, width:1454.53, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 7 selectedFullHeightVisible=True
+ROW 8 AR-227 FIELD EntryName font=50.4 px=58.19691 rect=(x:-239.44, y:-36.50, width:478.88, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 8 AR-227 FIELD EntrySubtitle font=26 px=30.02221 rect=(x:-239.44, y:-33.50, width:478.88, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 8 AR-227 FIELD EntryDesignation font=20 px=23.09401 rect=(x:-239.44, y:-18.00, width:478.88, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 8 AR-227 FIELD EntryDescription font=24 px=27.71281 rect=(x:-461.82, y:-111.00, width:923.64, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 8 AR-227 FIELD EntryState font=28 px=32.33162 rect=(x:-727.26, y:-35.00, width:1454.53, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 8 selectedFullHeightVisible=True
+ROW 9 EK-9 FIELD EntryName font=50.4 px=58.19691 rect=(x:-239.44, y:-36.50, width:478.88, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 9 EK-9 FIELD EntrySubtitle font=26 px=30.02221 rect=(x:-239.44, y:-33.50, width:478.88, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 9 EK-9 FIELD EntryDesignation font=20 px=23.09401 rect=(x:-239.44, y:-18.00, width:478.88, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 9 EK-9 FIELD EntryDescription font=24 px=27.71281 rect=(x:-461.82, y:-111.00, width:923.64, height:222.00) rendered=189.12 overflow=False truncated=False
+ROW 9 EK-9 FIELD EntryState font=28 px=32.33162 rect=(x:-727.26, y:-35.00, width:1454.53, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 9 selectedFullHeightVisible=True
+ROW 10 Katana FIELD EntryName font=50.4 px=58.19691 rect=(x:-239.44, y:-36.50, width:478.88, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 10 Katana FIELD EntrySubtitle font=26 px=30.02221 rect=(x:-239.44, y:-33.50, width:478.88, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 10 Katana FIELD EntryDesignation font=20 px=23.09401 rect=(x:-239.44, y:-18.00, width:478.88, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 10 Katana FIELD EntryDescription font=24 px=27.71281 rect=(x:-461.82, y:-111.00, width:923.64, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 10 Katana FIELD EntryState font=28 px=32.33162 rect=(x:-727.26, y:-35.00, width:1454.53, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 10 selectedFullHeightVisible=True
+ROW 11 AR FIELD EntryName font=50.4 px=58.19691 rect=(x:-239.44, y:-36.50, width:478.88, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 11 AR FIELD EntrySubtitle font=26 px=30.02221 rect=(x:-239.44, y:-33.50, width:478.88, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 11 AR FIELD EntryDesignation font=20 px=23.09401 rect=(x:-239.44, y:-18.00, width:478.88, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 11 AR FIELD EntryDescription font=24 px=27.71281 rect=(x:-461.82, y:-111.00, width:923.64, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 11 AR FIELD EntryState font=28 px=32.33162 rect=(x:-727.26, y:-35.00, width:1454.53, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 11 selectedFullHeightVisible=True
+ROW 12 GearCraft（剣） FIELD EntryName font=50.4 px=58.19691 rect=(x:-239.44, y:-36.50, width:478.88, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 12 GearCraft（剣） FIELD EntrySubtitle font=26 px=30.02221 rect=(x:-239.44, y:-33.50, width:478.88, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 12 GearCraft（剣） FIELD EntryDesignation font=20 px=23.09401 rect=(x:-239.44, y:-18.00, width:478.88, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 12 GearCraft（剣） FIELD EntryDescription font=24 px=27.71281 rect=(x:-461.82, y:-111.00, width:923.64, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 12 GearCraft（剣） FIELD EntryState font=28 px=32.33162 rect=(x:-727.26, y:-35.00, width:1454.53, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 12 selectedFullHeightVisible=True
+ROW 13 GearCraft（斧） FIELD EntryName font=50.4 px=58.19691 rect=(x:-239.44, y:-36.50, width:478.88, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 13 GearCraft（斧） FIELD EntrySubtitle font=26 px=30.02221 rect=(x:-239.44, y:-33.50, width:478.88, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 13 GearCraft（斧） FIELD EntryDesignation font=20 px=23.09401 rect=(x:-239.44, y:-18.00, width:478.88, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 13 GearCraft（斧） FIELD EntryDescription font=24 px=27.71281 rect=(x:-461.82, y:-111.00, width:923.64, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 13 GearCraft（斧） FIELD EntryState font=28 px=32.33162 rect=(x:-727.26, y:-35.00, width:1454.53, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 13 selectedFullHeightVisible=True
+ROW 14 SteamCannon FIELD EntryName font=50.4 px=58.19691 rect=(x:-239.44, y:-36.50, width:478.88, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 14 SteamCannon FIELD EntrySubtitle font=26 px=30.02221 rect=(x:-239.44, y:-33.50, width:478.88, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 14 SteamCannon FIELD EntryDesignation font=20 px=23.09401 rect=(x:-239.44, y:-18.00, width:478.88, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 14 SteamCannon FIELD EntryDescription font=24 px=27.71281 rect=(x:-461.82, y:-111.00, width:923.64, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 14 SteamCannon FIELD EntryState font=28 px=32.33162 rect=(x:-727.26, y:-35.00, width:1454.53, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 14 selectedFullHeightVisible=True
+ROW 15 SteamThrower FIELD EntryName font=50.4 px=58.19691 rect=(x:-239.44, y:-36.50, width:478.88, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 15 SteamThrower FIELD EntrySubtitle font=26 px=30.02221 rect=(x:-239.44, y:-33.50, width:478.88, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 15 SteamThrower FIELD EntryDesignation font=20 px=23.09401 rect=(x:-239.44, y:-18.00, width:478.88, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 15 SteamThrower FIELD EntryDescription font=24 px=27.71281 rect=(x:-461.82, y:-111.00, width:923.64, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 15 SteamThrower FIELD EntryState font=28 px=32.33162 rect=(x:-727.26, y:-35.00, width:1454.53, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 15 selectedFullHeightVisible=True
+ROW 16 SteamGatling FIELD EntryName font=50.4 px=58.19691 rect=(x:-239.44, y:-36.50, width:478.88, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 16 SteamGatling FIELD EntrySubtitle font=26 px=30.02221 rect=(x:-239.44, y:-33.50, width:478.88, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 16 SteamGatling FIELD EntryDesignation font=20 px=23.09401 rect=(x:-239.44, y:-18.00, width:478.88, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 16 SteamGatling FIELD EntryDescription font=24 px=27.71281 rect=(x:-461.82, y:-111.00, width:923.64, height:222.00) rendered=110.016 overflow=False truncated=False
+ROW 16 SteamGatling FIELD EntryState font=28 px=32.33162 rect=(x:-727.26, y:-35.00, width:1454.53, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 16 selectedFullHeightVisible=True
+ROW 17 RailCraft FIELD EntryName font=50.4 px=58.19691 rect=(x:-239.44, y:-36.50, width:478.88, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 17 RailCraft FIELD EntrySubtitle font=26 px=30.02221 rect=(x:-239.44, y:-33.50, width:478.88, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 17 RailCraft FIELD EntryDesignation font=20 px=23.09401 rect=(x:-239.44, y:-18.00, width:478.88, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 17 RailCraft FIELD EntryDescription font=24 px=27.71281 rect=(x:-461.82, y:-111.00, width:923.64, height:222.00) rendered=148.608 overflow=False truncated=False
+ROW 17 RailCraft FIELD EntryState font=28 px=32.33162 rect=(x:-727.26, y:-35.00, width:1454.53, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 17 selectedFullHeightVisible=True
+ROW 18 PunkDrive FIELD EntryName font=50.4 px=58.19691 rect=(x:-239.44, y:-36.50, width:478.88, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 18 PunkDrive FIELD EntrySubtitle font=26 px=30.02221 rect=(x:-239.44, y:-33.50, width:478.88, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 18 PunkDrive FIELD EntryDesignation font=20 px=23.09401 rect=(x:-239.44, y:-18.00, width:478.88, height:36.00) rendered=-4.294967E+09 overflow=False truncated=False
+ROW 18 PunkDrive FIELD EntryDescription font=24 px=27.71281 rect=(x:-461.82, y:-111.00, width:923.64, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 18 PunkDrive FIELD EntryState font=28 px=32.33162 rect=(x:-727.26, y:-35.00, width:1454.53, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 18 selectedFullHeightVisible=True
+ROW 19 スクラップモジュール FIELD EntryName font=47.85 px=55.25242 rect=(x:-239.44, y:-36.50, width:478.88, height:73.00) rendered=69.2868 overflow=False truncated=False
+ROW 19 スクラップモジュール FIELD EntrySubtitle font=26 px=30.02221 rect=(x:-239.44, y:-33.50, width:478.88, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 19 スクラップモジュール FIELD EntryDesignation font=20 px=23.09401 rect=(x:-239.44, y:-18.00, width:478.88, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 19 スクラップモジュール FIELD EntryDescription font=24 px=27.71281 rect=(x:-461.82, y:-111.00, width:923.64, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 19 スクラップモジュール FIELD EntryState font=28 px=32.33162 rect=(x:-727.26, y:-35.00, width:1454.53, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 19 selectedFullHeightVisible=True
+ROW 20 リペアモジュール FIELD EntryName font=50.4 px=58.19691 rect=(x:-239.44, y:-36.50, width:478.88, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 20 リペアモジュール FIELD EntrySubtitle font=26 px=30.02221 rect=(x:-239.44, y:-33.50, width:478.88, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 20 リペアモジュール FIELD EntryDesignation font=20 px=23.09401 rect=(x:-239.44, y:-18.00, width:478.88, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 20 リペアモジュール FIELD EntryDescription font=24 px=27.71281 rect=(x:-461.82, y:-111.00, width:923.64, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 20 リペアモジュール FIELD EntryState font=28 px=32.33162 rect=(x:-727.26, y:-35.00, width:1454.53, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 20 selectedFullHeightVisible=True
+ROW 21 バリアモジュール FIELD EntryName font=50.4 px=58.19691 rect=(x:-239.44, y:-36.50, width:478.88, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 21 バリアモジュール FIELD EntrySubtitle font=26 px=30.02221 rect=(x:-239.44, y:-33.50, width:478.88, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 21 バリアモジュール FIELD EntryDesignation font=20 px=23.09401 rect=(x:-239.44, y:-18.00, width:478.88, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 21 バリアモジュール FIELD EntryDescription font=24 px=27.71281 rect=(x:-461.82, y:-111.00, width:923.64, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 21 バリアモジュール FIELD EntryState font=28 px=32.33162 rect=(x:-727.26, y:-35.00, width:1454.53, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 21 selectedFullHeightVisible=True
+ROW 22 アップグレードモジュール FIELD EntryName font=39.9 px=46.07255 rect=(x:-239.44, y:-36.50, width:478.88, height:73.00) rendered=57.77521 overflow=False truncated=False
+ROW 22 アップグレードモジュール FIELD EntrySubtitle font=26 px=30.02221 rect=(x:-239.44, y:-33.50, width:478.88, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 22 アップグレードモジュール FIELD EntryDesignation font=20 px=23.09401 rect=(x:-239.44, y:-18.00, width:478.88, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 22 アップグレードモジュール FIELD EntryDescription font=24 px=27.71281 rect=(x:-461.82, y:-111.00, width:923.64, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 22 アップグレードモジュール FIELD EntryState font=28 px=32.33162 rect=(x:-727.26, y:-35.00, width:1454.53, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 22 selectedFullHeightVisible=True
+ROW 23 スクラップ FIELD EntryName font=50.4 px=58.19691 rect=(x:-239.44, y:-36.50, width:478.88, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 23 スクラップ FIELD EntrySubtitle font=26 px=30.02221 rect=(x:-239.44, y:-33.50, width:478.88, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 23 スクラップ FIELD EntryDesignation font=20 px=23.09401 rect=(x:-239.44, y:-18.00, width:478.88, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 23 スクラップ FIELD EntryDescription font=24 px=27.71281 rect=(x:-461.82, y:-111.00, width:923.64, height:222.00) rendered=73.34399 overflow=False truncated=False
+ROW 23 スクラップ FIELD EntryState font=28 px=32.33162 rect=(x:-727.26, y:-35.00, width:1454.53, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 23 selectedFullHeightVisible=True
+ROW 24 歯車 FIELD EntryName font=50.4 px=58.19691 rect=(x:-239.44, y:-36.50, width:478.88, height:73.00) rendered=72.9792 overflow=False truncated=False
+ROW 24 歯車 FIELD EntrySubtitle font=26 px=30.02221 rect=(x:-239.44, y:-33.50, width:478.88, height:67.00) rendered=37.648 overflow=False truncated=False
+ROW 24 歯車 FIELD EntryDesignation font=20 px=23.09401 rect=(x:-239.44, y:-18.00, width:478.88, height:36.00) rendered=28.96 overflow=False truncated=False
+ROW 24 歯車 FIELD EntryDescription font=24 px=27.71281 rect=(x:-461.82, y:-111.00, width:923.64, height:222.00) rendered=111.936 overflow=False truncated=False
+ROW 24 歯車 FIELD EntryState font=28 px=32.33162 rect=(x:-727.26, y:-35.00, width:1454.53, height:70.00) rendered=40.544 overflow=False truncated=False
+ROW 24 selectedFullHeightVisible=True
+COMPLETE 5 dimensions x25 entries observations=750 overflowOrBounds=0

@@ -1,0 +1,155 @@
+UX継続テスト・ターム11：Galleryの戻る操作
+実施日: 2026-10-13 JST
+環境: Unity Editor Play / macOS
+状態: 修正後の8ケース・74項目と追加5項目の回帰、元保存データの復元・停止後照合を完了。
+      Title・Play停止。OS/物理入力と人間による使いやすさの評価は未実施。
+
+目的
+
+Titleや宿舎メニューからGalleryを開き、閲覧後に元の操作へ戻れるかを確認する。
+既存の戻るButtonに加え、他画面と整合したCancelによる復帰を検討する。
+Galleryには通常時のEscape案内がないため、表示された操作指示への違反とは扱わない。
+
+開始時のデータ保全
+
+担当は /tmp/gearcraft-uxgalleryreturn-playerprefs-backup.txt に元PlayerPrefs8キーを退避した。
+テスト用の解放状態と元の記録を分け、Play停止後に最終復元・照合を完了した。
+記録担当はUnity MCPを操作しておらず、実行時状態は担当の結果と保存ログに基づく。
+
+修正前の観測
+
+cancel-before.txtでは、Input Systemに合成Keyboardを追加し、Escapeの状態イベントを送った。
+UIのCancel actionはcontrol=/UXGalleryReturnKeyboard/escapeでperformedとなったが、
+GalleryのシーンとGalleryNavigation.IsOpen=trueが維持された。
+Entry_0を対象としたUGUI Cancelイベントもhandled=falseだった。
+一方、既存Return ButtonへのUGUI SubmitではTitleへ戻り、GalleryIconへの選択復帰と
+Time.timeScale=1を確認した。既存の画面帰還経路自体が動かない問題とは区別する。
+
+これは実Input Systemのaction経路とUGUIイベントを使った機能検証であり、
+OSからのキー送信・人間による物理キー操作の合格ではない。
+ターム10のGameView/OS送信でInputへの到達を確認できなかった試行とも区別する。
+今回の修正前結果は、合成入力がCancel actionへ届いたことを記録できている。
+
+今回の変更
+
+製品コードの対象はGalleryReturnButton.csとGalleryDebugUnlockPanel.csの2ファイル。
+シーンの配置変更はない。
+GalleryReturnButtonは現在のInputSystemUIInputModuleのCancel actionをLateUpdateで受け取り、
+選択先が一覧Button・スクロールバー・選択なしのいずれでも既存のReturn経路へ接続する。
+Galleryがアクティブか、遷移処理中でないかを確認し、同フレームのBackを重複実行しない。
+LateUpdateにしたのは、復元される呼出し元のUpdate処理が同じ押下に反応するのを避ける意図。
+実際の旧Input/OSキーまでの検証は行っていないため、その経路の二重反応防止を証明済みとはしない。
+デバッグ解放テスト表示中のCancelはその表示だけを閉じる。次のCancelでGalleryから帰還する。
+GalleryDebugUnlockPanel側の独立したEscape検出を除き、この処理へまとめた。
+既存の戻るButtonのReturn処理は維持する。
+
+修正後の合成入力による回帰
+
+CancelJourney.cs.txt / cancel-after.txtは、15.57秒で8ケース・74 PASSを記録した。
+実Input Systemへ合成Keyboard/Gamepadの状態イベントを送り、設定済みCancel actionの
+performedと実際のGalleryReturnButton.LateUpdateによる帰還を観測した。
+Galleryへ入る操作は各呼出し元の実Gallery ButtonへのUGUI Submitを使用した。
+
+ケース0: Title→Gallery、一覧からKeyboard Escape。
+ケース1: Title→Gallery、戻るButton選択時にGamepad buttonEast。
+ケース2: Title→Gallery、スクロールバー選択時にKeyboard Escape。
+ケース3: Title→Gallery、選択なしの状態でKeyboard Escape。
+ケース4: デバッグ全解放表示からKeyboard Escape。最初はデバッグのみ閉じ、次でTitleへ帰還。
+ケース5: デバッグ未解放表示からGamepad buttonEast。最初はデバッグのみ閉じ、次でTitleへ帰還。
+ケース6: 宿舎の実メニューハンドラーからGalleryへ入り、Escapeで同じ宿舎へ帰還。
+ケース7: Mainの実Pause処理からGalleryへ入り、Escapeで同じMainへ帰還。
+
+各帰還でGallery入口の選択、実行中のStatus/素材スナップショット、有効EventSystemが1つ、
+TitleのtimeScale1、宿舎/Mainの同じインスタンスとtimeScale0を確認した。
+MainではIsPausedとpauseMenuPanelの表示も確認。宿舎は画像でメニュー表示を補完した。
+Titleを含む各帰還でPlayが継続。ただし合成新Inputイベントであり、旧Inputを使う終了キーへの
+同時到達を再現したものではない。ログのTitle returnという共通文は宿舎/Mainにも出るが、
+その行で調べているのはEditorApplication.isPlayingのみ。
+記録したスナップショットはStatusManagerのインスタンスID、HP/GATE/STR/ACC/設備使用フラグと
+Gear/Scrap数。全ラン状態・全保存JSONの完全一致の確認とは区別する。
+
+宿舎/Mainは直接LoadScene、OpeningNotice既読値、実メニュー処理で試験条件を用意した。
+自然なStory通過や戦闘全編を含めた経路ではない。デバッグ表示のOpen/ShowAll/ShowLockedも
+実処理の直接呼出しであり、GEAR同時押しの試験には数えない。
+終了時に観測callbackのrunning=falseと合成Deviceの削除を担当が確認した。
+
+初回試験での失敗とハーネス修正
+
+cancel-first-run.txtのケース6で、宿舎メニューを開いた直後にtimeScale0を要求して失敗した。
+PauseOnPanelActiveの反映は次フレームのため、担当が次の呼出しでmenu=true・timeScale0と
+到着演出/ロードなしを確認。製品コードは変えず、試験に0.15秒の待機を追加した。
+全8ケースを再実行して74 PASSとなった。初回の失敗ログを削除せず保存し、
+この失敗を製品バグや修正後の合格として数えない。
+
+重複入力・既存Button・独立Galleryの追加確認
+
+guards.txtは4 PASSを記録。
+  同フレームにBackを直接2回呼んでも、デバッグだけが閉じてGalleryに残る。
+  デバッグ表示中の既存Return ButtonへのUGUI PointerClickは通常帰還を開始し、
+  IsBusy中のBackは受け付けない。Titleへ戻りtimeScaleと選択が復元される。
+  デバッグの全解放・未解放previewによってGalleryの保存JSONが変化しない。
+Back直接呼出しの重複試験と、実入力デバイスでの高速連打・同時入力は区別する。
+PointerClickはUGUIイベントであり、OSマウスの座標入力・raycastを含む試験ではない。
+
+Standalone.cs.txt / standalone.txtでは、Galleryを直接ロードした独立シーンで、
+未解放previewと選択なしの状態を準備し、合成KeyboardのEscapeを送った。
+設定済みCancelが発火し、通常のフェードを経てTitleへ到達、timeScale1・Play継続・
+GalleryNavigation.IsOpen=falseを1つの複合判定で確認した。呼出し元を保持しない経路の対照となる。
+
+画面の確認
+
+記録担当がcase-6-returned.pngを閲覧し、宿舎のBGM/SE/GALLERYメニューが見えることを確認。
+case-7-returned.pngではMainのBGM/SE/GALLERY・やり直し・タイトル帰還メニューが見える。
+担当もcase-7-returned.pngとstandalone-locked.pngを閲覧した。Mainメニュー背後のDay1通知は
+直接ロード直後に停止する試験条件であり、通常プレイの重複表示不具合とは判定していない。
+case-4-debug-closed.png / case-5-debug-closed.pngはデバッグ表示が消えてGalleryに残り、
+G-1選択と発見8/25を表示している。担当もデバッグ閉鎖画像を閲覧した。
+画像は表示の確認であり、入力到達・保存非変更・停止状態はログと処理により別途確認する。
+
+設計判断と評価の範囲
+
+Microsoft / Xbox Accessibility Guideline 112: UI navigation
+https://learn.microsoft.com/en-us/xbox/accessibility/xbox-accessibility-guidelines/112
+画面内の選択移動と戻る操作の一貫性・予測可能性を検討する参考にした。
+既存の戻るButtonを残したまま、設定済みCancelから同じ帰還先へ戻れるようにする判断に適用する。
+この資料だけで、今回の操作が全利用者にとって自然だと実証したとは扱わない。
+
+安藤昌也教授インタビュー / HIP
+https://hiptokyo.jp/hiptalk/ux_design/2/
+閲覧画面の中だけでなく、開く前・閲覧後の体験を含めて評価する観点を参照する。
+Title/宿舎から入って元の選択・停止状態へ戻る一連の機能検証と、
+実際の利用者による理解度・快適さの評価を別に記録する。
+上記の資料本文は担当が今回取得・参照した。
+
+証拠
+
+cancel-before.txt: 合成Input SystemのEscape、UGUI Cancel、Return Submitの修正前観測。
+CancelJourney.cs.txt / cancel-after.txt: 8ケース・74項目の合成Input System回帰。
+cancel-first-run.txt: 宿舎の次フレーム停止反映を待たず失敗した初回ハーネスの記録。
+guards.txt: 同フレーム重複、PointerClick帰還、遷移中拒否、previewの保存非変更。
+Standalone.cs.txt / standalone.txt: 独立Galleryの未解放preview・選択なしから合成EscapeでTitleへ帰還。
+Restore.cs.txt / Verify.cs.txt / observations.txt: 停止後の元8キー復元、別呼出しでの存在/値照合。
+case-4/5-debug-closed.png: デバッグを閉じてGalleryへ戻った表示。
+case-6/7-returned.png: Galleryから宿舎/Mainメニューへ戻った表示。
+Assets/GearCraft/Scripts/Gallery/GalleryReturnButton.cs: 戻るButtonと追加するCancel経路。
+Assets/GearCraft/Scripts/Gallery/GalleryDebugUnlockPanel.cs: GEAR解放テストの表示・終了。
+Assets/GearCraft/Scripts/Gallery/GalleryNavigation.cs: 呼出し元の停止・再開、帰還先・選択の復元。
+
+終了確認
+
+全観測callbackの終了と合成Deviceの削除を担当が確認してからPlayを停止した。
+専用バックアップから8キーを復元し、別のMCP呼出しでも存在と値の完全一致を確認。
+observations.txtにはTitle・play=False・backup=Falseを記録している。
+最終Consoleの検索「error CS」と「Exception」は各0件。全error一覧が0件という意味ではない。
+git diff --check成功。実装担当によるソース再レビューで指摘なし、親担当もソースを確認した。
+同じ実装者による再確認を独立レビューとは呼ばない。製品変更は2ファイル、シーン編集はない。
+
+未実施・別途確認対象
+
+・OS/物理キー、ゲームパッドの実機入力、実機ビルド、別解像度。
+・旧Inputへの実キー到達を含む、帰還直後のメニュー閉鎖・Title終了との二重反応の通し確認。
+・初見の人による戻り方の発見、迷い、快適さの評価（H-04）。
+・スクロールバーから左に戻る選択先が先頭固定になる設定の扱いは、後続の観測候補。
+  このタームでは不具合と判定せず、変更していない。
+
+今回の変更に新しい明示承認ゲートは設けていない。

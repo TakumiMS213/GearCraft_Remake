@@ -62,4 +62,11 @@ public class UISwitcher : MonoBehaviour
             ClickSound.Play();
         }
     }
+
+    public bool TryCloseVisiblePanel()
+    {
+        if (panel2 != null && panel2.activeInHierarchy) { HidePanel2(); return true; }
+        if (panel != null && panel.activeInHierarchy) { HidePanel(); return true; }
+        return false;
+    }
 }

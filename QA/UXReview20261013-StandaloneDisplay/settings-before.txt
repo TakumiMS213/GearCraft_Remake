@@ -1,0 +1,6 @@
+company=Takumi
+product=GearCraft_Remake
+identifier=com.DefaultCompany.2D-URP
+resolution=1920x1080
+fullScreenMode=FullScreenWindow
+resizable=False

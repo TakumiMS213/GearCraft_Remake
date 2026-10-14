@@ -1,0 +1,30 @@
+{
+  "changedPreferenceKeys": [
+    "unity.player_session_count",
+    "unity.player_sessionid"
+  ],
+  "onlyUnitySessionKeysChanged": true,
+  "images": [
+    {
+      "file": "01-pending-tasks.png",
+      "width": 1920,
+      "height": 1080,
+      "complete": true,
+      "sha256": "fef391d7e7f3fd8583969b1392fd43651ed1979d7d79e1feb591ac1df39cf63c"
+    },
+    {
+      "file": "02-achieved-tasks.png",
+      "width": 1920,
+      "height": 1080,
+      "complete": true,
+      "sha256": "f89a18cec43ad0f91933d2640efa310cc8b95caf5372bf5269e6089a116cc278"
+    },
+    {
+      "file": "03-defense-only-fixture.png",
+      "width": 1920,
+      "height": 1080,
+      "complete": true,
+      "sha256": "abacf0a7a973c156ff980cb8266ed5e7055dd79d895a21e7632dd16f1589f16f"
+    }
+  ]
+}

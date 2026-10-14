@@ -1,0 +1,152 @@
+// C#6 execute_code body. Start in unpaused Craft / Upgrade tab after parent's 8-key backup.
+// Only runtime fixtures: stock/materials and actual placement/refund. Parent restores prefs after Play.
+// .stop=true cancels; 120s editor-clock watchdog. UGUI handlers, not physical-input E2E.
+const string prefix = "UXShopAvailability20261014.";
+const string outDir = "QA/UXReview20261014-ShopAvailability/";
+if (!UnityEditor.SessionState.GetBool(prefix + "backupReady", false)) throw new System.Exception("Parent backup required");
+if (!UnityEditor.EditorApplication.isPlaying || UnityEditor.EditorApplication.isPaused || UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "Craft") throw new System.Exception("Unpaused Craft required");
+if (UnityEditor.SessionState.GetBool(prefix + "running", false)) throw new System.Exception("Already running");
+var shop = UnityEngine.Object.FindFirstObjectByType<UpgradeShopManager>();
+var materials = MaterialManager.Instance; var status = StatusManager.Instance; var grid = UpgradeGridManager.Instance;
+var tabs = UnityEngine.Object.FindFirstObjectByType<CraftTabController>();
+if (shop == null || materials == null || status == null || grid == null || grid.gridUI == null || tabs == null || !tabs.upgradePanel.activeInHierarchy || grid.PlacedParts.Count != 0) throw new System.Exception("Open Upgrade with initialized empty grid required");
+if (UnityEngine.PlayerPrefs.GetInt(CraftTutorialMetrics.CraftMasteryKey, 0) != 1 || UnityEngine.PlayerPrefs.GetInt(CraftTutorialMetrics.WeaponMasteryKey, 0) != 1) throw new System.Exception("Parent tutorial mastery fixtures required");
+string[] names = { "Damage+2", "Damage+1", "SpeedGear", "SpeedGear++" };
+var parts = new UpgradePartSO[4];
+for (int i = 0; i < 4; i++) { parts[i] = UnityEditor.AssetDatabase.LoadAssetAtPath<UpgradePartSO>("Assets/GearCraft/ScriptableObject/UpgradeParts/" + names[i] + ".asset"); if (parts[i] == null) throw new System.Exception("Missing " + names[i]); }
+var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
+var lineup = (System.Collections.Generic.List<UpgradePartSO>)typeof(UpgradeShopManager).GetField("currentLineup", flags).GetValue(shop);
+var rows = (System.Collections.Generic.List<UnityEngine.GameObject>)typeof(UpgradeShopManager).GetField("shopItemObjects", flags).GetValue(shop);
+var dragField = typeof(UpgradeGridUI).GetField("draggingPart", flags);
+var ids = new int[4]; int phase = 0, assertions = 0, lastFrame = -1, errors = 0; bool done = false;
+var ui = grid.gridUI; UnityEngine.GameObject dragSource = null; UnityEngine.EventSystems.PointerEventData drag = null;
+UnityEngine.Vector2 target = UnityEngine.Vector2.zero;
+double started = UnityEditor.EditorApplication.timeSinceStartup, nextAt = started;
+UnityEditor.EditorApplication.CallbackFunction tick = null; UnityEngine.Application.LogCallback onLog = null;
+System.IO.Directory.CreateDirectory(outDir); System.IO.File.WriteAllText(outDir + "run.txt", "Shop availability runtime fixture; canonical Damage+2,Damage+1,SpeedGear,SpeedGear++. Parent restores 8 preference keys.\n");
+System.Action<string> log = delegate(string text) { System.IO.File.AppendAllText(outDir + "run.txt", (UnityEditor.EditorApplication.timeSinceStartup - started).ToString("F2") + "s phase=" + phase + " " + text + "\n"); };
+System.Action<bool, string> check = delegate(bool ok, string text) { if (!ok) throw new System.Exception(text); assertions++; log("PASS " + text); };
+System.Action<int[], int[], bool> inspect = delegate(int[] expected, int[] funded, bool keepIds) {
+    check(lineup.Count == 4 && rows.Count == 4 && status.savedUpgradeShopLineup.Count == 4, "stock and saved stock contain four parts");
+    for (int i = 0; i < 4; i++) {
+        check(lineup[i] == parts[i] && status.savedUpgradeShopLineup[i] == parts[i], "canonical/saved order unchanged " + names[i]);
+        check(rows[i] != null && (!keepIds || rows[i].GetInstanceID() == ids[i]), "row identity retained " + names[i]);
+        check(rows[expected[i]].transform.GetSiblingIndex() == i, "display position " + i + "=" + names[expected[i]]);
+        bool affordable = System.Array.IndexOf(funded, i) >= 0; var group = rows[i].GetComponent<UnityEngine.CanvasGroup>();
+        check(shop.CanAfford(parts[i]) == affordable && group != null && UnityEngine.Mathf.Abs(group.alpha - (affordable ? 1f : shop.unaffordableItemAlpha)) < 0.001f, "affordability/alpha " + names[i] + "=" + affordable);
+        check(group.blocksRaycasts && group.interactable && rows[i].GetComponent<TooltipTrigger>().part == parts[i], "raycasts and tooltip retained " + names[i]);
+    }
+};
+System.Func<UnityEngine.GameObject, UnityEngine.EventSystems.PointerEventData> pointer = delegate(UnityEngine.GameObject obj) {
+    var tooltip = TooltipSystem.FindInstance(); if (tooltip != null) tooltip.Hide();
+    UnityEngine.Canvas.ForceUpdateCanvases(); var scroll = shop.shopParent.GetComponentInParent<UnityEngine.UI.ScrollRect>();
+    if (scroll != null) { scroll.StopMovement(); scroll.verticalNormalizedPosition = 1f; UnityEngine.Canvas.ForceUpdateCanvases(); }
+    var canvas = obj.GetComponentInParent<UnityEngine.Canvas>(); var rect = obj.GetComponent<UnityEngine.RectTransform>();
+    var camera = canvas.renderMode == UnityEngine.RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
+    var data = new UnityEngine.EventSystems.PointerEventData(UnityEngine.EventSystems.EventSystem.current);
+    data.button = UnityEngine.EventSystems.PointerEventData.InputButton.Left;
+    data.position = UnityEngine.RectTransformUtility.WorldToScreenPoint(camera, rect.TransformPoint(rect.rect.center));
+    var hits = new System.Collections.Generic.List<UnityEngine.EventSystems.RaycastResult>(); UnityEngine.EventSystems.EventSystem.current.RaycastAll(data, hits);
+    check(hits.Count > 0 && UnityEngine.EventSystems.ExecuteEvents.GetEventHandler<UnityEngine.EventSystems.IBeginDragHandler>(hits[0].gameObject) == obj, "actual row raycast reaches " + obj.name);
+    data.pointerCurrentRaycast = hits[0]; data.pointerPressRaycast = hits[0]; data.pointerDrag = obj; data.dragging = true; return data;
+};
+System.Action begin = delegate {
+    dragSource = rows[1]; drag = pointer(dragSource);
+    UnityEngine.EventSystems.ExecuteEvents.Execute(dragSource, drag, UnityEngine.EventSystems.ExecuteEvents.beginDragHandler);
+    check((UpgradePartSO)dragField.GetValue(ui) == parts[1], "real drag starts for funded Damage+1");
+    float size = (float)typeof(UpgradeGridUI).GetField("currentCellSize", flags).GetValue(ui);
+    float total = grid.GridSize * (size + ui.cellSpacing) - ui.cellSpacing;
+    var canvas = ui.GetComponentInParent<UnityEngine.Canvas>(); var camera = canvas.renderMode == UnityEngine.RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
+    target = UnityEngine.RectTransformUtility.WorldToScreenPoint(camera, ui.gridParent.TransformPoint(new UnityEngine.Vector3(-total / 2f + size / 2f, total / 2f - size / 2f, 0f)));
+};
+System.Action end = delegate {
+    drag.position = target;
+    UnityEngine.EventSystems.ExecuteEvents.Execute(dragSource, drag, UnityEngine.EventSystems.ExecuteEvents.dragHandler);
+    UnityEngine.EventSystems.ExecuteEvents.Execute(dragSource, drag, UnityEngine.EventSystems.ExecuteEvents.endDragHandler);
+    check(dragField.GetValue(ui) == null, "real end-drag clears preview state");
+};
+System.Action<bool, string> finish = delegate(bool passed, string result) {
+    if (done) return; done = true; UnityEditor.EditorApplication.update -= tick; UnityEngine.Application.logMessageReceived -= onLog;
+    try { if (ui != null) ui.CancelShopDrag(); if (shop != null) shop.enabled = true; } catch (System.Exception) { }
+    UnityEditor.SessionState.SetBool(prefix + "running", false); UnityEditor.SessionState.SetBool(prefix + "done", true); UnityEditor.SessionState.SetBool(prefix + "passed", passed);
+    UnityEditor.SessionState.SetInt(prefix + "assertions", assertions); UnityEditor.SessionState.SetString(prefix + "result", result);
+    log((passed ? "COMPLETE " : "FAIL ") + result + "; assertions=" + assertions + "; errors=" + errors + "; parent restores prefs and stops Play");
+};
+onLog = delegate(string text, string stack, UnityEngine.LogType type) { if (type == UnityEngine.LogType.Error || type == UnityEngine.LogType.Exception || type == UnityEngine.LogType.Assert) { errors++; log("RUNTIME " + text + "\n" + stack); } };
+tick = delegate {
+    try {
+        if (UnityEditor.SessionState.GetBool(prefix + "stop", false)) throw new System.Exception("Parent requested stop");
+        if (!UnityEditor.EditorApplication.isPlaying || UnityEditor.EditorApplication.isPaused) throw new System.Exception("Play stopped or paused");
+        double now = UnityEditor.EditorApplication.timeSinceStartup;
+        if (now - started > 120.0) throw new System.Exception("120s watchdog expired");
+        if (errors > 0) throw new System.Exception("Runtime error recorded");
+        if (now < nextAt || lastFrame == UnityEngine.Time.frameCount) return;
+        nextAt = now + 0.15; lastFrame = UnityEngine.Time.frameCount; UnityEditor.SessionState.SetInt(prefix + "phase", phase);
+        if (MaterialManager.Instance != materials || StatusManager.Instance != status) throw new System.Exception("Managers changed");
+        switch (phase) {
+            case 0:
+                shop.EnsureLineupInitialized(); lineup.Clear(); lineup.AddRange(parts);
+                typeof(UpgradeShopManager).GetMethod("RefreshShopUI", flags).Invoke(shop, null);
+                materials.ClearAllMaterials(); materials.AddMaterial(MaterialManager.MaterialType.Scrap, 4);
+                log("RUNTIME FIXTURE stock with Scrap4; no asset/save-file changes"); phase++; break;
+            case 1:
+                for (int i = 0; i < 4; i++) ids[i] = rows[i].GetInstanceID();
+                inspect(new[] {1,2,0,3}, new[] {1,2}, true);
+                var mixedScroll = shop.shopParent.GetComponentInParent<UnityEngine.UI.ScrollRect>(); if (mixedScroll != null) { mixedScroll.StopMovement(); mixedScroll.verticalNormalizedPosition = 1f; }
+                UnityEngine.Canvas.ForceUpdateCanvases(); UnityEngine.ScreenCapture.CaptureScreenshot(outDir + "01-mixed-availability.png"); log("SCREENSHOT_REQUEST 01-mixed-availability.png"); phase++; break;
+            case 2:
+                materials.AddMaterial(MaterialManager.MaterialType.Scrap, 4); materials.AddMaterial(MaterialManager.MaterialType.Gear, 2);
+                inspect(new[] {0,1,2,3}, new[] {0,1,2}, true);
+                materials.AddMaterial(MaterialManager.MaterialType.UpgradeCore, 1); inspect(new[] {0,1,2,3}, new[] {0,1,2,3}, true);
+                check(materials.UseMaterial(MaterialManager.MaterialType.Scrap, 5), "spend Scrap5"); inspect(new[] {1,0,2,3}, new[] {1}, true);
+                materials.scrap = 4; phase++; break;
+            case 3:
+                inspect(new[] {1,2,0,3}, new[] {1,2}, true); log("direct public-field change observed by MaterialManager.LateUpdate");
+                materials.UseMaterial(MaterialManager.MaterialType.Scrap, 1); begin(); phase++; break;
+            case 4:
+                materials.UseMaterial(MaterialManager.MaterialType.Scrap, 3); inspect(new[] {0,1,2,3}, new int[0], true);
+                check(dragSource == rows[1] && (UpgradePartSO)dragField.GetValue(ui) == parts[1], "material loss preserves active drag source and preview"); end();
+                check(grid.PlacedParts.Count == 0 && status.savedUpgradePartPlacements.Count == 0 && materials.scrap == 0, "unfunded drop neither purchases nor places");
+                check(shop.infoText != null && shop.infoText.text.Contains("材料が足りません"), "unfunded drop shows shortage feedback"); phase++; break;
+            case 5: {
+                var data = pointer(rows[0]); var tooltip = TooltipSystem.FindInstance();
+                UnityEngine.EventSystems.ExecuteEvents.Execute(rows[0], data, UnityEngine.EventSystems.ExecuteEvents.pointerEnterHandler);
+                check(tooltip != null && tooltip.IsShowingFor(rows[0].GetComponent<UnityEngine.RectTransform>()), "translucent unavailable row opens actual tooltip");
+                UnityEngine.EventSystems.ExecuteEvents.Execute(rows[0], data, UnityEngine.EventSystems.ExecuteEvents.beginDragHandler);
+                check(dragField.GetValue(ui) == null && grid.PlacedParts.Count == 0, "unavailable row rejects begin drag");
+                tooltip.Hide(); tabs.SwitchTab(0); check(!shop.shopParent.gameObject.activeInHierarchy, "upgrade list hidden by actual Craft tab");
+                materials.AddMaterial(MaterialManager.MaterialType.Scrap, 8); phase++; break;
+            }
+            case 6:
+                tabs.SwitchTab(1); inspect(new[] {0,1,2,3}, new[] {0,1,2,3}, true);
+                shop.enabled = false; materials.UseMaterial(MaterialManager.MaterialType.Scrap, 5); shop.enabled = true;
+                inspect(new[] {1,0,2,3}, new[] {1}, true); log("disabled manager catches up on OnEnable"); begin(); phase++; break;
+            case 7:
+                drag.position = new UnityEngine.Vector2(-10000f, -10000f);
+                UnityEngine.EventSystems.ExecuteEvents.Execute(dragSource, drag, UnityEngine.EventSystems.ExecuteEvents.endDragHandler);
+                check(dragField.GetValue(ui) == null && materials.scrap == 3 && grid.PlacedParts.Count == 0, "outside-grid cancel preserves funds/stock");
+                inspect(new[] {1,0,2,3}, new[] {1}, true); begin(); phase++; break;
+            case 8:
+                end(); check(grid.PlacedParts.Count == 1 && grid.PlacedParts[0].partData == parts[1] && materials.scrap == 0, "actual funded drop buys Damage+1 for Scrap3 once"); phase++; break;
+            case 9: {
+                check(lineup.Count == 3 && status.savedUpgradeShopLineup.Count == 3 && !lineup.Contains(parts[1]) && status.savedUpgradePartPlacements.Count == 1, "purchase removes stock and saves placement");
+                UnityEngine.UI.Button cell = null;
+                foreach (var button in ui.gridParent.GetComponentsInChildren<UnityEngine.UI.Button>()) { var tooltip = button.GetComponent<TooltipTrigger>(); if (tooltip != null && tooltip.part == parts[1]) { cell = button; break; } }
+                check(cell != null, "actual equipped cell available for refund");
+                UnityEngine.EventSystems.ExecuteEvents.Execute(cell.gameObject, new UnityEngine.EventSystems.BaseEventData(UnityEngine.EventSystems.EventSystem.current), UnityEngine.EventSystems.ExecuteEvents.submitHandler);
+                check(grid.PlacedParts.Count == 0 && materials.scrap == 3 && lineup.Contains(parts[1]), "actual equipped-cell Submit refunds Scrap3 and restores stock"); phase++; break;
+            }
+            case 10: {
+                check(lineup.Count == 4 && status.savedUpgradeShopLineup.Count == 4 && status.savedUpgradePartPlacements.Count == 0, "refund saves restored stock and empty grid");
+                int[] refundedOrder = {0,2,3,1};
+                for (int i = 0; i < 4; i++) check(lineup[i] == parts[refundedOrder[i]] && status.savedUpgradeShopLineup[i] == parts[refundedOrder[i]], "refund preserves remaining canonical order and appends returned part");
+                check(shop.shopParent.GetChild(0).name == "ShopItem_Damage+1" && UnityEngine.Mathf.Abs(shop.shopParent.GetChild(0).GetComponent<UnityEngine.CanvasGroup>().alpha - 1f) < 0.001f, "refunded affordable part promoted to top at full opacity");
+                finish(true, "stable affordability/alpha, material APIs and direct edits, row identity, saved order, tooltip/raycast, drag loss/cancel, hidden tab, enable lifecycle, real purchase/refund passed"); break;
+            }
+        }
+    } catch (System.Exception error) { finish(false, error.ToString()); }
+};
+UnityEditor.SessionState.SetBool(prefix + "stop", false); UnityEditor.SessionState.SetBool(prefix + "running", true); UnityEditor.SessionState.SetBool(prefix + "done", false); UnityEditor.SessionState.SetBool(prefix + "passed", false);
+UnityEditor.SessionState.SetString(prefix + "result", "running"); UnityEditor.SessionState.SetInt(prefix + "phase", 0);
+UnityEngine.Application.logMessageReceived += onLog; UnityEditor.EditorApplication.update += tick;
+return "Shop availability checks scheduled; 120s watchdog, .stop=true cancels. Parent validates PNG and restores original preferences after Play.";

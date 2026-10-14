@@ -1,0 +1,99 @@
+ED後の新規ゲーム開始：進行残留候補の読取監査
+記録日: 2026-10-13 / ターム7
+状態: コード経路確認済み。EDから再開始した後の実ランタイム比較は未実施。
+この記録ではゲームの仕様・コードを変更していない。残留を不具合として確定した記録ではない。
+
+1. 調査対象の経路
+
+同一Play/アプリ起動内で、EDを終了してTitleへ戻り、StartButtonから再開始する経路。
+アプリの再起動やPlay停止を挟む経路とは区別する。
+
+ImageSequenceViewer.ReturnToTitle()
+  → SceneTransitionManager.LoadScene("Title")
+  → TitleのStartButton.onClick
+      1) SoundButton.PlayClickSound()
+      2) StorySceneLoader.LoadStory()
+  → StoryPlaybackRequest.SetReturnScene("CraftSpace", true)
+  → SceneTransitionManager.LoadScene("Story")
+  → StoryPresenterのページ進行完了 / LoadReturnScene()
+  → StoryPlaybackRequest.ClearReturnScene()
+  → SceneTransitionManager.LoadScene("CraftSpace")
+  → UIRangeDisplay.Start() / ArrivalMessagePresenter.Start()
+
+StartButtonの永続イベントはTitle.unityのButtonコンポーネント1510841034を確認した。
+記録時の該当箇所: Assets/GearCraft/Scenes/Title.unity:5135,5147。
+
+2. 確実なコード上の事実
+
+A. EDの帰還処理は一部の値を個別に初期化する。
+   HP=100、STR=0、ACC=0、GATE=1000、selectWeapon=0、各moduleフラグ=false、
+   punkDrive=false、craftWeaponDamagebuff=0、killAllEnemies=true、UseCraftSpacebuff=false。
+   StageCounterが存在すればStageCount=0。MaterialManagerの全素材数を0にする。
+   この処理からStatusManager.ResetRunProgress()は呼んでいない。
+   出典: Assets/GearCraft/Scripts/Ending/ImageSequenceViewer.cs:245。
+
+B. StatusManagerはDontDestroyOnLoadで保持される。
+   Titleに新しく生成されるStatusManagerは、既存Instanceが存在すれば自分をDestroyしてreturnする。
+   したがって既存InstanceのフィールドにTitleシーンの初期値を再適用する処理ではなく、
+   重複インスタンス側のInitializeWeapons()にも到達しない。
+   出典: Assets/GearCraft/Scripts/StatusManager.cs:90。
+
+C. Titleから宿舎に着くまでの上記経路に進行リセットはない。
+   StorySceneLoaderは再生要求とロード、SceneTransitionManagerはフェードとシーンロード、
+   StoryPresenterはページ進行と帰還先ロードを行う。
+   UIRangeDisplay.Startは既存Statusの参照取得とローカルuplimit=1等を設定する。
+   ArrivalMessagePresenterは到着メッセージとカメラ演出を開始する。
+   出典:
+   Assets/GearCraft/Scripts/Story/StorySceneLoader.cs:10
+   Assets/GearCraft/Scripts/SceneTransitionManager.cs:85
+   Assets/GearCraft/Scripts/Story/StoryPresenter.cs:64
+   Assets/GearCraft/Scripts/CraftSpace/UIRangeDisplay.cs:38
+   Assets/GearCraft/Scripts/Story/ArrivalMessagePresenter.cs:24
+
+D. StatusManager.ResetRunProgress()には、ED帰還処理より広い初期化がある。
+   武器所有・装備、強化パーツ所有・配置、bossKillCount、ショップ状態、通知済みレシピ、
+   DormTasks、CraftTutorials、通常/武器固有カード効果などを初期化する。
+   Assets内のC#を検索したところ、このメソッドの呼出元はPauseManagerのTitle帰還処理だけ。
+   出典: Assets/GearCraft/Scripts/StatusManager.cs:399、Assets/GearCraft/Scripts/Main/PauseManager.cs:319。
+   注: ResetRunProgressのGATE初期値は100で、ED帰還処理の1000とは異なる。
+   どちらを新規ゲームの期待値にするかをこの監査だけで決定しない。
+
+3. 実機で未確認の仮説
+
+・ED前に取得/強化した武器、強化配置、bossKillCount、カード固有効果、宿舎タスク進捗などが、
+  TitleのStartから始め直した宿舎にも引き継がれる可能性がある。
+・その場合、レシピ解放、装備/攻撃力、タスクのチェック状態などに新規開始との違いが現れる可能性がある。
+・この引継ぎが想定仕様か、経路ごとの初期化漏れかは、実機結果と新規開始の期待状態を比較して判断する。
+・現在のタームで確認されたED画面/解放通知/Title到着だけでは、この仮説の実機再現証拠にしない。
+
+4. 次に必要な比較
+
+比較点:
+  T0: EDへ移る直前。
+  T1: EDを通常の進行操作で終了してTitleのロード完了後。
+  T2: Titleの実際のStartButton.onClickを通り、Storyと到着演出を完了した宿舎。
+  B: 別途採取した、同じ永続解放記録を持つ通常の新規起動からの宿舎初期状態。
+     Bの採取前にT0～T2を完了する。途中でPlayを止めると残留経路を検証できない。
+
+優先比較値:
+  1) StatusManager.InstanceのInstanceID、currentWeaponのアセット名、ownedWeaponsのアセット名一覧。
+  2) ownedUpgradeParts、savedUpgradePartPlacements（パーツ/座標/回転）、bonusDamage、attackSpeedMult。
+  3) bossKillCount、ショップ日/保存ラインナップ、selectedUniqueBonusCardIds、武器固有カード効果。
+  4) DormTasksとCraftTutorialsの全フィールド。宿舎タスク表示、Craftの解放レシピ/装備表示も撮影する。
+  5) 対照値としてHP/STR/ACC/GATE/StageCount/全素材数。個別リセット済み項目と残留候補を区別する。
+
+試験前に旧進行が識別できる値をスナップショットへ保存する。
+T2がT0と一致するだけでなく、Bおよび意図した新規開始状態との差を記録してから修正要否を判断する。
+内部メソッドの直接呼出しだけでTitleのStartイベントを省略しない。
+
+5. 永続記録と復元
+
+Galleryの解放/発見記録は新しい周回でも残す設計であり、今回の周回進行残留候補と区別する。
+関連PlayerPrefsキー: GearCraft.Gallery.Progress.v1
+値はhasReachedEnding、encounteredEnemies、acquiredWeapons、craftedRecipes、acquiredMaterialsを含むJSON。
+キーの有無と元の値を保存する。GalleryProgressは静的キャッシュを持つため、キーを戻すだけでは
+実行中の参照が元に戻るとは限らない。既存のテスト復元手順に従う。
+
+クラフト習得/計測のPlayerPrefsと実行中のCraftTutorialsは別の記録である。
+新規周回比較のために習得記録やGalleryの発見記録を一括削除しない。
+この監査ではPlayerPrefs、シーン、スクリプト、実行状態の変更を行っていない。

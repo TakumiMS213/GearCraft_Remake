@@ -1,0 +1,96 @@
+Synthetic InputSystem device events; no OS/physical input.
+0.35 case=0 phase=2 PASS Gallery open and source paused
+0.60 case=0 phase=4 INPUT Cancel performed control=/UXGalleryReturnKeyboard/escape
+0.60 case=0 phase=4 INPUT Cancel performed control=/UXGalleryReturnKeyboard/escape
+0.80 case=0 phase=4 PASS Configured Cancel action performed
+1.15 case=0 phase=5 PASS Cancel returned to Title
+1.15 case=0 phase=5 PASS Title return does not stop Play under synthetic new-input event
+1.15 case=0 phase=5 PASS Origin Gallery selection restored
+1.15 case=0 phase=5 PASS Origin status and material snapshot preserved
+1.15 case=0 phase=5 PASS One active origin EventSystem
+1.15 case=0 phase=5 PASS Same Title and timeScale1 restored
+1.83 case=1 phase=2 PASS Gallery open and source paused
+2.08 case=1 phase=4 INPUT Cancel performed control=/UXGalleryReturnGamepad/buttonEast
+2.08 case=1 phase=4 INPUT Cancel performed control=/UXGalleryReturnGamepad/buttonEast
+2.28 case=1 phase=4 PASS Configured Cancel action performed
+2.63 case=1 phase=5 PASS Cancel returned to Title
+2.63 case=1 phase=5 PASS Title return does not stop Play under synthetic new-input event
+2.63 case=1 phase=5 PASS Origin Gallery selection restored
+2.63 case=1 phase=5 PASS Origin status and material snapshot preserved
+2.64 case=1 phase=5 PASS One active origin EventSystem
+2.64 case=1 phase=5 PASS Same Title and timeScale1 restored
+3.32 case=2 phase=2 PASS Gallery open and source paused
+3.57 case=2 phase=4 INPUT Cancel performed control=/UXGalleryReturnKeyboard/escape
+3.57 case=2 phase=4 INPUT Cancel performed control=/UXGalleryReturnKeyboard/escape
+3.77 case=2 phase=4 PASS Configured Cancel action performed
+4.12 case=2 phase=5 PASS Cancel returned to Title
+4.12 case=2 phase=5 PASS Title return does not stop Play under synthetic new-input event
+4.12 case=2 phase=5 PASS Origin Gallery selection restored
+4.12 case=2 phase=5 PASS Origin status and material snapshot preserved
+4.12 case=2 phase=5 PASS One active origin EventSystem
+4.12 case=2 phase=5 PASS Same Title and timeScale1 restored
+4.80 case=3 phase=2 PASS Gallery open and source paused
+5.05 case=3 phase=4 INPUT Cancel performed control=/UXGalleryReturnKeyboard/escape
+5.05 case=3 phase=4 INPUT Cancel performed control=/UXGalleryReturnKeyboard/escape
+5.25 case=3 phase=4 PASS Configured Cancel action performed
+5.60 case=3 phase=5 PASS Cancel returned to Title
+5.60 case=3 phase=5 PASS Title return does not stop Play under synthetic new-input event
+5.60 case=3 phase=5 PASS Origin Gallery selection restored
+5.60 case=3 phase=5 PASS Origin status and material snapshot preserved
+5.60 case=3 phase=5 PASS One active origin EventSystem
+5.60 case=3 phase=5 PASS Same Title and timeScale1 restored
+6.29 case=4 phase=2 PASS Gallery open and source paused
+6.29 case=4 phase=2 PASS Debug preview open
+6.54 case=4 phase=4 INPUT Cancel performed control=/UXGalleryReturnKeyboard/escape
+6.54 case=4 phase=4 INPUT Cancel performed control=/UXGalleryReturnKeyboard/escape
+6.74 case=4 phase=4 PASS Configured Cancel action performed
+7.09 case=4 phase=5 PASS First Cancel closes debug only
+7.09 case=4 phase=5 PASS Debug close restores selection
+7.44 case=4 phase=4 INPUT Cancel performed control=/UXGalleryReturnKeyboard/escape
+7.44 case=4 phase=4 INPUT Cancel performed control=/UXGalleryReturnKeyboard/escape
+7.64 case=4 phase=4 PASS Configured Cancel action performed
+7.99 case=4 phase=5 PASS Cancel returned to Title
+7.99 case=4 phase=5 PASS Title return does not stop Play under synthetic new-input event
+7.99 case=4 phase=5 PASS Origin Gallery selection restored
+7.99 case=4 phase=5 PASS Origin status and material snapshot preserved
+7.99 case=4 phase=5 PASS One active origin EventSystem
+7.99 case=4 phase=5 PASS Same Title and timeScale1 restored
+8.67 case=5 phase=2 PASS Gallery open and source paused
+8.67 case=5 phase=2 PASS Debug preview open
+8.92 case=5 phase=4 INPUT Cancel performed control=/UXGalleryReturnGamepad/buttonEast
+8.92 case=5 phase=4 INPUT Cancel performed control=/UXGalleryReturnGamepad/buttonEast
+9.12 case=5 phase=4 PASS Configured Cancel action performed
+9.48 case=5 phase=5 PASS First Cancel closes debug only
+9.48 case=5 phase=5 PASS Debug close restores selection
+9.83 case=5 phase=4 INPUT Cancel performed control=/UXGalleryReturnGamepad/buttonEast
+9.83 case=5 phase=4 INPUT Cancel performed control=/UXGalleryReturnGamepad/buttonEast
+10.03 case=5 phase=4 PASS Configured Cancel action performed
+10.38 case=5 phase=5 PASS Cancel returned to Title
+10.38 case=5 phase=5 PASS Title return does not stop Play under synthetic new-input event
+10.38 case=5 phase=5 PASS Origin Gallery selection restored
+10.38 case=5 phase=5 PASS Origin status and material snapshot preserved
+10.38 case=5 phase=5 PASS One active origin EventSystem
+10.38 case=5 phase=5 PASS Same Title and timeScale1 restored
+11.87 case=6 phase=7 PASS Dorm menu pauses on subsequent frame before Gallery
+12.02 case=6 phase=2 PASS Gallery open and source paused
+12.27 case=6 phase=4 INPUT Cancel performed control=/UXGalleryReturnKeyboard/escape
+12.27 case=6 phase=4 INPUT Cancel performed control=/UXGalleryReturnKeyboard/escape
+12.47 case=6 phase=4 PASS Configured Cancel action performed
+12.82 case=6 phase=5 PASS Cancel returned to CraftSpace
+12.82 case=6 phase=5 PASS Title return does not stop Play under synthetic new-input event
+12.82 case=6 phase=5 PASS Origin Gallery selection restored
+12.82 case=6 phase=5 PASS Origin status and material snapshot preserved
+12.82 case=6 phase=5 PASS One active origin EventSystem
+12.82 case=6 phase=5 PASS Same paused Dorm restored
+14.17 case=7 phase=1 PASS Main menu paused before Gallery
+14.47 case=7 phase=2 PASS Gallery open and source paused
+14.72 case=7 phase=4 INPUT Cancel performed control=/UXGalleryReturnKeyboard/escape
+14.72 case=7 phase=4 INPUT Cancel performed control=/UXGalleryReturnKeyboard/escape
+14.92 case=7 phase=4 PASS Configured Cancel action performed
+15.27 case=7 phase=5 PASS Cancel returned to Main
+15.27 case=7 phase=5 PASS Title return does not stop Play under synthetic new-input event
+15.27 case=7 phase=5 PASS Origin Gallery selection restored
+15.27 case=7 phase=5 PASS Origin status and material snapshot preserved
+15.27 case=7 phase=5 PASS One active origin EventSystem
+15.27 case=7 phase=5 PASS Same paused Main menu restored
+15.57 case=8 phase=6 COMPLETE 74 checks 8 origin/focus/debug cases

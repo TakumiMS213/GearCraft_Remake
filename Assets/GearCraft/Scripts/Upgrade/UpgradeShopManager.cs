@@ -20,6 +20,8 @@ public class UpgradeShopManager : MonoBehaviour
     public TMP_Text infoText;
     public UpgradeGridUI targetGridUI;
     public int shopContentBottomPadding = 96;
+    [Range(0f, 1f)] public float unaffordableItemAlpha = 0.45f;
+    [SerializeField] private RectTransform materialShortageWindow;
 
     [Header("Audio")]
     public AudioSource purchaseSound;
@@ -29,8 +31,26 @@ public class UpgradeShopManager : MonoBehaviour
     private readonly List<GameObject> shopItemObjects = new List<GameObject>();
     private bool hasGeneratedLineup;
     private int shopDay = -1;
+    private readonly Vector3[] tooltipCorners = new Vector3[4];
 
     public int ShopDay => shopDay;
+
+    private void OnEnable()
+    {
+        MaterialManager.MaterialsChanged += RefreshShopAvailability;
+        RefreshShopAvailability();
+    }
+
+    private void OnDisable()
+    {
+        MaterialManager.MaterialsChanged -= RefreshShopAvailability;
+        if (materialShortageWindow != null) materialShortageWindow.gameObject.SetActive(false);
+    }
+
+    private void LateUpdate()
+    {
+        RefreshMaterialShortageWindow();
+    }
 
     public void GenerateLineup()
     {
@@ -193,9 +213,101 @@ public class UpgradeShopManager : MonoBehaviour
             ApplyTooltip(item, part);
             ApplyDragHandler(item, part);
             ClearButtonClick(item);
+            if (item.GetComponent<CanvasGroup>() == null)
+            {
+                item.AddComponent<CanvasGroup>();
+            }
         }
 
+        RefreshShopAvailability();
         ConfigureShopScrollPadding();
+    }
+
+    private void RefreshShopAvailability()
+    {
+        if (shopParent == null) return;
+
+        // Reorder existing rows instead of rebuilding them: material events can
+        // arrive during a drag or purchase. Keep the saved lineup order intact.
+        int siblingIndex = 0;
+        bool orderChanged = false;
+        for (int pass = 0; pass < 2; pass++)
+        {
+            bool showAffordable = pass == 0;
+            for (int i = 0; i < currentLineup.Count && i < shopItemObjects.Count; i++)
+            {
+                GameObject item = shopItemObjects[i];
+                if (item == null) continue;
+
+                bool affordable = CanAfford(currentLineup[i]);
+                if (affordable != showAffordable) continue;
+
+                CanvasGroup group = item.GetComponent<CanvasGroup>();
+                if (group != null)
+                {
+                    // Retain raycasts so unavailable parts still expose their
+                    // effects, costs and the existing shortage feedback.
+                    group.alpha = affordable ? 1f : unaffordableItemAlpha;
+                }
+
+                if (item.transform.GetSiblingIndex() != siblingIndex)
+                {
+                    item.transform.SetSiblingIndex(siblingIndex);
+                    orderChanged = true;
+                }
+                siblingIndex++;
+            }
+        }
+
+        if (orderChanged) LayoutRebuilder.MarkLayoutForRebuild(shopParent);
+        RefreshMaterialShortageWindow();
+    }
+
+    private void RefreshMaterialShortageWindow()
+    {
+        if (materialShortageWindow == null) return;
+
+        // Use the existing tooltip's owner so pointer exit, dragging, tab changes
+        // and rebuilt rows all dismiss this notice along with the part details.
+        TooltipSystem tooltip = TooltipSystem.FindInstance();
+        bool show = false;
+        if (isActiveAndEnabled && tooltip != null)
+        {
+            for (int i = 0; i < currentLineup.Count && i < shopItemObjects.Count; i++)
+            {
+                GameObject item = shopItemObjects[i];
+                if (item != null && item.activeInHierarchy &&
+                    tooltip.IsShowingFor(item.transform as RectTransform) && !CanAfford(currentLineup[i]))
+                {
+                    show = true;
+                    break;
+                }
+            }
+        }
+
+        materialShortageWindow.gameObject.SetActive(show);
+        if (!show) return;
+
+        RectTransform parent = materialShortageWindow.parent as RectTransform;
+        if (parent == null) return;
+
+        // Keep this separate window outside the part details and the dimmed,
+        // clipped shop list. Follow the detail panel after its screen-edge clamp.
+        tooltip.tooltipPanel.GetWorldCorners(tooltipCorners);
+        Vector3 topLeft = parent.InverseTransformPoint(tooltipCorners[1]);
+        Vector3 bottomLeft = parent.InverseTransformPoint(tooltipCorners[0]);
+        Rect bounds = parent.rect;
+        Vector2 size = materialShortageWindow.rect.size;
+        const float padding = 18f;
+        const float gap = 12f;
+        float left = Mathf.Clamp(topLeft.x, bounds.xMin + padding,
+            Mathf.Max(bounds.xMin + padding, bounds.xMax - size.x - padding));
+        float top = topLeft.y + gap + size.y;
+        if (top > bounds.yMax - padding) top = bottomLeft.y - gap;
+        top = Mathf.Clamp(top, Mathf.Min(bounds.yMin + size.y + padding, bounds.yMax - padding),
+            bounds.yMax - padding);
+        materialShortageWindow.anchoredPosition = new Vector2(left - bounds.xMin, top - bounds.yMax);
+        materialShortageWindow.SetAsLastSibling();
     }
 
     private void ClearShopItems()
@@ -375,7 +487,9 @@ public class UpgradeShopManager : MonoBehaviour
     {
         if (infoText != null)
         {
-            infoText.text = part != null ? $"{part.partName}の素材が足りません。" : "素材が足りません。";
+            string shortage = part != null && MaterialManager.Instance != null
+                ? MaterialManager.Instance.GetShortageText(part.costs) : string.Empty;
+            infoText.text = "材料が足りません。" + (string.IsNullOrEmpty(shortage) ? "" : "\n" + shortage);
         }
 
         if (errorSound != null)
@@ -393,7 +507,7 @@ public class UpgradeShopManager : MonoBehaviour
 
         if (infoText != null && part != null)
         {
-            infoText.text = $"{part.partName}を装備しました。";
+            infoText.text = $"{part.partName}を装備しました。\n装着したパーツをクリックすると外せます。";
         }
 
         if (purchaseSound != null)
@@ -404,11 +518,11 @@ public class UpgradeShopManager : MonoBehaviour
         PartPlaced?.Invoke(part);
     }
 
-    public void OnPartPlacementFailed(UpgradePartSO part)
+    public void OnPartPlacementFailed(UpgradePartSO part, string reason = null)
     {
         if (infoText != null)
         {
-            infoText.text = part != null ? $"{part.partName}はそこに配置できません。" : "そこには配置できません。";
+            infoText.text = !string.IsNullOrEmpty(reason) ? reason : "配置できません。空いた場所へ置き直してください。";
         }
 
         if (errorSound != null)
@@ -520,7 +634,7 @@ public class UpgradeShopManager : MonoBehaviour
                 result += "  ";
             }
 
-            result += $"{FormatMaterialName(cost.type)} x{cost.amount}";
+            result += $"<nobr>{FormatMaterialName(cost.type)} x{cost.amount}</nobr>";
         }
 
         return result;

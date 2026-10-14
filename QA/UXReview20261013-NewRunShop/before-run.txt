@@ -1,0 +1,112 @@
+Term15 A/B/C: one Bad ED -> Title Start -> natural Story/Arrival -> initial shop -> one same-day Dorm round trip.
+Screenshot requests only; parent verifies file completion. No backup, restoration, Play stop, or product edits performed by this harness.
+0.01s phase=0 frame=370148 FIXTURE created missing persistent StageCounter; parent will discard with Play
+0.01s phase=0 frame=370148 FIXTURE old Stage1 STR7 ACC5 killAll=false scoreExpected12500 shopDay1 saved[Damage+2] materials=7,7,7,7,7,7
+2.82s phase=1 frame=372011 PASS old-run score12500 and scoring inputs intact before return
+2.82s phase=1 frame=372011 SUBMIT EndingControlsCanvas/EndingAdvanceButton
+4.02s phase=1 frame=373131 PASS old-run score12500 and scoring inputs intact before return
+4.02s phase=1 frame=373131 SUBMIT EndingControlsCanvas/EndingAdvanceButton
+5.22s phase=1 frame=374079 PASS old-run score12500 and scoring inputs intact before return
+5.22s phase=1 frame=374079 SUBMIT EndingControlsCanvas/EndingAdvanceButton
+6.42s phase=1 frame=375116 PASS old-run score12500 and scoring inputs intact before return
+6.42s phase=1 frame=375116 SUBMIT EndingControlsCanvas/EndingAdvanceButton
+7.63s phase=1 frame=376211 PASS old-run score12500 and scoring inputs intact before return
+7.63s phase=1 frame=376211 SUBMIT EndingControlsCanvas/EndingAdvanceButton
+8.83s phase=1 frame=377246 PASS old-run score12500 and scoring inputs intact before return
+8.83s phase=1 frame=377246 SUBMIT EndingControlsCanvas/EndingAdvanceButton
+10.03s phase=1 frame=378373 PASS old-run score12500 and scoring inputs intact before return
+10.03s phase=1 frame=378373 SUBMIT EndingControlsCanvas/EndingAdvanceButton
+11.23s phase=1 frame=379157 PASS old-run score12500 and scoring inputs intact before return
+11.23s phase=1 frame=379157 SUBMIT EndingControlsCanvas/EndingAdvanceButton
+12.43s phase=1 frame=380276 PASS old-run score12500 and scoring inputs intact before return
+12.43s phase=1 frame=380276 SUBMIT EndingControlsCanvas/EndingAdvanceButton
+13.63s phase=1 frame=381273 PASS old-run score12500 and scoring inputs intact before return
+13.63s phase=1 frame=381273 PASS final old-run score page/TMP visible with12500
+13.63s phase=1 frame=381273 SCORE_PAGE index=8 object=ScoreCanvas text=YOUR SCORE : 12500
+13.63s phase=1 frame=381273 SCREENSHOT_REQUEST 01-old-score.png; file completion not asserted by harness
+13.83s phase=2 frame=381317 PASS old score observed before ending return
+13.83s phase=2 frame=381317 SUBMIT EndingControlsCanvas/EndingAdvanceButton
+15.03s phase=3 frame=382395 SUBMIT GalleryUnlockNotice/MessageWindow
+15.03s phase=3 frame=382395 PASS same persistent Status/Material instances
+15.03s phase=3 frame=382395 PASS new run Stage1 STR0 ACC0
+15.03s phase=3 frame=382395 PASS old Day1 saved stock cleared before new shop initialization
+15.03s phase=3 frame=382395 PASS all previous-run materials cleared
+15.03s phase=3 frame=382395 PASS old cached score/TMP remain 12500 after return resets run fields
+15.03s phase=3 frame=382395 RETURN reset observed synchronously before Ending unload; score image may already be hidden by loading
+17.85s phase=4 frame=384077 PASS actual ED ReturnToTitle reset observed
+17.85s phase=4 frame=384077 PASS same persistent Status/Material instances
+17.85s phase=4 frame=384077 PASS new run Stage1 STR0 ACC0
+17.85s phase=4 frame=384077 PASS old Day1 saved stock cleared before new shop initialization
+17.85s phase=4 frame=384077 PASS all previous-run materials cleared
+17.85s phase=4 frame=384077 PASS previous scene ScoreManager destroyed on Title load
+17.85s phase=4 frame=384077 SUBMIT backGround/StartButton
+20.67s phase=5 frame=386194 STORY observed; wait for natural playback
+67.41s phase=5 frame=430898 PASS actual Title Start traversed Story
+67.41s phase=5 frame=430898 PASS same persistent Status/Material instances
+67.41s phase=5 frame=430898 PASS new run Stage1 STR0 ACC0
+67.41s phase=5 frame=430898 PASS old Day1 saved stock cleared before new shop initialization
+67.41s phase=5 frame=430898 PASS all previous-run materials cleared
+67.42s phase=5 frame=430898 TELEPORT outside CraftTable at (11.93, -2.50, 0.00); await real physics trigger
+67.81s phase=6 frame=431329 PASS outside CraftTable before first entry
+67.81s phase=6 frame=431329 TELEPORT into CraftTable at (5.63, -3.33, 0.00); await real physics trigger
+68.21s phase=7 frame=431711 PASS real CraftTable trigger registered and prompt active
+68.22s phase=7 frame=431711 PASS CraftTable action is not blocked
+68.22s phase=7 frame=431711 ACTION ExecuteActiveAction through registered trigger; physical Space not simulated
+71.80s phase=8 frame=433433 PASS same persistent Status/Material instances
+71.80s phase=8 frame=433433 PASS new run Stage1 STR0 ACC0
+71.80s phase=8 frame=433433 PASS old Day1 saved stock cleared before new shop initialization
+71.80s phase=8 frame=433433 PASS all previous-run materials cleared
+71.80s phase=8 frame=433433 BEFORE_INITIAL_UPGRADE materials=0,0,0,0,0,0
+71.80s phase=8 frame=433433 SUBMIT Canvas/HeaderArea/UpgradeTabButton
+72.10s phase=9 frame=433672 PASS same persistent Status/Material instances
+72.10s phase=9 frame=433672 PASS INITIAL shop/grid active
+72.10s phase=9 frame=433672 PASS INITIAL actual scene catalog15/slots6
+72.10s phase=9 frame=433672 PASS INITIAL Day1 generated stock is saved
+72.10s phase=9 frame=433672 PASS INITIAL manager generated flag
+72.10s phase=9 frame=433672 PASS INITIAL current/saved/active UI each six
+72.10s phase=9 frame=433672 PASS INITIAL slot0 unique catalog part
+72.10s phase=9 frame=433672 PASS INITIAL slot0 current/saved/UI part and visible name agree
+72.10s phase=9 frame=433672 PASS INITIAL slot0 price text present
+72.10s phase=9 frame=433672 INITIAL STOCK 0 asset=JunkMagnet++ name=Junk Magnet++ rarity=Epic price=<nobr>Scrap x10</nobr>  <nobr>UpCore x2</nobr> UI=Canvas/UpgradePanel/ShopArea/ShopScrollView/Viewport/ShopContent/ShopItem_JunkMagnet++
+72.10s phase=9 frame=433672 PASS INITIAL slot1 unique catalog part
+72.10s phase=9 frame=433672 PASS INITIAL slot1 current/saved/UI part and visible name agree
+72.10s phase=9 frame=433672 PASS INITIAL slot1 price text present
+72.10s phase=9 frame=433672 INITIAL STOCK 1 asset=HeavySlug name=Heavy Slug rarity=Uncommon price=<nobr>Gear x4</nobr> UI=Canvas/UpgradePanel/ShopArea/ShopScrollView/Viewport/ShopContent/ShopItem_HeavySlug
+72.10s phase=9 frame=433672 PASS INITIAL slot2 unique catalog part
+72.10s phase=9 frame=433672 PASS INITIAL slot2 current/saved/UI part and visible name agree
+72.10s phase=9 frame=433672 PASS INITIAL slot2 price text present
+72.10s phase=9 frame=433672 INITIAL STOCK 2 asset=JunkMagnet name=Junk Magnet rarity=Uncommon price=<nobr>Scrap x6</nobr> UI=Canvas/UpgradePanel/ShopArea/ShopScrollView/Viewport/ShopContent/ShopItem_JunkMagnet
+72.10s phase=9 frame=433672 PASS INITIAL slot3 unique catalog part
+72.11s phase=9 frame=433672 PASS INITIAL slot3 current/saved/UI part and visible name agree
+72.11s phase=9 frame=433672 PASS INITIAL slot3 price text present
+72.11s phase=9 frame=433672 INITIAL STOCK 3 asset=SpeedGear++ name=Speed Gear++ rarity=Rare price=<nobr>Scrap x8</nobr>  <nobr>Gear x2</nobr>  <nobr>UpCore x1</nobr> UI=Canvas/UpgradePanel/ShopArea/ShopScrollView/Viewport/ShopContent/ShopItem_SpeedGear++
+72.11s phase=9 frame=433672 PASS INITIAL slot4 unique catalog part
+72.11s phase=9 frame=433672 PASS INITIAL slot4 current/saved/UI part and visible name agree
+72.11s phase=9 frame=433672 PASS INITIAL slot4 price text present
+72.11s phase=9 frame=433672 INITIAL STOCK 4 asset=Damage+2 name=Damage Plate+ rarity=Uncommon price=<nobr>Scrap x6</nobr> UI=Canvas/UpgradePanel/ShopArea/ShopScrollView/Viewport/ShopContent/ShopItem_Damage+2
+72.11s phase=9 frame=433672 PASS INITIAL slot5 unique catalog part
+72.11s phase=9 frame=433672 PASS INITIAL slot5 current/saved/UI part and visible name agree
+72.11s phase=9 frame=433672 PASS INITIAL slot5 price text present
+72.11s phase=9 frame=433672 INITIAL STOCK 5 asset=SpeedGear+ name=Speed Gear+ rarity=Uncommon price=<nobr>Scrap x6</nobr>  <nobr>Gear x1</nobr> UI=Canvas/UpgradePanel/ShopArea/ShopScrollView/Viewport/ShopContent/ShopItem_SpeedGear+
+72.11s phase=9 frame=433672 PASS INITIAL Rare-or-higher guarantee
+72.11s phase=9 frame=433672 PASS INITIAL no initial-generation/reentry material charge or supply
+72.11s phase=9 frame=433672 PASS INITIAL empty ownership/placements and 3x3 grid
+72.11s phase=9 frame=433672 PASS INITIAL default weapon only and no upgrade effect
+72.11s phase=9 frame=433672 PASS INITIAL mastered tutorial has not altered stock
+72.11s phase=9 frame=433672 INITIAL materials=0,0,0,0,0,0 shopID=285232
+72.11s phase=9 frame=433672 SHOP_SCROLL normalized=1
+72.25s phase=10 frame=433803 SCREENSHOT_REQUEST 02-initial-shop-top.png; file completion not asserted by harness
+72.45s phase=10 frame=433971 SHOP_SCROLL normalized=0
+72.65s phase=10 frame=434150 SCREENSHOT_REQUEST 03-initial-shop-bottom.png; file completion not asserted by harness
+72.85s phase=10 frame=434282 SUBMIT Canvas/UpgradePanel/Close
+72.86s phase=10 frame=434282 RUNTIME Error Coroutine couldn't be started because the the game object 'CraftManagerObject' is inactive!
+UnityEngine.MonoBehaviour:StartCoroutine (System.Collections.IEnumerator)
+SceneTransitionManager:LoadScene (string) (at Assets/GearCraft/Scripts/SceneTransitionManager.cs:68)
+UnityEngine.EventSystems.ExecuteEvents:Execute<UnityEngine.EventSystems.ISubmitHandler> (UnityEngine.GameObject,UnityEngine.EventSystems.BaseEventData,UnityEngine.EventSystems.ExecuteEvents/EventFunction`1<UnityEngine.EventSystems.ISubmitHandler>)
+MCPDynamicCode/<Execute>c__AnonStorey0:<>m__6 (UnityEngine.UI.Button)
+MCPDynamicCode/<Execute>c__AnonStorey0:<>m__7 (string)
+MCPDynamicCode/<Execute>c__AnonStorey0:<>m__13 ()
+UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
+
+73.45s phase=11 frame=434283 FAIL System.Exception: Unity runtime error logged; see preceding RUNTIME entry
+  at MCPDynamicCode+<Execute>c__AnonStorey0.<>m__13 () [0x00073] in <1750f69a79794937abd5cd2d045690c7>:0 ; assertions=64; runtimeErrors=1; Play retained; parent must restore preferences and fixture state

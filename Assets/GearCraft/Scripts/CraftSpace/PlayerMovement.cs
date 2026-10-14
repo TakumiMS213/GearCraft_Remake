@@ -14,6 +14,7 @@ public class PlayerMovement : MonoBehaviour
 
     private Canvas canvas;
     private Animator anim = null;
+    private SceneTransitionManager sceneTransitionManager;
 
     void Start()
     {
@@ -25,11 +26,17 @@ public class PlayerMovement : MonoBehaviour
             canvas = walls[0].GetComponentInParent<Canvas>();
         }
         anim = GetComponent<Animator>();
+        sceneTransitionManager = FindFirstObjectByType<SceneTransitionManager>();
     }
 
     void Update()
     {
-        if (ArrivalMessagePresenter.IsMessagePlaying)
+        ApplyMovement(Input.GetAxisRaw("Horizontal"));
+    }
+
+    private void ApplyMovement(float moveInput)
+    {
+        if (IsInputBlocked())
         {
             rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
             if (anim != null)
@@ -41,7 +48,6 @@ public class PlayerMovement : MonoBehaviour
             return;
         }
 
-        float moveInput = Input.GetAxisRaw("Horizontal");
         bool moveBackground = transform.position.x >= backgroundMoveThresholdX;
         rb.linearVelocity = new Vector2(moveInput * moveSpeed, rb.linearVelocity.y);
 
@@ -79,5 +85,14 @@ public class PlayerMovement : MonoBehaviour
         }
 
         lastPosition = transform.position;
+    }
+
+    private bool IsInputBlocked()
+    {
+        if (sceneTransitionManager == null)
+            sceneTransitionManager = FindFirstObjectByType<SceneTransitionManager>();
+        return Time.timeScale <= 0f ||
+            ArrivalMessagePresenter.IsMessagePlaying || ArrivalMessagePresenter.IsCameraPresentationPlaying ||
+            sceneTransitionManager != null && sceneTransitionManager.IsLoading;
     }
 }

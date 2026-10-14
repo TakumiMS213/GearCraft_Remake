@@ -1,0 +1,12 @@
+{
+  "job_id": "build-ee4574fac9",
+  "result": "succeeded",
+  "platform": "StandaloneOSX",
+  "output_path": "QA/UXReview20261013-VerificationReady/Build/GearCraftUXDisplayProbe.app",
+  "started_at": "2026-10-13T14:36:43.0932840Z",
+  "duration_seconds": 22.4785,
+  "completed_at": "2026-10-13T14:37:05.5717840Z",
+  "total_size_mb": 269.43,
+  "errors": 0,
+  "warnings": 10
+}

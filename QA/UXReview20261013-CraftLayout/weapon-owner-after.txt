@@ -1,0 +1,1 @@
+PASS actual Katana tooltip preserved across material change, another material Disable and Exit (3 checks)

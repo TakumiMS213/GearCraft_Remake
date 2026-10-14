@@ -1,0 +1,10 @@
+16:21:34 PASS 1: initial notice focus, input flag, menu guards, background does not confirm
+16:21:35 PASS 2: notice focus restored and Submit accepted
+16:21:42 PASS 3: card initial focus, directional handlers, boundary, modal guards
+16:21:42 PASS 4: selected card enlarged; background does not confirm
+16:21:43 PASS 5: last card focus restored; HP94 -> 100, duplicate Submit ignored
+16:21:49 PASS 6: second reward adds Scrap2 exactly once
+16:21:56 PASS 7: normal three-wave flow reaches report, module HP capped, gained count matches
+16:21:57 PASS 8: actual late Scrap7 pickup updates same row; report background does not confirm
+16:21:57 PASS 9: report focus restored, duplicate Submit guarded
+16:22:02 PASS 10: single return to dorm, Stage4, material preserved, facility available

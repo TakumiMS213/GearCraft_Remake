@@ -1,0 +1,153 @@
+GearCraft UX観点の機能テスト・修正記録
+実施日: 2026-10-13 (JST)
+環境: Unity 6000.0.67f1 / macOS Editor / Game View 1920 x 1080
+
+評価の範囲
+公開資料の原則を判断基準に、実画面と実装の両方で再現できた問題を修正した。
+対象はタイトルから宿舎・作業台への導線、クラフト、武器アップグレード、
+ポーズメニューのやり直し・タイトルへの復帰確認。
+これはヒューリスティック評価と機能検証であり、人間の参加者による
+ユーザビリティテストではない。理解度や満足度の改善を測定したものではない。
+
+参照資料と適用した考え方
+1. 安藤昌也教授インタビュー、HIP、2018-03-05
+   https://hiptokyo.jp/hiptalk/ux_design/2/
+   実際のニーズを把握し、試作とユーザー評価を経て改善すること、
+   利用時だけでなく前後の体験も扱うことを参照した。
+   今回は単独のボタン配置ではなく、目的を持った操作の前後を確認した。
+   人間の理解・感情に関する結論は、別途ユーザー評価を必要とする。
+2. Jakob Nielsen, 10 Usability Heuristics for User Interface Design
+   https://www.nngroup.com/articles/ten-usability-heuristics/
+   状態の可視性、ユーザーによる中止・復帰、エラー防止、
+   エラー原因と復旧方法の提示を判断基準とした。
+3. Microsoft, Xbox Accessibility Guideline 114: UI context
+   https://learn.microsoft.com/en-us/xbox/accessibility/xbox-accessibility-guidelines/114
+   操作の意味・方法・結果を判断するための文脈を提示する考え方を参照した。
+4. Microsoft, Xbox Accessibility Guideline 115: Error messages and destructive actions
+   https://learn.microsoft.com/en-us/xbox/accessibility/xbox-accessibility-guidelines/115
+   エラーの原因と修正方法、進行を失う操作の確認・取り消しを参照した。
+これらは設計判断の根拠であり、本作品での効果を自動的に保証するものではない。
+
+検証方法
+・Unity MCPで実行中のUIを表示し、Game Viewの画像を確認した。
+・クリックは対象位置をRaycastし、対象の一致を確認してEventSystemの
+  PointerDown / PointerUp / PointerClickを送った。ドラッグもUIイベント経由。
+・必要な材料数・装備・プレイヤー位置は検証用に設定した。
+・作業台のSpace操作とメニューのBack操作は該当ハンドラーを呼び出した。
+  物理キーボード入力からの一貫した検証とは区別する。
+・チュートリアル表示を確認した後、独立した操作検証のため閉じた。
+・操作ログはactions.txt。テスト用状態と進行関連PlayerPrefsは復元済み。
+
+修正1: クラフト失敗の理由が実際の原因と一致しない
+観測:
+  GearCraftの材料が10/10でも、必要武器のKatanaではなくARを装備していると
+  「素材不足」と表示された。材料不足時も不足している種類・数が分からなかった。
+  06-craft-shortage-before.png / 10-wrong-weapon-before.png
+根拠:
+  資料2の状態可視性・エラー復旧、資料4の原因と修正方法の提示。
+変更:
+  必要武器の装備不足と材料不足を分け、不足材料の名前・残り必要数を表示。
+  材料が変わると表示も更新し、条件が揃えば作成可能と伝える。
+  状態表示には暗い背景を付け、操作を遮らない位置にシーンオブジェクトとして配置。
+検証結果:
+  Gear 0で「Gear あと10」を表示。
+  Gearを10追加するとレシピ再選択なしに作成可能の表示へ更新。
+  AR装備時はKatanaが必要と表示され、材料は消費されない。
+  Katana装備後は作成成功し、Gearが10から0へ一度だけ減った。
+  別レシピの選択で古い失敗表示が消える。
+  最終表示の必要高さ86.89に対し、テキスト領域96で収まることを確認。
+  22-craft-feedback-final.png
+実装:
+  Assets/GearCraft/Scripts/Craft/CraftManager.cs
+  Assets/GearCraft/Scripts/Craft/MaterialManager.cs
+  Assets/GearCraft/Scenes/Craft.unity
+
+修正2: アップグレード購入価格の末尾が見切れる
+観測:
+  Speed Gear++の価格表示で、Scrap・Gear・UpCoreの全条件を読めなかった。
+  07-upgrade-tutorial.png / 08-upgrade-invalid-before.png
+根拠:
+  資料3の操作前に判断できる文脈、資料2の記憶に依存しない情報提示。
+変更:
+  パーツ名と価格欄の幅・余白を修正。価格を折り返し可能にした。
+  材料名と個数は一組として折り返し、途中で分断されないようにした。
+検証結果:
+  15種類の実パーツの価格文字列を実際のTMPに設定し、文字の境界と高さを確認。
+  最大必要高さ69.51に対し、価格欄76で全15種類が収まった。
+  Speed Gear++のScrap x8 / Gear x2 / UpCore x1を実画面でも確認。
+  21-shop-cost-final.png
+実装:
+  Assets/GearCraft/ScriptableObject/Prehubs/UI/ShopItem.prefab
+  Assets/GearCraft/Scripts/Upgrade/UpgradeShopManager.cs
+
+修正3: パーツを配置できないとき、原因と復帰手段がない
+観測:
+  枠の外へのドロップに対し「そこに配置できません」という汎用文のみだった。
+  08-upgrade-invalid-before.png
+根拠:
+  資料2の操作取り消し・エラー復旧、資料4の原因と修正方法の提示。
+変更:
+  枠外へのドロップは取り消しとして扱い、素材を消費していないことを表示。
+  重なり、はみ出し、材料不足を区別し、移動・回転・取り外しなどの対処を提示。
+  配置可否と理由の判定を共通化した。
+  案内欄の文字サイズと領域を調整し、複数行の説明を収めた。
+検証結果:
+  枠外へのドロップで取り消し文言を表示し、素材が減らない。
+  正常なDamage+1の配置が成功し、攻撃力の加算を確認。
+  占有済みセルへDamage+2を配置すると重なりの理由を表示し、素材が減らない。
+  Speed Gear++の材料不足時は不足数を表示し、配置数が増えない。
+  16-cancel-placement-after.png / 17-overlap-after.png / 18-upgrade-shortage-after.png
+未確認:
+  ポインターがグリッド内にあり、形状だけがはみ出すケースのUI経由確認。
+  試した端の座標は既存の座標補正で有効配置となったため、この分岐を検証済みとはしない。
+実装:
+  Assets/GearCraft/Scripts/Upgrade/UpgradeGridManager.cs
+  Assets/GearCraft/Scripts/Upgrade/UpgradeGridUI.cs
+  Assets/GearCraft/Scripts/Upgrade/UpgradeShopManager.cs
+  Assets/GearCraft/Scenes/Craft.unity
+
+修正4: RETRYを一度押すだけで当日の進行を失う
+観測:
+  RetryDayButtonを一度押すと、確認なしにMainが再読み込みされた。
+  11-retry-before.png
+根拠:
+  資料2のエラー防止・ユーザー制御、資料4の破壊的操作の確認。
+変更:
+  「この日をやり直す」と「タイトルへ戻る」の操作名を具体化。
+  既存の確認パネルを使い、装備・素材がどの状態へ戻るかを実行前に表示。
+  やり直しとタイトル復帰で確認内容・実行処理を切り替える。
+  取り消しを初期選択とし、戻る操作でも閉じられるようにした。
+検証結果:
+  やり直しを選んでも同じMainインスタンスのまま確認が開く。
+  初期選択は取り消し、ゲームは停止状態を維持。
+  取り消すと検証用に得たGear 7を含め、現在の材料を維持。
+  タイトル復帰では固有の文言を表示し、Backハンドラーで取り消せる。
+  やり直しを確定するとMainが再読み込みされ、その日開始時点の材料へ戻る。
+  12-retry-confirm-after.png
+実装:
+  Assets/GearCraft/Scripts/Main/PauseManager.cs
+  Assets/GearCraft/Scenes/Main.unity
+
+終了時の確認
+・Unityのコンパイル完了、コンパイルエラー0件。
+・今回の実行中に設置したログ監視で、ゲームのError / Exceptionを検出しなかった。
+・git diff --check成功。
+・検証前から存在した他のUI修正を維持した。
+・一時的な解放・素材・武器・チュートリアル状態を戻した。
+・退避した8項目のPlayerPrefsについて、値とキーの有無の復元を照合した。
+・EditorはTitleシーン、Play停止状態で終了。
+
+評価の限界と次に人間で確認する課題
+今回未測定: 初見での理解度、迷い、満足度、自力成功率、学習の定着。
+今回未検証: 他解像度・実機ビルド・物理キー操作全体・全UIの網羅。
+資料の原則と実装上の改善を、人間による効果検証の代わりにはしない。
+
+初見参加者向けの課題案（正解のボタン位置は教えない）:
+1. 武器と素材の条件が一つ足りない状態で、クラフトできない原因を判断して解消する。
+2. 二つのパーツを比較し、欲しい性能と必要な費用を説明して選ぶ。
+3. パーツを装着し、失敗時に復帰し、必要なら取り外す。
+4. 現在の進行を残したまま、やり直しで何が戻るかを確認して取り消す。
+5. 別のレシピ・パーツで同種の課題を補助なしに再実行する。
+記録する項目:
+  完了可否、操作時間、誤操作、手助けの回数、失敗原因の説明、
+  条件を変えた再実行の成功。今回これらの数値を実測したとは扱わない。

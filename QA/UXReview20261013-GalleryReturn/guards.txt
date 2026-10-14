@@ -1,0 +1,4 @@
+PASS two direct Back calls same frame close debug only
+PASS Return PointerClick during debug begins return; Back during IsBusy ignored
+PASS PointerClick restored Title/scale/focus
+PASS Debug all/locked preview did not change saved JSON

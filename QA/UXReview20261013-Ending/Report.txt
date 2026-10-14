@@ -1,0 +1,112 @@
+UX継続テスト・ターム7：EDの進行、初回解放、タイトルとギャラリー
+実施日: 2026-10-13 JST
+環境: Unity 6000.0.67f1 / macOS / Editor Play / Game画面1920×1080
+状態: 3種類EDの初回・再達成、配置修正後の追試、元データ復元・停止後照合を完了。
+
+観測と変更
+
+1. EDの操作案内とキーボード経路
+変更前: ED画面には操作対象のButtonがなく、初期選択もnull。左クリックだけで進行。
+解放通知の案内も「クリックでタイトルへ」で、Enterから進行する経路がなかった。
+変更後: Endingシーンに進行Buttonと案内を配置。既存MessageWindowにもButtonを追加。
+クリックとSubmitを同じ進行処理へ接続し、表示中の操作対象へ選択を移す。
+案内は「表示を完了」「次へ」「続ける」「タイトルへ」を状態に合わせて切り替える。
+フェード中の操作では表示を完成させ、次の操作で次のページへ進む。
+同フレームの二重進行、ロード中の操作、通知直後の読み飛ばしを防ぐ。
+初回通知中は通常の進行Buttonと案内を隠し、黒背景とメッセージだけを表示する。
+解放条件とED別画像の順序は既存の処理を使用。
+対象: Ending.unity / EndingManager.cs / ImageSequenceViewer.cs
+
+2. タイトル・ギャラリーの背景クリック後の選択
+変更前: 使用中のInputSystemUIInputModuleの処理と同じ選択解除条件を使い、
+Gallery Entry_0→null、Title GalleryIcon→nullを再現。次のフレームにもGalleryはnull。
+表示中の項目が残っているのに、キー操作の選択先が失われていた。
+変更後: 両シーンのDeselect On Background Clickをfalseに設定。
+同じ経路で選択維持を確認し、DownでTitle StartButton→SettingButton、
+Gallery Entry_0→Entry_1へ移動できることを確認。
+対象: Title.unity / Gallery.unity の各InputSystemUIInputModule設定1項目。
+
+3. 操作案内と本文の重なり
+初期画面だけでは分からなかった重なりを、Bad/Normalの最終ページとスコア画面で確認。
+案内背景を右下基準(-140,112)、690×64から、(-140,84)、690×44へ変更。
+本文の最終行とED名の間に配置し、文字サイズ32を維持した。
+変更後の3種類EDで、最終ページとスコアの計6枚を確認。本文とED名を隠さない。
+True EDでは新聞イラストに重なるが、本文・ED名・スコア・操作アイコンは隠さない。
+
+確認済みの関連経路
+
+・解放前のTitle: Gallery無効、ホバー時「ED達成後に解放」を表示。
+・初回Bad ED: 解放通知の黒背景・文言・Enter案内と、Title帰還を確認。
+・Title→Gallery→Title: Submitで往復。帰還時GalleryIconに選択復帰、timeScale=1。
+・Gallery全25項目: Moveイベントで順次移動。発見済みは名称と説明・画像、
+  未発見は「？」、説明/型式/副題は空、画像spriteもnullであることを検証。
+・カテゴリ順序: レベル1→2→3→工房武装。Rightから「タイトルへ戻る」に移動。
+・本項目は実機上のUGUIイベントと表示の検証。物理入力の通し試験とは区別する。
+
+根拠と判断
+
+Microsoft / Xbox Accessibility Guideline 112: UI navigation
+https://learn.microsoft.com/en-us/xbox/accessibility/xbox-accessibility-guidelines/112
+選択移動を予測可能にし、対応する入力で画面を操作し続けられるようにする観点。
+今回は背景クリックで選択先が失われる実測結果と、EDのSubmit経路欠落に適用。
+
+Microsoft / Xbox Accessibility Guideline 114: UI context
+https://learn.microsoft.com/en-us/xbox/accessibility/xbox-accessibility-guidelines/114
+操作方法と実行後の結果を判断できる文脈の観点。
+今回は表示完了・次ページ・タイトル帰還の案内を出し分ける判断に適用。
+
+安藤昌也教授インタビュー / HIP
+https://hiptokyo.jp/hiptalk/ux_design/2/
+画面単体だけでなく体験の前後を含め、試作をユーザー評価につなげる方針を参考にした。
+EDから解放通知、Title、Gallery、Title帰還までを検証単位にした。
+これらは設計判断の根拠であり、利用者の理解度向上を実証したものではない。
+
+証拠
+
+observations.txt: 修正前後の状態、背景操作、Gallery表示と往復。
+01-title-locked-hover.png: 未解放の理由。
+02-bad-ending-entry-before.png: 変更前のED初期画面。
+05-unlock-notice-before.png: 変更前の初回解放通知。
+08-bad-ending-entry-after.png / 09-unlock-notice-after.png: 変更後の案内。
+11-gallery-known-after.png / 12-gallery-unknown-after.png: 発見済みと未発見。
+EndingJourneyChecks.cs.txt: 6ケースの再現ハーネス。結果はEndingJourneyChecks.log。
+EndingLayoutChecks.cs.txt / EndingLayoutChecks.log: 位置修正後の3EDとPointerClick追試。
+layout-01/02/03のstory/score画像: 最新配置の証拠。数字のみのscore画像は配置調整前。
+画像04は名前にscoreとあるが撮影タイミングにより通知が写ったためスコア証拠にしない。
+画像06・07も遷移と同時に撮影予約したため、シーン判定の証拠として使わない。
+Galleryテスト中、一度Downで最終行から戻るButtonへ移ると誤って期待した。
+実設定はRightで戻るButtonへ移るため、設定を読んで期待値を訂正し再検証した。
+
+残る評価・別タームの候補
+
+H-08: EDの進行/表示完了/タイトル帰還を区別でき、解放通知から自力でGalleryへ
+到達できるか。案内の位置と読みやすさ、誤入力、読み飛ばし、補助回数、到達時間を記録。
+初見の人による理解度・快適さ、物理キー/マウス/ゲームパッド、別解像度、実機ビルドは未測定。
+ED後の新規ゲームで武器等が残留する候補はNewRunAudit.txtにコード監査を記録。
+その実機再現は未実施であり、このタームの修正済み不具合として扱わない。
+
+データ保護
+
+テスト前の8個のPlayerPrefsをキーの有無・型・値とともに
+/tmp/gearcraft-uxending-playerprefs-backup.txtへ保存。8項目を元に復元し、Play停止後にも照合済み。
+配置追試は最後まで完了したが、終了時にMCP接続先が0件になった。
+一時Editor処理で退避ファイルを検証して復元・停止後照合を行い、既存MCPのStartAsyncで復旧。
+接続先や設定を変更していない。処理の記録はRecovery.cs.txtとrecovery.txt。
+一時Editorスクリプトとmetaは削除済み。削除後の再コンパイルとMCP応答を確認。
+
+最終検証結果
+
+EndingJourneyChecks: Bad/Normal/Trueを初回と再達成の6ケース、247アサーション、失敗0。
+  実LoadEndingScene、UGUI Submitで全ページを進行。STR2/ACC1/Stage3のスコア9000。
+  各ロード中にSubmitが進行しないこと、同フレーム2回のSubmitが1ページ分だけ進むこと、
+  フェード中の表示完了だけの操作、状態別案内を確認。
+  初回は黒背景の解放通知を表示し、即時確定を拒否。背景クリックでは進まず選択が復帰。
+  0.5秒後のSubmitでTitleへ。再達成は通知を省略してTitleへ。
+  全ケースでTitle Gallery有効、解放と既知の敵/武器/素材記録が実行中・保存値とも保持。
+EndingLayoutChecks: 配置修正後の3ケース、110アサーション、失敗0。
+  最終本文からスコアへはRaycastで特定したButtonのPointerDown/Up/Clickを送信して進行。
+  6枚の最新画像を目視確認し、本文・ED名との重なりが解消したことを確認。
+Gallery: 全25項目のMove経路、既知/未知の表示、背景操作後の選択、Titleとの往復を確認。
+最終: Title / Play停止 / 元PlayerPrefs8項目一致 / UXEnding20261013.active=false。
+コンパイル中でないこと、Consoleのerror CS 0件、git diff --check成功を確認。
+既存Render Graph互換モード・memoryless depthメッセージの解消は本タームの対象外。

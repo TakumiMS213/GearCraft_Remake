@@ -1,0 +1,30 @@
+[
+  {
+    "file": "01-old-score.png",
+    "width": 1920,
+    "height": 1080,
+    "completePNG": true,
+    "bytes": 107737
+  },
+  {
+    "file": "02-initial-shop-top.png",
+    "width": 1920,
+    "height": 1080,
+    "completePNG": true,
+    "bytes": 199345
+  },
+  {
+    "file": "03-initial-shop-bottom.png",
+    "width": 1920,
+    "height": 1080,
+    "completePNG": true,
+    "bytes": 193482
+  },
+  {
+    "file": "04-reentry-shop.png",
+    "width": 1920,
+    "height": 1080,
+    "completePNG": true,
+    "bytes": 199345
+  }
+]

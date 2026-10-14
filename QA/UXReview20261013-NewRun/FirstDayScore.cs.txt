@@ -1,0 +1,84 @@
+
+if(!Application.isPlaying||UnityEngine.SceneManagement.SceneManager.GetActiveScene().name!="CraftSpace")throw new System.Exception("Dorm required");
+if(!SessionState.GetBool("UXNewRun20261013.active",false))throw new System.Exception("Backup required");
+const string directory="QA/UXReview20261013-NewRun/";
+string logPath=directory+"first-day-score.txt";
+System.IO.File.WriteAllText(logPath,"Post-ED new run: actual Bed trigger -> Space handler -> Main -> Gate.TakeDamage fixture -> Ending score -> UGUI Submit -> Title\n");
+var player=GameObject.FindGameObjectWithTag("Player");
+CraftSpaceInteractionZone bed=null;
+foreach(var zone in UnityEngine.Object.FindObjectsByType<CraftSpaceInteractionZone>(FindObjectsSortMode.None))if(zone.ActionType==CraftSpaceInteractionAction.Bed)bed=zone;
+if(player==null||bed==null)throw new System.Exception("Bed/player missing");
+player.transform.position=bed.transform.position;Physics2D.SyncTransforms();
+var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
+double started=EditorApplication.timeSinceStartup;double next=started+0.3;
+int phase=0;bool sawDayOne=false;bool scoreCaptured=false;
+System.Action<string> log=message=>System.IO.File.AppendAllText(logPath,(EditorApplication.timeSinceStartup-started).ToString("F1")+"s "+message+"\n");
+System.Action<GameObject> submit=target=>UnityEngine.EventSystems.ExecuteEvents.Execute(target,new UnityEngine.EventSystems.BaseEventData(UnityEngine.EventSystems.EventSystem.current),UnityEngine.EventSystems.ExecuteEvents.submitHandler);
+SessionState.SetBool("UXNewRun20261013.scoreDone",false);
+EditorApplication.CallbackFunction tick=null;
+tick=delegate{
+ try {
+  double now=EditorApplication.timeSinceStartup;
+  if(now-started>90||!Application.isPlaying)throw new System.Exception("Timeout/Play stopped phase="+phase);
+  if(now<next)return;next=now+0.05;
+  string scene=UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+  if(phase==0){
+   var controller=UnityEngine.Object.FindFirstObjectByType<UIRangeDisplay>();
+   var active=(CraftSpaceInteractionZone)typeof(UIRangeDisplay).GetField("activeZone",flags).GetValue(controller);
+   if(active!=bed)return;
+   log("Bed actual trigger registered; invoking Space action handler");
+   typeof(UIRangeDisplay).GetMethod("ExecuteActiveAction",flags).Invoke(controller,null);phase=1;return;
+  }
+  if(phase==1){
+   if(scene!="Main")return;
+   var flow=StageFlowManager.Instance;if(flow==null)return;
+   var notice=(GameObject)typeof(StageFlowManager).GetField("openingNoticeRoot",flags).GetValue(flow);
+   var noticeButton=(UnityEngine.UI.Button)typeof(StageFlowManager).GetField("openingNoticeButton",flags).GetValue(flow);
+   if(notice!=null&&notice.activeInHierarchy&&noticeButton!=null&&noticeButton.IsInteractable()){submit(noticeButton.gameObject);log("Submitted opening notice");next=now+0.8;return;}
+   if(flow.stageNumText!=null&&flow.stageNumText.text=="Day1"){sawDayOne=true;ScreenCapture.CaptureScreenshot(directory+"first-day-label.png");phase=2;log("Day1 text observed");}
+   return;
+  }
+  if(phase==2){
+   var flow=StageFlowManager.Instance;var gate=GateManager.Instance;
+   if(flow==null||gate==null||!flow.IsStageActive)return;
+   var status=StatusManager.Instance;
+   string state="rawStage="+StageCounter.Instance.StageCount+" scalingStage="+flow.EnemyScalingStage+" GATE="+status.GATE+" HP="+status.HP+" SAN="+status.SAN+" STR="+status.STR+" ACC="+status.ACC+" bedTaskStarted="+status.DormTasks.hasStartedFirstDay+" debug="+MainDebugEnemySpawnWindow.IsDebugModeActive;
+   log(state);
+   if(StageCounter.Instance.StageCount!=1||flow.EnemyScalingStage!=1||status.GATE!=100||status.HP!=100||status.SAN!=100||status.STR!=0||status.ACC!=0||!status.DormTasks.hasStartedFirstDay||MainDebugEnemySpawnWindow.IsDebugModeActive)throw new System.Exception("Initial combat mismatch");
+   if(GameObject.Find("DormTaskPanel")!=null)throw new System.Exception("Dorm task UI leaked into Main");
+   log("Dorm task UI absent in Main");
+   ScreenCapture.CaptureScreenshot(directory+"first-day-main.png");
+   phase=3;next=now+0.3;return;
+  }
+  if(phase==3){
+   StatusManager.Instance.killAllEnemies=false;
+   GateManager.Instance.TakeDamage(100);
+   log("Gate.TakeDamage(100) test fixture; killAll=false");phase=4;return;
+  }
+  if(phase==4){
+   if(scene!="Ending")return;
+   var score=UnityEngine.Object.FindFirstObjectByType<ScoreManager>();if(score==null)return;
+   log("ending="+EndingManager.PendingEndingNum+" score="+score.score);
+   if(EndingManager.PendingEndingNum!=1||score.score!=500)throw new System.Exception("First-day ending/score mismatch");
+   phase=5;return;
+  }
+  if(phase==5){
+   var transition=UnityEngine.Object.FindFirstObjectByType<SceneTransitionManager>();if(transition!=null&&transition.IsLoading)return;
+   if(scene=="Ending"){
+    var viewer=UnityEngine.Object.FindFirstObjectByType<ImageSequenceViewer>();if(viewer==null)return;
+    bool notice=(bool)typeof(ImageSequenceViewer).GetField("showingGalleryUnlockNotice",flags).GetValue(viewer);
+    var button=(UnityEngine.UI.Button)typeof(ImageSequenceViewer).GetField(notice?"galleryNoticeButton":"advanceButton",flags).GetValue(viewer);
+    if(button!=null&&button.IsInteractable()){
+     var score=UnityEngine.Object.FindFirstObjectByType<ScoreManager>();
+     if(!scoreCaptured&&score.scoreText.gameObject.activeInHierarchy&&score.scoreText.text.Contains("500")){ScreenCapture.CaptureScreenshot(directory+"first-day-score.png");scoreCaptured=true;next=now+0.25;return;}
+     submit(button.gameObject);next=now+1.15;
+    }
+   }else if(scene=="Title"){
+    log("COMPLETE Title; rawStage="+StageCounter.Instance.StageCount+" sawDay1="+sawDayOne);
+    EditorApplication.update-=tick;SessionState.SetBool("UXNewRun20261013.scoreDone",true);
+   }
+  }
+ }catch(System.Exception e){EditorApplication.update-=tick;SessionState.SetBool("UXNewRun20261013.scoreDone",true);log("FAIL "+e);}
+};
+EditorApplication.update+=tick;
+return "First-day route scheduled";

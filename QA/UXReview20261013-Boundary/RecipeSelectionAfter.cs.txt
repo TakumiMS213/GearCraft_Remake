@@ -1,0 +1,217 @@
+// C#6 execute_code body. Existing term9 backup required; this does not restore or stop Play.
+// UGUI Submit / real Dorm trigger / explicit missing-ID, locked-ID and reset fixtures.
+// Start after tutorial round trip in Craft/Upgrade.
+const string prefix="UXBoundary20261013.";
+const string outDir="QA/UXReview20261013-Boundary/";
+const string logPath=outDir+"recipe-after.txt";
+if(!UnityEditor.SessionState.GetBool(prefix+"active",false)||!UnityEditor.EditorApplication.isPlaying) throw new System.Exception("Active backup and Play required");
+if(UnityEditor.SessionState.GetBool(prefix+"selectionRunning",false)) throw new System.Exception("Already running");
+var runStatus=StatusManager.Instance;
+var runMaterials=MaterialManager.Instance;
+System.IO.File.WriteAllText(logPath,"Recipe return + invalid/locked fallback + run reset. Direct LoadScene only for fallback fixtures.\n");
+var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
+double started = UnityEditor.EditorApplication.timeSinceStartup;
+double nextAt = started;
+int phase = 0;
+int assertions = 0;
+int firstCraftControllerId = 0;
+int firstUpgradeControllerId = 0;
+CraftTutorialTrackProgress craftTrack = null;
+CraftTutorialTrackProgress upgradeTrack = null;
+CraftRecipeSO scrapRecipe = null;
+UpgradePartSO damagePart = null;
+GearCraft.Scripts.Craft.CraftTutorialController controller = null;
+CraftManager craftManager = null;
+CraftSpaceInteractionZone craftZone = null;
+UpgradeShopItemDragHandler dragSource = null;
+UnityEngine.EventSystems.PointerEventData dragData = null;
+UnityEngine.Vector2 dragTarget = UnityEngine.Vector2.zero;
+float upgradeBaselineDamage = 0f;
+string suppliedCraftMaterials = null;
+string suppliedUpgradeMaterials = null;
+UnityEditor.EditorApplication.CallbackFunction tick = null;
+
+System.Action<string> log = delegate(string message) {
+    System.IO.File.AppendAllText(logPath,
+        (UnityEditor.EditorApplication.timeSinceStartup - started).ToString("F2") +
+        "s phase=" + phase + " " + message + "\n");
+};
+System.Action<bool, string> check = delegate(bool ok, string message) {
+    if (!ok) throw new System.Exception(message);
+    assertions++;
+    log("PASS " + message);
+};
+System.Func<UnityEngine.Transform, string> pathOf = null;
+pathOf = delegate(UnityEngine.Transform tr) {
+    return tr.parent == null ? tr.name : pathOf(tr.parent) + "/" + tr.name;
+};
+System.Func<string, UnityEngine.GameObject> find = delegate(string name) {
+    foreach (var tr in UnityEngine.Object.FindObjectsByType<UnityEngine.Transform>(
+        UnityEngine.FindObjectsInactive.Include, UnityEngine.FindObjectsSortMode.None)) {
+        if (tr.gameObject.scene.IsValid() && tr.gameObject.activeInHierarchy &&
+            (tr.name == name || pathOf(tr) == name)) return tr.gameObject;
+    }
+    return null;
+};
+System.Action<UnityEngine.UI.Button> submitButton = delegate(UnityEngine.UI.Button button) {
+    if (button == null || !button.IsActive() || !button.IsInteractable())
+        throw new System.Exception("Submit target is unavailable.");
+    var events = UnityEngine.EventSystems.EventSystem.current;
+    if (events == null) throw new System.Exception("EventSystem is missing.");
+    var tooltip = TooltipSystem.FindInstance();
+    if (tooltip != null) tooltip.Hide();
+    button.Select();
+    log("SUBMIT " + pathOf(button.transform));
+    UnityEngine.EventSystems.ExecuteEvents.Execute(button.gameObject,
+        new UnityEngine.EventSystems.BaseEventData(events), UnityEngine.EventSystems.ExecuteEvents.submitHandler);
+};
+System.Action<string> submit = delegate(string name) {
+    var obj = find(name);
+    if (obj == null) throw new System.Exception("Active UI not found: " + name);
+    submitButton(obj.GetComponent<UnityEngine.UI.Button>());
+};
+System.Func<string> materials = delegate {
+    return runMaterials.scrap + "," + runMaterials.gear + "," + runMaterials.upgradeCore + "," +
+        runMaterials.moduleCore_lv1 + "," + runMaterials.moduleCore_lv2 + "," + runMaterials.moduleCore_lv3;
+};
+System.Func<bool> tutorialReady = delegate {
+    controller = UnityEngine.Object.FindFirstObjectByType<GearCraft.Scripts.Craft.CraftTutorialController>();
+    if (controller == null) return false;
+    var root = (UnityEngine.GameObject)controller.GetType().GetField("tutorialRoot", flags).GetValue(controller);
+    return root != null && root.activeInHierarchy;
+};
+System.Func<int> tutorialTab = delegate {
+    return (int)controller.GetType().GetField("currentTab", flags).GetValue(controller);
+};
+System.Action<bool> moveAtCraftTable = delegate(bool inside) {
+    var interaction = UnityEngine.Object.FindFirstObjectByType<UIRangeDisplay>();
+    if (interaction == null || interaction.player == null)
+        throw new System.Exception("Dorm interaction/player is missing.");
+    craftZone = null;
+    foreach (var zone in UnityEngine.Object.FindObjectsByType<CraftSpaceInteractionZone>(UnityEngine.FindObjectsSortMode.None))
+        if (zone.ActionType == CraftSpaceInteractionAction.CraftTable) { craftZone = zone; break; }
+    if (craftZone == null) throw new System.Exception("CraftTable trigger is missing.");
+    var bounds = craftZone.GetComponent<UnityEngine.Collider2D>().bounds;
+    var position = interaction.player.position;
+    position.x = inside ? bounds.center.x : bounds.max.x + UnityEngine.Mathf.Max(2f, bounds.extents.x + 1f);
+    var body = interaction.player.GetComponent<UnityEngine.Rigidbody2D>();
+    if (body != null) body.linearVelocity = UnityEngine.Vector2.zero;
+    interaction.player.position = position;
+    UnityEngine.Physics2D.SyncTransforms();
+    log("TELEPORT " + (inside ? "into" : "outside") + " CraftTable at " + position + "; await real physics trigger");
+};
+System.Func<bool> actualCraftTriggerActive = delegate {
+    var interaction = UnityEngine.Object.FindFirstObjectByType<UIRangeDisplay>();
+    if (interaction == null || craftZone == null) return false;
+    var activeZone = (CraftSpaceInteractionZone)typeof(UIRangeDisplay).GetField("activeZone", flags).GetValue(interaction);
+    return activeZone == craftZone && craftZone.PromptObject != null && craftZone.PromptObject.activeInHierarchy;
+};
+System.Action useCraftTable = delegate {
+    check(actualCraftTriggerActive(), "actual CraftTable trigger registered and prompt visible");
+    var interaction = UnityEngine.Object.FindFirstObjectByType<UIRangeDisplay>();
+    typeof(UIRangeDisplay).GetMethod("ExecuteActiveAction", flags).Invoke(interaction, null);
+    log("ACTION ExecuteActiveAction through the registered CraftTable trigger");
+};
+System.Action<string> capture = delegate(string name) {
+    UnityEngine.ScreenCapture.CaptureScreenshot(outDir + name + ".png");
+    log("SCREENSHOT " + name);
+};
+System.Action<bool, string> finish = delegate(bool passed, string message) {
+    UnityEditor.EditorApplication.update -= tick;
+    if (!passed) {
+        try {
+            var gridUI = UnityEngine.Object.FindFirstObjectByType<UpgradeGridUI>();
+            if (gridUI != null) gridUI.CancelShopDrag();
+        }
+        catch (System.Exception cleanupError) { message += "\nDrag cleanup: " + cleanupError.Message; }
+    }
+    UnityEditor.SessionState.SetBool(prefix + "selectionRunning", false);
+    UnityEditor.SessionState.SetBool(prefix + "selectionDone", true);
+    UnityEditor.SessionState.SetBool(prefix + "selectionPassed", passed);
+    UnityEditor.SessionState.SetInt(prefix + "selectionAssertions", assertions);
+    UnityEditor.SessionState.SetString(prefix + "selectionResult", message);
+    log((passed ? "COMPLETE " : "FAIL ") + message + "; assertions=" + assertions +
+        "; Play retained; caller must restore saved preferences");
+};
+
+
+UnityEditor.SessionState.SetBool(prefix+"selectionRunning",true);
+UnityEditor.SessionState.SetBool(prefix+"selectionDone",false);
+UnityEditor.SessionState.SetBool(prefix+"selectionPassed",false);
+tick=delegate{
+ try{
+  double now=UnityEditor.EditorApplication.timeSinceStartup;
+  if(now-started>60) throw new System.Exception("60s deadline");
+  if(!UnityEditor.EditorApplication.isPlaying) throw new System.Exception("Play stopped");
+  if(now<nextAt) return;
+  nextAt=now+0.2;
+  UnityEditor.SessionState.SetInt(prefix+"selectionPhase",phase);
+  string scene=UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+  var transition=UnityEngine.Object.FindFirstObjectByType<SceneTransitionManager>();
+  if(transition!=null&&transition.IsLoading) return;
+  if(scene=="CraftSpace"&&(ArrivalMessagePresenter.IsMessagePlaying||ArrivalMessagePresenter.IsCameraPresentationPlaying))return;
+  craftManager=UnityEngine.Object.FindFirstObjectByType<CraftManager>();
+  switch(phase){
+   case 0:{
+    var grid=UnityEngine.Object.FindFirstObjectByType<UpgradeGridUI>();
+    string messageBefore=grid.infoText.text; grid.CancelShopDrag();
+    check(messageBefore==grid.infoText.text&&messageBefore.Contains("装備しました"),"idle CancelShopDrag preserves successful equipment feedback");
+    if(find("CloseButton")!=null) submit("CloseButton");
+    UnityEngine.PlayerPrefs.SetInt(CraftTutorialMetrics.CraftMasteryKey,1);
+    UnityEngine.PlayerPrefs.SetInt(CraftTutorialMetrics.WeaponMasteryKey,1);
+    runStatus.CraftTutorials.Reset(); UnityEngine.PlayerPrefs.Save();
+    submit("CraftTabButton"); phase=1; break;
+   }
+   case 1: submit("Recipe_PunkDrive"); phase=2; break;
+   case 2:
+    check(craftManager.SelectedRecipe.UnlockId=="PunkDrive"&&!craftManager.CanCraft(),"PunkDrive selected with insufficient materials");
+    check(runStatus.LastSelectedCraftRecipeId=="PunkDrive","PunkDrive selection remembered immediately");
+    submit("Canvas/CraftPanel/Close"); phase=3; break;
+   case 3:
+    if(scene!="CraftSpace")return;
+    moveAtCraftTable(false); phase=4; nextAt=now+0.4; break;
+   case 4:
+    check(!actualCraftTriggerActive(),"outside trigger before re-entry");
+    moveAtCraftTable(true); phase=5; nextAt=now+0.4; break;
+   case 5:
+    if(!actualCraftTriggerActive())return;
+    useCraftTable(); phase=6; break;
+   case 6:
+    if(scene!="Craft"||craftManager==null||!craftManager.IsReadyForTutorial)return;
+    check(craftManager.SelectedRecipe.UnlockId=="PunkDrive"&&!craftManager.CanCraft(),"PunkDrive survives real Dorm round trip despite material shortage");
+    check(find("Result_PunkDrive")!=null&&find("Result_GearCraft")==null,"PunkDrive visual survives return");
+    capture("13-recipe-selection-retained");
+    phase=7; break;
+   case 7:
+    runStatus.LastSelectedCraftRecipeId="UX-missing-recipe";
+    UnityEngine.SceneManagement.SceneManager.LoadScene("Craft"); phase=8; break;
+   case 8:
+    if(craftManager==null||!craftManager.IsReadyForTutorial)return;
+    check(craftManager.SelectedRecipe.UnlockId=="GearCraft"&&runStatus.LastSelectedCraftRecipeId=="GearCraft","unknown recipe falls back to first unlocked recipe");
+    runStatus.LastSelectedCraftRecipeId="SteamShoot";
+    check(runStatus.bossKillCount==0&&craftManager.FindUnlockedRecipe("SteamShoot")==null,"SteamCannon fixture is locked");
+    UnityEngine.SceneManagement.SceneManager.LoadScene("Craft"); phase=9; break;
+   case 9:
+    if(craftManager==null||!craftManager.IsReadyForTutorial)return;
+    check(craftManager.SelectedRecipe.UnlockId=="GearCraft"&&runStatus.LastSelectedCraftRecipeId=="GearCraft","locked remembered recipe falls back to first unlocked recipe");
+    submit("Recipe_PunkDrive"); phase=10; break;
+   case 10:
+    check(runStatus.LastSelectedCraftRecipeId=="PunkDrive","nondefault selection exists before reset");
+    runStatus.ResetRunProgress();
+    check(runStatus.LastSelectedCraftRecipeId==string.Empty,"ResetRunProgress clears remembered recipe");
+    UnityEngine.SceneManagement.SceneManager.LoadScene("Title"); phase=11; break;
+   case 11:
+    if(scene!="Title")return;
+    check(runStatus.LastSelectedCraftRecipeId==string.Empty,"old Craft teardown does not restore previous selection");
+    UnityEngine.SceneManagement.SceneManager.LoadScene("Craft"); phase=12; break;
+   case 12:
+    if(craftManager==null||!craftManager.IsReadyForTutorial)return;
+    check(craftManager.SelectedRecipe.UnlockId=="GearCraft","fresh run opens the initial recipe");
+    capture("14-recipe-new-run-initial");
+    phase=13; break;
+   case 13:finish(true,"Recipe continuity and fallback checks passed");break;
+  }
+ }catch(System.Exception error){finish(false,error.ToString());}
+};
+UnityEditor.EditorApplication.update+=tick;
+return "Recipe regression scheduled; selectionRunning/Done/Passed/Phase; 60s deadline";

@@ -1,0 +1,338 @@
+// C#6 MCP execute_code body. Parent owns original PlayerPrefs backup/restoration.
+// Start: unpaused Play in Title, UXDormTaskChecks20261013.backupReady=true.
+// Stop: .stop=true. Results: .running/.done/.passed/.result/.phase/.assertions.
+// Fixtures: Stage2/first day started, no boss, mastery, exact materials, Damage+1 stock.
+// Craft and upgrade completion flags are NEVER set true as successful-action fixtures.
+// Final boss-encounter flag is a separate display fixture, not an actual boss encounter.
+// UGUI Submit + raycast-checked pointer drag + teleported real trigger; not OS input E2E.
+const string prefix = "UXDormTaskChecks20261013.";
+const string outDir = "QA/UXReview20261013-DormTaskChecks/";
+const string logPath = outDir + "run.txt";
+if (!UnityEditor.SessionState.GetBool(prefix + "backupReady", false)) throw new System.Exception("Parent preference backup required");
+if (!UnityEditor.EditorApplication.isPlaying || UnityEditor.EditorApplication.isPaused ||
+    UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "Title") throw new System.Exception("Unpaused Play in Title required");
+if (UnityEditor.SessionState.GetBool(prefix + "running", false)) throw new System.Exception("Harness already running");
+var status = StatusManager.Instance;
+var materials = MaterialManager.Instance;
+if (status == null || materials == null || UnityEngine.Time.timeScale <= 0f) throw new System.Exception("Running persistent managers required");
+var recipe = UnityEditor.AssetDatabase.LoadAssetAtPath<CraftRecipeSO>("Assets/GearCraft/ScriptableObject/CraftRecipe/GearCraft.asset");
+var part = UnityEditor.AssetDatabase.LoadAssetAtPath<UpgradePartSO>("Assets/GearCraft/ScriptableObject/UpgradeParts/Damage+1.asset");
+if (recipe == null || part == null) throw new System.Exception("Fixture recipe/part missing");
+System.IO.Directory.CreateDirectory(outDir);
+System.IO.File.WriteAllText(logPath,
+    "Dorm task checks: three pending rows -> actual Craft/drag placement -> two checked rows -> one defense row.\n" +
+    "Last phase uses a boss-encounter DISPLAY FIXTURE, not an actual boss spawn.\n" +
+    "Parent restores preferences and validates screenshot files. No product edits or physical-input claims.\n");
+var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
+double started = UnityEditor.EditorApplication.timeSinceStartup;
+double nextAt = started;
+int phase = 0;
+int lastFrame = -1;
+int assertions = 0;
+int runtimeErrors = 0;
+bool finished = false;
+int bossFixtureFrame = -1;
+float damageBeforePlacement = 0f;
+CraftManager craft = null;
+CraftSpaceInteractionZone craftZone = null;
+UpgradeShopItemDragHandler dragSource = null;
+UnityEngine.EventSystems.PointerEventData dragData = null;
+UnityEngine.Vector2 dragTarget = UnityEngine.Vector2.zero;
+UnityEditor.EditorApplication.CallbackFunction tick = null;
+UnityEngine.Application.LogCallback onRuntimeLog = null;
+System.Action<string> log = delegate(string message) {
+    // AppendAllText closes/flushed each entry; no buffered log is held until completion.
+    System.IO.File.AppendAllText(logPath,
+        (UnityEditor.EditorApplication.timeSinceStartup - started).ToString("F2", System.Globalization.CultureInfo.InvariantCulture) +
+        "s phase=" + phase + " frame=" + UnityEngine.Time.frameCount + " " + message + "\n");
+};
+System.Action<bool, string> check = delegate(bool condition, string message) {
+    if (!condition) throw new System.Exception(message);
+    assertions++; log("PASS " + message);
+};
+System.Func<string> materialState = delegate {
+    return materials.scrap + "," + materials.gear + "," + materials.upgradeCore + "," +
+        materials.moduleCore_lv1 + "," + materials.moduleCore_lv2 + "," + materials.moduleCore_lv3;
+};
+System.Func<UnityEngine.Transform, string> pathOf = null;
+pathOf = delegate(UnityEngine.Transform tr) { return tr.parent == null ? tr.name : pathOf(tr.parent) + "/" + tr.name; };
+System.Func<string, UnityEngine.GameObject> findActive = delegate(string name) {
+    foreach (var tr in UnityEngine.Object.FindObjectsByType<UnityEngine.Transform>(UnityEngine.FindObjectsInactive.Include, UnityEngine.FindObjectsSortMode.None))
+        if (tr.gameObject.scene.IsValid() && tr.gameObject.activeInHierarchy && (tr.name == name || pathOf(tr) == name)) return tr.gameObject;
+    return null;
+};
+System.Action<UnityEngine.UI.Button> submitButton = delegate(UnityEngine.UI.Button button) {
+    if (button == null || !button.IsActive() || !button.IsInteractable()) throw new System.Exception("Submit target unavailable");
+    var events = UnityEngine.EventSystems.EventSystem.current;
+    if (events == null) throw new System.Exception("EventSystem missing");
+    var tooltip = TooltipSystem.FindInstance(); if (tooltip != null) tooltip.Hide();
+    button.Select(); log("SUBMIT " + pathOf(button.transform));
+    UnityEngine.EventSystems.ExecuteEvents.Execute(button.gameObject,
+        new UnityEngine.EventSystems.BaseEventData(events), UnityEngine.EventSystems.ExecuteEvents.submitHandler);
+};
+System.Action<string> submit = delegate(string name) {
+    var obj = findActive(name); if (obj == null) throw new System.Exception("UI missing: " + name);
+    submitButton(obj.GetComponent<UnityEngine.UI.Button>());
+};
+System.Action<string> capture = delegate(string name) {
+    UnityEngine.ScreenCapture.CaptureScreenshot(outDir + name + ".png");
+    log("SCREENSHOT_REQUEST " + name + ".png; parent verifies completed PNG");
+};
+System.Action checkNoDormPanel = delegate {
+    int count = 0;
+    foreach (var tr in UnityEngine.Object.FindObjectsByType<UnityEngine.Transform>(UnityEngine.FindObjectsInactive.Include, UnityEngine.FindObjectsSortMode.None))
+        if (tr.gameObject.scene.IsValid() && tr.name == "DormTaskPanel") count++;
+    check(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Craft" && count == 0,
+        "Craft has no DormTaskPanel, including inactive scene objects");
+};
+System.Action<string, bool, bool> inspectTasks = delegate(string label, bool achieved, bool defenseOnly) {
+    var taskUI = UnityEngine.Object.FindFirstObjectByType<CraftSpaceTaskUI>();
+    var obj = findActive("DormTaskPanel");
+    check(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "CraftSpace" && taskUI != null && obj != null,
+        label + " task panel visible in Dorm");
+    var panel = obj.GetComponent<UnityEngine.RectTransform>();
+    var canvas = obj.GetComponentInParent<UnityEngine.Canvas>();
+    var canvasRect = canvas == null ? null : canvas.GetComponent<UnityEngine.RectTransform>();
+    check(panel != null && canvasRect != null, label + " panel and parent canvas rectangles exist");
+    var cfg = (StageGeneratorSO)typeof(CraftSpaceTaskUI).GetField("stageConfig", flags).GetValue(taskUI);
+    check(cfg != null && cfg.bossStages != null && cfg.bossStages.Length > 0 && cfg.bossStages[0] > 2,
+        label + " Stage2 remains before actual configured first boss");
+    check(StageCounter.Instance.StageCount == 2 && status.bossKillCount == 0 && status.DormTasks.hasStartedFirstDay &&
+        status.DormTasks.hasEncounteredFirstBoss == defenseOnly && status.DormTasks.hasCrafted == achieved &&
+        status.DormTasks.hasUpgradedWeapon == achieved, label + " underlying progression matches expected task state");
+    string[] labels = { "門の防衛を続ける", "作業台でCRAFTを行う", "作業台で武器のアップグレードを行う" };
+    int visibleCount = 0;
+    for (int i = 0; i < 3; i++) {
+        var row = panel.Find("TaskRow_" + i);
+        check(row != null, label + " task row" + i + " exists");
+        bool visible = row.gameObject.activeInHierarchy;
+        bool expectedVisible = !defenseOnly || i == 0;
+        check(visible == expectedVisible, label + " row" + i + " visibility=" + visible);
+        if (!visible) { log(label + " HIDDEN row" + i); continue; }
+        visibleCount++;
+        var content = row.Find("TaskContent");
+        var checkbox = row.Find("Checkbox");
+        var mark = row.Find("Checkbox/Checkmark");
+        var text = content == null ? null : content.GetComponent<TMPro.TMP_Text>();
+        check(text != null && checkbox != null && checkbox.gameObject.activeInHierarchy && mark != null,
+            label + " row" + i + " visible text/checkbox/mark structure");
+        bool expectedCheck = achieved && !defenseOnly && i > 0;
+        check(text.text == labels[i] && mark.gameObject.activeInHierarchy == expectedCheck,
+            label + " row" + i + " label and checked=" + expectedCheck);
+        log(label + " ROW " + i + " text=" + text.text + " checkSelf=" + mark.gameObject.activeSelf +
+            " checkVisible=" + mark.gameObject.activeInHierarchy + " textColor=" + text.color);
+    }
+    check(visibleCount == (defenseOnly ? 1 : 3), label + " visible task count=" + visibleCount);
+    var corners = new UnityEngine.Vector3[4]; panel.GetWorldCorners(corners);
+    var panelTopLeft = canvasRect.InverseTransformPoint(corners[1]);
+    var expectedTopLeft = new UnityEngine.Vector3(canvasRect.rect.xMin, canvasRect.rect.yMax, panelTopLeft.z);
+    check(UnityEngine.Vector2.Distance(new UnityEngine.Vector2(panelTopLeft.x, panelTopLeft.y),
+        new UnityEngine.Vector2(expectedTopLeft.x, expectedTopLeft.y)) <= 0.1f, label + " background top-left flush with parent Canvas");
+    var background = obj.GetComponent<UnityEngine.UI.Image>();
+    check(background != null && !background.raycastTarget, label + " background is non-raycast Image");
+    foreach (var graphic in obj.GetComponentsInChildren<UnityEngine.UI.Graphic>(true))
+        check(!graphic.raycastTarget, label + " non-raycast task graphic " + pathOf(graphic.transform));
+    log(label + " GEOMETRY canvas=" + canvasRect.rect + " panel=" + panel.rect + " topLeftInCanvas=" + panelTopLeft +
+        " canvasTopLeft=" + expectedTopLeft + " backgroundColor=" + background.color + " firstBossStage=" + cfg.bossStages[0]);
+    var arrow = findActive("FirstBedGuideArrow"); check(arrow == null, label + " initial-bed arrow hidden after day started");
+};
+System.Action<bool> moveAtCraftTable = delegate(bool inside) {
+    var interaction = UnityEngine.Object.FindFirstObjectByType<UIRangeDisplay>();
+    if (interaction == null || interaction.player == null) throw new System.Exception("Dorm interaction/player missing");
+    craftZone = null;
+    foreach (var zone in UnityEngine.Object.FindObjectsByType<CraftSpaceInteractionZone>(UnityEngine.FindObjectsSortMode.None))
+        if (zone.ActionType == CraftSpaceInteractionAction.CraftTable) { craftZone = zone; break; }
+    if (craftZone == null || craftZone.GetComponent<UnityEngine.Collider2D>() == null) throw new System.Exception("CraftTable trigger missing");
+    var bounds = craftZone.GetComponent<UnityEngine.Collider2D>().bounds;
+    var pos = interaction.player.position;
+    pos.x = inside ? bounds.center.x : bounds.max.x + UnityEngine.Mathf.Max(2f, bounds.extents.x + 1f);
+    var body = interaction.player.GetComponent<UnityEngine.Rigidbody2D>(); if (body != null) body.linearVelocity = UnityEngine.Vector2.zero;
+    interaction.player.position = pos; UnityEngine.Physics2D.SyncTransforms();
+    log("TELEPORT " + (inside ? "into" : "outside") + " CraftTable " + pos + "; await physics trigger");
+};
+System.Func<bool> craftTriggerActive = delegate {
+    var interaction = UnityEngine.Object.FindFirstObjectByType<UIRangeDisplay>();
+    return interaction != null && craftZone != null &&
+        (CraftSpaceInteractionZone)typeof(UIRangeDisplay).GetField("activeZone", flags).GetValue(interaction) == craftZone &&
+        craftZone.PromptObject != null && craftZone.PromptObject.activeInHierarchy;
+};
+System.Action checkMasterySuppression = delegate {
+    var tutorial = UnityEngine.Object.FindFirstObjectByType<GearCraft.Scripts.Craft.CraftTutorialController>();
+    var root = tutorial == null ? null : (UnityEngine.GameObject)tutorial.GetType().GetField("tutorialRoot", flags).GetValue(tutorial);
+    check(tutorial != null && root != null && !root.activeInHierarchy, "mastery fixture suppresses auto tutorial/supply");
+};
+System.Action<bool, string> finish = delegate(bool passed, string message) {
+    if (finished) return; finished = true;
+    UnityEditor.EditorApplication.update -= tick;
+    UnityEngine.Application.logMessageReceived -= onRuntimeLog;
+    if (!passed) {
+        try { var ui = UnityEngine.Object.FindFirstObjectByType<UpgradeGridUI>(); if (ui != null) ui.CancelShopDrag(); }
+        catch (System.Exception error) { message += " Cleanup: " + error.Message; }
+    }
+    UnityEditor.SessionState.SetBool(prefix + "running", false);
+    UnityEditor.SessionState.SetBool(prefix + "done", true);
+    UnityEditor.SessionState.SetBool(prefix + "passed", passed);
+    UnityEditor.SessionState.SetInt(prefix + "assertions", assertions);
+    UnityEditor.SessionState.SetString(prefix + "result", message);
+    try { log((passed ? "COMPLETE " : "FAIL ") + message + "; assertions=" + assertions + " runtimeErrors=" + runtimeErrors +
+        "; Play retained, parent restores prefs/fixture state; no actual boss encounter tested"); } catch (System.Exception) { }
+};
+onRuntimeLog = delegate(string message, string stack, UnityEngine.LogType type) {
+    if (type != UnityEngine.LogType.Error && type != UnityEngine.LogType.Exception && type != UnityEngine.LogType.Assert) return;
+    runtimeErrors++; try { log("RUNTIME " + type + " " + message + "\n" + stack); } catch (System.Exception) { }
+};
+tick = delegate {
+    try {
+        if (UnityEditor.SessionState.GetBool(prefix + "stop", false)) throw new System.Exception("Parent requested stop");
+        if (!UnityEditor.EditorApplication.isPlaying || UnityEditor.EditorApplication.isPaused) throw new System.Exception("Play stopped/paused");
+        double now = UnityEditor.EditorApplication.timeSinceStartup;
+        if (now - started > 180.0) throw new System.Exception("180s Editor-clock deadline; phase=" + phase);
+        if (runtimeErrors > 0) throw new System.Exception("Runtime error recorded; see preceding log");
+        if (now < nextAt || lastFrame == UnityEngine.Time.frameCount) return;
+        lastFrame = UnityEngine.Time.frameCount; nextAt = now + 0.15;
+        UnityEditor.SessionState.SetInt(prefix + "phase", phase);
+        if (StatusManager.Instance != status || MaterialManager.Instance != materials) throw new System.Exception("Persistent managers changed");
+        string scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        var transition = UnityEngine.Object.FindFirstObjectByType<SceneTransitionManager>();
+        if (transition != null && transition.IsLoading) return;
+        if (scene == "CraftSpace" && (ArrivalMessagePresenter.IsMessagePlaying || ArrivalMessagePresenter.IsCameraPresentationPlaying)) return;
+        switch (phase) {
+            case 0:
+                status.ResetRunProgress(); materials.ClearAllMaterials();
+                if (StageCounter.Instance == null) {
+                    new UnityEngine.GameObject("UXDormTaskChecks_StageCounterFixture").AddComponent<StageCounter>();
+                    log("FIXTURE created persistent StageCounter test object; discard with Play");
+                }
+                StageCounter.Instance.StageCount = 2; status.bossKillCount = 0;
+                status.DormTasks.hasStartedFirstDay = true;
+                status.DormTasks.hasCrafted = false; status.DormTasks.hasUpgradedWeapon = false; status.DormTasks.hasEncounteredFirstBoss = false;
+                UnityEngine.PlayerPrefs.SetInt(CraftTutorialMetrics.CraftMasteryKey, 1);
+                UnityEngine.PlayerPrefs.SetInt(CraftTutorialMetrics.WeaponMasteryKey, 1); UnityEngine.PlayerPrefs.Save();
+                foreach (var cost in recipe.costs) if (cost != null) materials.AddMaterial(cost.type, cost.amount);
+                foreach (var cost in part.costs) if (cost != null) materials.AddMaterial(cost.type, cost.amount);
+                check(materialState() == "3,10,0,0,0,0", "fixture matches current GearCraft Gear10 and Damage+1 Scrap3 assets");
+                check(status.currentWeapon == recipe.requiredWeapon && !status.ownedWeapons.Contains(recipe.weaponResult), "initial Katana satisfies recipe and result unowned");
+                log("FIXTURE Stage2/firstDayStarted=true/boss0/noEncounter; no actual first day combat. Success flags false.");
+                SceneTransitionManager.LoadSceneWithTransition("CraftSpace"); phase = 1; break;
+            case 1:
+                if (scene != "CraftSpace") return;
+                inspectTasks("PENDING", false, false); capture("01-pending-tasks");
+                phase = 2; nextAt = now + 0.2; break;
+            case 2:
+                moveAtCraftTable(false); phase = 3; nextAt = now + 0.4; break;
+            case 3:
+                check(!craftTriggerActive(), "player outside CraftTable before entry");
+                moveAtCraftTable(true); phase = 4; nextAt = now + 0.4; break;
+            case 4: {
+                if (!craftTriggerActive()) return;
+                check(craftTriggerActive(), "actual CraftTable trigger and prompt registered");
+                var interaction = UnityEngine.Object.FindFirstObjectByType<UIRangeDisplay>();
+                check(!(bool)typeof(UIRangeDisplay).GetMethod("IsInputBlocked", flags).Invoke(interaction, null), "CraftTable action available");
+                typeof(UIRangeDisplay).GetMethod("ExecuteActiveAction", flags).Invoke(interaction, null);
+                log("ACTION registered CraftTable ExecuteActiveAction; no physical Space claim"); phase = 5; break;
+            }
+            case 5:
+                if (scene != "Craft") return;
+                craft = UnityEngine.Object.FindFirstObjectByType<CraftManager>();
+                if (craft == null || !craft.IsReadyForTutorial) return;
+                checkNoDormPanel(); checkMasterySuppression();
+                check(craft.SelectedRecipe == recipe && craft.CanCraft() && materialState() == "3,10,0,0,0,0", "initial GearCraft recipe selected and funded, no extra supplies");
+                check(!status.DormTasks.hasCrafted && !status.DormTasks.hasUpgradedWeapon, "both success flags false immediately before real craft");
+                submitButton(craft.craftButton); phase = 6; break;
+            case 6:
+                check(status.DormTasks.hasCrafted && !status.DormTasks.hasUpgradedWeapon && materialState() == "3,0,0,0,0,0",
+                    "real craft alone marks craft task and spends Gear10 exactly once");
+                check(status.ownedWeapons.Contains(recipe.weaponResult) && status.currentWeapon == recipe.weaponResult &&
+                    (recipe.additionalWeaponResult == null || status.ownedWeapons.Contains(recipe.additionalWeaponResult)), "actual crafted weapon(s) acquired/equipped");
+                phase = 7; break;
+            case 7:
+                if (craft.IsCrafting) return;
+                submit("UpgradeTabButton"); phase = 8; break;
+            case 8: {
+                checkNoDormPanel(); checkMasterySuppression();
+                var shop = UnityEngine.Object.FindFirstObjectByType<UpgradeShopManager>();
+                var grid = UpgradeGridManager.Instance;
+                check(shop != null && grid != null && grid.GridSize == 3 && grid.PlacedParts.Count == 0, "empty initial upgrade grid");
+                shop.EnsureLineupContains(part);
+                var scroll = shop.shopParent.GetComponentInParent<UnityEngine.UI.ScrollRect>();
+                check(scroll != null, "shop scroll available"); UnityEngine.Canvas.ForceUpdateCanvases();
+                scroll.StopMovement(); scroll.verticalNormalizedPosition = 1f; UnityEngine.Canvas.ForceUpdateCanvases();
+                damageBeforePlacement = status.bonusDamage;
+                log("STOCK FIXTURE EnsureLineupContains(Damage+1) at first row; no purchase/place or success flag assignment");
+                phase = 9; nextAt = now + 0.2; break;
+            }
+            case 9: {
+                var source = findActive("ShopItem_Damage+1"); check(source != null, "funded part visible in actual shop");
+                dragSource = source.GetComponent<UpgradeShopItemDragHandler>(); check(dragSource != null, "actual shop drag handler exists");
+                var tooltip = TooltipSystem.FindInstance(); if (tooltip != null) tooltip.Hide();
+                var events = UnityEngine.EventSystems.EventSystem.current;
+                var sourceCanvas = source.GetComponentInParent<UnityEngine.Canvas>();
+                var camera = sourceCanvas.renderMode == UnityEngine.RenderMode.ScreenSpaceOverlay ? null : sourceCanvas.worldCamera;
+                var rect = source.GetComponent<UnityEngine.RectTransform>();
+                dragData = new UnityEngine.EventSystems.PointerEventData(events);
+                dragData.button = UnityEngine.EventSystems.PointerEventData.InputButton.Left;
+                dragData.position = UnityEngine.RectTransformUtility.WorldToScreenPoint(camera, rect.TransformPoint(rect.rect.center));
+                var hits = new System.Collections.Generic.List<UnityEngine.EventSystems.RaycastResult>(); events.RaycastAll(dragData, hits);
+                check(hits.Count > 0 && UnityEngine.EventSystems.ExecuteEvents.GetEventHandler<UnityEngine.EventSystems.IBeginDragHandler>(hits[0].gameObject) == source,
+                    "pointer source raycast reaches actual Damage+1 drag handler");
+                dragData.pointerCurrentRaycast = hits[0]; dragData.pointerPressRaycast = hits[0];
+                dragData.pointerDrag = source; dragData.dragging = true;
+                UnityEngine.EventSystems.ExecuteEvents.Execute(source, dragData, UnityEngine.EventSystems.ExecuteEvents.beginDragHandler);
+                var ui = UpgradeGridManager.Instance.gridUI;
+                check((UpgradePartSO)typeof(UpgradeGridUI).GetField("draggingPart", flags).GetValue(ui) == part, "begin drag accepted funded part");
+                float size = (float)typeof(UpgradeGridUI).GetField("currentCellSize", flags).GetValue(ui);
+                float total = UpgradeGridManager.Instance.GridSize * (size + ui.cellSpacing) - ui.cellSpacing;
+                var local = new UnityEngine.Vector3(-total * 0.5f + size * 0.5f, total * 0.5f - size * 0.5f, 0f);
+                var canvas = ui.GetComponentInParent<UnityEngine.Canvas>();
+                var gridCamera = canvas.renderMode == UnityEngine.RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
+                dragTarget = UnityEngine.RectTransformUtility.WorldToScreenPoint(gridCamera, ui.gridParent.TransformPoint(local));
+                check(!status.DormTasks.hasUpgradedWeapon && materialState() == "3,0,0,0,0,0", "begin drag has not purchased or completed upgrade task");
+                log("BEGIN_DRAG raycast-confirmed source=" + pathOf(source.transform) + " target=" + dragTarget); phase = 10; break;
+            }
+            case 10:
+                dragData.position = dragTarget;
+                UnityEngine.EventSystems.ExecuteEvents.Execute(dragSource.gameObject, dragData, UnityEngine.EventSystems.ExecuteEvents.dragHandler);
+                log("DRAG to free cell0,0 using UGUI handler"); phase = 11; break;
+            case 11:
+                UnityEngine.EventSystems.ExecuteEvents.Execute(dragSource.gameObject, dragData, UnityEngine.EventSystems.ExecuteEvents.endDragHandler);
+                log("END_DRAG using UGUI handler; product performs purchase and placement"); phase = 12; break;
+            case 12: {
+                var grid = UpgradeGridManager.Instance;
+                check(grid.PlacedParts.Count == 1 && grid.PlacedParts[0].partData == part && grid.PlacedParts[0].gridX == 0 &&
+                    grid.PlacedParts[0].gridY == 0 && status.savedUpgradePartPlacements.Count == 1 &&
+                    status.savedUpgradePartPlacements[0].partData == part, "actual pointer placement saved Damage+1 at0,0");
+                check(status.DormTasks.hasCrafted && status.DormTasks.hasUpgradedWeapon && materialState() == "0,0,0,0,0,0" &&
+                    UnityEngine.Mathf.Abs(status.bonusDamage - damageBeforePlacement - 1f) < 0.001f, "real placement spends Scrap3 once, adds damage1 and completes upgrade task");
+                checkNoDormPanel(); submit("Canvas/UpgradePanel/Close"); phase = 13; break;
+            }
+            case 13:
+                if (scene != "CraftSpace") return;
+                check(materialState() == "0,0,0,0,0,0" && status.savedUpgradePartPlacements.Count == 1 &&
+                    status.ownedWeapons.Contains(recipe.weaponResult), "actual craft/upgrade outcomes survive Dorm return");
+                inspectTasks("ACHIEVED", true, false); capture("02-achieved-tasks");
+                phase = 14; nextAt = now + 0.2; break;
+            case 14:
+                // Explicit display-only fixture, AFTER the actual outcome screenshot frame.
+                status.DormTasks.hasEncounteredFirstBoss = true;
+                bossFixtureFrame = UnityEngine.Time.frameCount;
+                log("DISPLAY FIXTURE hasEncounteredFirstBoss=true; did NOT run StageFlowManager boss registration/spawn or combat");
+                phase = 15; nextAt = now + 0.2; break;
+            case 15:
+                if (UnityEngine.Time.frameCount <= bossFixtureFrame + 1) return;
+                inspectTasks("AFTER_BOSS_DISPLAY_FIXTURE", true, true); capture("03-defense-only-fixture");
+                phase = 16; nextAt = now + 0.2; break;
+            case 16:
+                finish(true, "three pending rows -> real craft/upgrade checked rows -> display-fixture single unchecked defense row"); break;
+        }
+    } catch (System.Exception error) { finish(false, error.ToString()); }
+};
+UnityEditor.SessionState.SetBool(prefix + "stop", false);
+UnityEditor.SessionState.SetBool(prefix + "running", true);
+UnityEditor.SessionState.SetBool(prefix + "done", false);
+UnityEditor.SessionState.SetBool(prefix + "passed", false);
+UnityEditor.SessionState.SetInt(prefix + "phase", 0);
+UnityEditor.SessionState.SetInt(prefix + "assertions", 0);
+UnityEditor.SessionState.SetString(prefix + "result", "running");
+UnityEngine.Application.logMessageReceived += onRuntimeLog;
+UnityEditor.EditorApplication.update += tick;
+return "Dorm task checks scheduled; 180s deadline, .stop=true cancels. Parent owns PNG validation, original preference restore and Play cleanup.";

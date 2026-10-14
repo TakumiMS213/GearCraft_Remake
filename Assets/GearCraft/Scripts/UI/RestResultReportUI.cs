@@ -7,6 +7,8 @@ using GearCraft.Scripts.Items;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
+using UnityEngine.Events;
 
 public class RestResultReportUI : MonoBehaviour
 {
@@ -19,6 +21,9 @@ public class RestResultReportUI : MonoBehaviour
     public CanvasGroup canvasGroup;
     public RectTransform rowsParent;
     public TMP_Text clickText;
+    public Button continueButton;
+
+    public bool IsShowing { get; private set; }
 
     [Header("Icons")]
     public Sprite scrapIcon;
@@ -32,36 +37,138 @@ public class RestResultReportUI : MonoBehaviour
     public TMP_FontAsset fontAsset;
 
     private Tween clickBlinkTween;
+    private Tween paperMoveTween;
+    private Tween canvasFadeTween;
+    private CancellationTokenSource presentationCancellation;
+    private readonly Dictionary<MaterialManager.MaterialType, TMP_Text> materialAmountTexts = new Dictionary<MaterialManager.MaterialType, TMP_Text>();
+    private readonly Dictionary<MaterialManager.MaterialType, int> displayedMaterialAmounts = new Dictionary<MaterialManager.MaterialType, int>();
+    private IReadOnlyDictionary<MaterialManager.MaterialType, int> displayedMaterialGains;
     private bool initialized;
     private Vector2 paperCenterPosition;
 
     public async UniTask ShowAsync(int defeatedEnemies, IReadOnlyDictionary<MaterialManager.MaterialType, int> materialGains, CancellationToken token)
     {
+        if (IsShowing) return;
+        token.ThrowIfCancellationRequested();
         EnsureInitialized();
-        BuildRows(defeatedEnemies, materialGains);
 
-        canvas.gameObject.SetActive(true);
-        canvasGroup.alpha = 1f;
-        paper.anchoredPosition = paperCenterPosition + new Vector2(0f, PaperHeight + 220f);
-        clickText.alpha = 0f;
+        EventSystem eventSystem = EventSystem.current;
+        GameObject previousSelection = eventSystem != null ? eventSystem.currentSelectedGameObject : null;
+        Navigation previousNavigation = continueButton.navigation;
+        bool previousInteractable = continueButton.interactable;
+        bool confirmed = false;
+        bool acceptingContinue = false;
+        UnityAction onContinue = () =>
+        {
+            if (!IsShowing || !acceptingContinue || confirmed ||
+                !continueButton.IsActive() || !continueButton.interactable || GearCraft.Gallery.GalleryNavigation.IsOpen)
+                return;
 
-        paper.DOAnchorPos(paperCenterPosition, 0.65f).SetEase(Ease.OutBack);
-        await UniTask.Delay(TimeSpan.FromSeconds(0.65f), cancellationToken: token);
+            confirmed = true;
+            acceptingContinue = false;
+            continueButton.interactable = false;
+            StageFlowManager.BlockPlayerInputForCurrentFrame();
+        };
+        var cancellation = CancellationTokenSource.CreateLinkedTokenSource(token, this.GetCancellationTokenOnDestroy());
+        presentationCancellation = cancellation;
+        IsShowing = true;
+        try
+        {
+            displayedMaterialGains = materialGains;
+            BuildRows(defeatedEnemies, materialGains);
+            continueButton.onClick.AddListener(onContinue);
+            continueButton.navigation = new Navigation
+            {
+                mode = Navigation.Mode.Explicit,
+                selectOnUp = continueButton,
+                selectOnDown = continueButton,
+                selectOnLeft = continueButton,
+                selectOnRight = continueButton,
+            };
+            continueButton.interactable = false;
+            canvas.gameObject.SetActive(true);
+            canvasGroup.alpha = 1f;
+            canvasGroup.interactable = true;
+            canvasGroup.blocksRaycasts = true;
+            if (eventSystem != null) eventSystem.SetSelectedGameObject(continueButton.gameObject);
+            paper.anchoredPosition = paperCenterPosition + new Vector2(0f, PaperHeight + 220f);
+            if (clickText != null) clickText.alpha = 0f;
 
-        await UniTask.Delay(TimeSpan.FromSeconds(0.15f), cancellationToken: token);
-        StartClickTextBlink();
+            paperMoveTween = paper.DOAnchorPos(paperCenterPosition, 0.65f).SetEase(Ease.OutBack).SetUpdate(true);
+            await UniTask.Delay(TimeSpan.FromSeconds(0.65f), ignoreTimeScale: true, cancellationToken: cancellation.Token);
+            await UniTask.Delay(TimeSpan.FromSeconds(0.15f), ignoreTimeScale: true, cancellationToken: cancellation.Token);
+            continueButton.interactable = true;
+            acceptingContinue = true;
+            if (eventSystem != null && !GearCraft.Gallery.GalleryNavigation.IsOpen)
+                eventSystem.SetSelectedGameObject(continueButton.gameObject);
+            StartClickTextBlink();
 
-        await UniTask.WaitUntil(() => !GearCraft.Gallery.GalleryNavigation.IsOpen
-            && (Input.GetMouseButtonDown(0) || Input.touchCount > 0), cancellationToken: token);
-        StopClickTextBlink();
-        canvasGroup.DOFade(0f, 0.25f);
-        await UniTask.Delay(TimeSpan.FromSeconds(0.25f), cancellationToken: token);
+            await UniTask.WaitUntil(() => confirmed, cancellationToken: cancellation.Token);
+            StopClickTextBlink();
+            canvasFadeTween = canvasGroup.DOFade(0f, 0.25f).SetUpdate(true);
+            await UniTask.Delay(TimeSpan.FromSeconds(0.25f), ignoreTimeScale: true, cancellationToken: cancellation.Token);
+        }
+        finally
+        {
+            acceptingContinue = false;
+            IsShowing = false;
+            displayedMaterialGains = null;
+            presentationCancellation = null;
+            StopClickTextBlink();
+            paperMoveTween?.Kill();
+            paperMoveTween = null;
+            canvasFadeTween?.Kill();
+            canvasFadeTween = null;
+            if (continueButton != null)
+            {
+                continueButton.onClick.RemoveListener(onContinue);
+                continueButton.navigation = previousNavigation;
+                continueButton.interactable = previousInteractable;
+            }
+            if (eventSystem != null && eventSystem == EventSystem.current &&
+                (eventSystem.currentSelectedGameObject == null ||
+                 continueButton != null && eventSystem.currentSelectedGameObject == continueButton.gameObject))
+            {
+                eventSystem.SetSelectedGameObject(previousSelection != null && previousSelection.activeInHierarchy ? previousSelection : null);
+            }
+            if (canvasGroup != null)
+            {
+                canvasGroup.interactable = false;
+                canvasGroup.blocksRaycasts = false;
+            }
+            if (canvas != null) canvas.gameObject.SetActive(false);
+            cancellation.Dispose();
+        }
+    }
 
-        canvas.gameObject.SetActive(false);
+    private void Update()
+    {
+        if (!IsShowing) return;
+        RefreshMaterialAmounts();
+        // Clicking the non-confirming background can clear EventSystem selection.
+        // Keep Submit available on the paper without taking focus from another overlay.
+        if (continueButton != null && continueButton.interactable &&
+            !GearCraft.Gallery.GalleryNavigation.IsOpen && EventSystem.current != null &&
+            EventSystem.current.currentSelectedGameObject == null)
+            EventSystem.current.SetSelectedGameObject(continueButton.gameObject);
+    }
+
+    private void RefreshMaterialAmounts()
+    {
+        foreach (var entry in materialAmountTexts)
+        {
+            int gained;
+            int amount = displayedMaterialGains != null && displayedMaterialGains.TryGetValue(entry.Key, out gained) ? gained : 0;
+            int displayed;
+            if (displayedMaterialAmounts.TryGetValue(entry.Key, out displayed) && displayed == amount) continue;
+            if (entry.Value != null) entry.Value.text = "x" + amount;
+            displayedMaterialAmounts[entry.Key] = amount;
+        }
     }
 
     private void OnDisable()
     {
+        presentationCancellation?.Cancel();
         StopClickTextBlink();
     }
 
@@ -75,6 +182,7 @@ public class RestResultReportUI : MonoBehaviour
         ResolveAssets();
         EnsureCanvas();
         EnsurePaper();
+        EnsureContinueButton();
         paperCenterPosition = paper != null ? paper.anchoredPosition : Vector2.zero;
         initialized = true;
         canvas.gameObject.SetActive(false);
@@ -137,7 +245,7 @@ public class RestResultReportUI : MonoBehaviour
             return;
         }
 
-        GameObject canvasObject = new GameObject("RestResultReportCanvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster), typeof(CanvasGroup));
+        GameObject canvasObject = new GameObject("RestResultReportCanvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster), typeof(CanvasGroup), typeof(Image));
         canvasObject.transform.SetParent(transform, false);
         canvas = canvasObject.GetComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
@@ -149,6 +257,23 @@ public class RestResultReportUI : MonoBehaviour
         scaler.matchWidthOrHeight = 0.5f;
 
         canvasGroup = canvasObject.GetComponent<CanvasGroup>();
+        Image blocker = canvasObject.GetComponent<Image>();
+        blocker.color = Color.clear;
+        blocker.raycastTarget = true;
+    }
+
+    private void EnsureContinueButton()
+    {
+        if (continueButton == null)
+        {
+            continueButton = paper.GetComponent<Button>();
+            if (continueButton == null) continueButton = paper.gameObject.AddComponent<Button>();
+        }
+        if (continueButton.targetGraphic == null)
+            continueButton.targetGraphic = paper.GetComponent<Image>();
+        if (continueButton.targetGraphic != null)
+            continueButton.targetGraphic.raycastTarget = true;
+        if (clickText != null) clickText.text = "クリック / Enterで宿舎へ帰還";
     }
 
     private void EnsurePaper()
@@ -225,8 +350,11 @@ public class RestResultReportUI : MonoBehaviour
 
     private void BuildRows(int defeatedEnemies, IReadOnlyDictionary<MaterialManager.MaterialType, int> materialGains)
     {
+        materialAmountTexts.Clear();
+        displayedMaterialAmounts.Clear();
         for (int i = rowsParent.childCount - 1; i >= 0; i--)
         {
+            rowsParent.GetChild(i).gameObject.SetActive(false);
             Destroy(rowsParent.GetChild(i).gameObject);
         }
 
@@ -246,11 +374,12 @@ public class RestResultReportUI : MonoBehaviour
         {
             MaterialManager.MaterialType type = types[i];
             int amount = materialGains != null && materialGains.TryGetValue(type, out int gained) ? gained : 0;
-            CreateRow(GetMaterialIcon(type), FormatMaterialName(type), amount, Color.white);
+            materialAmountTexts[type] = CreateRow(GetMaterialIcon(type), FormatMaterialName(type), amount, Color.white);
+            displayedMaterialAmounts[type] = amount;
         }
     }
 
-    private void CreateRow(Sprite iconSprite, string label, int amount, Color fallbackIconColor)
+    private TMP_Text CreateRow(Sprite iconSprite, string label, int amount, Color fallbackIconColor)
     {
         GameObject rowObject = new GameObject(label + "Row", typeof(RectTransform), typeof(HorizontalLayoutGroup), typeof(LayoutElement));
         rowObject.transform.SetParent(rowsParent, false);
@@ -284,6 +413,7 @@ public class RestResultReportUI : MonoBehaviour
         LayoutElement amountElement = amountText.gameObject.AddComponent<LayoutElement>();
         amountElement.preferredWidth = 240f;
         amountElement.preferredHeight = 70f;
+        return amountText;
     }
 
     private TMP_Text CreateText(string name, Transform parent, string value, float fontSize, Color color, TextAlignmentOptions alignment)
@@ -367,7 +497,8 @@ public class RestResultReportUI : MonoBehaviour
         clickText.alpha = 1f;
         clickBlinkTween = clickText.DOFade(0.28f, 0.65f)
             .SetEase(Ease.InOutSine)
-            .SetLoops(-1, LoopType.Yoyo);
+            .SetLoops(-1, LoopType.Yoyo)
+            .SetUpdate(true);
     }
 
     private void StopClickTextBlink()

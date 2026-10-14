@@ -1,0 +1,150 @@
+Full HP medical: zone=World_Medical HP=100 used=False
+Menu food: timeScale=0 before=0 after=3 used=True
+Used gate repair: GATE=100 used=True
+Repair fixture GATE40 -> 90 SAN=100 used=True
+HP fixture 55 -> 1054 used=True
+STEP 0
+PASS medical range trigger
+PASS full HP reason without consumption
+STEP 1
+PASS reason expires after four seconds
+PASS medical 55 to 100, shared slot consumed
+medical HP=100
+STEP 2
+STEP 3
+PASS food range trigger
+PASS menu opened before pause Update
+PASS menu opening frame blocks facility
+STEP 4
+PASS menu pauses game
+PASS paused menu blocks facility
+STEP 5
+PASS menu closing frame blocks facility
+STEP 6
+PASS menu returns to game
+PASS normal food use adds three once
+STEP 7
+STEP 8
+PASS repair range trigger
+PASS used shared slot gives reason, no repair
+STEP 9
+PASS repair 40 to 90 with correct feedback
+STEP 10
+PASS repair text fits scene-authored panel
+STEP 11
+PASS movement dismisses feedback
+STEP 12
+PASS used slot takes priority over full HP
+STEP 13
+PASS opening menu dismisses feedback
+STEP 14
+FACILITY RECHECK COMPLETE
+ROUNDTRIP STEP 0
+PASS scene CraftSpace
+PASS same run status/material instances
+PASS HP/gate/shared slot retained
+PASS other materials retained
+PASS scrap fixture 12
+ROUNDTRIP STEP 1
+PASS scene Craft
+PASS same run status/material instances
+PASS HP/gate/shared slot retained
+PASS other materials retained
+PASS craft entry no extra supply
+ROUNDTRIP FAILED 1 System.Exception: UI object not found: UpgradeButton
+  at MCPDynamicCode+<Execute>c__AnonStorey0.<>m__1 (System.String path) [0x00072] in <ca9a5a68ce48471f86dde4ef03063884>:0 
+  at MCPDynamicCode+<Execute>c__AnonStorey0.<>m__9 (System.String n) [0x00000] in <ca9a5a68ce48471f86dde4ef03063884>:0 
+  at MCPDynamicCode+<Execute>c__AnonStorey0.<>m__D () [0x0003a] in <ca9a5a68ce48471f86dde4ef03063884>:0 
+  at MCPDynamicCode+<Execute>c__AnonStorey0.<>m__1A () [0x00042] in <ca9a5a68ce48471f86dde4ef03063884>:0 
+HARNESS FIX: actual tab is UpgradeTabButton; restarted from dorm unchanged state
+ROUNDTRIP STEP 0
+PASS scene CraftSpace
+PASS same run status/material instances
+PASS HP/gate/shared slot retained
+PASS other materials retained
+PASS scrap fixture 12
+ROUNDTRIP STEP 1
+PASS scene Craft
+PASS same run status/material instances
+PASS HP/gate/shared slot retained
+PASS other materials retained
+PASS craft entry no extra supply
+PASS active UI UpgradeTabButton
+ROUNDTRIP STEP 2
+PASS empty grid before placement
+PASS Damage+1 purchase/place rotated at 1,1
+PASS single cost and damage applied
+ROUNDTRIP STEP 3
+PASS active UI Canvas/UpgradePanel/Close
+ROUNDTRIP STEP 4
+PASS scene CraftSpace
+PASS same run status/material instances
+PASS HP/gate/shared slot retained
+PASS other materials retained
+PASS dorm local limit reset without shared reuse or lost upgrade
+ROUNDTRIP STEP 5
+PASS same day return cannot reuse medical
+ROUNDTRIP STEP 6
+ROUNDTRIP STEP 7
+ROUNDTRIP STEP 8
+PASS scene Craft
+PASS same run status/material instances
+PASS HP/gate/shared slot retained
+PASS other materials retained
+PASS active UI UpgradeTabButton
+ROUNDTRIP STEP 9
+PASS new grid restores one saved part
+PASS part coordinates rotation retained
+PASS no duplicate cost or effect on reentry
+ROUNDTRIP STEP 10
+PASS active UI Canvas/UpgradePanel/Close
+ROUNDTRIP STEP 11
+PASS scene CraftSpace
+PASS same run status/material instances
+PASS HP/gate/shared slot retained
+PASS other materials retained
+ROUNDTRIP STEP 12
+ROUNDTRIP STEP 13
+PASS scene Main
+PASS same run reaches Main
+PASS Main PlayerController.Start renews facility slot
+PASS material and upgrade retained into Main
+ROUNDTRIP RECHECK COMPLETE
+PASS one stable EventSystem
+PASS one UI input module
+PASS craft initially visible
+PASS one stable EventSystem
+PASS one UI input module
+PASS upgrade tab Submit works
+PASS one stable EventSystem
+PASS one UI input module
+PASS craft tab Submit works
+PASS one stable EventSystem
+PASS one UI input module
+PASS tutorial confirmation receives focus
+PASS one stable EventSystem
+PASS one UI input module
+EVENTSYSTEM FAILED 4 System.Exception: confirmation Cancel restores source
+  at MCPDynamicCode+<Execute>c__AnonStorey0.<>m__5 (System.Boolean ok, System.String s) [0x00006] in <b587353a98b84b3b85f0eb2e0cd005af>:0 
+  at MCPDynamicCode+<Execute>c__AnonStorey0.<>m__8 () [0x001b7] in <b587353a98b84b3b85f0eb2e0cd005af>:0 
+HARNESS FIX: Submit now selects its target before activation, matching selected keyboard input; prior direct Submit did not select question before opening confirmation.
+PASS one stable EventSystem
+PASS one UI input module
+PASS craft initially visible
+PASS one stable EventSystem
+PASS one UI input module
+PASS upgrade tab Submit works
+PASS one stable EventSystem
+PASS one UI input module
+PASS craft tab Submit works
+PASS one stable EventSystem
+PASS one UI input module
+PASS tutorial confirmation receives focus
+PASS one stable EventSystem
+PASS one UI input module
+PASS confirmation Cancel restores source
+PASS one stable EventSystem
+PASS one UI input module
+SINGLE EVENTSYSTEM RECHECK COMPLETE
+8 original PlayerPrefs match after Play stop; scene=Title play=False backup=False
+8 original PlayerPrefs match after Play stop; scene=Title play=False backup=False

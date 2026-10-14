@@ -1,0 +1,4 @@
+CLICK BonusCard_Scrap_2(Clone) @ (1600.00, 540.00)
+BACKGROUND PRESS via matching InputSystemUIInputModule deselection + UGUI pointer events: RewardInputBlocker
+BACKGROUND PRESS via matching InputSystemUIInputModule deselection + UGUI pointer events: ReportInputBlocker
+Report Submit twice (duplicate guard)

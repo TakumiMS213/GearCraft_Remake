@@ -1,0 +1,7 @@
+Synthetic InputSystem keyboard; not OS/physical input.
+PERFORMED Cancel control=/UXGalleryReturnKeyboard/escape scene=Gallery
+PERFORMED Cancel control=/UXGalleryReturnKeyboard/escape scene=Gallery
+keyboard pressed=False scene=Gallery
+FINAL scene=Gallery open=True
+Cancel event handled=False selected=Entry_0 scene=Gallery
+Return Submit result scene=Title play=True scale=1 selected=GalleryIcon

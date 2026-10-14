@@ -1,0 +1,32 @@
+if(UnityEditor.EditorApplication.isPlaying || UnityEditor.BuildPipeline.isBuildingPlayer)throw new System.Exception("Editor must be idle");
+var original=System.IO.File.ReadAllLines("/tmp/gearcraft-uxstandalone-buildsettings-backup.txt").Select(s=>System.Text.Encoding.UTF8.GetString(System.Convert.FromBase64String(s))).ToArray();
+var named=UnityEditor.Build.NamedBuildTarget.Standalone;
+if(original.Length!=3 || UnityEditor.PlayerSettings.companyName!=original[0] || UnityEditor.PlayerSettings.productName!=original[1] || UnityEditor.PlayerSettings.GetApplicationIdentifier(named)!=original[2])throw new System.Exception("Build identity changed since backup");
+var folder="QA/UXReview20261013-VerificationReady/";
+var output=folder+"Build/GearCraftUXDisplayProbe.app";
+System.IO.Directory.CreateDirectory(folder+"Build");
+UnityEditor.PlayerSettings.companyName="GearCraft_QA";
+UnityEditor.PlayerSettings.productName="GearCraft_UXReadyProbe_20261013";
+UnityEditor.PlayerSettings.SetApplicationIdentifier(named,"com.gearcraft.qa.uxready20261013");
+string jobId=MCPForUnity.Editor.Tools.Build.BuildJobStore.CreateJobId();
+var job=new MCPForUnity.Editor.Tools.Build.BuildJob(jobId,UnityEditor.BuildTarget.StandaloneOSX,output);
+var options=MCPForUnity.Editor.Tools.Build.BuildRunner.CreateBuildOptions(UnityEditor.BuildTarget.StandaloneOSX,output,null,UnityEditor.BuildOptions.Development|UnityEditor.BuildOptions.CompressWithLz4|UnityEditor.BuildOptions.DetailedBuildReport,(int)UnityEditor.StandaloneBuildSubtarget.Player);
+options.extraScriptingDefines=new[]{"GEARCRAFT_UX_DISPLAY_PROBE"};
+System.IO.File.WriteAllText(folder+"build-job.txt",jobId+"\n");
+UnityEditor.SessionState.SetBool("UXVerificationReady20261013.buildWatcher",true);
+UnityEditor.EditorApplication.CallbackFunction watcher=null;
+watcher=()=>{
+ if(job.State==MCPForUnity.Editor.Tools.Build.BuildJobState.Pending || job.State==MCPForUnity.Editor.Tools.Build.BuildJobState.Building)return;
+ UnityEditor.EditorApplication.update-=watcher;
+ UnityEditor.SessionState.SetBool("UXVerificationReady20261013.buildWatcher",false);
+ try{
+  System.IO.File.WriteAllText(folder+"build-result.json",Newtonsoft.Json.JsonConvert.SerializeObject(job.ToStatusResponse(),Newtonsoft.Json.Formatting.Indented));
+  UnityEditor.PlayerSettings.companyName=original[0];UnityEditor.PlayerSettings.productName=original[1];UnityEditor.PlayerSettings.SetApplicationIdentifier(named,original[2]);
+  bool match=UnityEditor.PlayerSettings.companyName==original[0]&&UnityEditor.PlayerSettings.productName==original[1]&&UnityEditor.PlayerSettings.GetApplicationIdentifier(named)==original[2];
+  UnityEditor.SessionState.SetBool("UXVerificationReady20261013.settingsActive",!match);
+  System.IO.File.AppendAllText(folder+"observations.txt","Automatic post-build identity restore match="+match+"\n");
+ }catch(System.Exception ex){System.IO.File.AppendAllText(folder+"observations.txt","Post-build restore error: "+ex+"\n");}
+};
+UnityEditor.EditorApplication.update+=watcher;
+MCPForUnity.Editor.Tools.Build.BuildRunner.ScheduleBuild(job,options);
+return new{job_id=jobId,output=output,fixtureDefine="GEARCRAFT_UX_DISPLAY_PROBE",autoRestoreIdentity=true};

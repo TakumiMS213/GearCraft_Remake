@@ -1,0 +1,10 @@
+{
+  "compiler": "Unity bundled Roslyn / .NET runtime",
+  "responseSource": "Library/Bee/artifacts/200b0aE.dag/Assembly-CSharp.rsp",
+  "outputIsolatedInQA": true,
+  "exitCode": 0,
+  "errors": [],
+  "warningCount": 7,
+  "sourceCount": 143,
+  "doesNotValidateUnityRuntimeOrSceneImport": true
+}

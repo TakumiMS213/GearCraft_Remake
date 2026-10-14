@@ -1,0 +1,116 @@
+--- Craft.unity.before
++++ Craft.unity.after
+@@ -358,9 +358,7 @@
+   - component: {fileID: 60426753}
+   - component: {fileID: 60426754}
+   - component: {fileID: 60426755}
+-  - component: {fileID: 60426756}
+   - component: {fileID: 60426759}
+-  - component: {fileID: 60426760}
+   m_Layer: 0
+   m_Name: CraftManagerObject
+   m_TagString: Untagged
+@@ -680,7 +678,7 @@
+   m_CorrespondingSourceObject: {fileID: 0}
+   m_PrefabInstance: {fileID: 0}
+   m_PrefabAsset: {fileID: 0}
+-  m_GameObject: {fileID: 60426749}
++  m_GameObject: {fileID: 2046130010}
+   m_Enabled: 1
+   m_EditorHideFlags: 0
+   m_Script: {fileID: 11500000, guid: ed31c2b916a67db4ba1a4990fdf2327a, type: 3}
+@@ -721,7 +719,7 @@
+   m_CorrespondingSourceObject: {fileID: 0}
+   m_PrefabInstance: {fileID: 0}
+   m_PrefabAsset: {fileID: 0}
+-  m_GameObject: {fileID: 60426749}
++  m_GameObject: {fileID: 2046130010}
+   m_Enabled: 1
+   m_EditorHideFlags: 0
+   m_Script: {fileID: 11500000, guid: b4feb647586cfe146ba885899e38d3d4, type: 3}
+@@ -1611,18 +1609,6 @@
+   m_OnClick:
+     m_PersistentCalls:
+       m_Calls:
+-      - m_Target: {fileID: 60426756}
+-        m_TargetAssemblyTypeName: SceneTransitionManager, Assembly-CSharp
+-        m_MethodName: LoadScene
+-        m_Mode: 5
+-        m_Arguments:
+-          m_ObjectArgument: {fileID: 0}
+-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+-          m_IntArgument: 0
+-          m_FloatArgument: 0
+-          m_StringArgument: CraftSpace
+-          m_BoolArgument: 0
+-        m_CallState: 2
+       - m_Target: {fileID: 60426760}
+         m_TargetAssemblyTypeName: SoundButton, Assembly-CSharp
+         m_MethodName: PlayClickSound
+@@ -4329,18 +4315,6 @@
+   m_OnClick:
+     m_PersistentCalls:
+       m_Calls:
+-      - m_Target: {fileID: 60426756}
+-        m_TargetAssemblyTypeName: SceneTransitionManager, Assembly-CSharp
+-        m_MethodName: LoadScene
+-        m_Mode: 5
+-        m_Arguments:
+-          m_ObjectArgument: {fileID: 0}
+-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+-          m_IntArgument: 0
+-          m_FloatArgument: 0
+-          m_StringArgument: CraftSpace
+-          m_BoolArgument: 0
+-        m_CallState: 2
+       - m_Target: {fileID: 60426760}
+         m_TargetAssemblyTypeName: SoundButton, Assembly-CSharp
+         m_MethodName: PlayClickSound
+@@ -6508,6 +6482,7 @@
+   m_Children:
+   - {fileID: 242347752}
+   - {fileID: 2074063041}
++  - {fileID: 2046130011}
+   m_Father: {fileID: 0}
+   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+ --- !u!114 &1063018389
+@@ -12875,6 +12850,39 @@
+   m_PrefabAsset: {fileID: 0}
+   m_GameObject: {fileID: 2133878464}
+   m_CullTransparentMesh: 1
++--- !u!1 &2046130010
++GameObject:
++  m_ObjectHideFlags: 0
++  m_CorrespondingSourceObject: {fileID: 0}
++  m_PrefabInstance: {fileID: 0}
++  m_PrefabAsset: {fileID: 0}
++  serializedVersion: 6
++  m_Component:
++  - component: {fileID: 2046130011}
++  - component: {fileID: 60426756}
++  - component: {fileID: 60426760}
++  m_Layer: 0
++  m_Name: SceneActions
++  m_TagString: Untagged
++  m_Icon: {fileID: 0}
++  m_NavMeshLayer: 0
++  m_StaticEditorFlags: 0
++  m_IsActive: 1
++--- !u!4 &2046130011
++Transform:
++  m_ObjectHideFlags: 0
++  m_CorrespondingSourceObject: {fileID: 0}
++  m_PrefabInstance: {fileID: 0}
++  m_PrefabAsset: {fileID: 0}
++  m_GameObject: {fileID: 2046130010}
++  serializedVersion: 2
++  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
++  m_LocalPosition: {x: 0, y: 0, z: 0}
++  m_LocalScale: {x: 1, y: 1, z: 1}
++  m_ConstrainProportionsScale: 0
++  m_Children: []
++  m_Father: {fileID: 1063018388}
++  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+ --- !u!1660057539 &9223372036854775807
+ SceneRoots:
+   m_ObjectHideFlags: 0

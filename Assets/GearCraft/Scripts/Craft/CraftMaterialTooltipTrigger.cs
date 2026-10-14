@@ -12,6 +12,11 @@ namespace GearCraft.Scripts.Craft
             materialType = type;
         }
 
+        private void OnEnable()
+        {
+            MaterialManager.MaterialsChanged += RefreshVisibleTooltip;
+        }
+
         public void OnPointerEnter(PointerEventData eventData)
         {
             TooltipSystem tooltipSystem = TooltipSystem.FindInstance();
@@ -30,7 +35,18 @@ namespace GearCraft.Scripts.Craft
 
         private void OnDisable()
         {
+            MaterialManager.MaterialsChanged -= RefreshVisibleTooltip;
             HideTooltip();
+        }
+
+        private void RefreshVisibleTooltip()
+        {
+            TooltipSystem tooltipSystem = TooltipSystem.FindInstance();
+            RectTransform anchor = transform as RectTransform;
+            if (tooltipSystem != null && tooltipSystem.IsShowingFor(anchor))
+            {
+                tooltipSystem.Show(BuildTooltipText(), anchor);
+            }
         }
 
         private string BuildTooltipText()
@@ -39,10 +55,10 @@ namespace GearCraft.Scripts.Craft
             return $"{GetDisplayName(materialType)}\n入手方法: {GetDropMethod(materialType)}\n現在の個数: {current}";
         }
 
-        private static void HideTooltip()
+        private void HideTooltip()
         {
             TooltipSystem tooltipSystem = TooltipSystem.FindInstance();
-            if (tooltipSystem != null)
+            if (tooltipSystem != null && tooltipSystem.IsShowingFor(transform as RectTransform))
             {
                 tooltipSystem.Hide();
             }

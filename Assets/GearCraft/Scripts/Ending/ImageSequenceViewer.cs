@@ -2,6 +2,8 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using DG.Tweening;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
+using TMPro;
 
 public class ImageSequenceViewer : MonoBehaviour
 {
@@ -28,9 +30,23 @@ public class ImageSequenceViewer : MonoBehaviour
     [SerializeField] private GameObject galleryUnlockNotice;
     private bool showingGalleryUnlockNotice;
     private float noticeReadyTime;
+    private int lastAdvanceFrame = -1;
+
+    [Header("Advance Controls")]
+    [SerializeField] private Button advanceButton;
+    [SerializeField] private Button galleryNoticeButton;
+    [SerializeField] private TMP_Text advanceHint;
+    [SerializeField] private TMP_Text galleryNoticeHint;
+
+    private bool IsInputBlocked => isTransitioning ||
+        (scenetransitionManager != null && scenetransitionManager.IsLoading);
 
     void Start()
     {
+        if (scenetransitionManager == null)
+            scenetransitionManager = FindFirstObjectByType<SceneTransitionManager>();
+        ConfigureAdvanceButton(advanceButton);
+        ConfigureAdvanceButton(galleryNoticeButton);
         if (galleryUnlockNotice != null) galleryUnlockNotice.SetActive(false);
         if (scoreManager != null)
         {
@@ -57,39 +73,101 @@ public class ImageSequenceViewer : MonoBehaviour
                 if (img != null) img.SetActive(false);
             }
         }
+        RefreshAdvanceControls();
     }
 
     void Update()
     {
-        if (isTransitioning) return;
+        RefreshAdvanceControls();
+    }
+
+    public void Advance()
+    {
+        if (!isActiveAndEnabled || IsInputBlocked || lastAdvanceFrame == Time.frameCount) return;
+        if (showingGalleryUnlockNotice && Time.unscaledTime < noticeReadyTime) return;
+        lastAdvanceFrame = Time.frameCount;
+
         if (showingGalleryUnlockNotice)
         {
-            // スコアを送ったクリックや連打で、解放案内を読み飛ばさない。
-            if (Time.unscaledTime >= noticeReadyTime && Input.GetMouseButtonDown(0))
-                ReturnToTitle();
-            return;
+            ReturnToTitle();
         }
-        // 画面タップ or 左クリック
-        if (Input.GetMouseButtonDown(0))
+        else if (currentTween != null && currentTween.IsActive())
         {
-            // フェード中なら即座に完了させて次へ
-            if (currentTween != null && currentTween.IsActive())
-            {
-                currentTween.Complete();
-                // Complete() の直後は既に ShowNextImage() のコールバックが実行されている可能性があるため
-                // ここでは何もしない（コールバック内で処理される）
-            }
-            else
-            {
-                // フェード中でなければ次の画像を表示開始
-                ShowNextImage();
-            }
+            // Complete the current fade only; the next input advances the sequence.
+            currentTween.Complete();
+            currentTween = null;
+        }
+        else
+        {
+            ShowNextImage();
+        }
+        RefreshAdvanceControls();
+    }
+
+    private void ConfigureAdvanceButton(Button button)
+    {
+        if (button == null) return;
+        button.onClick.RemoveListener(Advance);
+        button.onClick.AddListener(Advance);
+        button.navigation = new Navigation
+        {
+            mode = Navigation.Mode.Explicit,
+            selectOnUp = button,
+            selectOnDown = button,
+            selectOnLeft = button,
+            selectOnRight = button,
+        };
+    }
+
+    private void RefreshAdvanceControls()
+    {
+        bool blocked = IsInputBlocked;
+        if (advanceButton != null)
+        {
+            bool visible = !showingGalleryUnlockNotice;
+            if (advanceButton.gameObject.activeSelf != visible)
+                advanceButton.gameObject.SetActive(visible);
+            advanceButton.interactable = visible && !blocked;
+        }
+        if (galleryNoticeButton != null)
+            galleryNoticeButton.interactable = showingGalleryUnlockNotice && !blocked && Time.unscaledTime >= noticeReadyTime;
+
+        if (advanceHint != null)
+        {
+            bool finalImage = images != null && images.Length > 0 && currentIndex == images.Length - 1;
+            bool pendingNotice = galleryUnlockNotice != null && endingManager != null && endingManager.HasPendingGalleryUnlockNotice;
+            bool fading = currentTween != null && currentTween.IsActive();
+            advanceHint.text = fading ? "クリック / Enterで表示を完了"
+                : !finalImage ? "クリック / Enterで次へ"
+                : pendingNotice ? "クリック / Enterで続ける" : "クリック / Enterでタイトルへ";
+        }
+        if (galleryNoticeHint != null)
+            galleryNoticeHint.text = "クリック / Enterでタイトルへ";
+
+        Button activeButton = showingGalleryUnlockNotice ? galleryNoticeButton : advanceButton;
+        if (!blocked && activeButton != null && activeButton.gameObject.activeInHierarchy && EventSystem.current != null &&
+            EventSystem.current.currentSelectedGameObject != activeButton.gameObject)
+            EventSystem.current.SetSelectedGameObject(activeButton.gameObject);
+    }
+
+    private void OnDestroy()
+    {
+        currentTween?.Kill();
+        currentTween = null;
+        if (advanceButton != null) advanceButton.onClick.RemoveListener(Advance);
+        if (galleryNoticeButton != null) galleryNoticeButton.onClick.RemoveListener(Advance);
+        if (EventSystem.current != null)
+        {
+            GameObject selected = EventSystem.current.currentSelectedGameObject;
+            if (advanceButton != null && selected == advanceButton.gameObject ||
+                galleryNoticeButton != null && selected == galleryNoticeButton.gameObject)
+                EventSystem.current.SetSelectedGameObject(null);
         }
     }
 
     private void ShowNextImage()
     {
-        if (isTransitioning || showingGalleryUnlockNotice) return;
+        if (IsInputBlocked || showingGalleryUnlockNotice) return;
         // 次へ
         currentIndex++;
 
@@ -103,6 +181,7 @@ public class ImageSequenceViewer : MonoBehaviour
                 galleryUnlockNotice.SetActive(true);
                 showingGalleryUnlockNotice = true;
                 noticeReadyTime = Time.unscaledTime + 0.5f;
+                RefreshAdvanceControls();
                 return;
             }
             ReturnToTitle();
@@ -165,25 +244,14 @@ public class ImageSequenceViewer : MonoBehaviour
 
     private void ReturnToTitle()
     {
-        if (isTransitioning) return;
+        if (IsInputBlocked) return;
         isTransitioning = true;
-        var status = StatusManager.Instance;
-        if (status != null)
-        {
-            status.HP = 100;
-            status.STR = 0;
-            status.ACC = 0;
-            status.GATE = 1000;
-            status.selectWeapon = 0;
-            status.module_scrap = false;
-            status.module_repair = false;
-            status.module_barrier = false;
-            status.punkDrive = false;
-            status.craftWeaponDamagebuff = 0;
-            status.killAllEnemies = true;
-            status.UseCraftSpacebuff = false;
-        }
-        if (StageCounter.Instance != null) StageCounter.Instance.StageCount = 0;
+        RefreshAdvanceControls();
+        // A new run starts from the same state as returning through the pause menu.
+        // Gallery discoveries and tutorial mastery are stored separately and retained.
+        StoryPlaybackRequest.ClearRequest();
+        StatusManager.Instance?.ResetRunProgress();
+        if (StageCounter.Instance != null) StageCounter.Instance.StageCount = 1;
         if (MaterialManager.Instance != null) MaterialManager.Instance.ClearAllMaterials();
         if (scenetransitionManager != null) scenetransitionManager.LoadScene("Title");
         else SceneTransitionManager.LoadSceneWithTransition("Title");

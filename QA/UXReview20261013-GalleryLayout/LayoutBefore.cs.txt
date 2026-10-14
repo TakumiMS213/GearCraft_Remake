@@ -1,0 +1,43 @@
+const string folder="QA/UXReview20261013-GalleryLayout/";
+const string prefix="UXGalleryLayout20261013.";
+if(UnityEditor.SessionState.GetBool(prefix+"layoutRunning",false))throw new System.Exception("Already running");
+var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.NonPublic;
+var asm=typeof(UnityEditor.Editor).Assembly;var type=asm.GetType("UnityEditor.GameView");
+var view=Resources.FindObjectsOfTypeAll<UnityEditor.EditorWindow>().First(w=>w.GetType()==type);view.Focus();
+var sizesType=asm.GetType("UnityEditor.GameViewSizes");var sizes=typeof(UnityEditor.ScriptableSingleton<>).MakeGenericType(sizesType).GetProperty("instance",flags).GetValue(null,null);
+var group=sizesType.GetProperty("currentGroup",flags).GetValue(sizes,null);
+var labels=(string[])group.GetType().GetMethod("GetDisplayTexts",flags).Invoke(group,null);
+int[] sizeIndices={3,System.Array.FindIndex(labels,s=>s.StartsWith("UXGalleryLayout0")),System.Array.FindIndex(labels,s=>s.StartsWith("UXGalleryLayout1")),System.Array.FindIndex(labels,s=>s.StartsWith("UXGalleryLayout2")),System.Array.FindIndex(labels,s=>s.StartsWith("UXGalleryLayout3"))};
+var gallery=UnityEngine.Object.FindFirstObjectByType<GearCraft.Gallery.GalleryController>();
+var entries=UnityEditor.AssetDatabase.LoadAssetAtPath<GearCraft.Gallery.GalleryCatalogSO>("Assets/GearCraft/ScriptableObject/Gallery/GalleryCatalog.asset").GetOrderedEntries();
+var rows=UnityEngine.Object.FindObjectsByType<GearCraft.Gallery.GalleryListButton>(FindObjectsSortMode.None).OrderBy(b=>int.Parse(b.name.Substring(6))).ToArray();
+var scroll=UnityEngine.Object.FindFirstObjectByType<UnityEngine.UI.ScrollRect>();
+string[] fields={"title","subtitle","designation","description","caption"};
+var texts=fields.Select(n=>(TMPro.TMP_Text)typeof(GearCraft.Gallery.GalleryController).GetField(n,flags).GetValue(gallery)).ToArray();
+int sizeIndex=0,rowIndex=0,phase=0,failures=0,observations=0;double start=UnityEditor.EditorApplication.timeSinceStartup,next=start;
+string path=folder+"layout-before.txt";
+System.IO.File.WriteAllText(path,"GameView layout robustness, preview all entries, not build display support/human reading test.\n");
+System.Action<string> log=s=>System.IO.File.AppendAllText(path,s+"\n");
+UnityEditor.EditorApplication.CallbackFunction tick=null;
+System.Action<bool,string> finish=(ok,s)=>{UnityEditor.EditorApplication.update-=tick;UnityEditor.SessionState.SetBool(prefix+"layoutRunning",false);log((ok?"COMPLETE ":"FAILED ")+s+" observations="+observations+" overflowOrBounds="+failures);};
+UnityEditor.SessionState.SetBool(prefix+"layoutRunning",true);
+tick=()=>{try{
+ double now=UnityEditor.EditorApplication.timeSinceStartup;if(now-start>45)throw new System.Exception("45sec deadline");if(now<next)return;next=now+.06;
+ if(phase==0){type.GetProperty("selectedSizeIndex",flags).SetValue(view,sizeIndices[sizeIndex],null);view.Repaint();phase=1;next=now+.3;return;}
+ if(phase==1){rows[rowIndex].Select();gallery.SelectEntry(rowIndex);phase=2;next=now+.06;return;}
+ if(phase==2){
+  Canvas.ForceUpdateCanvases();
+  var canvas=gallery.GetComponent<Canvas>();var target=type.GetProperty("targetSize",flags).GetValue(view,null);
+  if(rowIndex==0)log("SIZE "+labels[sizeIndices[sizeIndex]]+" target="+target+" canvas="+((RectTransform)canvas.transform).rect+" camera="+canvas.worldCamera.pixelRect);
+  foreach(var text in texts){
+   text.ForceMeshUpdate();var b=RectTransformUtility.CalculateRelativeRectTransformBounds(text.rectTransform,text.rectTransform);bool bad=text.isTextOverflowing||text.isTextTruncated;
+   log("ROW "+rowIndex+" "+entries[rowIndex].DisplayName+" FIELD "+text.name+" font="+text.fontSize+" px="+text.fontSize*canvas.scaleFactor+" rect="+text.rectTransform.rect+" rendered="+text.renderedHeight+" overflow="+text.isTextOverflowing+" truncated="+text.isTextTruncated);observations++;if(bad)failures++;
+  }
+  var bounds=RectTransformUtility.CalculateRelativeRectTransformBounds(scroll.viewport,rows[rowIndex].transform);bool visible=bounds.min.y>=scroll.viewport.rect.yMin-.5f&&bounds.max.y<=scroll.viewport.rect.yMax+.5f;
+  log("ROW "+rowIndex+" selectedFullHeightVisible="+visible);observations++;if(!visible)failures++;
+  if(rowIndex==7||rowIndex==9||rowIndex==22||rowIndex==24)ScreenCapture.CaptureScreenshot(folder+"layout-"+sizeIndex+"-row-"+rowIndex+".png");
+  rowIndex++;if(rowIndex==rows.Length){rowIndex=0;sizeIndex++;if(sizeIndex==sizeIndices.Length){finish(true,"5 dimensions x25 entries");return;}phase=0;}else phase=1;
+ }
+}catch(System.Exception ex){finish(false,ex.ToString());}};
+UnityEditor.EditorApplication.update+=tick;return "Scheduled 5 dimensions x25 Gallery entries";
+

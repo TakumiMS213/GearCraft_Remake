@@ -1,0 +1,48 @@
+var mm=MaterialManager.Instance;
+var cm=UnityEngine.Object.FindFirstObjectByType<CraftManager>();
+var es=UnityEngine.EventSystems.EventSystem.current;
+var pd=new UnityEngine.EventSystems.PointerEventData(es);
+var tip=TooltipSystem.FindInstance();
+var log=new System.Text.StringBuilder();int checks=0;
+System.Action<bool,string> check=(ok,s)=>{log.AppendLine((ok?"PASS ":"FAIL ")+s);checks++;if(!ok)throw new System.Exception(s);};
+try {
+ mm.SetAllMaterials(0);
+ var recipeButton=UnityEngine.Object.FindObjectsByType<UnityEngine.UI.Button>(FindObjectsSortMode.None).First(b=>b.name=="Recipe_ScrapModule");
+ recipeButton.OnSubmit(new UnityEngine.EventSystems.BaseEventData(es));
+ var triggers=UnityEngine.Object.FindObjectsByType<GearCraft.Scripts.Craft.CraftMaterialTooltipTrigger>(FindObjectsSortMode.None);
+ var gear=triggers.First(t=>t.name=="Material_Gear");var other=triggers.First(t=>t!=gear);
+ var anchor=gear.transform as RectTransform;
+ tip.Hide();mm.AddMaterial(MaterialManager.MaterialType.Gear,3);
+ check(!tip.tooltipPanel.gameObject.activeInHierarchy,"hidden popup stays hidden on grant");
+ gear.OnPointerEnter(pd);check(tip.IsShowingFor(anchor)&&tip.tooltipText.text.Contains("現在の個数: 3"),"hover shows current amount");
+ mm.AddMaterial(MaterialManager.MaterialType.Gear,2);check(tip.tooltipText.text.Contains("現在の個数: 5"),"grant refreshes shown amount");
+ mm.UseMaterial(MaterialManager.MaterialType.Gear,1);check(tip.tooltipText.text.Contains("現在の個数: 4"),"spend refreshes shown amount");
+ mm.SetAllMaterials(0);check(tip.tooltipText.text.Contains("現在の個数: 0"),"reset refreshes shown amount");
+ other.OnPointerExit(pd);check(tip.IsShowingFor(anchor),"unrelated material exit does not hide current popup");
+ other.enabled=false;check(tip.IsShowingFor(anchor),"unrelated material disable does not hide current popup");other.enabled=true;
+ other.OnPointerEnter(pd);string otherText=tip.tooltipText.text;mm.AddMaterial(MaterialManager.MaterialType.Gear,2);
+ check(tip.IsShowingFor(other.transform as RectTransform)&&tip.tooltipText.text==otherText,"old material does not overwrite another material");
+ gear.OnPointerExit(pd);check(tip.IsShowingFor(other.transform as RectTransform),"old material exit preserves new material");
+ other.OnPointerExit(pd);check(!tip.tooltipPanel.gameObject.activeInHierarchy,"own exit hides popup");
+ gear.OnPointerEnter(pd);gear.enabled=false;check(!tip.tooltipPanel.gameObject.activeInHierarchy,"own disable hides popup");
+ mm.AddMaterial(MaterialManager.MaterialType.Gear,1);check(!tip.tooltipPanel.gameObject.activeInHierarchy,"disabled trigger does not resurrect popup");
+ gear.enabled=true;gear.OnPointerEnter(pd);mm.AddMaterial(MaterialManager.MaterialType.Gear,1);
+ check(tip.tooltipText.text.Contains("現在の個数: 4"),"re-enabled trigger refreshes");
+ var sf=typeof(MaterialManager).GetField("MaterialsChanged",System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.NonPublic);
+ var subscriptions=((System.Delegate)sf.GetValue(null)).GetInvocationList().Count(d=>object.ReferenceEquals(d.Target,gear));
+ check(subscriptions==1,"re-enable has exactly one subscription");
+ var shop=UnityEngine.Object.FindObjectsByType<UpgradeShopManager>(FindObjectsInactive.Include,FindObjectsSortMode.None).First();
+ var part=shop.allParts.First(p=>p!=null);tip.ShowPart(part,cm.craftButton.transform as RectTransform);string partBody=tip.tooltipText.text,title=tip.titleText.text;
+ mm.AddMaterial(MaterialManager.MaterialType.Gear,1);
+ check(tip.tooltipText.text==partBody&&tip.titleText.text==title&&tip.titleText.gameObject.activeInHierarchy,"material event preserves structured part content");
+ gear.OnPointerExit(pd);check(tip.tooltipPanel.gameObject.activeInHierarchy,"old material exit preserves structured part");
+ tip.Hide();mm.SetAllMaterials(0);foreach(var cost in cm.SelectedRecipe.costs)mm.AddMaterial(cost.type,cost.amount);
+ cm.craftButton.Select();gear.OnPointerEnter(pd);
+ check(cm.CanCraft()&&cm.craftButton.IsInteractable(),"selected recipe is craftable");
+ cm.craftButton.OnSubmit(new UnityEngine.EventSystems.BaseEventData(es));
+ check(mm.gear==0&&tip.tooltipText.text.Contains("現在の個数: 0")&&tip.IsShowingFor(anchor),"UGUI Craft Submit consumes materials and updates visible popup");
+ ScreenCapture.CaptureScreenshot("QA/UXReview20261013-CraftLayout/craft-consumption-after.png");
+ log.AppendLine("COMPLETE checks="+checks+"; UI event boundary plus explicit material fixture cases, no OS-input claim.");
+}catch(System.Exception e){log.AppendLine("ERROR "+e);throw;}
+finally{System.IO.File.WriteAllText("QA/UXReview20261013-CraftLayout/tooltip-after.txt",log.ToString());}
+return log.ToString();

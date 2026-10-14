@@ -1,0 +1,7 @@
+Term15 final: runtime regression completed with 117 successful assertions, runtime Error/Exception/Assert 0 during monitored run.
+Four regression PNGs verified complete 1920x1080 and visually inspected.
+Play stopped first, then original eight PlayerPrefs restored. Independent post-stop MCP verification: 8/8 matches, Title stopped, no harness running, backupReady=false, GameView original index3/1920x1080.
+Console final filters: error CS=0, Exception=0, Coroutine could not start=0. git diff --check passed.
+Whole plist bytes/hash differ. Only unity.player_session_count and unity.player_sessionid differ; all other entries match original. These two recorded differences were retained; no whole-plist overwrite performed.
+Product change in this term: Craft.unity only. Original scene before change saved as Craft.unity.before and scoped change as scene-change.diff.
+Standalone aspect-ratio validation remains pending screen unlock; Editor evidence is not standalone evidence. Physical input and human usability outcomes were not measured.

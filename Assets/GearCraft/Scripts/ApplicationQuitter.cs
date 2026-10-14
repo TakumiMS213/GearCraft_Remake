@@ -1,18 +1,24 @@
 using UnityEngine;
 
-// 指定のキーを入力するとゲームを終了します
-// Unityのプロジェクトフォルダ内に入れるだけで機能します
+// タイトルの終了操作。プレイ中のEscは各画面の閉じる操作に任せる。
 public class ApplicationQuitter : MonoBehaviour
 {
     readonly KeyCode quitKey = KeyCode.Escape;
 
     void Update()
     {
-        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == GearCraft.Gallery.GalleryNavigation.SceneName) return;
         if (Input.GetKeyDown(quitKey))
         {
-            QuitGame();
+            HandleEscape();
         }
+    }
+
+    private void HandleEscape()
+    {
+        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "Title") return;
+        foreach (UISwitcher switcher in FindObjectsByType<UISwitcher>(FindObjectsSortMode.None))
+            if (switcher.TryCloseVisiblePanel()) return;
+        QuitGame();
     }
 
     public static void QuitGame()

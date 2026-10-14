@@ -1,0 +1,35 @@
+パーツショップの購入可否表示と並び順
+実施日: 2026-10-14 JST
+状態: 実装・コンパイル・主要な表示検証済み。MCP切断により最終追試と元8キー復元待ち。
+
+変更:
+UpgradeShopManager.csのみ今回変更。change.diffは直前の作業状態との差分。
+素材条件を満たす商品を上へ、それ以外を下へ安定して並べ、購入不可の商品をalpha0.45で表示。
+各群では元の在庫順を維持。元の在庫/保存順を変えず、画面上の兄弟順のみ更新。
+MaterialsChangedを有効時に購読し、無効時に解除。再表示時も最新の購入可否を反映。
+素材増減時に商品GameObjectを作り直さないため、ドラッグやtooltipの対象は維持する。
+半透明の商品もraycast/interactableを保持し、効果説明と既存の素材不足フィードバックを利用可能。
+
+確認済み:
+Unityコンパイルのerror CS検索0。git diff --check合格。別担当の差分レビュー問題なし。
+1920x1080画像00/01を実閲覧し、全不足時の半透明、購入可能2件が上・不足2件が下の表示を確認。
+PNG CRC/IEND完全性も確認。
+実行ハーネスでは179チェックまで通過、runtime error0。
+複数素材の増減、公開値編集のLateUpdate検出、安定順/透明度/行ID/在庫保存順の維持、
+ドラッグ中の減資と購入拒否、半透明商品の実tooltip表示、タブ再表示とOnEnable追従まで確認。
+
+初回ハーネスの停止:
+タブ再表示＋manager再enableと同tickのraycast照合で停止した。
+後続の独立MCP呼び出しでは同じ行の中心に対する先頭raycastがShopItem_Damage+1であることを確認。
+描画深度更新を待つphase61を追加し、再試行準備済み。製品コードには追加変更なし。
+before-Run.cs.txt / before-run.txt / before-01画像に初回記録を保管。
+修正ハーネスはMCP接続切断によりまだ実行していない。
+
+保全と残作業:
+開始時はTitle・Play停止。新規8キーの退避を行ってからテストPlayを開始した。
+元全plist: /tmp/gearcraft-uxshopavailability-original.plist
+元8キー: /tmp/gearcraft-uxshopavailability-playerprefs-backup.txt
+Unity内flag: UXShopAvailability20261014.backupReady=true（復元未完了）
+ハーネスはFAIL終了時にrunning=falseへ更新済み。初回179チェック時点のstock/material fixtureが残る。
+MCP復旧後、Run.cs.txt追試→Play停止→Restore.cs.txt→別読取で8キー照合を行う。
+今回まだ実購入/返却を検証済みとはしない。物理入力E2Eを主張しない。

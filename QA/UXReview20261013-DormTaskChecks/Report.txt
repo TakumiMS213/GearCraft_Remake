@@ -1,0 +1,82 @@
+UX継続テスト・ターム16：最新検証ビルドと宿舎タスクの成果表示
+実施日: 2026-10-13 JST
+最終記録日: 2026-10-14 JST
+状態: 完了。最新QAビルド準備と、宿舎タスク146 assertions・runtimeErrors0の検証を完了。
+      Play停止後に元8キーを復元し、独立照合8/8。ターム16の製品変更なし。
+      ユーザー指定の区切りとして今回の作業を終了。実ビルド表示等の未確認は下記に残す。
+
+最新QAビルドの準備（完了、未起動）
+
+ターム15のCraft.unity修正を含むStandaloneOSX probeを、
+../UXReview20261013-VerificationReady/Build/GearCraftUXDisplayProbe.appへ再ビルドした。
+build-result.jsonはjob build-ee4574fac9、succeeded、22.4785秒、269.43MB、errors0/warnings10。
+Info.plistの識別子com.gearcraft.qa.uxready20261013と専用実行名を確認し、元アプリから隔離した。
+preservation-before.jsonにはビルド対象Craft.unityのSHA-256も保存した。
+build-restoration.jsonは元ProjectSettingsの全バイト一致、元Editor prefs SHA-256一致、
+現Craftシーンとビルド対象のSHA-256一致、launched=falseを記録している。
+メモリ上のidentity復元・ビルド用フラグfalse、一時probe source/meta除去、
+全Assets refresh後のCS検索0も担当が確認した。
+Mac画面ロックは継続し、この.appは未起動。ターム14の実描画・画面比率の再試験は未完了。
+ビルド成功と表示試験の成功を同一視しない。
+
+宿舎タスク試験と保全
+
+QA台帳候補5に残る、行動の成果と宿舎タスクのチェック状態の整合を確認する。
+Stage2・ボス未遭遇・初日開始済みをfixtureで準備し、宿舎の3項目未完から開始した。
+Run.cs.txtの1回の実行は14.60秒でCOMPLETE、146 assertions、runtimeErrors0。
+146は状態・構造等を含むassertion件数であり、146種類の独立した操作経路ではない。
+
+実CraftTable triggerを登録してactionから入場し、UGUI SubmitのCRAFTでGear10を1回消費、
+GearCraftの取得/装備とクラフト完了フラグを確認した。
+UpgradeではDamage+1を在庫先頭へ入れるfixtureを使用したが、購入・配置・完了フラグは直接設定せず、
+raycastが実ShopItemへ届くことを確認してBeginDrag/Drag/EndDragを実ハンドラーへ送った。
+cell0,0への配置、Scrap3の1回消費、bonusDamage+1とアップグレード完了を確認した。
+実Closeで宿舎へ戻ると、CRAFT/アップグレードの2項目だけがチェックされ、防衛は未チェックを保持。
+Craftでは非activeを含めDormTaskPanelがないことを確認した。
+
+最後はhasEncounteredFirstBoss=trueを明示的に設定する表示fixtureにより、
+未チェックの「門の防衛を続ける」1行だけになることを確認した。
+実際のボス出現/遭遇登録/戦闘や、初日防衛を通した進行はこの試験に含まない。
+
+元plistは /tmp/gearcraft-uxdormtaskchecks-original.plist、元8キーの存在・型・値は
+/tmp/gearcraft-uxdormtaskchecks-playerprefs-backup.txtへ新たに退避した。
+preservation-before.jsonに元plistのSHA-256を記録し、Backup.cs.txtで8行を確認した。
+Play停止後にRestore.cs.txtを実行し、別の読取で元8キーの存在・値が8/8一致した。
+Title、playing/compiling/running/backupReady=false、done/passed=true、assertions146、
+buildWatcher/settingsActive=falseを担当が確認した。
+restoration-verification.jsonを記録担当も読み、上記の8キー一致と終了状態を照合した。
+preservation-after.jsonでは元plistとの差分はunity.player_session_countとunity.player_sessionidの
+2キーのみで、他は全て一致した。全plistのバイト・ハッシュ一致とは記載せず、セッション差分を残す。
+最終Console検索はerror CS=0、Exception=0、Coroutine couldn't=0。git diff --checkも通過。
+これを全Console項目・全警告が0という判定には広げない。
+
+画像と未修正の表示所見
+
+01-pending-tasks、02-achieved-tasks、03-defense-only-fixtureの3画像は1920x1080。
+担当がCRC/IENDを含むPNG完全性を確認し、preservation-after.jsonに結果を保存した。
+担当は3枚、記録担当は01/02を実閲覧し、未完から2件完了への表示変化を確認した。
+背景左上は親Canvas左上に一致し、タスクの背景・文字・チェック用Graphicは非raycastだった。
+
+一方、01/02では背面の大きい「スペースキーで選択」の左端が、半透明のタスク背景と重なる。
+画面端への一致と、画面全体のレイアウトが問題ないことは別であり、この重なりは未修正の所見として残す。
+ユーザーが現在のタスクの区切りで完了してよいと指定したため、今回は追加の配置修正へ拡張しない。
+
+公開資料と検証範囲
+
+NN/g / Visibility of System Status
+https://www.nngroup.com/articles/visibility-system-status/
+  行動の成果が現在状態として伝わるフィードバックを観点に、作成/装着とチェックの一致を調べる。
+担当が本タームで再参照した。状態の機能的整合を確かめる試験であり、
+人間がタスクを理解できるか、次の行動を自力で判断できるかの評価は別途必要。
+fixture・ハーネスによる操作は物理入力や全編通しプレイと区別する。
+
+最終記録と今回の終了範囲
+
+本フォルダ: Backup.cs.txt、Restore.cs.txt、Run.cs.txt、run.txt、01〜03画像、
+preservation-before/after.json、restoration-verification.json（担当が独立照合結果を保存）。
+VerificationReady: Build.cs.txt、build-job/result.json、probe-source.sha256、
+preservation-before.json、build-restoration.json、observations.txt。
+宿舎タスク試験と元データの復元を今回の終了点とする。追加テストは開始しない。
+最新QAアプリは未起動で、OSロック下の実ビルド表示、物理入力、聴感、人間の理解度評価は未確認。
+これらの未確認や上記の重なりを解決済みとは扱わない。
+記録担当はMCPを操作せず、保存ログ・画像と担当の実行報告から記録する。

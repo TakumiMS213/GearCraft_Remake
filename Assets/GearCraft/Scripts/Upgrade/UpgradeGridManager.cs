@@ -73,6 +73,11 @@ public class UpgradeGridManager : MonoBehaviour
         return CanPlace(part, posX, posY, rotation, grid, gridSize);
     }
 
+    public string GetPlacementFailure(UpgradePartSO part, int posX, int posY, int rotation)
+    {
+        return GetPlacementFailure(part, posX, posY, rotation, grid, gridSize);
+    }
+
     public bool TryPlace(UpgradePartSO part, int posX, int posY, int rotation)
     {
         return TryPlace(part, posX, posY, rotation, -1);
@@ -397,9 +402,14 @@ public class UpgradeGridManager : MonoBehaviour
 
     private bool CanPlace(UpgradePartSO part, int posX, int posY, int rotation, int[,] targetGrid, int targetSize)
     {
+        return string.IsNullOrEmpty(GetPlacementFailure(part, posX, posY, rotation, targetGrid, targetSize));
+    }
+
+    private string GetPlacementFailure(UpgradePartSO part, int posX, int posY, int rotation, int[,] targetGrid, int targetSize)
+    {
         if (part == null || targetGrid == null)
         {
-            return false;
+            return "配置先を確認できません。作業台を開き直してください。";
         }
 
         bool[,] shape = part.GetRotatedShape(rotation);
@@ -419,17 +429,17 @@ public class UpgradeGridManager : MonoBehaviour
                 int gridY = posY + y;
                 if (gridX < 0 || gridX >= targetSize || gridY < 0 || gridY >= targetSize)
                 {
-                    return false;
+                    return "パーツが枠からはみ出しています。\n枠の内側へ移動するか、右クリックで回転してください。";
                 }
 
                 if (targetGrid[gridY, gridX] != -1)
                 {
-                    return false;
+                    return "ほかのパーツと重なっています。\n空いた場所へ移すか、装着済みのパーツをクリックして外してください。";
                 }
             }
         }
 
-        return true;
+        return string.Empty;
     }
 
     private void RebuildGridIndices()

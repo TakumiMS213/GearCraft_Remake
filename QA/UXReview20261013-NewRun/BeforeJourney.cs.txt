@@ -1,0 +1,123 @@
+
+
+System.Func<string,string> newRunSnapshot = delegate(string label) {
+ var s=StatusManager.Instance; var rows=new System.Collections.Generic.SortedDictionary<string,string>();
+ if(s==null)throw new System.Exception("Status missing");
+ foreach(var f in typeof(StatusManager).GetFields(System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.Instance))
+  if(f.FieldType.IsPrimitive)rows[f.Name]=System.Convert.ToString(f.GetValue(s),System.Globalization.CultureInfo.InvariantCulture);
+ System.Func<UnityEngine.Object,string> assetName=o=>o==null?"null":o.name;
+ rows["defaultWeapon"]=assetName(s.defaultWeapon);rows["currentWeapon"]=assetName(s.currentWeapon);
+ var weapons=new System.Collections.Generic.List<string>();foreach(var w in s.ownedWeapons)weapons.Add(assetName(w));weapons.Sort();rows["ownedWeapons"]=string.Join(",",weapons.ToArray());
+ var parts=new System.Collections.Generic.List<string>();foreach(var p in s.ownedUpgradeParts)parts.Add(assetName(p));parts.Sort();rows["ownedUpgradeParts"]=string.Join(",",parts.ToArray());
+ var placed=new System.Collections.Generic.List<string>();foreach(var p in s.savedUpgradePartPlacements)placed.Add(assetName(p.partData)+"@"+p.gridX+","+p.gridY+","+p.rotation+","+p.inventoryIndex+","+p.refundCostsOnRemove);placed.Sort();rows["placements"]=string.Join(";",placed.ToArray());
+ var shop=new System.Collections.Generic.List<string>();foreach(var p in s.savedUpgradeShopLineup)shop.Add(assetName(p));rows["shop"]=string.Join(",",shop.ToArray());
+ rows["uniqueCards"]=string.Join(",",s.selectedUniqueBonusCardIds.ToArray());
+ rows["DormTasks"]=JsonUtility.ToJson(s.DormTasks);rows["CraftTutorials"]=JsonUtility.ToJson(s.CraftTutorials);
+ rows["Stage"]=StageCounter.Instance==null?"none":StageCounter.Instance.StageCount.ToString();
+ var m=MaterialManager.Instance; rows["materials"]=m==null?"none":m.scrap+","+m.gear+","+m.upgradeCore+","+m.moduleCore_lv1+","+m.moduleCore_lv2+","+m.moduleCore_lv3;
+ var output=new System.Text.StringBuilder();
+ foreach(var r in rows)output.AppendLine(r.Key+"="+r.Value);
+ string report=label+" scene="+UnityEngine.SceneManagement.SceneManager.GetActiveScene().name+" statusID="+s.GetInstanceID()+"\n"+output;
+ System.IO.File.WriteAllText("QA/UXReview20261013-NewRun/"+label+".txt",report);
+ UnityEditor.SessionState.SetString("UXNewRun20261013."+label,output.ToString());
+ return report;
+};
+if(!UnityEditor.EditorApplication.isPlaying||UnityEngine.SceneManagement.SceneManager.GetActiveScene().name!="Title")throw new System.Exception("Play Title required");
+if(!UnityEditor.SessionState.GetBool("UXNewRun20261013.active",false))throw new System.Exception("Backup required");
+const string runLabel="before-bad";
+const int endingNumber=1;
+const bool expectReset=false;
+string outDir="QA/UXReview20261013-NewRun/";
+string logPath=outDir+runLabel+"-journey.txt";
+System.IO.File.WriteAllText(logPath,"Route: real Ending loader -> UGUI Submit -> Title Start Submit -> natural Story and Arrival -> Dorm.\n");
+
+var fixtureStatus=StatusManager.Instance;
+var fixtureWeapon=UnityEditor.AssetDatabase.LoadAssetAtPath<WeaponDataSO>("Assets/GearCraft/ScriptableObject/WeaponData/GearCraft_Sword.asset");
+var fixturePart=UnityEditor.AssetDatabase.LoadAssetAtPath<UpgradePartSO>("Assets/GearCraft/ScriptableObject/UpgradeParts/Damage+2.asset");
+if(fixtureWeapon==null||fixturePart==null||StageCounter.Instance==null)throw new System.Exception("Fixture assets or counter missing");
+foreach(var field in typeof(StatusManager).GetFields(System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.Instance)){
+ if(field.FieldType==typeof(bool))field.SetValue(fixtureStatus,true);
+ else if(field.FieldType==typeof(int))field.SetValue(fixtureStatus,2);
+ else if(field.FieldType==typeof(float))field.SetValue(fixtureStatus,2f);
+}
+fixtureStatus.HP=73;fixtureStatus.SAN=47;fixtureStatus.STR=7;fixtureStatus.ACC=5;fixtureStatus.GATE=64;
+fixtureStatus.killAllEnemies=false;fixtureStatus.bossKillCount=3;fixtureStatus.upgradeShopDay=6;fixtureStatus.selectWeapon=0;
+fixtureStatus.AcquireWeapon(fixtureWeapon);fixtureStatus.EquipWeapon(fixtureWeapon);
+fixtureStatus.ownedUpgradeParts.Clear();fixtureStatus.ownedUpgradeParts.Add(fixturePart);
+fixtureStatus.savedUpgradePartPlacements.Clear();
+fixtureStatus.savedUpgradePartPlacements.Add(new StatusManager.SavedUpgradePartPlacement{partData=fixturePart,gridX=1,gridY=1,rotation=0,inventoryIndex=0,refundCostsOnRemove=true,placedShopDay=6});
+fixtureStatus.RecalculateUpgradeEffects();
+fixtureStatus.hasSavedUpgradeShopLineup=true;fixtureStatus.savedUpgradeShopLineup.Clear();fixtureStatus.savedUpgradeShopLineup.Add(fixturePart);
+fixtureStatus.selectedUniqueBonusCardIds.Clear();fixtureStatus.selectedUniqueBonusCardIds.Add("UX-new-run-fixture");
+fixtureStatus.DormTasks.hasStartedFirstDay=true;fixtureStatus.DormTasks.hasCrafted=true;fixtureStatus.DormTasks.hasUpgradedWeapon=true;fixtureStatus.DormTasks.hasEncounteredFirstBoss=true;
+fixtureStatus.CraftTutorials.craft.stepIndex=3;fixtureStatus.CraftTutorials.craft.practiceSuppliesGranted=true;fixtureStatus.CraftTutorials.craft.usedHint=true;
+fixtureStatus.CraftTutorials.weaponCustom.stepIndex=2;fixtureStatus.CraftTutorials.weaponCustom.practiceSuppliesGranted=true;
+StageCounter.Instance.StageCount=19;MaterialManager.Instance.SetAllMaterials(7);
+
+newRunSnapshot(runLabel+"-T0");
+string masteryCraft=PlayerPrefs.GetInt(CraftTutorialMetrics.CraftMasteryKey,0).ToString();
+string masteryWeapon=PlayerPrefs.GetInt(CraftTutorialMetrics.WeaponMasteryKey,0).ToString();
+EndingManager.LoadEndingScene(endingNumber);
+var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
+var viewerType=typeof(ImageSequenceViewer);
+int phase=0;
+double started=UnityEditor.EditorApplication.timeSinceStartup;
+double next=started;
+bool sawStory=false;
+System.Action<string> log=msg=>System.IO.File.AppendAllText(logPath,(UnityEditor.EditorApplication.timeSinceStartup-started).ToString("F1")+"s "+msg+"\n");
+System.Action<UnityEngine.GameObject> submit=target=>UnityEngine.EventSystems.ExecuteEvents.Execute(target,new UnityEngine.EventSystems.BaseEventData(UnityEngine.EventSystems.EventSystem.current),UnityEngine.EventSystems.ExecuteEvents.submitHandler);
+UnityEditor.SessionState.SetBool("UXNewRun20261013.done",false);
+UnityEditor.EditorApplication.CallbackFunction tick=null;
+tick=delegate{
+ try {
+  double now=UnityEditor.EditorApplication.timeSinceStartup;
+  if(now-started>150)throw new System.Exception("Journey timeout phase="+phase);
+  if(!UnityEditor.EditorApplication.isPlaying)throw new System.Exception("Play stopped during journey");
+  if(now<next)return;next=now+0.1;
+  string scene=UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+  var transition=UnityEngine.Object.FindFirstObjectByType<SceneTransitionManager>();
+  if(transition!=null&&transition.IsLoading)return;
+  if(phase==0){
+   if(scene=="Ending"){
+    var viewer=UnityEngine.Object.FindFirstObjectByType<ImageSequenceViewer>();if(viewer==null)return;
+    bool notice=(bool)viewerType.GetField("showingGalleryUnlockNotice",flags).GetValue(viewer);
+    var button=(UnityEngine.UI.Button)viewerType.GetField(notice?"galleryNoticeButton":"advanceButton",flags).GetValue(viewer);
+    if(button!=null&&button.IsInteractable()){submit(button.gameObject);log("ED Submit notice="+notice+" index="+viewerType.GetField("currentIndex",flags).GetValue(viewer));next=now+1.15;}
+    return;
+   }
+   if(scene=="Title"){
+    newRunSnapshot(runLabel+"-T1");
+    log("ED returned to Title; Stage="+StageCounter.Instance.StageCount);
+    var button=GameObject.Find("StartButton");if(button==null)throw new System.Exception("Title Start missing");
+    submit(button);phase=1;log("Submitted actual Title Start");return;
+   }
+  } else if(phase==1){
+   if(scene=="Story"){if(!sawStory){sawStory=true;log("Story entered; waiting for automatic playback");}return;}
+   if(scene!="CraftSpace"||ArrivalMessagePresenter.IsMessagePlaying||ArrivalMessagePresenter.IsCameraPresentationPlaying)return;
+   if(!sawStory)throw new System.Exception("Story route not observed");
+   newRunSnapshot(runLabel+"-T2");
+   string baseline=UnityEditor.SessionState.GetString("UXNewRun20261013.baseline-dorm","");
+   string actual=UnityEditor.SessionState.GetString("UXNewRun20261013."+runLabel+"-T2","");
+   if(string.IsNullOrEmpty(baseline))throw new System.Exception("Baseline missing");
+   var baselineLines=baseline.Split(new[]{'\n'},System.StringSplitOptions.RemoveEmptyEntries);
+   var actualLines=new System.Collections.Generic.HashSet<string>(actual.Split(new[]{'\n'},System.StringSplitOptions.RemoveEmptyEntries));
+   int differences=0;
+   foreach(var line in baselineLines){string expected=line=="Stage=none"?"Stage=1":line;if(!actualLines.Contains(expected)){differences++;log("DIFF expected "+expected);}}
+   log("Baseline comparison differences="+differences+" expectReset="+expectReset);
+   if(expectReset&&differences!=0)throw new System.Exception("New run differs from baseline");
+   if(!expectReset&&differences==0)log("No residual-state issue reproduced");
+   var task=GameObject.Find("DormTaskPanel");var arrow=GameObject.Find("FirstBedGuideArrow");
+   log("task="+(task==null?"none":task.GetComponentInChildren<TMPro.TMP_Text>().text)+" bedArrow="+(arrow!=null&&arrow.activeInHierarchy));
+   bool masterySame=masteryCraft==PlayerPrefs.GetInt(CraftTutorialMetrics.CraftMasteryKey,0).ToString()&&masteryWeapon==PlayerPrefs.GetInt(CraftTutorialMetrics.WeaponMasteryKey,0).ToString();
+   bool galleryRetained=GearCraft.Gallery.GalleryProgress.IsUnlocked&&GearCraft.Gallery.GalleryProgress.Data.HasWeapon(fixtureWeapon.name);
+   log("mastery retained="+masterySame+" Gallery ending/weapon retained="+galleryRetained);
+   if(!masterySame||!galleryRetained)throw new System.Exception("Persistent record changed");
+   ScreenCapture.CaptureScreenshot(outDir+runLabel+"-dorm.png");
+   UnityEditor.EditorApplication.update-=tick;UnityEditor.SessionState.SetBool("UXNewRun20261013.done",true);
+   log("COMPLETE scene="+scene+" differences="+differences);return;
+  }
+ }catch(System.Exception e){UnityEditor.EditorApplication.update-=tick;UnityEditor.SessionState.SetBool("UXNewRun20261013.done",true);log("FAIL "+e);}
+};
+UnityEditor.EditorApplication.update+=tick;
+return "Scheduled "+runLabel+" route with 150-second deadline";
+

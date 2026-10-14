@@ -1,0 +1,106 @@
+
+System.Func<Transform,string> pathOf=null;pathOf=delegate(Transform t){return t.parent==null?t.name:pathOf(t.parent)+"/"+t.name;};
+System.Func<string,GameObject> find=delegate(string path){foreach(var tr in UnityEngine.Object.FindObjectsByType<Transform>(FindObjectsInactive.Include,FindObjectsSortMode.None))if(tr.gameObject.scene.IsValid()&&(pathOf(tr)==path||tr.name==path))return tr.gameObject;throw new System.Exception("UI object not found: "+path);};
+System.Func<GameObject,Vector2> center=delegate(GameObject go){var rt=go.GetComponent<RectTransform>();var c=go.GetComponentInParent<Canvas>();return RectTransformUtility.WorldToScreenPoint(c!=null&&c.renderMode!=RenderMode.ScreenSpaceOverlay?c.worldCamera:null,rt.TransformPoint(rt.rect.center));};
+System.Func<Vector2,UnityEngine.EventSystems.PointerEventData> pointer=delegate(Vector2 pos){var es=UnityEngine.EventSystems.EventSystem.current;var ev=new UnityEngine.EventSystems.PointerEventData(es){position=pos,button=UnityEngine.EventSystems.PointerEventData.InputButton.Left};var hits=new System.Collections.Generic.List<UnityEngine.EventSystems.RaycastResult>();es.RaycastAll(ev,hits);if(hits.Count==0)throw new System.Exception("No raycast at "+pos);ev.pointerCurrentRaycast=hits[0];ev.pointerPressRaycast=hits[0];return ev;};
+System.Action<string> click=delegate(string path){var go=find(path);var ev=pointer(center(go));foreach(var entrance in UnityEngine.Object.FindObjectsByType<GearCraft.Gallery.GalleryEntranceButton>(FindObjectsSortMode.None))UnityEngine.EventSystems.ExecuteEvents.Execute(entrance.gameObject,ev,UnityEngine.EventSystems.ExecuteEvents.pointerExitHandler);var handler=UnityEngine.EventSystems.ExecuteEvents.GetEventHandler<UnityEngine.EventSystems.IPointerClickHandler>(ev.pointerCurrentRaycast.gameObject);if(handler!=go&&!(handler!=null&&handler.transform.IsChildOf(go.transform)))throw new System.Exception("Blocked "+path+" by "+pathOf(ev.pointerCurrentRaycast.gameObject.transform));UnityEngine.EventSystems.ExecuteEvents.Execute(handler,ev,UnityEngine.EventSystems.ExecuteEvents.pointerDownHandler);UnityEngine.EventSystems.ExecuteEvents.Execute(handler,ev,UnityEngine.EventSystems.ExecuteEvents.pointerUpHandler);UnityEngine.EventSystems.ExecuteEvents.Execute(handler,ev,UnityEngine.EventSystems.ExecuteEvents.pointerClickHandler);System.IO.File.AppendAllText("QA/UXReview20261013-Journey/actions.txt","CLICK "+path+" @ "+ev.position+"\n");};
+System.Func<string> dump=delegate(){var sb=new System.Text.StringBuilder();sb.AppendLine("Scene="+UnityEngine.SceneManagement.SceneManager.GetActiveScene().name+" timeScale="+Time.timeScale+" screen="+Screen.width+"x"+Screen.height);foreach(var b in UnityEngine.Object.FindObjectsByType<UnityEngine.UI.Selectable>(FindObjectsSortMode.None)){if(!b.isActiveAndEnabled)continue;var tx=b.GetComponentInChildren<TMPro.TMP_Text>();sb.AppendLine(pathOf(b.transform)+" | "+b.GetType().Name+" | enabled="+b.IsInteractable()+" | "+center(b.gameObject)+(tx==null?"":" | "+tx.text));}return sb.ToString();};
+System.Action<string> capture=delegate(string name){ScreenCapture.CaptureScreenshot("QA/UXReview20261013-Journey/"+name+".png");};
+
+System.Action<string,Vector2> drag=delegate(string sourceName,Vector2 end){var sourceObject=find(sourceName);var eventData=pointer(center(sourceObject));var handlerObject=UnityEngine.EventSystems.ExecuteEvents.GetEventHandler<UnityEngine.EventSystems.IBeginDragHandler>(eventData.pointerCurrentRaycast.gameObject);if(handlerObject!=sourceObject)throw new System.Exception("Drag source obstructed "+sourceName);UnityEngine.EventSystems.ExecuteEvents.Execute(sourceObject,eventData,UnityEngine.EventSystems.ExecuteEvents.beginDragHandler);eventData.position=end;UnityEngine.EventSystems.ExecuteEvents.Execute(sourceObject,eventData,UnityEngine.EventSystems.ExecuteEvents.dragHandler);UnityEngine.EventSystems.ExecuteEvents.Execute(sourceObject,eventData,UnityEngine.EventSystems.ExecuteEvents.endDragHandler);System.IO.File.AppendAllText("QA/UXReview20261013-Journey/actions.txt","DRAG "+sourceName+" to "+end+"\n");};
+
+System.Action<string> note = delegate(string line) { System.IO.File.AppendAllText("QA/UXReview20261013-Journey/observations.txt",line+"\n"); };
+System.Action<bool,string> check = delegate(bool passed,string message) { if(!passed) throw new System.Exception(message); note("PASS "+message); };
+System.Action<string> press = delegate(string name) {
+ var target=find(name); var button=target.GetComponent<UnityEngine.UI.Button>();
+ if(button==null || !button.IsActive() || !button.IsInteractable()) throw new System.Exception("Unavailable "+name);
+ button.Select(); UnityEngine.EventSystems.ExecuteEvents.Execute(target,new UnityEngine.EventSystems.BaseEventData(UnityEngine.EventSystems.EventSystem.current),UnityEngine.EventSystems.ExecuteEvents.submitHandler);
+ note("SUBMIT "+pathOf(target.transform));
+};
+var tc=UnityEngine.Object.FindFirstObjectByType<GearCraft.Scripts.Craft.CraftTutorialController>();
+var sm=StatusManager.Instance;
+var shop=UnityEngine.Object.FindFirstObjectByType<UpgradeShopManager>();
+var gm=UpgradeGridManager.Instance;
+var cm=UnityEngine.Object.FindFirstObjectByType<CraftManager>();
+System.Func<string> restorePrefs=delegate {
+string[] testLines=System.IO.File.ReadAllLines("/tmp/gearcraft-uxjourney-playerprefs-backup.txt");
+var testExpected=new System.Collections.Generic.HashSet<string>(new[]{"GearCraft.Gallery.Progress.v1","GearCraft.CraftTutorial.Metrics.Craft.v5","GearCraft.CraftTutorial.Metrics.WeaponCustom.v5","GearCraft.Main.OpeningNotice.Seen.v1","GearCraft.CraftTutorial.Mastery.Craft.v5","GearCraft.CraftTutorial.Mastery.WeaponCustom.v5","GearCraft.CraftTutorial.AutoPlayed.Craft.v4","GearCraft.CraftTutorial.AutoPlayed.WeaponCustom.v3"});
+var testRecords=new System.Collections.Generic.List<string[]>();
+foreach(var testLine in testLines) {
+ var testRow=testLine.Split('|');
+ if(testRow.Length!=4 || !testExpected.Remove(testRow[0])) throw new System.Exception("Invalid backup key");
+ bool.Parse(testRow[1]);
+ if(testRow[2]=="string") System.Convert.FromBase64String(testRow[3]); else if(testRow[2]=="int") int.Parse(testRow[3]); else throw new System.Exception("Invalid backup type");
+ testRecords.Add(testRow);
+}
+if(testExpected.Count!=0) throw new System.Exception("Incomplete backup");
+foreach(var testRow in testRecords) {
+ if(!bool.Parse(testRow[1])) PlayerPrefs.DeleteKey(testRow[0]);
+ else if(testRow[2]=="string") PlayerPrefs.SetString(testRow[0],System.Text.Encoding.UTF8.GetString(System.Convert.FromBase64String(testRow[3])));
+ else PlayerPrefs.SetInt(testRow[0],int.Parse(testRow[3]));
+}
+PlayerPrefs.Save();
+foreach(var testRow in testRecords) {
+ bool testExists=bool.Parse(testRow[1]);
+ if(PlayerPrefs.HasKey(testRow[0])!=testExists) throw new System.Exception("Presence mismatch "+testRow[0]);
+ if(testExists && testRow[2]=="string" && PlayerPrefs.GetString(testRow[0])!=System.Text.Encoding.UTF8.GetString(System.Convert.FromBase64String(testRow[3]))) throw new System.Exception("Value mismatch "+testRow[0]);
+ if(testExists && testRow[2]=="int" && PlayerPrefs.GetInt(testRow[0])!=int.Parse(testRow[3])) throw new System.Exception("Value mismatch "+testRow[0]);
+}
+var testGalleryField=typeof(GearCraft.Gallery.GalleryProgress).GetField("data",System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.NonPublic);
+if(testGalleryField!=null) testGalleryField.SetValue(null,null);
+UnityEditor.SessionState.SetBool("UXJourney20261013.active",false);
+return "8 original PlayerPrefs restored and verified from file";
+
+};
+
+System.Action cleanup=delegate {
+ try {if(tc!=null) tc.OnCraftSceneLeaving();} catch(System.Exception cleanupEx) {note("UI cleanup: "+cleanupEx.Message);}
+ try {note(restorePrefs()); note("CLEANUP COMPLETE");} finally {UnityEditor.EditorApplication.isPlaying=false;}
+};
+try {
+ check(sm!=null && gm!=null && sm.bonusDamage==0 && gm.PlacedParts.Count==0,"fresh Craft integration fixture");
+ TooltipSystem.FindInstance().Hide();
+} catch(System.Exception initialError) {note("INITIAL STATE FAILED "+initialError); cleanup(); return "initial state failed; cleaned up";}
+var steps=new System.Collections.Generic.List<System.Action>();
+steps.Add(delegate { press("UpgradeTabButton"); });
+steps.Add(delegate { check(MaterialManager.Instance.GetMaterial(MaterialManager.MaterialType.Scrap)==3,"practice supply"); check(gm.TryPurchaseAndPlace(shop.FindPart("Damage+1"),0,0,0),"practice damage part"); check(sm.CraftTutorials.weaponCustom.showingFeedback && sm.bonusDamage==1,"practice result"); });
+steps.Add(delegate { press("NextButton"); });
+steps.Add(delegate { check(sm.CraftTutorials.weaponCustom.stepIndex==1 && MaterialManager.Instance.GetMaterial(MaterialManager.MaterialType.Scrap)==6,"independent upgrade supplied exactly 6 Scrap"); press("CloseButton"); gm.RemovePart(0); check(sm.bonusDamage==0 && MaterialManager.Instance.GetMaterial(MaterialManager.MaterialType.Scrap)==9,"remove restores damage and refunds 3 Scrap"); });
+steps.Add(delegate { check(gm.TryPurchaseAndPlace(shop.FindPart("Damage+1"),0,0,0),"same practice part replaced"); press("Canvas/UpgradePanel/question"); });
+steps.Add(delegate { press("YesButton"); });
+steps.Add(delegate { check(!sm.CraftTutorials.weaponCustom.showingFeedback && !sm.CraftTutorials.weaponCustom.mastered,"same part replacement does not pass"); check(MaterialManager.Instance.GetMaterial(MaterialManager.MaterialType.Scrap)==6,"resume does not duplicate supply"); press("CloseButton"); check(gm.TryPurchaseAndPlace(shop.FindPart("Damage+2"),1,0,0),"different damage part placed while paused"); press("Canvas/UpgradePanel/question"); });
+steps.Add(delegate { press("YesButton"); });
+steps.Add(delegate { check(sm.CraftTutorials.weaponCustom.mastered && sm.CraftTutorials.weaponCustom.showingFeedback && sm.bonusDamage==4,"paused independent upgrade credited"); capture("18-upgrade-paused-result-after"); });
+steps.Add(delegate { press("NextButton"); PlayerPrefs.SetInt(CraftTutorialMetrics.WeaponMasteryKey,0); sm.CraftTutorials.weaponCustom=new CraftTutorialTrackProgress {stepIndex=1,practicePartName="Damage+1"}; press("Canvas/UpgradePanel/question"); note("FIXTURE new upgrade challenge with existing parts"); });
+steps.Add(delegate { press("YesButton"); sm.CraftTutorials.weaponCustom.elapsedSeconds=13; });
+steps.Add(delegate { press("HintButton"); check(sm.CraftTutorials.weaponCustom.usedHint,"hint recorded"); press("CloseButton"); check(gm.TryPurchaseAndPlace(shop.FindPart("SpeedGear"),0,1,0),"speed part placed while paused"); press("Canvas/UpgradePanel/question"); });
+steps.Add(delegate { press("YesButton"); });
+steps.Add(delegate { check(sm.CraftTutorials.weaponCustom.showingFeedback && !sm.CraftTutorials.weaponCustom.mastered && PlayerPrefs.GetInt(CraftTutorialMetrics.WeaponMasteryKey)==0,"hinted outcome acknowledged without mastery"); capture("19-hinted-upgrade-result-after"); });
+steps.Add(delegate { press("NextButton"); press("CloseButton"); press("Canvas/UpgradePanel/question"); });
+steps.Add(delegate { press("YesButton"); });
+steps.Add(delegate { check(!sm.CraftTutorials.weaponCustom.showingFeedback && !sm.CraftTutorials.weaponCustom.mastered,"previous improvement not counted twice"); press("CloseButton"); press("CraftTabButton"); PlayerPrefs.SetInt(CraftTutorialMetrics.CraftMasteryKey,0); sm.CraftTutorials.craft=new CraftTutorialTrackProgress {stepIndex=2}; sm.bossKillCount=2; typeof(CraftManager).GetMethod("InitializeUnlockedRecipes",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).Invoke(cm,null); press("Canvas/CraftPanel/question"); note("FIXTURE bossKillCount=2, fresh independent craft"); });
+steps.Add(delegate { press("YesButton"); });
+steps.Add(delegate { check(!sm.CraftTutorials.craft.showingFeedback,"existing ownership not credited as fresh craft"); press("CloseButton"); var recipe=cm.FindRecipe("UpGradeModule"); check(recipe!=null && cm.TrySelectRecipe(recipe),"upgrade module recipe selected"); foreach(var cost in recipe.costs) MaterialManager.Instance.AddMaterial(cost.type,cost.amount); note("FIXTURE supplied module recipe costs"); cm.OnCraftButton(); check(sm.craftWeaponDamagebuff==5,"module crafted while paused"); });
+steps.Add(delegate { press("Canvas/CraftPanel/question"); });
+steps.Add(delegate { press("YesButton"); });
+steps.Add(delegate { check(sm.CraftTutorials.craft.mastered && sm.CraftTutorials.craft.showingFeedback,"paused repeatable module credited"); capture("20-upgrade-module-resume-after"); });
+steps.Add(delegate { press("Canvas/CraftPanel/Close"); check(!find("CraftTutorialRoot").activeSelf && !find("CraftTutorialConfirmRoot").activeSelf,"tutorial closed immediately on scene exit"); });
+steps.Add(delegate { capture("21-exit-overlay-after"); note("ALL REMAINING CHECKS PASSED"); });
+steps.Add(delegate { cleanup(); });
+int nextStep=0; double nextAt=UnityEditor.EditorApplication.timeSinceStartup+0.8;
+UnityEditor.EditorApplication.CallbackFunction run=null;
+run=delegate {
+ if(UnityEditor.EditorApplication.timeSinceStartup<nextAt) return;
+ nextAt=UnityEditor.EditorApplication.timeSinceStartup+1.3;
+ try {
+   if(nextStep>=steps.Count) {UnityEditor.EditorApplication.update-=run; return;}
+   int current=nextStep++; note("STEP "+current); steps[current]();
+   if(nextStep>=steps.Count) UnityEditor.EditorApplication.update-=run;
+ } catch(System.Exception ex) {
+   UnityEditor.EditorApplication.update-=run;
+   note("SEQUENCE FAILED "+ex.ToString());
+   try {cleanup();} catch(System.Exception cleanupError) {note("CLEANUP FAILED "+cleanupError.ToString());}
+ }
+};
+UnityEditor.EditorApplication.update+=run;
+return "Scheduled "+steps.Count+" integration checks; logs and screenshots saved, preferences restored on finish or failure";

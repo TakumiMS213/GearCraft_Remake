@@ -1,0 +1,42 @@
+Selected=backGround/SettingButton
+After Up=backGround/StartButton
+SUBMIT StartButton while settings open
+Scene=CraftSpace timeScale=1 screen=1672x920
+
+Entry_0 navigation=Explicit
+(0.00, 1.00, 0.00) -> GalleryCanvas/GalleryReturnButton
+(0.00, -1.00, 0.00) -> GalleryCanvas/GalleryRoot/InnerFrame/Background/CollectionList/EntryScroll/Viewport/Entries/Entry_1
+(-1.00, 0.00, 0.00) -> null
+(1.00, 0.00, 0.00) -> backGround/StartButton
+ScrollTrack navigation=Automatic
+(0.00, 1.00, 0.00) -> GalleryCanvas/GalleryReturnButton
+(0.00, -1.00, 0.00) -> GalleryCanvas/GalleryRoot/InnerFrame/Background/CollectionList/EntryScroll/Viewport/Entries/Entry_10
+(-1.00, 0.00, 0.00) -> GalleryCanvas/GalleryRoot/InnerFrame/Background/CollectionList/EntryScroll/Viewport/Entries/Entry_3
+(1.00, 0.00, 0.00) -> backGround/StartButton
+GalleryReturnButton navigation=Automatic
+(0.00, 1.00, 0.00) -> null
+(0.00, -1.00, 0.00) -> backGround/Manual
+(-1.00, 0.00, 0.00) -> backGround/StartButton
+(1.00, 0.00, 0.00) -> null
+GalleryCanvas/GalleryRoot/InnerFrame/Background/CollectionList/EntryScroll/Viewport/Entries/Entry_0 Right -> GalleryCanvas/GalleryRoot/InnerFrame/Background/CollectionList/EntryScroll/Viewport/Entries/Entry_0
+GalleryCanvas/GalleryRoot/InnerFrame/Background/CollectionList/EntryScroll/Viewport/Entries/Entry_0 Down -> GalleryCanvas/GalleryRoot/InnerFrame/Background/CollectionList/EntryScroll/Viewport/Entries/Entry_1
+Entry_0 Up=null Down=Entry_1 Right=null
+Entry_24 Up=Entry_23 Down=null Right=null
+GalleryReturnButton Up=null Down=null Right=null
+ScrollTrack Up=null Down=null Right=null
+Return Down -> backGround/Manual
+Confirmation selection=TransitionCanvas/SettingPanel/TitleReturnConfirmPanel/ConfirmWindow/NoButton
+After Up=TransitionCanvas/SettingPanel/SEslider
+Main restored=True paused=True time=0 gear=7
+Initial selection=null focus components=2
+Settings selection=SettingButton
+BGM via MoveRight: -20 -> -19; restored with MoveLeft
+Gallery all 25 rows navigated; Right return, Left/Down restore selected row; Title Selectables disabled: PASS
+After fixes: Main instance, Gear, paused Time=0, GalleryButton focus all restored PASS
+Final fix: inventory round trip, menu Back, OptionButton focus, Time=1 all PASS
+All 8 PlayerPrefs restored with existence/value checks; audio restored; Play stopped in Title
+Main BGM slider -40 -> -39; mixer -20 -> -20; callbackTarget=null
+BGM slider/mixer -20 -> -19
+SE slider/mixer -20 -> -19
+Main menu reopen and Title sliders preserve BGM/SE changes PASS; original -20/-20 restored
+Final audio test completed: all 8 PlayerPrefs restored with presence/value checks; Play stopped in Title

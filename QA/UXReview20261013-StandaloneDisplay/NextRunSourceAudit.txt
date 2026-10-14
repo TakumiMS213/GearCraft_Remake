@@ -1,0 +1,114 @@
+ED後の再開始: 初日ショップ・前周回スコアの補足監査
+記録日: 2026-10-13 JST / ターム14
+状態: 現行ソースと既存QA資料の読取監査のみ。追加のランタイム試験は未実施。
+この記録の作成以外に、製品コード・シーン・PlayerPrefs・Unity実行状態を変更していない。
+表示試験の画面ロック解除待ちとは独立した作業。Metal待機の原因や製品障害を判定する記録ではない。
+
+結論
+
+現行コードから、この2項目に新たな周回状態の初期化漏れは特定できなかった。
+旧ショップ保存状態の消去はターム8の実行ログにもある。一方、その後の初回商品生成と
+表示/保存配列の一致は計測されていない。前周回スコアはED入場時に計算して保持するため、
+Title帰還時の進行リセットが表示中のスコアを再計算する経路は見つからなかった。
+このコード上の整合性を追加試験済みと読み替えない。
+
+1. 既に確認済みの範囲
+
+QA/UXReview20261013-NewRun/Report.txt:76-100
+  Bad/Normal/Trueから同一Play内で再開始した宿舎を通常初期状態と比較し、差0を確認済み。
+  Craft/Upgradeへの実入場とタブ切替も実施済み。強化枠3x3、配置0、所有パーツ0、Katana、
+  強化効果なし、自動チュートリアル非表示を確認した。
+QA/UXReview20261013-NewRun/after-bad-T0.txt:17,36,54
+  旧fixtureは保存フラグtrue、在庫Damage+2の1件、shopDay=6。
+QA/UXReview20261013-NewRun/after-bad-T1.txt:17,36,54
+  EDからTitleへ戻った後は保存フラグfalse、在庫空、shopDay=0。
+  同ファイル:1のStatusManager InstanceIDはT0と同じ171378であり、別インスタンスの初期値ではない。
+QA/UXReview20261013-NewRun/Report.txt:102-109
+  再開始後のベッド→MainでDay1、STR/ACC=0を確認。門敗北後の新しいEDでscore=500を確認済み。
+
+2. 初日ショップ: 現行コードで確認できること
+
+Assets/GearCraft/Scripts/Ending/ImageSequenceViewer.cs:245-257
+  ReturnToTitleでResetRunProgressを呼び、StageCountを1、素材を0にしてからTitleをロードする。
+Assets/GearCraft/Scripts/StatusManager.cs:401-427
+  ResetRunProgressでupgradeShopDay=0、hasSavedUpgradeShopLineup=false、保存在庫をClearする。
+Assets/GearCraft/Scripts/StatusManager.cs:321-333
+  BeginUpgradeShopDayはStageCountから日付を計算。StageCount=1ではday=1。
+  日付が変わると保存在庫と保存フラグを消去する。
+Assets/GearCraft/Scripts/Craft/CraftTabController.cs:67-85
+  Upgradeタブを開くとEnsureLineupInitializedを実行し、その後チュートリアルへ通知する。
+Assets/GearCraft/Scripts/Upgrade/UpgradeShopManager.cs:28-31,90-102,436-465
+  シーン内の新しいショップはshopDay=-1、生成済みfalseから開始する。
+  初期化時に当日の保存状態を読み、未生成なら抽選する。生成在庫はStatusManagerへ保存される。
+Assets/GearCraft/Scripts/Upgrade/UpgradeShopManager.cs:73-87,175-195,259-304
+  抽選時はRare以上を1件保証し、重複を避けて残りを埋める。UIはその配列から生成される。
+Assets/GearCraft/Scenes/Craft.unity:12446-12465
+  実シーンにはallPartsが15件、shopSlotCount=6、rerollGearCost=1と設定されている。
+  C#フィールド宣言の既定値3を実シーンの期待商品数として使用しない。
+Assets/GearCraft/Scripts/Craft/CraftTutorialController.cs:103-108,255-270
+  WeaponCustom習得済みキーが1なら自動チュートリアルは開始しない。
+  未習得時は課題処理が練習用パーツの挿入と素材補充を行うため、純粋な初回抽選と区別する。
+
+既存画像の限定的な証拠:
+  QA/UXReview20261013-NewRun/after-bad-upgrade.pngにはDamage Plate、Heavy Slug+、
+  Junk Magnet、Heavy Slugの4件と、その下の次の商品が写っている。
+  旧fixtureのDamage+2一件のみが残った表示ではない。ただしスクロール外の商品を含む
+  全6件、配列順、データ参照、保存状態、初回生成の非消費、同日再入場の保持は画像だけで検証できない。
+  after-bad-upgrade.txt:1はgrid/配置/所有/武器/tutorialだけを記録しており、在庫計測は含まない。
+
+3. 前周回スコア: 現行コードで確認できること
+
+Assets/GearCraft/Scripts/Ending/ScoreManager.cs:12-31
+  AwakeでSTR、ACC、StageCount、killAllEnemiesを一度だけ読み、scoreへ計算結果を保持する。
+  GetScoreは保持済みscoreをTMPへ書くだけで、StatusManagerを再読込しない。
+  scoreはインスタンスフィールドであり、staticでもPlayerPrefs保存でもない。
+Assets/GearCraft/Scenes/Ending.unity:1054-1104,1214-1227
+  ScoreManagerは初期activeのルートEndingManagerObjectに配置され、ImageSequenceViewerから参照される。
+  スコア画像の表示までAwakeが遅延するような非active子への配置ではない。
+Assets/GearCraft/Scripts/Ending/ImageSequenceViewer.cs:44-54,245-257
+  StartでGetScoreを実行。進行リセットは最後のReturnToTitleで行う。
+Assets/GearCraft/Scripts/Ending/EndingManager.cs:89-99
+  EDロード要求は番号を設定してEndingをロードする処理で、周回進行をリセットしない。
+Assets/GearCraft/Scripts/SceneTransitionManager.cs:71-82,85-107
+  Ending/Titleの通常ロードは単一シーンの切替。ScoreManagerにDontDestroyOnLoad処理はない。
+  次のEDでは別のScoreManagerが新しい周回の値から計算する設計である。
+
+既存試験と未確認の区別:
+  ターム7では3EDのスコア9000と表示を検証済みだが、ターム8の帰還初期化修正前の証拠。
+  ターム8のT0はSTR7/ACC5/Stage19/killAllEnemies=falseで、式上のスコアは21500。
+  この期待値はafter-bad-T0.txt:2,20,38,52から計算できるが、21500のスコア本文/画像を
+  そのタームの計測で確認したとは書けない。新しい周回のscore500とは別の不足範囲である。
+
+4. 1周回に絞った最小追加計測案（未実行）
+
+前提:
+  既存のPlayerPrefs退避・復元手順を使用する。元のキーの有無も保存する。
+  ターム8と同じ習得済み条件を用い、チュートリアルによる在庫差替えを混ぜない。
+  Bad EDの1経路だけを使用し、3種類EDの回帰や初日敗北score500の試験は繰り返さない。
+  進行状態の準備はfixtureとして明記し、ゲーム全編を戦闘した試験とは扱わない。
+
+A. 旧周回の識別値とスコアを記録
+  StageCount=1、STR=7、ACC=5、killAllEnemies=falseをfixtureにする（期待score=12500）。
+  旧ショップはshopDay=1、保存フラグtrue、Damage+2の1件在庫として記録する。
+  旧周回も新周回も日付1にしておくと、単なる日付変更による在庫更新だけに頼らず初期化を確認できる。
+  実LoadEndingScene(1)と通常のED進行ボタンを使用し、scoreフィールドと
+  最終スコア画面のTMP「YOUR SCORE : 12500」を記録・撮影してからTitleへ戻る。
+  戻る操作直後はStatusの初期化と保持済みscoreを別々に記録する。ロード中の画面をスコア画像にしない。
+
+B. Titleから初日ショップの生成を記録
+  同じPlayのTitleでshopDay=0/保存フラグfalse/保存在庫空を確認。
+  実Start→Story→宿舎→作業台→Upgradeタブを通り、初回生成前後を計測する。
+  期待: StageCount=1、ShopDay/status.upgradeShopDay=1、保存フラグtrue。
+  currentLineup・savedUpgradeShopLineup・表示中ShopItemのTooltipTrigger.partを順序付きで記録し、
+  実シーン設定の6件、非null、重複なし、全件allParts所属、Rare以上1件、3者一致を確認。
+  素材0のまま初回商品が生成されることも記録し、先頭と末尾までのスクロール表示を撮影する。
+  Damage+2が新しい抽選に再び含まれても正常。旧周回にあった商品が絶対に出ないことを期待しない。
+  無作為抽選のため、別起動と商品名・順序が違うことだけを初期化の証拠にしない。
+
+C. 同日再入場の短い確認
+  購入/更新をせずCraftを閉じ、同じ宿舎から一度だけ再入場してUpgradeを開く。
+  6件の順序と保存配列・素材がBと一致するか確認する。不要な再抽選/消費がないことを検査する。
+  以上で終了し、元データを復元・Play停止後にも照合する。
+
+この追加計測は機能・表示の整合性を対象とする。初見利用者が周回初期化やショップを
+理解できるか、快適に扱えるか、自力成功率が改善したかの評価とは区別する。

@@ -1,0 +1,52 @@
+Real Dorm transition and arrival; direct input-handler boundary test, not physical input.
+2.46 phase=0 PASS new Dorm is still in entry fade
+2.47 phase=0 ENTRY message=True camera=True page=ここが、あなたの工房兼宿舎。 / 戦いの前に、装備を整える場所です。
+2.47 phase=0 ADVANCE during fade changedPage=False current=ここが、あなたの工房兼宿舎。 / 戦いの前に、装備を整える場所です。
+2.47 phase=0 PASS entry fade ignores a page-advance request
+2.47 phase=0 PASS entry fade held right input stops horizontal motion/run and preserves vertical velocity
+2.47 phase=0 PASS entry fade blocks registered Freeze action
+2.47 phase=0 PASS entry fade blocks registered CraftTable action
+2.47 phase=0 PASS entry fade blocks registered Bed action
+2.47 phase=0 PASS entry fade blocks registered GateRepair action
+2.47 phase=0 PASS entry fade blocks registered Medical action
+2.47 phase=0 PASS entry fade covered five active world zones via registration fixture
+2.47 phase=0 HANDLER UIHotkeyController.ToggleMenu
+2.47 phase=0 PASS entry fade ignores menu toggle
+2.88 phase=1 PASS arrival is visible after fade
+2.88 phase=1 PASS arrival message held right input stops horizontal motion/run and preserves vertical velocity
+2.88 phase=1 PASS arrival message blocks registered Freeze action
+2.88 phase=1 PASS arrival message blocks registered CraftTable action
+2.88 phase=1 PASS arrival message blocks registered Bed action
+2.88 phase=1 PASS arrival message blocks registered GateRepair action
+2.88 phase=1 PASS arrival message blocks registered Medical action
+2.88 phase=1 PASS arrival message covered five active world zones via registration fixture
+2.88 phase=1 HANDLER UIHotkeyController.ToggleMenu
+3.03 phase=2 ARRIVAL menu=False scale=1
+3.03 phase=2 PASS arrival ignores menu toggle
+3.33 phase=4 PASS cleanup returns menu/pause to idle
+3.33 phase=4 PASS visible arrival accepts page advance
+3.33 phase=4 PASS real finish camera tween is active
+3.33 phase=4 PASS camera return held right input stops horizontal motion/run and preserves vertical velocity
+3.33 phase=4 PASS camera return blocks registered Freeze action
+3.33 phase=4 PASS camera return blocks registered CraftTable action
+3.33 phase=4 PASS camera return blocks registered Bed action
+3.33 phase=4 PASS camera return blocks registered GateRepair action
+3.33 phase=4 PASS camera return blocks registered Medical action
+3.33 phase=4 PASS camera return covered five active world zones via registration fixture
+3.33 phase=4 HANDLER UIHotkeyController.ToggleMenu
+3.43 phase=5 CAMERA menu=False scale=1 camera=True
+3.43 phase=5 PASS camera return ignores menu toggle
+4.14 phase=7 HANDLER UIHotkeyController.ToggleMenu
+4.29 phase=8 PASS normal Dorm accepts menu toggle and pauses
+4.29 phase=8 PASS open menu held right input stops horizontal motion/run and preserves vertical velocity
+4.29 phase=8 PASS open menu blocks registered Freeze action
+4.29 phase=8 PASS open menu blocks registered CraftTable action
+4.29 phase=8 PASS open menu blocks registered Bed action
+4.29 phase=8 PASS open menu blocks registered GateRepair action
+4.29 phase=8 PASS open menu blocks registered Medical action
+4.29 phase=8 PASS open menu covered five active world zones via registration fixture
+4.44 phase=9 PASS normal menu closes and resumes
+4.44 phase=9 PASS normal movement resumes for input 1
+4.44 phase=9 PASS normal movement resumes for input -1
+4.44 phase=9 PASS normal movement resumes for input 0
+4.44 phase=9 COMPLETE arrival boundary regression passed

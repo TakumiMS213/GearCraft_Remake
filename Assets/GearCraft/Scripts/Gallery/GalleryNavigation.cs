@@ -15,6 +15,7 @@ namespace GearCraft.Gallery
         private static float previousTimeScale;
         private static GameObject previousSelection;
         private static readonly List<Behaviour> suspended = new List<Behaviour>();
+        private static readonly List<Renderer> suspendedRenderers = new List<Renderer>();
         private static readonly List<AudioSource> pausedAudio = new List<AudioSource>();
 
         public static bool IsOpen { get; private set; }
@@ -88,13 +89,22 @@ namespace GearCraft.Gallery
 
         private static void SuspendSource()
         {
+            // Additive scenes share the cameras' culling space. Hide the source artwork too,
+            // without deactivating objects and cancelling their coroutines or attack state.
+            foreach (Renderer renderer in UnityEngine.Object.FindObjectsByType<Renderer>(FindObjectsSortMode.None))
+            {
+                if (!renderer.enabled || renderer.gameObject.scene != sourceScene) continue;
+                suspendedRenderers.Add(renderer);
+                renderer.enabled = false;
+            }
             foreach (Behaviour behaviour in UnityEngine.Object.FindObjectsByType<Behaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None))
             {
                 bool persistentInput = behaviour is MaterialManager || behaviour is ApplicationQuitter;
                 if (!behaviour.enabled || (behaviour.gameObject.scene != sourceScene && !persistentInput)) continue;
                 // Do not deactivate roots/AI objects: that cancels their coroutines and boss attack sequences.
                 if (persistentInput || behaviour is Camera || behaviour is Canvas || behaviour is AudioListener
-                    || behaviour is EventSystem || behaviour is BaseRaycaster || behaviour is PlayerController
+                    || behaviour is EventSystem || behaviour is BaseRaycaster || behaviour is UnityEngine.UI.Selectable
+                    || behaviour is PlayerController
                     || behaviour is EnemyController || behaviour is ArmRotation || behaviour is PlayerMovement
                     || behaviour is PauseManager || behaviour is PauseOnPanelActive || behaviour is UIHotkeyController
                     || behaviour is UIRangeDisplay || behaviour is GearCraft.Scripts.Main.MainIdleHelpController)
@@ -114,8 +124,10 @@ namespace GearCraft.Gallery
         private static void RestoreSource()
         {
             foreach (Behaviour behaviour in suspended) if (behaviour != null) behaviour.enabled = true;
+            foreach (Renderer renderer in suspendedRenderers) if (renderer != null) renderer.enabled = true;
             foreach (AudioSource audio in pausedAudio) if (audio != null) audio.UnPause();
             suspended.Clear();
+            suspendedRenderers.Clear();
             pausedAudio.Clear();
             Time.timeScale = previousTimeScale;
             IsOpen = false;
@@ -131,6 +143,7 @@ namespace GearCraft.Gallery
             sourceScene = default;
             previousSelection = null;
             suspended.Clear();
+            suspendedRenderers.Clear();
             pausedAudio.Clear();
             IsOpen = false;
             IsBusy = false;

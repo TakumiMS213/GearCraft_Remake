@@ -1,0 +1,29 @@
+--- before
++++ Assets/GearCraft/Scripts/Craft/CraftTutorialController.cs
+@@ -117,7 +117,7 @@
+                 if (openTab != tabIndex) break;
+                 ResolveTutorialReferences();
+                 bool ready = StatusManager.Instance != null && MaterialManager.Instance != null &&
+-                    (tabIndex == CraftTab ? craftManager != null && craftManager.IsReadyForTutorial
++                    (tabIndex == CraftTab ? craftManager != null && craftManager.IsReadyForTutorial && !craftManager.IsCrafting
+                         : upgradeShopManager != null && upgradeGridManager != null && upgradeGridManager.GridSize > 0);
+                 if (!ready) continue;
+                 autoStartCoroutine = null;
+@@ -145,9 +145,16 @@
+         private void StartTutorial(int tabIndex)
+         {
+             if (autoStartCoroutine != null) { StopCoroutine(autoStartCoroutine); autoStartCoroutine = null; }
++            ResolveTutorialReferences();
++            if (tabIndex == CraftTab && craftManager != null && craftManager.IsCrafting)
++            {
++                // Resume from committed results only after their crafting presentation ends.
++                HideConfirm();
++                autoStartCoroutine = StartCoroutine(StartTutorialWhenReady(tabIndex));
++                return;
++            }
+             currentTab = tabIndex;
+             autoStarted[tabIndex] = true;
+-            ResolveTutorialReferences();
+             currentSteps = GetSteps(tabIndex);
+             progress = tabIndex == CraftTab ? RunProgress.craft : RunProgress.weaponCustom;
+             // Keep the pre-task ownership and upgrade baselines until resumed outcomes are checked.

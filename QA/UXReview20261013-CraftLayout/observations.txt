@@ -1,0 +1,4 @@
+GameView restored exact original list/selected index=3, removed=4, target=(1920.00, 1080.00)
+8 original PlayerPrefs match after Play stop; scene=Title play=False backup=False
+Final term13 flags: active=False, sizesActive=False, layoutRunning=False, partLayoutRunning=False; playing=False; scene=Title
+Final Console filters: error CS = 0, Exception = 0 (not a claim of all warnings absent). git diff --check passed.

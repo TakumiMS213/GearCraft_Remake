@@ -1,0 +1,59 @@
+
+if(!Application.isPlaying||UnityEngine.SceneManagement.SceneManager.GetActiveScene().name!="Title"||!SessionState.GetBool("UXNewRun20261013.active",false))throw new System.Exception("Backed up Play Title required");
+const string logPath="QA/UXReview20261013-NewRun/spawner-after.txt";
+System.IO.File.WriteAllText(logPath,"Direct Main setup -> Gate.TakeDamage(100) -> actual Ending transition -> 12s observation -> UI Title return\n");
+PlayerPrefs.SetInt("GearCraft.Main.OpeningNotice.Seen.v1",1);
+double started=EditorApplication.timeSinceStartup;int phase=0;double endingAt=-1;double next=started;int exceptions=0;
+EnemySpawner observedSpawner=null;System.Threading.CancellationToken observedToken=default(System.Threading.CancellationToken);
+var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
+System.Action<string> log=message=>System.IO.File.AppendAllText(logPath,(EditorApplication.timeSinceStartup-started).ToString("F1")+"s "+message+"\n");
+Application.LogCallback logger=null;logger=delegate(string message,string stack,LogType type){if(type==LogType.Exception){exceptions++;log("EXCEPTION "+message+"\n"+stack);}};
+Application.logMessageReceived+=logger;
+EditorApplication.CallbackFunction tick=null;
+System.Action finish=delegate{EditorApplication.update-=tick;Application.logMessageReceived-=logger;SessionState.SetBool("UXNewRun20261013.spawnerDone",true);};
+SessionState.SetBool("UXNewRun20261013.spawnerDone",false);
+tick=delegate{
+try{
+double now=EditorApplication.timeSinceStartup;if(now-started>60||!Application.isPlaying)throw new System.Exception("Timeout/play stopped phase="+phase);
+if(now<next)return;next=now+0.05;
+string scene=UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+if(phase==0&&scene=="Main"&&StageFlowManager.Instance!=null&&StageFlowManager.Instance.IsStageActive){
+observedSpawner=StageFlowManager.Instance.enemySpawner;
+var source=(System.Threading.CancellationTokenSource)typeof(EnemySpawner).GetField("cts",flags).GetValue(observedSpawner);
+if(source==null||source.IsCancellationRequested)throw new System.Exception("Expected active spawning CTS");
+observedToken=source.Token;
+int count=UnityEngine.Object.FindObjectsByType<EnemyController>(FindObjectsSortMode.None).Length;
+log("before defeat enemyCount="+count+" CTS cancelled="+observedToken.IsCancellationRequested);
+if(count<1)throw new System.Exception("Normal spawn did not start");
+StatusManager.Instance.killAllEnemies=false;GateManager.Instance.TakeDamage(100);log("Gate damage applied");phase=1;
+}
+if(phase==1&&scene=="Ending"){
+phase=2;endingAt=now;
+log("Ending entered; oldSpawnerDestroyed="+(observedSpawner==null)+" tokenCancelled="+observedToken.IsCancellationRequested);
+if(observedSpawner!=null||!observedToken.IsCancellationRequested)throw new System.Exception("Spawner lifetime not cancelled");
+}
+if(phase==2&&now-endingAt>12){
+int enemies=UnityEngine.Object.FindObjectsByType<EnemyController>(FindObjectsSortMode.None).Length;
+int score=UnityEngine.Object.FindFirstObjectByType<ScoreManager>().score;
+log("12s after unload: exceptions="+exceptions+" enemies="+enemies+" score="+score);
+if(exceptions!=0||enemies!=0||score!=500)throw new System.Exception("Post-unload failure");
+phase=3;
+}
+if(phase==3){
+var transition=UnityEngine.Object.FindFirstObjectByType<SceneTransitionManager>();if(transition!=null&&transition.IsLoading)return;
+if(scene=="Ending"){
+var viewer=UnityEngine.Object.FindFirstObjectByType<ImageSequenceViewer>();
+bool notice=(bool)typeof(ImageSequenceViewer).GetField("showingGalleryUnlockNotice",flags).GetValue(viewer);
+var button=(UnityEngine.UI.Button)typeof(ImageSequenceViewer).GetField(notice?"galleryNoticeButton":"advanceButton",flags).GetValue(viewer);
+if(button.IsInteractable()){UnityEngine.EventSystems.ExecuteEvents.Execute(button.gameObject,new UnityEngine.EventSystems.BaseEventData(UnityEngine.EventSystems.EventSystem.current),UnityEngine.EventSystems.ExecuteEvents.submitHandler);next=now+1.15;}
+}else if(scene=="Title"){
+if(exceptions!=0||StageCounter.Instance.StageCount!=1||StatusManager.Instance.GATE!=100)throw new System.Exception("Title return failure");
+log("COMPLETE Title exceptions=0 Stage=1 GATE=100");finish();
+}
+}
+}catch(System.Exception e){log("FAIL "+e);finish();}
+};
+EditorApplication.update+=tick;
+SceneTransitionManager.LoadSceneWithTransition("Main");
+return "Spawner regression scheduled";
+

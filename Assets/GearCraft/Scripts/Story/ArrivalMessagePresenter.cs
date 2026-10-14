@@ -20,6 +20,7 @@ public class ArrivalMessagePresenter : MonoBehaviour
     private Tween currentTween;
     private float nextAutoAdvanceTime;
     private bool isPlaying;
+    private SceneTransitionManager sceneTransitionManager;
 
     private void Start()
     {
@@ -50,7 +51,7 @@ public class ArrivalMessagePresenter : MonoBehaviour
 
     private void Update()
     {
-        if (!isPlaying)
+        if (!isPlaying || IsSceneTransitioning())
         {
             return;
         }
@@ -69,6 +70,11 @@ public class ArrivalMessagePresenter : MonoBehaviour
 
     private void AdvanceByInput()
     {
+        if (!isPlaying || IsSceneTransitioning())
+        {
+            return;
+        }
+
         if (currentTween != null && currentTween.IsActive())
         {
             currentTween.Complete();
@@ -80,6 +86,16 @@ public class ArrivalMessagePresenter : MonoBehaviour
         }
 
         ShowNextPage();
+    }
+
+    private bool IsSceneTransitioning()
+    {
+        if (sceneTransitionManager == null)
+        {
+            sceneTransitionManager = FindFirstObjectByType<SceneTransitionManager>();
+        }
+
+        return sceneTransitionManager != null && sceneTransitionManager.IsLoading;
     }
 
     private void ShowNextPage()

@@ -1,0 +1,126 @@
+// Execute as a Unity MCP method body in Play/Main while OpeningNotice is visible.
+// Fixture prefs must be backed up separately. This script changes runtime values only.
+// UI events exercise UGUI handlers; this is not a physical-input E2E test.
+var qaPath = "QA/UXReview20261013-Rest/";
+var qaFlags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
+System.Action<bool, string> qaCheck = (ok, message) => { if (!ok) throw new System.Exception(message); };
+System.Action<string> qaLog = message => System.IO.File.AppendAllText(qaPath + "modal-checks.txt", System.DateTime.Now.ToString("HH:mm:ss") + " " + message + "\n");
+System.Action<GameObject> qaSubmit = target => UnityEngine.EventSystems.ExecuteEvents.Execute(target, new UnityEngine.EventSystems.BaseEventData(UnityEngine.EventSystems.EventSystem.current), UnityEngine.EventSystems.ExecuteEvents.submitHandler);
+System.Action<UnityEngine.EventSystems.MoveDirection> qaMove = direction => {
+    var es = UnityEngine.EventSystems.EventSystem.current;
+    var data = new UnityEngine.EventSystems.AxisEventData(es) { moveDir = direction };
+    UnityEngine.EventSystems.ExecuteEvents.Execute(es.currentSelectedGameObject, data, UnityEngine.EventSystems.ExecuteEvents.moveHandler);
+};
+System.Action<string> qaBackground = expectedName => {
+    var es = UnityEngine.EventSystems.EventSystem.current;
+    var data = new UnityEngine.EventSystems.PointerEventData(es) { position = new Vector2(20,20), button = UnityEngine.EventSystems.PointerEventData.InputButton.Left };
+    var hits = new System.Collections.Generic.List<UnityEngine.EventSystems.RaycastResult>(); es.RaycastAll(data, hits);
+    qaCheck(hits.Count > 0 && hits[0].gameObject.name == expectedName, "Background raycast mismatch");
+    data.pointerCurrentRaycast = hits[0]; data.pointerPressRaycast = hits[0];
+    // Match InputSystemUIInputModule.ProcessPointerButton's background deselection behavior.
+    es.SetSelectedGameObject(null, data);
+    UnityEngine.EventSystems.ExecuteEvents.ExecuteHierarchy(hits[0].gameObject, data, UnityEngine.EventSystems.ExecuteEvents.pointerDownHandler);
+    UnityEngine.EventSystems.ExecuteEvents.ExecuteHierarchy(hits[0].gameObject, data, UnityEngine.EventSystems.ExecuteEvents.pointerUpHandler);
+    UnityEngine.EventSystems.ExecuteEvents.ExecuteHierarchy(hits[0].gameObject, data, UnityEngine.EventSystems.ExecuteEvents.pointerClickHandler);
+};
+System.Action qaCheckModal = () => {
+    qaCheck(StageFlowManager.IsPlayerInputBlocked, "Gameplay not blocked");
+    var pause = UnityEngine.Object.FindFirstObjectByType<PauseManager>(); pause.Pause();
+    var options = UnityEngine.Object.FindFirstObjectByType<GearCraft.Scripts.Main.MainOptionManualController>(); options.ShowOption(); options.ShowManual();
+    qaCheck(!pause.IsPaused && !pause.pauseMenuPanel.activeInHierarchy && !options.IsManualOpen && Time.timeScale == 1f, "Background menu opened");
+};
+StageFlowManager.Instance.bonusCardsManager.cardDataList = new System.Collections.Generic.List<BonusCardDataSO> {
+    UnityEditor.AssetDatabase.LoadAssetAtPath<BonusCardDataSO>("Assets/GearCraft/ScriptableObject/BonusCard/HP_20.asset"),
+    UnityEditor.AssetDatabase.LoadAssetAtPath<BonusCardDataSO>("Assets/GearCraft/ScriptableObject/BonusCard/Gear_1.asset"),
+    UnityEditor.AssetDatabase.LoadAssetAtPath<BonusCardDataSO>("Assets/GearCraft/ScriptableObject/BonusCard/Scrap_2.asset")
+};
+MaterialManager.Instance.gear = 3;
+StatusManager.Instance.HP = 94;
+int qaStep = 0, qaLateBefore = 0, qaRowId = 0;
+GameObject qaSecondCard = null;
+TMPro.TMP_Text qaScrapAmount = null;
+double qaDeadline = UnityEditor.EditorApplication.timeSinceStartup + 120;
+float qaNext = Time.unscaledTime + 1;
+UnityEditor.EditorApplication.CallbackFunction qaTick = null;
+qaTick = delegate {
+    try {
+        if (!Application.isPlaying || UnityEditor.EditorApplication.timeSinceStartup > qaDeadline) throw new System.Exception("Play ended or check timeout, step=" + qaStep);
+        if (Time.unscaledTime < qaNext) return;
+        var flow = StageFlowManager.Instance;
+        var es = UnityEngine.EventSystems.EventSystem.current;
+        if (flow != null && flow.IsStageActive && qaStep <= 5) {
+            foreach (var enemy in UnityEngine.Object.FindObjectsByType<EnemyController>(FindObjectsSortMode.None)) if (enemy.HP > 0) enemy.TakeDamage(100000f);
+        }
+        switch (qaStep) {
+        case 0:
+            qaCheck(es.currentSelectedGameObject != null && es.currentSelectedGameObject.name == "OpeningNoticePaper", "Opening focus missing");
+            qaCheckModal(); qaBackground("NoticeInputBlocker"); qaLog("PASS 1: initial notice focus, input flag, menu guards, background does not confirm");
+            qaStep++; break;
+        case 1:
+            qaCheck(es.currentSelectedGameObject != null && es.currentSelectedGameObject.name == "OpeningNoticePaper", "Opening focus not restored");
+            ScreenCapture.CaptureScreenshot(qaPath + "13-notice-focus-after.png"); qaSubmit(es.currentSelectedGameObject); qaLog("PASS 2: notice focus restored and Submit accepted");
+            qaStep++; break;
+        case 2:
+            if (!flow.bonusCardsManager.IsChoosingReward) return;
+            qaCheckModal();
+            var cards = flow.bonusCardsManager.cardParent.GetComponentsInChildren<UnityEngine.UI.Button>();
+            qaCheck(cards.Length == 3 && es.currentSelectedGameObject == cards[0].gameObject, "First reward focus missing");
+            qaMove(UnityEngine.EventSystems.MoveDirection.Left); qaCheck(es.currentSelectedGameObject == cards[0].gameObject, "Left edge escaped cards");
+            qaMove(UnityEngine.EventSystems.MoveDirection.Right); qaSecondCard = cards[1].gameObject;
+            qaCheck(es.currentSelectedGameObject == qaSecondCard, "Right move did not select neighbor");
+            qaLog("PASS 3: card initial focus, directional handlers, boundary, modal guards"); qaStep++; break;
+        case 3:
+            qaCheck(qaSecondCard.transform.localScale.x > 1.04f, "Selected card not enlarged");
+            ScreenCapture.CaptureScreenshot(qaPath + "14-card-selected-after.png"); qaBackground("RewardInputBlocker");
+            qaLog("PASS 4: selected card enlarged; background does not confirm"); qaStep++; break;
+        case 4:
+            qaCheck(es.currentSelectedGameObject == qaSecondCard, "Reward focus not restored to last card");
+            foreach (var button in flow.bonusCardsManager.cardParent.GetComponentsInChildren<UnityEngine.UI.Button>()) if (button.name == "BonusCard_hp_20(Clone)") {
+                button.Select(); StatusManager.Instance.HP = 94; qaSubmit(button.gameObject); qaSubmit(button.gameObject);
+            }
+            qaCheck(StatusManager.Instance.HP == 100, "HP card cap failed");
+            qaLog("PASS 5: last card focus restored; HP94 -> 100, duplicate Submit ignored"); qaStep++; break;
+        case 5:
+            if (!flow.bonusCardsManager.IsChoosingReward || StageCounter.Instance.StageCount != 2) return;
+            var before = MaterialManager.Instance.scrap;
+            foreach (var button in flow.bonusCardsManager.cardParent.GetComponentsInChildren<UnityEngine.UI.Button>()) if (button.name == "BonusCard_Scrap_2(Clone)") {
+                button.Select(); qaSubmit(button.gameObject); qaSubmit(button.gameObject);
+            }
+            qaCheck(MaterialManager.Instance.scrap == before + 2, "Scrap choice applied more than once");
+            StatusManager.Instance.HP = 94; StatusManager.Instance.module_repair = true; StatusManager.Instance.module_scrap = true;
+            qaLog("PASS 6: second reward adds Scrap2 exactly once"); qaStep++; break;
+        case 6:
+            // Keep normal spawns and death reporting; never invoke stage completion directly.
+            if (flow.IsStageActive) foreach (var enemy in UnityEngine.Object.FindObjectsByType<EnemyController>(FindObjectsSortMode.None)) if (enemy.HP > 0) enemy.TakeDamage(100000f);
+            if (flow.restResultReportUI == null || !flow.restResultReportUI.IsShowing || !flow.restResultReportUI.continueButton.interactable) return;
+            qaCheck(StageCounter.Instance.StageCount == 4 && StatusManager.Instance.HP == 100, "Rest stage/repair cap failed"); qaCheckModal();
+            var gains = (System.Collections.Generic.Dictionary<MaterialManager.MaterialType,int>)typeof(StageFlowManager).GetField("restMaterialGains",qaFlags).GetValue(flow);
+            foreach (var label in flow.restResultReportUI.rowsParent.GetComponentsInChildren<TMPro.TMP_Text>()) if (label.name == "Label" && label.text == "Scrap") qaScrapAmount = label.transform.parent.Find("Amount").GetComponent<TMPro.TMP_Text>();
+            qaCheck(qaScrapAmount != null && qaScrapAmount.text == "x" + gains[MaterialManager.MaterialType.Scrap], "Report gain mismatch");
+            qaLateBefore = MaterialManager.Instance.scrap; qaRowId = qaScrapAmount.GetInstanceID();
+            var drop = UnityEngine.Object.Instantiate(GearCraft.Scripts.Items.MaterialDropper.Instance.ScrapDropPrefab, UnityEngine.Object.FindFirstObjectByType<PlayerController>().transform.position, Quaternion.identity);
+            drop.GetComponent<GearCraft.Scripts.Items.DroppedMaterialItem>().Configure(MaterialManager.MaterialType.Scrap,7);
+            qaLog("PASS 7: normal three-wave flow reaches report, module HP capped, gained count matches"); qaStep++; break;
+        case 7:
+            if (MaterialManager.Instance.scrap != qaLateBefore + 7) return;
+            qaCheck(qaScrapAmount.GetInstanceID() == qaRowId && qaScrapAmount.text == "x" + (qaLateBefore + 7), "Late pickup did not update existing report row");
+            ScreenCapture.CaptureScreenshot(qaPath + "15-report-final-after.png"); qaBackground("ReportInputBlocker");
+            qaLog("PASS 8: actual late Scrap7 pickup updates same row; report background does not confirm"); qaStep++; break;
+        case 8:
+            qaCheck(es.currentSelectedGameObject == flow.restResultReportUI.continueButton.gameObject, "Report focus not restored");
+            qaSubmit(es.currentSelectedGameObject); qaSubmit(flow.restResultReportUI.continueButton.gameObject);
+            qaLog("PASS 9: report focus restored, duplicate Submit guarded"); qaStep++; break;
+        case 9:
+            if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "CraftSpace") return;
+            qaCheck(StageCounter.Instance.StageCount == 4 && MaterialManager.Instance.scrap == qaLateBefore + 7 && !StatusManager.Instance.UseCraftSpacebuff, "Rest transition changed saved state");
+            qaLog("PASS 10: single return to dorm, Stage4, material preserved, facility available");
+            UnityEditor.EditorApplication.update -= qaTick; UnityEditor.SessionState.SetString("UXRest.modalChecks", "PASS 10"); return;
+        }
+        qaNext = Time.unscaledTime + 0.5f;
+    } catch (System.Exception error) {
+        UnityEditor.EditorApplication.update -= qaTick; qaLog("FAIL step=" + qaStep + " " + error); UnityEditor.SessionState.SetString("UXRest.modalChecks", "FAIL " + error.Message);
+    }
+};
+UnityEditor.SessionState.SetString("UXRest.modalChecks", "RUNNING");
+UnityEditor.EditorApplication.update += qaTick;
+return "Modal interaction regression started (UGUI event level).";

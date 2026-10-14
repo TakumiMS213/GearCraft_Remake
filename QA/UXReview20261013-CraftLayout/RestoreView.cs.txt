@@ -1,0 +1,16 @@
+if(UnityEditor.EditorApplication.isPlaying)throw new System.Exception("Stop Play before restoring GameView");
+var backup=System.IO.File.ReadAllLines("/tmp/gearcraft-uxcraftlayout-gameview-backup.txt");
+int selected=int.Parse(backup[0]);var expected=backup.Skip(1).ToArray();
+var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.NonPublic;
+var asm=typeof(UnityEditor.Editor).Assembly;var sizesType=asm.GetType("UnityEditor.GameViewSizes");
+var sizes=typeof(UnityEditor.ScriptableSingleton<>).MakeGenericType(sizesType).GetProperty("instance",flags).GetValue(null,null);
+var group=sizesType.GetProperty("currentGroup",flags).GetValue(sizes,null);var gt=group.GetType();
+var current=(string[])gt.GetMethod("GetDisplayTexts",flags).Invoke(group,null);
+if(!current.Where(s=>!s.StartsWith("UXCraftLayout")).SequenceEqual(expected))throw new System.Exception("Unexpected user GameView list change; no cleanup attempted");
+var vt=asm.GetType("UnityEditor.GameView");var view=Resources.FindObjectsOfTypeAll(vt)[0];vt.GetProperty("selectedSizeIndex",flags).SetValue(view,selected,null);
+int removed=0;for(int i=current.Length-1;i>=0;i--){if(!current[i].StartsWith("UXCraftLayout"))continue;if(!(bool)gt.GetMethod("IsCustomSize",flags).Invoke(group,new object[]{i}))throw new System.Exception("Not custom");gt.GetMethod("RemoveCustomSize",flags).Invoke(group,new object[]{i});removed++;}
+var final=(string[])gt.GetMethod("GetDisplayTexts",flags).Invoke(group,null);bool match=final.SequenceEqual(expected)&&(int)vt.GetProperty("selectedSizeIndex",flags).GetValue(view,null)==selected;
+if(!match)throw new System.Exception("GameView restore mismatch");
+UnityEditor.SessionState.SetBool("UXCraftLayout20261013.sizesActive",false);
+var output="GameView restored exact original list/selected index="+selected+", removed="+removed+", target="+vt.GetProperty("targetSize",flags).GetValue(view,null);
+System.IO.File.AppendAllText("QA/UXReview20261013-CraftLayout/observations.txt",output+"\n");return output;

@@ -6,6 +6,9 @@ using UnityEngine.UI;
 
 public class UpgradeGridUI : MonoBehaviour
 {
+    private const string DragCancelledMessage =
+        "装着を取り消しました。装着用の素材は消費していません。\nパーツを選び直して、枠内へドラッグしてください。";
+
     [Header("Grid UI")]
     public RectTransform gridParent;
     public GameObject gridPrefab;
@@ -342,10 +345,12 @@ public class UpgradeGridUI : MonoBehaviour
 
         if (selectedPart != null && UpgradeGridManager.Instance != null)
         {
+            string failure = UpgradeGridManager.Instance.GetPlacementFailure(selectedPart, x, y, selectedRotation);
             bool placed = UpgradeGridManager.Instance.TryPlace(selectedPart, x, y, selectedRotation, selectedInventoryIndex);
             if (infoText != null)
             {
-                infoText.text = placed ? $"{selectedPart.partName}を配置しました。" : "ここには配置できません。";
+                infoText.text = placed ? $"{selectedPart.partName}を配置しました。" :
+                    string.IsNullOrEmpty(failure) ? "このパーツはすでに装着されています。" : failure;
             }
 
             if (placed)
@@ -410,10 +415,15 @@ public class UpgradeGridUI : MonoBehaviour
 
     public void CancelShopDrag()
     {
+        bool wasDragging = draggingPart != null;
         draggingPart = null;
         draggingShopManager = null;
         draggingRotation = 0;
         ClearDragPreview();
+        if (wasDragging && infoText != null)
+        {
+            infoText.text = DragCancelledMessage;
+        }
     }
 
     public void EndShopDrag(PointerEventData eventData)
@@ -430,6 +440,11 @@ public class UpgradeGridUI : MonoBehaviour
         int gridX;
         int gridY;
         bool hasCell = TryGetDragPlacementPosition(eventData.position, out gridX, out gridY);
+        string failure = !hasCell
+            ? DragCancelledMessage
+            : UpgradeGridManager.Instance != null
+                ? UpgradeGridManager.Instance.GetPlacementFailure(partToPlace, gridX, gridY, rotation)
+                : "配置先を確認できません。作業台を開き直してください。";
 
         draggingPart = null;
         draggingShopManager = null;
@@ -459,7 +474,10 @@ public class UpgradeGridUI : MonoBehaviour
         }
         else if (shopManager != null)
         {
-            shopManager.OnPartPlacementFailed(partToPlace);
+            if (hasCell && string.IsNullOrEmpty(failure) && !shopManager.CanAfford(partToPlace))
+                shopManager.ShowCannotAfford(partToPlace);
+            else
+                shopManager.OnPartPlacementFailed(partToPlace, failure);
         }
     }
 

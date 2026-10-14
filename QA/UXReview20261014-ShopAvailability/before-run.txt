@@ -1,0 +1,189 @@
+Shop availability runtime fixture; canonical Damage+2,Damage+1,SpeedGear,SpeedGear++. Parent restores 8 preference keys.
+0.03s phase=0 RUNTIME FIXTURE stock with Scrap4; no asset/save-file changes
+0.17s phase=1 PASS stock and saved stock contain four parts
+0.17s phase=1 PASS canonical/saved order unchanged Damage+2
+0.17s phase=1 PASS row identity retained Damage+2
+0.17s phase=1 PASS display position 0=Damage+1
+0.17s phase=1 PASS affordability/alpha Damage+2=False
+0.17s phase=1 PASS raycasts and tooltip retained Damage+2
+0.17s phase=1 PASS canonical/saved order unchanged Damage+1
+0.17s phase=1 PASS row identity retained Damage+1
+0.17s phase=1 PASS display position 1=SpeedGear
+0.17s phase=1 PASS affordability/alpha Damage+1=True
+0.17s phase=1 PASS raycasts and tooltip retained Damage+1
+0.17s phase=1 PASS canonical/saved order unchanged SpeedGear
+0.17s phase=1 PASS row identity retained SpeedGear
+0.17s phase=1 PASS display position 2=Damage+2
+0.17s phase=1 PASS affordability/alpha SpeedGear=True
+0.17s phase=1 PASS raycasts and tooltip retained SpeedGear
+0.17s phase=1 PASS canonical/saved order unchanged SpeedGear++
+0.18s phase=1 PASS row identity retained SpeedGear++
+0.18s phase=1 PASS display position 3=SpeedGear++
+0.18s phase=1 PASS affordability/alpha SpeedGear++=False
+0.18s phase=1 PASS raycasts and tooltip retained SpeedGear++
+0.18s phase=1 SCREENSHOT_REQUEST 01-mixed-availability.png
+0.32s phase=2 PASS stock and saved stock contain four parts
+0.32s phase=2 PASS canonical/saved order unchanged Damage+2
+0.32s phase=2 PASS row identity retained Damage+2
+0.32s phase=2 PASS display position 0=Damage+2
+0.32s phase=2 PASS affordability/alpha Damage+2=True
+0.32s phase=2 PASS raycasts and tooltip retained Damage+2
+0.32s phase=2 PASS canonical/saved order unchanged Damage+1
+0.32s phase=2 PASS row identity retained Damage+1
+0.32s phase=2 PASS display position 1=Damage+1
+0.32s phase=2 PASS affordability/alpha Damage+1=True
+0.32s phase=2 PASS raycasts and tooltip retained Damage+1
+0.32s phase=2 PASS canonical/saved order unchanged SpeedGear
+0.32s phase=2 PASS row identity retained SpeedGear
+0.32s phase=2 PASS display position 2=SpeedGear
+0.32s phase=2 PASS affordability/alpha SpeedGear=True
+0.32s phase=2 PASS raycasts and tooltip retained SpeedGear
+0.32s phase=2 PASS canonical/saved order unchanged SpeedGear++
+0.32s phase=2 PASS row identity retained SpeedGear++
+0.32s phase=2 PASS display position 3=SpeedGear++
+0.32s phase=2 PASS affordability/alpha SpeedGear++=False
+0.32s phase=2 PASS raycasts and tooltip retained SpeedGear++
+0.32s phase=2 PASS stock and saved stock contain four parts
+0.32s phase=2 PASS canonical/saved order unchanged Damage+2
+0.33s phase=2 PASS row identity retained Damage+2
+0.33s phase=2 PASS display position 0=Damage+2
+0.33s phase=2 PASS affordability/alpha Damage+2=True
+0.33s phase=2 PASS raycasts and tooltip retained Damage+2
+0.33s phase=2 PASS canonical/saved order unchanged Damage+1
+0.33s phase=2 PASS row identity retained Damage+1
+0.33s phase=2 PASS display position 1=Damage+1
+0.33s phase=2 PASS affordability/alpha Damage+1=True
+0.33s phase=2 PASS raycasts and tooltip retained Damage+1
+0.33s phase=2 PASS canonical/saved order unchanged SpeedGear
+0.33s phase=2 PASS row identity retained SpeedGear
+0.33s phase=2 PASS display position 2=SpeedGear
+0.33s phase=2 PASS affordability/alpha SpeedGear=True
+0.33s phase=2 PASS raycasts and tooltip retained SpeedGear
+0.33s phase=2 PASS canonical/saved order unchanged SpeedGear++
+0.33s phase=2 PASS row identity retained SpeedGear++
+0.33s phase=2 PASS display position 3=SpeedGear++
+0.33s phase=2 PASS affordability/alpha SpeedGear++=True
+0.33s phase=2 PASS raycasts and tooltip retained SpeedGear++
+0.33s phase=2 PASS spend Scrap5
+0.33s phase=2 PASS stock and saved stock contain four parts
+0.33s phase=2 PASS canonical/saved order unchanged Damage+2
+0.33s phase=2 PASS row identity retained Damage+2
+0.33s phase=2 PASS display position 0=Damage+1
+0.33s phase=2 PASS affordability/alpha Damage+2=False
+0.33s phase=2 PASS raycasts and tooltip retained Damage+2
+0.33s phase=2 PASS canonical/saved order unchanged Damage+1
+0.33s phase=2 PASS row identity retained Damage+1
+0.33s phase=2 PASS display position 1=Damage+2
+0.33s phase=2 PASS affordability/alpha Damage+1=True
+0.33s phase=2 PASS raycasts and tooltip retained Damage+1
+0.33s phase=2 PASS canonical/saved order unchanged SpeedGear
+0.33s phase=2 PASS row identity retained SpeedGear
+0.33s phase=2 PASS display position 2=SpeedGear
+0.33s phase=2 PASS affordability/alpha SpeedGear=False
+0.33s phase=2 PASS raycasts and tooltip retained SpeedGear
+0.33s phase=2 PASS canonical/saved order unchanged SpeedGear++
+0.33s phase=2 PASS row identity retained SpeedGear++
+0.33s phase=2 PASS display position 3=SpeedGear++
+0.33s phase=2 PASS affordability/alpha SpeedGear++=False
+0.33s phase=2 PASS raycasts and tooltip retained SpeedGear++
+0.47s phase=3 PASS stock and saved stock contain four parts
+0.47s phase=3 PASS canonical/saved order unchanged Damage+2
+0.47s phase=3 PASS row identity retained Damage+2
+0.47s phase=3 PASS display position 0=Damage+1
+0.47s phase=3 PASS affordability/alpha Damage+2=False
+0.47s phase=3 PASS raycasts and tooltip retained Damage+2
+0.47s phase=3 PASS canonical/saved order unchanged Damage+1
+0.47s phase=3 PASS row identity retained Damage+1
+0.47s phase=3 PASS display position 1=SpeedGear
+0.48s phase=3 PASS affordability/alpha Damage+1=True
+0.48s phase=3 PASS raycasts and tooltip retained Damage+1
+0.48s phase=3 PASS canonical/saved order unchanged SpeedGear
+0.48s phase=3 PASS row identity retained SpeedGear
+0.48s phase=3 PASS display position 2=Damage+2
+0.48s phase=3 PASS affordability/alpha SpeedGear=True
+0.48s phase=3 PASS raycasts and tooltip retained SpeedGear
+0.48s phase=3 PASS canonical/saved order unchanged SpeedGear++
+0.48s phase=3 PASS row identity retained SpeedGear++
+0.48s phase=3 PASS display position 3=SpeedGear++
+0.48s phase=3 PASS affordability/alpha SpeedGear++=False
+0.48s phase=3 PASS raycasts and tooltip retained SpeedGear++
+0.48s phase=3 direct public-field change observed by MaterialManager.LateUpdate
+0.49s phase=3 PASS actual row raycast reaches ShopItem_Damage+1
+0.50s phase=3 PASS real drag starts for funded Damage+1
+0.62s phase=4 PASS stock and saved stock contain four parts
+0.62s phase=4 PASS canonical/saved order unchanged Damage+2
+0.62s phase=4 PASS row identity retained Damage+2
+0.63s phase=4 PASS display position 0=Damage+2
+0.63s phase=4 PASS affordability/alpha Damage+2=False
+0.63s phase=4 PASS raycasts and tooltip retained Damage+2
+0.63s phase=4 PASS canonical/saved order unchanged Damage+1
+0.63s phase=4 PASS row identity retained Damage+1
+0.63s phase=4 PASS display position 1=Damage+1
+0.63s phase=4 PASS affordability/alpha Damage+1=False
+0.63s phase=4 PASS raycasts and tooltip retained Damage+1
+0.63s phase=4 PASS canonical/saved order unchanged SpeedGear
+0.63s phase=4 PASS row identity retained SpeedGear
+0.63s phase=4 PASS display position 2=SpeedGear
+0.63s phase=4 PASS affordability/alpha SpeedGear=False
+0.63s phase=4 PASS raycasts and tooltip retained SpeedGear
+0.63s phase=4 PASS canonical/saved order unchanged SpeedGear++
+0.63s phase=4 PASS row identity retained SpeedGear++
+0.63s phase=4 PASS display position 3=SpeedGear++
+0.63s phase=4 PASS affordability/alpha SpeedGear++=False
+0.63s phase=4 PASS raycasts and tooltip retained SpeedGear++
+0.63s phase=4 PASS material loss preserves active drag source and preview
+0.63s phase=4 PASS real end-drag clears preview state
+0.63s phase=4 PASS unfunded drop neither purchases nor places
+0.63s phase=4 PASS unfunded drop shows shortage feedback
+0.77s phase=5 PASS actual row raycast reaches ShopItem_Damage+2
+0.78s phase=5 PASS translucent unavailable row opens actual tooltip
+0.78s phase=5 PASS unavailable row rejects begin drag
+0.79s phase=5 PASS upgrade list hidden by actual Craft tab
+0.93s phase=6 PASS stock and saved stock contain four parts
+0.93s phase=6 PASS canonical/saved order unchanged Damage+2
+0.93s phase=6 PASS row identity retained Damage+2
+0.93s phase=6 PASS display position 0=Damage+2
+0.93s phase=6 PASS affordability/alpha Damage+2=True
+0.93s phase=6 PASS raycasts and tooltip retained Damage+2
+0.93s phase=6 PASS canonical/saved order unchanged Damage+1
+0.93s phase=6 PASS row identity retained Damage+1
+0.93s phase=6 PASS display position 1=Damage+1
+0.93s phase=6 PASS affordability/alpha Damage+1=True
+0.93s phase=6 PASS raycasts and tooltip retained Damage+1
+0.93s phase=6 PASS canonical/saved order unchanged SpeedGear
+0.93s phase=6 PASS row identity retained SpeedGear
+0.93s phase=6 PASS display position 2=SpeedGear
+0.93s phase=6 PASS affordability/alpha SpeedGear=True
+0.93s phase=6 PASS raycasts and tooltip retained SpeedGear
+0.93s phase=6 PASS canonical/saved order unchanged SpeedGear++
+0.93s phase=6 PASS row identity retained SpeedGear++
+0.94s phase=6 PASS display position 3=SpeedGear++
+0.94s phase=6 PASS affordability/alpha SpeedGear++=True
+0.94s phase=6 PASS raycasts and tooltip retained SpeedGear++
+0.94s phase=6 PASS stock and saved stock contain four parts
+0.94s phase=6 PASS canonical/saved order unchanged Damage+2
+0.94s phase=6 PASS row identity retained Damage+2
+0.94s phase=6 PASS display position 0=Damage+1
+0.94s phase=6 PASS affordability/alpha Damage+2=False
+0.94s phase=6 PASS raycasts and tooltip retained Damage+2
+0.94s phase=6 PASS canonical/saved order unchanged Damage+1
+0.94s phase=6 PASS row identity retained Damage+1
+0.94s phase=6 PASS display position 1=Damage+2
+0.94s phase=6 PASS affordability/alpha Damage+1=True
+0.94s phase=6 PASS raycasts and tooltip retained Damage+1
+0.94s phase=6 PASS canonical/saved order unchanged SpeedGear
+0.94s phase=6 PASS row identity retained SpeedGear
+0.94s phase=6 PASS display position 2=SpeedGear
+0.94s phase=6 PASS affordability/alpha SpeedGear=False
+0.94s phase=6 PASS raycasts and tooltip retained SpeedGear
+0.94s phase=6 PASS canonical/saved order unchanged SpeedGear++
+0.94s phase=6 PASS row identity retained SpeedGear++
+0.94s phase=6 PASS display position 3=SpeedGear++
+0.94s phase=6 PASS affordability/alpha SpeedGear++=False
+0.94s phase=6 PASS raycasts and tooltip retained SpeedGear++
+0.94s phase=6 disabled manager catches up on OnEnable
+0.95s phase=6 FAIL System.Exception: actual row raycast reaches ShopItem_Damage+1
+  at MCPDynamicCode+<Execute>c__AnonStorey0.<>m__1 (System.Boolean ok, System.String text) [0x00006] in <e3ed600259e642e48802303efd9b9f11>:0 
+  at MCPDynamicCode+<Execute>c__AnonStorey0.<>m__3 (UnityEngine.GameObject obj) [0x0010a] in <e3ed600259e642e48802303efd9b9f11>:0 
+  at MCPDynamicCode+<Execute>c__AnonStorey0.<>m__4 () [0x00012] in <e3ed600259e642e48802303efd9b9f11>:0 
+  at MCPDynamicCode+<Execute>c__AnonStorey0.<>m__8 () [0x006a6] in <e3ed600259e642e48802303efd9b9f11>:0 ; assertions=179; errors=0; parent restores prefs and stops Play

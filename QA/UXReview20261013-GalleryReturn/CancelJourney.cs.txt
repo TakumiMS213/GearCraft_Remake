@@ -1,0 +1,85 @@
+// Synthetic InputSystem state events exercise the configured action + LateUpdate.
+// Direct scene loads prepare origins; opening/return use UI events except explicit guard checks.
+const string prefix="UXGalleryReturn20261013.";
+const string folder="QA/UXReview20261013-GalleryReturn/";
+if(!UnityEditor.EditorApplication.isPlaying||!UnityEditor.SessionState.GetBool(prefix+"active",false))throw new System.Exception("Backup and Play required");
+if(UnityEditor.SessionState.GetBool(prefix+"running",false))throw new System.Exception("Already running");
+string path=folder+"cancel-after.txt";
+System.IO.File.WriteAllText(path,"Synthetic InputSystem device events; no OS/physical input.\n");
+var keyboard=UnityEngine.InputSystem.InputSystem.AddDevice<UnityEngine.InputSystem.Keyboard>("UXGalleryReturnKeyboard");
+var gamepad=UnityEngine.InputSystem.InputSystem.AddDevice<UnityEngine.InputSystem.Gamepad>("UXGalleryReturnGamepad");
+Resources.FindObjectsOfTypeAll<UnityEditor.EditorWindow>().First(w=>w.GetType().FullName=="UnityEditor.GameView").Focus();
+int phase=0,testCase=0,passes=0,performed=0,beforePerformed=0,debugStep=0;
+double start=UnityEditor.EditorApplication.timeSinceStartup,next=start;
+string[] origins={"Title","Title","Title","Title","Title","Title","CraftSpace","Main"};
+string origin="";GameObject entrance=null;int sourceId=0;string sourceState="";
+GearCraft.Gallery.GalleryReturnButton back=null;
+GearCraft.Gallery.GalleryDebugUnlockPanel debug=null;
+System.Action<string> log=s=>System.IO.File.AppendAllText(path,(UnityEditor.EditorApplication.timeSinceStartup-start).ToString("F2")+" case="+testCase+" phase="+phase+" "+s+"\n");
+System.Action<bool,string> check=(ok,s)=>{log((ok?"PASS ":"FAIL ")+s);if(!ok)throw new System.Exception(s);passes++;};
+System.Action<GameObject> submit=go=>{var es=UnityEngine.EventSystems.EventSystem.current;es.SetSelectedGameObject(go);UnityEngine.EventSystems.ExecuteEvents.Execute(go,new UnityEngine.EventSystems.BaseEventData(es),UnityEngine.EventSystems.ExecuteEvents.submitHandler);};
+System.Func<string> snapshot=()=>{var s=StatusManager.Instance;return s.GetInstanceID()+","+s.HP+","+s.GATE+","+s.STR+","+s.ACC+","+s.UseCraftSpacebuff+","+MaterialManager.Instance.GetMaterial(MaterialManager.MaterialType.Gear)+","+MaterialManager.Instance.GetMaterial(MaterialManager.MaterialType.Scrap);};
+System.Action release=()=>{UnityEngine.InputSystem.InputSystem.QueueStateEvent(keyboard,new UnityEngine.InputSystem.LowLevel.KeyboardState());UnityEngine.InputSystem.InputSystem.QueueStateEvent(gamepad,new UnityEngine.InputSystem.LowLevel.GamepadState());};
+System.Action press=()=>{beforePerformed=performed;if(testCase==1||testCase==5)UnityEngine.InputSystem.InputSystem.QueueStateEvent(gamepad,new UnityEngine.InputSystem.LowLevel.GamepadState().WithButton(UnityEngine.InputSystem.LowLevel.GamepadButton.East));else UnityEngine.InputSystem.InputSystem.QueueStateEvent(keyboard,new UnityEngine.InputSystem.LowLevel.KeyboardState(UnityEngine.InputSystem.Key.Escape));};
+System.Action<object,UnityEngine.InputSystem.InputActionChange> monitor=(obj,change)=>{var a=obj as UnityEngine.InputSystem.InputAction;if(a!=null&&a.name=="Cancel"&&change==UnityEngine.InputSystem.InputActionChange.ActionPerformed){performed++;log("INPUT Cancel performed control="+a.activeControl.path);}};
+UnityEngine.InputSystem.InputSystem.onActionChange+=monitor;
+UnityEditor.EditorApplication.CallbackFunction tick=null;
+System.Action<bool,string> finish=(ok,s)=>{UnityEditor.EditorApplication.update-=tick;UnityEngine.InputSystem.InputSystem.onActionChange-=monitor;UnityEngine.InputSystem.InputSystem.RemoveDevice(keyboard);UnityEngine.InputSystem.InputSystem.RemoveDevice(gamepad);UnityEditor.SessionState.SetBool(prefix+"running",false);UnityEditor.SessionState.SetBool(prefix+"passed",ok);log((ok?"COMPLETE ":"FAILED ")+passes+" checks "+s);};
+UnityEditor.SessionState.SetBool(prefix+"running",true);
+tick=()=>{try{
+ double now=UnityEditor.EditorApplication.timeSinceStartup;if(now-start>60)throw new System.Exception("60 second deadline");if(now<next)return;next=now+.04;
+ string scene=UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+ if(phase==0){
+  origin=origins[testCase];debugStep=0;
+  if(scene!=origin){StoryPlaybackRequest.ClearRequest();PlayerPrefs.SetInt("GearCraft.Main.OpeningNotice.Seen.v1",1);Time.timeScale=1;UnityEngine.SceneManagement.SceneManager.LoadScene(origin);next=now+1;phase=1;return;}
+  phase=1;
+ }
+ else if(phase==1){
+  if(scene!=origin)return;
+  if(origin=="CraftSpace") {var h=UnityEngine.Object.FindFirstObjectByType<UIHotkeyController>();h.ToggleMenu();sourceId=h.GetInstanceID();}
+  else if(origin=="Main"){var p=UnityEngine.Object.FindFirstObjectByType<PauseManager>();p.Pause();sourceId=p.GetInstanceID();check(p.IsPaused&&Time.timeScale==0,"Main menu paused before Gallery");}
+  else sourceId=UnityEngine.SceneManagement.SceneManager.GetActiveScene().handle;
+  phase=7;next=now+.15;
+ }
+ else if(phase==7){
+  if(origin=="CraftSpace")check(Time.timeScale==0,"Dorm menu pauses on subsequent frame before Gallery");
+  var ent=UnityEngine.Object.FindObjectsByType<GearCraft.Gallery.GalleryEntranceButton>(FindObjectsSortMode.None).First(e=>e.gameObject.scene.name==origin&&e.gameObject.activeInHierarchy);entrance=ent.gameObject;
+  sourceState=snapshot();submit(entrance);phase=2;next=now+.15;
+ }
+ else if(phase==2){
+  if(scene!="Gallery"||GearCraft.Gallery.GalleryNavigation.IsBusy)return;
+  back=UnityEngine.Object.FindFirstObjectByType<GearCraft.Gallery.GalleryReturnButton>();debug=UnityEngine.Object.FindFirstObjectByType<GearCraft.Gallery.GalleryDebugUnlockPanel>();
+  check(GearCraft.Gallery.GalleryNavigation.IsOpen&&Time.timeScale==0,"Gallery open and source paused");
+  if(testCase==1)UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(back.gameObject);
+  if(testCase==2)UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(UnityEngine.Object.FindObjectsByType<UnityEngine.UI.Scrollbar>(FindObjectsSortMode.None).First(x=>x.gameObject.scene.name=="Gallery").gameObject);
+  if(testCase==3)UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(null);
+  if(testCase==4||testCase==5){debug.Open();if(testCase==4)debug.ShowAll();else debug.ShowLocked();check(debug.IsOpen,"Debug preview open");ScreenCapture.CaptureScreenshot(folder+"case-"+testCase+"-debug-open.png");phase=3;next=now+.25;return;}
+  ScreenCapture.CaptureScreenshot(folder+"case-"+testCase+"-gallery.png");phase=3;next=now+.25;
+ }
+ else if(phase==3){press();phase=4;next=now+.2;}
+ else if(phase==4){release();check(performed>beforePerformed,"Configured Cancel action performed");phase=5;next=now+.35;}
+ else if(phase==5){
+  if((testCase==4||testCase==5)&&debugStep==0){
+   check(scene=="Gallery"&&!GearCraft.Gallery.GalleryNavigation.IsBusy&&!debug.IsOpen,"First Cancel closes debug only");
+   check(UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject!=null,"Debug close restores selection");
+   ScreenCapture.CaptureScreenshot(folder+"case-"+testCase+"-debug-closed.png");debugStep=1;phase=3;next=now+.35;return;
+  }
+  if(GearCraft.Gallery.GalleryNavigation.IsBusy)return;
+  check(scene==origin&&!GearCraft.Gallery.GalleryNavigation.IsOpen,"Cancel returned to "+origin);
+  check(UnityEditor.EditorApplication.isPlaying,"Title return does not stop Play under synthetic new-input event");
+  check(UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject==entrance,"Origin Gallery selection restored");
+  check(snapshot()==sourceState,"Origin status and material snapshot preserved");
+  check(UnityEngine.Object.FindObjectsByType<UnityEngine.EventSystems.EventSystem>(FindObjectsSortMode.None).Count(e=>e.isActiveAndEnabled)==1,"One active origin EventSystem");
+  if(origin=="Title")check(Time.timeScale==1&&UnityEngine.SceneManagement.SceneManager.GetActiveScene().handle==sourceId,"Same Title and timeScale1 restored");
+  if(origin=="CraftSpace"){var h=UnityEngine.Object.FindFirstObjectByType<UIHotkeyController>();check(h.GetInstanceID()==sourceId&&Time.timeScale==0,"Same paused Dorm restored");}
+  if(origin=="Main"){var p=UnityEngine.Object.FindFirstObjectByType<PauseManager>();check(p.GetInstanceID()==sourceId&&p.IsPaused&&p.pauseMenuPanel.activeInHierarchy&&Time.timeScale==0,"Same paused Main menu restored");}
+  ScreenCapture.CaptureScreenshot(folder+"case-"+testCase+"-returned.png");phase=6;next=now+.3;
+ }
+ else if(phase==6){
+  if(origin=="CraftSpace")UnityEngine.Object.FindFirstObjectByType<UIHotkeyController>().CloseMenu();
+  if(origin=="Main")UnityEngine.Object.FindFirstObjectByType<PauseManager>().Resume();
+  testCase++;if(testCase==origins.Length){finish(true,"8 origin/focus/debug cases");return;}phase=0;
+ }
+}catch(System.Exception ex){finish(false,ex.ToString());}};
+UnityEditor.EditorApplication.update+=tick;
+return "Scheduled 8 Cancel cases, synthetic InputSystem devices, 60s deadline";

@@ -1,0 +1,124 @@
+GearCraft UXテスト・ターム6（防衛開始通知 → 報酬 → 休息報告 → 宿舎 → 翌日）
+実施日: 2026-10-13 JST
+Unity: 6000.0.67f1 / macOS Editor / GameView 1920x1080
+状態: 修正・10段階UIイベント回帰検証・データ復元を完了。UX全体のテストは継続中。
+
+短い変更要約
+1. 開始通知・報酬・休息報告の表示中は、戦闘入力と背面メニューを遮断。
+2. カードの初期選択、左右移動、背景クリック後の選択復帰を追加。
+   選択カードを1.05倍にし、色の小さな差だけに依存しない表示にした。
+3. 通知・報告は紙のクリック／Enterで確定。背景クリックでは進めない。
+   報告には既存シーンの紙へButtonを配線。遮断背景3枚もMainのシーンオブジェクト。
+4. 報告を開いた後に拾った素材も、同じ行の数値へ反映。
+5. HPカードとリペアモジュールの回復をHP100までに制限。
+
+根拠と適用範囲
+安藤昌也教授インタビュー（HIP、2018-03-05）
+https://hiptokyo.jp/hiptalk/ux_design/2/
+  操作中だけでなく前後の体験と行動の関係を見る方針を参考に、
+  防衛・報酬・報告・宿舎・翌日を連続して調べた。
+Jakob Nielsen / 10 Usability Heuristics for User Interface Design
+https://www.nngroup.com/articles/ten-usability-heuristics/
+  状態の可視性: 実際の獲得数と表示を一致させる。
+  エラー防止: 読む・選ぶ間の素材消費、背面メニュー、重複確定を防ぐ。
+  必要な情報への集中: 報酬・報告中の戦闘待機ヒントを消す。
+Microsoft / Xbox Accessibility Guideline 112: UI navigation
+https://learn.microsoft.com/en-us/xbox/accessibility/xbox-accessibility-guidelines/112
+  予測可能な選択移動、デジタル入力による操作を判断根拠にした。
+  XAG全体への適合を認定するものではない。
+これらは設計判断の根拠であり、このゲームで理解度や快適さが改善した証明ではない。
+
+修正前の観測
+・報酬選択中のQでGear3→2、PlayerのisBoostActive=true。
+・報酬のEventSystem選択がnull。右矢印でも選択されなかった。
+・HP94でHP20カードを選択するとStatusManager.HP=114。
+  Player側の見かけの上限100とデータが不一致だった。
+・休息報告でTabを押すと、紙の背面にpausePanelが開きTime.timeScale=0。
+・報告中に実際のScrap7ドロップを拾うと、所持・獲得数は8→15、表示はx8のまま。
+・報告、カードに戦闘操作ヒントが重なっていた。
+・新しい背景遮断UIで、背景クリック相当処理後にカードの選択nullが持続するケースを追加確認。
+  InputSystemUIInputModule.ProcessPointerButtonと同じ選択解除＋UGUI Pointerイベントで再現。
+・報告の7行とフッターは1920x1080で紙内に収まっていた。行のはみ出しは再現しなかった。
+
+実装箇所
+Assets/GearCraft/Scenes/Main.unity
+  通知・報酬・報告の各Canvasに画面全体のRaycast背景。
+  RewardInputBlockerはLayoutElement.ignoreLayout=true、カードより前の兄弟。
+  ResultPaperのButtonとRestResultReportUI.continueButtonをシーン配線。
+  通知・報告の確定文言を「クリック / Enter」に統一。
+Assets/GearCraft/Scripts/Main/StageFlowManager.cs
+  モーダルUI状態と確定フレームの共通入力遮断。開始通知のButton/Submit、選択復帰。
+  開始通知の非スケール時間演出・キャンセル後始末。リペアHP上限。
+Assets/GearCraft/Scripts/Main/PlayerController.cs
+  移動・攻撃・変形・Qの入力を遮断。ダッシュと横速度を解除。
+  ステータス同期・クールタイム・自動バリア等の更新は継続。
+Assets/GearCraft/Scripts/Main/PauseManager.cs
+Assets/GearCraft/Scripts/Main/MainOptionManualController.cs
+  モーダル表示中にTab/Escのポーズおよび背面オプション・マニュアルを開かない。
+Assets/GearCraft/Scripts/Main/MainIdleHelpController.cs
+  モーダル表示中の戦闘待機ヒントを非表示。
+Assets/GearCraft/Scripts/Main/BonusCardsManager.cs
+  初期フォーカス、左右移動、直前カードへの復帰、選択倍率、二重確定防止、HP上限。
+  無効化・破棄時の待機キャンセル、カードとTweenの後始末。
+Assets/GearCraft/Scripts/UI/RestResultReportUI.cs
+  紙のButton確定、選択復帰、非スケール時間演出、素材数の差分更新、キャンセル後始末。
+
+検証結果
+ModalInteractionChecks.cs.txtをMCPで実行: 10/10 PASS（modal-checks.txt）。
+1. 通知の初期選択、共通入力遮断、Pause/Option/Manualの非反応、背景で確定しない。
+2. 通知の背景クリック相当処理後に選択が戻り、Submitで進む。
+3. 報酬の初期選択、左右移動、端で他UIへ逃げない、背面メニュー非反応。
+4. 選択カードだけ拡大。背景で報酬を確定しない。
+5. 直前のカードへ選択復帰。HP94→100。重複Submitを受け付けない。
+6. 2回目のScrap2カードは重複Submitでも2だけ加算。
+7. 3区間の通常進行でStage4の休息報告へ到達。リペアHP94→100。獲得数一致。
+8. 報告中の実ドロップScrap7拾得を既存行へ反映。行のInstanceIDは不変。
+9. 報告の背景クリック相当処理後に選択復帰。重複Submitを防止。
+10. 宿舎へ一度だけ帰還。Stage4、素材を保持、設備利用枠が利用可能。
+
+先行する個別検証でも、Scrap表示4→11、行ID不変を確認。
+報告→宿舎→設備利用→ベッド→Main Stage4（翌日）の経路を確認。
+Gear7/Scrap11を保持し、設備利用済みtrueからMain入場後falseへ戻った。
+食事はSTR/ACCのランダム上昇。観測ログにはACCだけ記録していたため、
+この個別走行の「ACC0→0」を効果未発生とは解釈しない。効果値の確認はターム5を参照。
+
+試験方法と限界
+・通常の敵Spawnerと死亡通知を通して進行。検証時間短縮のため、生成済みの敵へ
+  TakeDamageを与えた。OnStageCompleteの直接呼び出しは使っていない。
+  プレイヤーによる通常戦闘・ボス戦・難易度評価の合格ではない。
+・カード候補とHP、モジュール等はPlay中のfixture。アセットの抽選や経済を変更していない。
+・UI回帰はUGUI Move/Submit/Pointerイベント＋InputModuleと同じ背景選択解除処理。
+  宿舎の個別試験は座標移動で実トリガーへ入り、設備操作ハンドラーを実行。
+・OSキー送信はEditorのフォーカスと入力到達が不安定で、一部は後から到達した。
+  修正後のQ/Tab/矢印/Enterすべてを物理入力E2E合格とはしない。
+  Qの修正後確認は共通遮断状態とPlayerControllerの入力分岐レビューを含む。
+  初期の「値が変わらなかった」というOS入力試行だけでは入力遮断の実証に用いない。
+・初回Play中の遅延アセンブリ再読み込みでstatic参照が消えた走行は無効とし、
+  アセット同期後に新しいPlayで検証し直した。
+・報告中の物理クリック試行はGameViewへの到達を確認できず、停止したとは断定しない。
+・別解像度、実機ビルド、人の読解・見やすさ・操作成功率は未測定。
+
+画像・証跡
+01〜05: 修正前（01は開始通知ではなく1回目の報酬）。
+06: 開始通知の画面確認。Play再読み込みが起きた走行のため入力の合格根拠にはしない。
+07〜10: 修正後のカード・報告・後からの拾得。
+11〜12: 宿舎帰還と翌日のMain。
+13〜15: 最終コードでの通知、中央カード選択、報告。
+observations.txt / actions.txt: 個別試験の値と訂正を含む。
+modal-checks.txt: 最終コードでの10段階合格記録。
+ModalInteractionChecks.cs.txt: 再実行用MCPコード。Assets外なので製品ビルドには入らない。
+
+データ・終了状態
+PlayerPrefs8キーをファイル退避し、全試験後に復元。Play停止後にも存在と値を照合済み。
+復元元: /tmp/gearcraft-uxrest-playerprefs-backup.txt
+Unity: Title、Play停止、UXRest20261013.active=false。
+CSコンパイルエラー0、git diff --check成功。
+Consoleには既存のURP互換モード告知とMetalのmemoryless depth警告がある。
+今回のゲーム処理由来の新規例外は最終走行では確認していない。
+
+人間による後日の確認
+H-07: 読む／選ぶ間に戦闘が動かないこと、クリック/Enterの確定方法、
+      拡大された選択カードと背景クリック後の復帰を自然に理解できるか。
+      誤確定・迷い・操作できないと思った回数と、本人の言葉による説明を記録する。
+      選択倍率1.05、遮断背景の暗さ、既存フッター点滅の読みやすさも対象。
+広い設計変更についてユーザー明示承認が必須とされた項目は今回もなし。

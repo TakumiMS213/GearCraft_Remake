@@ -40,6 +40,15 @@ namespace GearCraft.Scripts.Main
 
         private void Update()
         {
+            if (StageFlowManager.IsPlayerInputBlocked)
+            {
+                moveIdleTime = attackIdleTime = boostIdleTime = 0f;
+                SetPromptActive(movePrompt, false);
+                SetPromptActive(attackPrompt, false);
+                SetBoostPromptActive(false);
+                return;
+            }
+
             UpdateMoveHelp();
             UpdateAttackHelp();
             UpdateBoostHelp();

@@ -1,0 +1,12 @@
+{
+  "job_id": "build-dcb74bd11d",
+  "result": "succeeded",
+  "platform": "StandaloneOSX",
+  "output_path": "QA/UXReview20261013-StandaloneDisplay/Build/GearCraftUXDisplayProbe.app",
+  "started_at": "2026-10-13T13:47:28.1761000Z",
+  "duration_seconds": 46.976727,
+  "completed_at": "2026-10-13T13:48:15.1528270Z",
+  "total_size_mb": 269.43,
+  "errors": 0,
+  "warnings": 16
+}

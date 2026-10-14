@@ -1,0 +1,117 @@
+// Real Dorm -> Craft -> Close -> Dorm; state/handler regression, not OS input.
+const string prefix="UXArrival20261013.";
+const string folder="QA/UXReview20261013-Arrival/";
+const string logPath=folder+"transition-after.txt";
+if(!UnityEditor.SessionState.GetBool(prefix+"active",false)||!UnityEditor.EditorApplication.isPlaying)throw new System.Exception("Active backup/Play required");
+if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name!="CraftSpace"||ArrivalMessagePresenter.IsCameraPresentationPlaying)throw new System.Exception("Idle Dorm required");
+var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
+UIHotkeyController hotkey=UnityEngine.Object.FindFirstObjectByType<UIHotkeyController>();
+var menu=(GameObject)typeof(UISwitcher).GetField("panel",flags).GetValue(hotkey.uiSwitcher);
+int initialRange=UnityEngine.Object.FindFirstObjectByType<UIRangeDisplay>().GetInstanceID();
+int phase=0,assertions=0;
+double started=UnityEditor.EditorApplication.timeSinceStartup,next=started;
+UnityEditor.EditorApplication.CallbackFunction tick=null;
+System.IO.File.WriteAllText(logPath,"Actual registered CraftTable action -> Craft UI Close -> real Dorm entry fade. Zone registration is a fixture; input handlers are called directly.\n");
+System.Action<string> log=delegate(string s){System.IO.File.AppendAllText(logPath,(UnityEditor.EditorApplication.timeSinceStartup-started).ToString("F2")+" phase="+phase+" "+s+"\n");};
+System.Action<bool,string> check=delegate(bool ok,string s){if(!ok)throw new System.Exception(s);assertions++;log("PASS "+s);};
+System.Action<string> blockedActions=delegate(string label){
+ var mover=UnityEngine.Object.FindFirstObjectByType<PlayerMovement>();
+ var body=mover.GetComponent<Rigidbody2D>();
+ var animator=mover.GetComponent<Animator>();
+ float vertical=body.linearVelocity.y;
+ animator.SetBool("run",true);
+ typeof(PlayerMovement).GetMethod("ApplyMovement",flags).Invoke(mover,new object[]{1f});
+ check(Mathf.Approximately(body.linearVelocity.x,0f)&&Mathf.Approximately(body.linearVelocity.y,vertical)&&!animator.GetBool("run"),
+  label+" held right input stops horizontal motion/run and preserves vertical velocity");
+ var range=UnityEngine.Object.FindFirstObjectByType<UIRangeDisplay>();
+ var priorZone=(CraftSpaceInteractionZone)typeof(UIRangeDisplay).GetField("activeZone",flags).GetValue(range);
+ var status=StatusManager.Instance;
+ var stateBefore=status.HP+","+status.GATE+","+status.STR+","+status.ACC+","+status.UseCraftSpacebuff+","+range.uplimit;
+ var sceneBefore=UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+ int zones=0;
+ foreach(var zone in UnityEngine.Object.FindObjectsByType<CraftSpaceInteractionZone>(FindObjectsSortMode.None)){
+  if(zone.ActionType==CraftSpaceInteractionAction.None)continue;
+  range.RegisterZone(zone);
+  typeof(UIRangeDisplay).GetMethod("ExecuteActiveAction",flags).Invoke(range,null);
+  check(stateBefore==status.HP+","+status.GATE+","+status.STR+","+status.ACC+","+status.UseCraftSpacebuff+","+range.uplimit &&
+    UnityEngine.SceneManagement.SceneManager.GetActiveScene().name==sceneBefore,label+" blocks registered "+zone.ActionType+" action");
+  range.UnregisterZone(zone);zones++;
+ }
+ if(priorZone!=null)range.RegisterZone(priorZone);
+ check(zones==5,label+" covered five active world zones via registration fixture");
+};
+System.Action<float> move=delegate(float input){
+ var mover=UnityEngine.Object.FindFirstObjectByType<PlayerMovement>();
+ typeof(PlayerMovement).GetMethod("ApplyMovement",flags).Invoke(mover,new object[]{input});
+ check(Mathf.Approximately(mover.GetComponent<Rigidbody2D>().linearVelocity.x,input*mover.moveSpeed),"unblocked movement input "+input);
+};
+System.Action finish=delegate{
+ UnityEditor.EditorApplication.update-=tick;
+ UnityEditor.SessionState.SetBool(prefix+"transitionRunning",false);
+ log("COMPLETE assertions="+assertions);
+};
+UnityEditor.SessionState.SetBool(prefix+"transitionRunning",true);
+UnityEditor.SessionState.SetBool(prefix+"transitionPassed",false);
+tick=delegate{
+ try{
+  double now=UnityEditor.EditorApplication.timeSinceStartup;
+  if(now-started>25)throw new System.Exception("25s deadline");
+  if(now<next)return;next=now+0.02;
+  UnityEditor.SessionState.SetInt(prefix+"transitionPhase",phase);
+  string scene=UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+  var transition=UnityEngine.Object.FindFirstObjectByType<SceneTransitionManager>();
+  if(phase==0){
+   check(!ArrivalMessagePresenter.IsMessagePlaying&&!ArrivalMessagePresenter.IsCameraPresentationPlaying&&!transition.IsLoading,"normal Dorm departure fixture excludes arrival flags");
+   var range=UnityEngine.Object.FindFirstObjectByType<UIRangeDisplay>();
+   CraftSpaceInteractionZone craftZone=null;
+   foreach(var zone in UnityEngine.Object.FindObjectsByType<CraftSpaceInteractionZone>(FindObjectsSortMode.None))if(zone.ActionType==CraftSpaceInteractionAction.CraftTable)craftZone=zone;
+   range.RegisterZone(craftZone);
+   typeof(UIRangeDisplay).GetMethod("ExecuteActiveAction",flags).Invoke(range,null);
+   check(transition.IsLoading,"registered CraftTable action starts departure transition");
+   blockedActions("departure fade without arrival");
+   hotkey.ToggleMenu();check(!menu.activeSelf,"departure fade blocks menu toggle");
+   phase=1;return;
+  }
+  if(phase==1){
+   if(scene!="Craft"||transition==null||transition.IsLoading)return;
+   var craft=UnityEngine.Object.FindFirstObjectByType<CraftManager>();
+   if(craft==null||!craft.IsReadyForTutorial)return;
+   var panel=GameObject.Find("Canvas/CraftPanel");
+   var button=panel.transform.Find("Close").GetComponent<UnityEngine.UI.Button>();
+   check(button.IsActive()&&button.IsInteractable(),"Craft Close is available");
+   button.Select();
+   UnityEngine.EventSystems.ExecuteEvents.Execute(button.gameObject,new UnityEngine.EventSystems.BaseEventData(UnityEngine.EventSystems.EventSystem.current),UnityEngine.EventSystems.ExecuteEvents.submitHandler);
+   log("SUBMIT Canvas/CraftPanel/Close");
+   phase=2;return;
+  }
+  if(phase==2){
+   if(scene!="CraftSpace")return;
+   var range=UnityEngine.Object.FindFirstObjectByType<UIRangeDisplay>();
+   if(range==null||range.GetInstanceID()==initialRange)return;
+   check(transition!=null&&transition.IsLoading,"real Craft Close -> new Dorm entry fade is active");
+   check(!ArrivalMessagePresenter.IsMessagePlaying&&!ArrivalMessagePresenter.IsCameraPresentationPlaying,"normal return entry excludes both arrival flags");
+   hotkey=UnityEngine.Object.FindFirstObjectByType<UIHotkeyController>();
+   menu=(GameObject)typeof(UISwitcher).GetField("panel",flags).GetValue(hotkey.uiSwitcher);
+   blockedActions("entry fade without arrival");
+   hotkey.ToggleMenu();check(!menu.activeSelf,"entry fade without arrival blocks menu toggle");
+   ScreenCapture.CaptureScreenshot(folder+"after-05-return-entry.png");
+   phase=3;return;
+  }
+  if(phase==3){
+   if(transition!=null&&transition.IsLoading)return;
+   move(1f);move(-1f);move(0f);
+   hotkey.ToggleMenu();phase=4;next=now+0.15;return;
+  }
+  if(phase==4){
+   check(menu.activeSelf&&Time.timeScale==0f,"menu works again after entry fade");
+   hotkey.CloseMenu();phase=5;next=now+0.15;return;
+  }
+  if(phase==5){
+   check(!menu.activeSelf&&Time.timeScale>0f,"CloseMenu works while paused and restores time");
+   ScreenCapture.CaptureScreenshot(folder+"after-06-normal-return.png");
+   UnityEditor.SessionState.SetBool(prefix+"transitionPassed",true);finish();return;
+  }
+ }catch(System.Exception error){UnityEditor.SessionState.SetString(prefix+"transitionError",error.ToString());log("FAIL "+error);finish();}
+};
+UnityEditor.EditorApplication.update+=tick;
+return "Transition boundary regression scheduled";

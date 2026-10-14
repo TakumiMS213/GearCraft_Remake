@@ -1,0 +1,64 @@
+Reward screen physical Q: gear=2 boost=True stageActive=False
+Reward physical Right: selected=
+HP card 94 -> 114
+Normal flow now stage=2
+Second reward Scrap 4 -> 6; ScrapModule enabled for rest reward fixture
+Late actual drop pickup: held Scrap=8 gained=8 displayed=x8
+Report physical Tab: pause=True menuActive=True timeScale=0 report=True
+After physical report click while paused: scene=Main alpha=1 report=True timeScale=0
+CORRECTION: earlier late-pickup line preceded successful drop creation; it is only the initial held/gained/displayed baseline.
+After successful late Scrap7 pickup: held=15 gained=15 displayed=x8
+16:03:26 scene=Main stage=1 active=False modal=True blocked=True cards=False report=False gear=3 scrap=0 hp=94 gate=100 paused=False timeScale=1 selected=OpeningNoticePaper boost=False
+16:05:23 scene=Main stage=1 active=False modal=True blocked=True cards=False report=False gear=3 scrap=0 hp=94 gate=100 paused=False timeScale=1 selected=OpeningNoticePaper boost=False
+16:05:30 scene=Main stage=1 active=False modal=True blocked=True cards=False report=False gear=3 scrap=0 hp=94 gate=100 paused=False timeScale=1 selected=OpeningNoticePaper boost=False
+16:05:59 scene=Main stage=1 active=False modal=True blocked=True cards=False report=False gear=3 scrap=0 hp=94 gate=100 paused=False timeScale=1 selected=OpeningNoticePaper boost=False
+16:06:34 scene=Main stage=1 active=True modal=False blocked=False cards=False report=False gear=3 scrap=2 hp=89 gate=90 paused=False timeScale=1 selected=null boost=False
+16:07:03 scene=Main stage=1 active=False modal=True blocked=True cards=True report=False gear=3 scrap=4 hp=86 gate=80 paused=False timeScale=1 selected=BonusCard_ModuleCore_1(Clone) boost=False
+16:07:38 scene=Main stage=1 active=False modal=True blocked=True cards=True report=False gear=3 scrap=4 hp=86 gate=80 paused=False timeScale=1 selected=BonusCard_ModuleCore_1(Clone) boost=False
+16:08:11 scene=Main stage=2 active=False modal=False blocked=True cards=False report=False gear=2 scrap=4 hp=86 gate=80 paused=True timeScale=0 selected=BGMslider boost=True
+16:09:02 scene=Main stage=2 active=False modal=False blocked=True cards=False report=False gear=2 scrap=4 hp=94 gate=80 paused=False timeScale=1 selected=OptionButton boost=True
+16:09:29 scene=Main stage=2 active=False modal=True blocked=True cards=True report=False gear=2 scrap=4 hp=94 gate=80 paused=False timeScale=1 selected=BonusCard_Gear_1(Clone) boost=False
+16:10:16 scene=Main stage=2 active=False modal=True blocked=True cards=True report=False gear=2 scrap=4 hp=94 gate=80 paused=False timeScale=1 selected=BonusCard_Gear_1(Clone) boost=False
+16:12:15 scene=Main stage=2 active=False modal=True blocked=True cards=True report=False gear=2 scrap=4 hp=94 gate=80 paused=False timeScale=1 selected=BonusCard_Gear_1(Clone) boost=False
+16:12:58 scene=Main stage=2 active=False modal=True blocked=True cards=True report=False gear=2 scrap=4 hp=94 gate=80 paused=False timeScale=1 selected=null boost=False
+16:13:02 scene=Main stage=2 active=False modal=True blocked=True cards=True report=False gear=2 scrap=4 hp=94 gate=80 paused=False timeScale=1 selected=null boost=False
+HP card UGUI Submit 94 -> 100
+16:13:48 scene=Main stage=4 active=False modal=True blocked=True cards=False report=True gear=7 scrap=4 hp=100 gate=80 paused=False timeScale=1 selected=ResultPaper boost=False
+Rest rows before actual Scrap7 pickup
+Label=倒した敵#-152816
+Amount=x9#-152832
+Label=Scrap#-152870
+Amount=x4#-152886
+Label=Gear#-152924
+Amount=x5#-152940
+Label=Upgrade Core#-152978
+Amount=x0#-152994
+Label=Module Core Lv1#-153032
+Amount=x1#-153048
+Label=Module Core Lv2#-153086
+Amount=x0#-153102
+Label=Module Core Lv3#-153140
+Amount=x0#-153156
+Rest rows AFTER actual Scrap7 pickup
+Label=倒した敵#-152816
+Amount=x9#-152832
+Label=Scrap#-152870
+Amount=x11#-152886
+Label=Gear#-152924
+Amount=x5#-152940
+Label=Upgrade Core#-152978
+Amount=x0#-152994
+Label=Module Core Lv1#-153032
+Amount=x1#-153048
+Label=Module Core Lv2#-153086
+Amount=x0#-153102
+Label=Module Core Lv3#-153140
+Amount=x0#-153156
+16:14:17 scene=Main stage=4 active=False modal=True blocked=True cards=False report=True gear=7 scrap=11 hp=100 gate=80 paused=False timeScale=1 selected=ResultPaper boost=False
+16:14:21 scene=Main stage=4 active=False modal=True blocked=True cards=False report=True gear=7 scrap=11 hp=100 gate=80 paused=False timeScale=1 selected=null boost=False
+16:14:25 scene=Main stage=4 active=False modal=True blocked=True cards=False report=True gear=7 scrap=11 hp=100 gate=80 paused=False timeScale=1 selected=ResultPaper boost=False
+Return after double submit: scene=CraftSpace stage=4 gear=7 scrap=11 hp=100 used=False
+Freeze after report: ACC 0 -> 0 used=True
+Day2 used=False ACC=0
+16:15:58 scene=Main stage=4 active=True modal=False blocked=False cards=False report=False gear=7 scrap=11 hp=100 gate=80 paused=False timeScale=1 selected=null boost=False
+8 original PlayerPrefs match after Play stop; scene=Title play=False backup=False

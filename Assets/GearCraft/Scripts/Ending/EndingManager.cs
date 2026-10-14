@@ -31,6 +31,7 @@ public class EndingManager : MonoBehaviour
     public static int PendingEndingNum { get; private set; }
     public static bool IsLoadingEnding { get; private set; }
     private bool galleryUnlockNoticePending;
+    public bool HasPendingGalleryUnlockNotice => galleryUnlockNoticePending;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetRuntimeState()

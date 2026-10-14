@@ -1,0 +1,20 @@
+Route: real Ending loader -> UGUI Submit -> Title Start Submit -> natural Story and Arrival -> Dorm.
+2.5s ED Submit notice=False index=0
+3.6s ED Submit notice=False index=1
+4.8s ED Submit notice=False index=2
+5.9s ED Submit notice=False index=3
+7.1s ED Submit notice=False index=4
+8.2s ED Submit notice=False index=5
+9.4s ED Submit notice=False index=6
+10.5s ED Submit notice=False index=7
+11.7s ED Submit notice=False index=8
+12.8s ED Submit notice=False index=9
+14.0s ED Submit notice=True index=9
+16.9s ED returned to Title; Stage=1
+16.9s Submitted actual Title Start
+20.6s Story entered; waiting for automatic playback
+66.2s Baseline comparison differences=0 expectReset=True
+66.2s task=ベッドで眠って明日に備える bedArrow=True
+66.2s mastery retained=True Gallery ending/weapon retained=True
+66.2s learning metrics retained=True
+66.2s COMPLETE scene=CraftSpace differences=0

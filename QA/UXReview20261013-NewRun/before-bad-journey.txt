@@ -1,0 +1,53 @@
+Route: real Ending loader -> UGUI Submit -> Title Start Submit -> natural Story and Arrival -> Dorm.
+2.8s ED Submit notice=False index=0
+4.0s ED Submit notice=False index=1
+5.1s ED Submit notice=False index=2
+6.3s ED Submit notice=False index=3
+7.4s ED Submit notice=False index=4
+8.6s ED Submit notice=False index=5
+9.7s ED Submit notice=False index=6
+10.9s ED Submit notice=False index=7
+12.0s ED Submit notice=False index=8
+13.2s ED Submit notice=False index=9
+14.3s ED Submit notice=True index=9
+17.4s ED returned to Title; Stage=0
+17.4s Submitted actual Title Start
+20.3s Story entered; waiting for automatic playback
+66.7s DIFF expected bonusDamage=0
+66.7s DIFF expected bossKillCount=0
+66.7s DIFF expected CraftTutorials={"craft":{"stepIndex":0,"showingFeedback":false,"feedback":"","hintLevel":0,"usedHint":false,"hintRequests":0,"invalidAttempts":0,"elapsedSeconds":0.0,"baselineCaptured":false,"baselineDamage":0.0,"baselineAttackSpeed":0.0,"baselineCraftWeaponDamageBuff":0,"practicePartName":"","baselineParts":[],"craftedRecipeIds":[],"practiceSuppliesGranted":false,"challengeSuppliesGranted":false,"mastered":false},"weaponCustom":{"stepIndex":0,"showingFeedback":false,"feedback":"","hintLevel":0,"usedHint":false,"hintRequests":0,"invalidAttempts":0,"elapsedSeconds":0.0,"baselineCaptured":false,"baselineDamage":0.0,"baselineAttackSpeed":0.0,"baselineCraftWeaponDamageBuff":0,"practicePartName":"","baselineParts":[],"craftedRecipeIds":[],"practiceSuppliesGranted":false,"challengeSuppliesGranted":false,"mastered":false}}
+66.7s DIFF expected currentWeapon=Katana
+66.7s DIFF expected DormTasks={"hasStartedFirstDay":false,"hasCrafted":false,"hasUpgradedWeapon":false,"hasEncounteredFirstBoss":false}
+66.7s DIFF expected GATE=100
+66.7s DIFF expected gearCraftAxeSizeMultiplier=1
+66.7s DIFF expected gearCraftSwordMoveSpeedBonus=0
+66.7s DIFF expected gearCraftTransformGearGain=0
+66.7s DIFF expected hasSavedUpgradeShopLineup=False
+66.7s DIFF expected ownedUpgradeParts=
+66.7s DIFF expected ownedWeapons=Katana
+66.7s DIFF expected placements=
+66.7s DIFF expected railCraftApplyOverheat=False
+66.7s DIFF expected railCraftBulletSizeMultiplier=1
+66.7s DIFF expected railCraftRicochetMultiplier=1
+66.7s DIFF expected SAN=100
+66.7s DIFF expected shop=
+66.7s DIFF expected Stage=1
+66.7s DIFF expected steamCannonBulletSpeedMultiplier=1
+66.7s DIFF expected steamCannonDirectHitKnockback=0
+66.7s DIFF expected steamCannonExplosionRadiusMultiplier=1
+66.7s DIFF expected steamCannonGiantBulletChance=0
+66.7s DIFF expected steamGatlingBossDamageMultiplier=1
+66.7s DIFF expected steamGatlingBulletSpeedMultiplier=1
+66.7s DIFF expected steamGatlingDownwardRecoil=False
+66.7s DIFF expected steamGatlingNormalDamageMultiplier=1
+66.7s DIFF expected steamThrowerBoostBurnDrops=False
+66.7s DIFF expected steamThrowerBoostBurnDropsActive=False
+66.7s DIFF expected steamThrowerBoostDamageMultiplier=1
+66.7s DIFF expected steamThrowerNoBulletGravity=False
+66.7s DIFF expected steamThrowerOverheatSlipDamage=0
+66.7s DIFF expected uniqueCards=
+66.7s DIFF expected upgradeShopDay=0
+66.7s Baseline comparison differences=34 expectReset=False
+66.7s task=門の防衛を続ける bedArrow=False
+66.7s mastery retained=True Gallery ending/weapon retained=True
+66.7s COMPLETE scene=CraftSpace differences=34

@@ -1,0 +1,27 @@
+報酬カードの決定キー案内
+実施日: 2026-10-14 JST
+
+ユーザー報告: A/Dで選択できるが、決定キーが分からない。
+原因: 報酬画面には選択/決定キーを示すシーン上の案内がなかった。
+
+確認した入力:
+Mainの有効なInputSystemUIInputModuleはDefaultInputActionsのUI/Submitを使用する。
+bindingは */{Submit}。KeyboardのSubmit usageは通常のenterのみ。
+実行中の同じ設定を使うUI moduleでも、解決済みcontrolは /Keyboard/enter だった。
+SpaceとテンキーEnterは現在の有効なUI Submitには含まれない。
+カードButtonのSubmitとクリックは既存のonClickによる報酬決定に接続済み。
+
+変更:
+Main.unityのBonusCardsCanvas/RewardInputBlocker/RewardSelectionHintを追加。
+文言: A / D：選択　　Enter：決定　　クリックでも決定
+白36pt、下中央y52、左右80余白、高さ64。報酬遮断背景の子として表示期間を合わせた。
+非raycastのTMPなので既存カードと背景の操作を遮らず、カード用レイアウトの直接の子にも置かない。
+新規スクリプトと入力設定の変更はない。
+
+確認:
+元のMain.unityをMain.unity.beforeへ保管した。
+Unityの独立PreviewSceneで保存済みMainを読み込み、案内1個・親名・通常非表示・非raycastを確認。
+既存フォントでの推奨文字寸法828.01x52.13は、基準1920x1080時の領域1760x64以内。
+git diff --check合格。
+ユーザーの実行中Playへ決定入力を送らず、停止・シーン遷移・セーブ変更は行っていない。
+変更後の実報酬画面での目視および物理Enterの通し検証は未実施。

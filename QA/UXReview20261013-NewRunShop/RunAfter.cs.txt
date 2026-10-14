@@ -1,0 +1,410 @@
+// C#6 MCP execute_code body. A/B/C from NextRunSourceAudit only.
+// Parent owns PlayerPrefs backup/restoration. This harness changes mastery keys and run fixtures.
+// Start: Play in Title, UXNewRunShop20261013.backupReady=true.
+// Stop: .stop=true. Results: .running/.done/.passed/.phase/.result/.assertions.
+// Optional screenshot hold: set .holdAtScore=true before launch, then .continueScore=true to resume.
+// Screenshots are requested at visible checkpoints; parent verifies PNG completion separately.
+// .scoreVisible marks the actual final score page.
+// Uses UGUI Submit + teleport/real physics trigger + existing action method; not physical-input E2E.
+const string prefix = "UXNewRunShop20261013.";
+const string outDir = "QA/UXReview20261013-NewRunShop/";
+const string logPath = outDir + "run.txt";
+if (!UnityEditor.EditorApplication.isPlaying || UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "Title")
+    throw new System.Exception("Play in Title required");
+if (!UnityEditor.SessionState.GetBool(prefix + "backupReady", false))
+    throw new System.Exception("Parent must back up preferences and set backupReady=true");
+if (UnityEditor.SessionState.GetBool(prefix + "running", false))
+    throw new System.Exception("Harness is already running; request stop instead of launching twice");
+var runStatus = StatusManager.Instance;
+var runMaterials = MaterialManager.Instance;
+if (runStatus == null || runMaterials == null) throw new System.Exception("Status/MaterialManager missing");
+var oldPart = UnityEditor.AssetDatabase.LoadAssetAtPath<UpgradePartSO>("Assets/GearCraft/ScriptableObject/UpgradeParts/Damage+2.asset");
+if (oldPart == null) throw new System.Exception("Damage+2 fixture asset missing");
+System.IO.Directory.CreateDirectory(outDir);
+System.IO.File.WriteAllText(logPath, "Term15 A/B/C: one Bad ED -> Title Start -> natural Story/Arrival -> initial shop -> one same-day Dorm round trip.\nScreenshot requests only; parent verifies file completion. No backup, restoration, Play stop, or product edits performed by this harness.\n");
+var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
+double started = UnityEditor.EditorApplication.timeSinceStartup;
+double nextAt = started;
+int phase = 0;
+int assertions = 0;
+int lastActionFrame = -1;
+int runtimeErrors = 0;
+int firstShopId = 0;
+int firstGridId = 0;
+int statusId = runStatus.GetInstanceID();
+int materialId = runMaterials.GetInstanceID();
+int initialCaptureStage = 0;
+bool sawStory = false;
+bool returnObserved = false;
+bool finished = false;
+bool scoreMarked = false;
+ScoreManager oldScore = null;
+CraftSpaceInteractionZone craftZone = null;
+System.Collections.Generic.List<UpgradePartSO> firstLineup = null;
+string beforeInitialMaterials = null;
+UnityEditor.EditorApplication.CallbackFunction tick = null;
+UnityEngine.Application.LogCallback onRuntimeLog = null;
+
+System.Action<string> log = delegate(string message) {
+    // AppendAllText closes the file after every entry, so each checkpoint is flushed.
+    System.IO.File.AppendAllText(logPath,
+        (UnityEditor.EditorApplication.timeSinceStartup - started).ToString("F2", System.Globalization.CultureInfo.InvariantCulture) +
+        "s phase=" + phase + " frame=" + UnityEngine.Time.frameCount + " " + message + "\n");
+};
+System.Action<bool, string> check = delegate(bool ok, string message) {
+    if (!ok) throw new System.Exception(message);
+    assertions++;
+    log("PASS " + message);
+};
+System.Action<string> capture = delegate(string name) {
+    UnityEngine.ScreenCapture.CaptureScreenshot(outDir + name + ".png");
+    log("SCREENSHOT_REQUEST " + name + ".png; file completion not asserted by harness");
+};
+System.Action<float> scrollShop = delegate(float position) {
+    var shop = UnityEngine.Object.FindFirstObjectByType<UpgradeShopManager>();
+    var scroll = shop == null || shop.shopParent == null ? null : shop.shopParent.GetComponentInParent<UnityEngine.UI.ScrollRect>();
+    if (scroll == null) throw new System.Exception("Shop ScrollRect missing");
+    UnityEngine.Canvas.ForceUpdateCanvases();
+    scroll.StopMovement();
+    scroll.verticalNormalizedPosition = position;
+    UnityEngine.Canvas.ForceUpdateCanvases();
+    log("SHOP_SCROLL normalized=" + position);
+};
+System.Func<UnityEngine.Transform, string> pathOf = null;
+pathOf = delegate(UnityEngine.Transform tr) { return tr.parent == null ? tr.name : pathOf(tr.parent) + "/" + tr.name; };
+System.Func<string, UnityEngine.GameObject> find = delegate(string name) {
+    foreach (var tr in UnityEngine.Object.FindObjectsByType<UnityEngine.Transform>(UnityEngine.FindObjectsInactive.Include, UnityEngine.FindObjectsSortMode.None))
+        if (tr.gameObject.scene.IsValid() && tr.gameObject.activeInHierarchy && (tr.name == name || pathOf(tr) == name)) return tr.gameObject;
+    return null;
+};
+System.Action<UnityEngine.UI.Button> submitButton = delegate(UnityEngine.UI.Button button) {
+    if (button == null || !button.IsActive() || !button.IsInteractable()) throw new System.Exception("Submit target unavailable");
+    var events = UnityEngine.EventSystems.EventSystem.current;
+    if (events == null) throw new System.Exception("EventSystem missing");
+    SceneTransitionManager closeTransition = null;
+    SoundButton closeSound = null;
+    if (button.name == "Close") {
+        closeTransition = UnityEngine.Object.FindFirstObjectByType<SceneTransitionManager>();
+        check(closeTransition != null && closeTransition.isActiveAndEnabled && pathOf(closeTransition.transform) == "GameManagers/SceneActions",
+            "Close uses active SceneActions transition manager");
+        check(button.onClick.GetPersistentEventCount() == 1 && button.onClick.GetPersistentMethodName(0) == "PlayClickSound",
+            "Close has only preserved sound persistent event; legacy transition removed");
+        closeSound = button.onClick.GetPersistentTarget(0) as SoundButton;
+        check(closeSound != null && closeSound.isActiveAndEnabled && closeSound.gameObject == closeTransition.gameObject,
+            "Close sound target active on SceneActions");
+    }
+    button.Select();
+    log("SUBMIT " + pathOf(button.transform));
+    UnityEngine.EventSystems.ExecuteEvents.Execute(button.gameObject,
+        new UnityEngine.EventSystems.BaseEventData(events), UnityEngine.EventSystems.ExecuteEvents.submitHandler);
+    if (closeTransition != null) {
+        check(closeTransition.IsLoading && closeTransition.fadeImage != null && closeTransition.fadeImage.raycastTarget,
+            "Close starts transition and blocks further input");
+        var soundSource = (UnityEngine.AudioSource)typeof(SoundButton).GetField("audioSource", flags).GetValue(closeSound);
+        check(soundSource != null && soundSource.isActiveAndEnabled && soundSource.isPlaying && soundSource.volume == 1f,
+            "Close sound source active, playing, original volume1 (audibility not measured)");
+        log("CLOSE_FADE path=" + pathOf(button.transform) + " duration=" + closeTransition.fadeDuration);
+    }
+};
+System.Action<string> submit = delegate(string name) {
+    var obj = find(name);
+    if (obj == null) throw new System.Exception("Active UI missing: " + name);
+    submitButton(obj.GetComponent<UnityEngine.UI.Button>());
+};
+System.Func<string> materials = delegate {
+    return runMaterials.scrap + "," + runMaterials.gear + "," + runMaterials.upgradeCore + "," +
+        runMaterials.moduleCore_lv1 + "," + runMaterials.moduleCore_lv2 + "," + runMaterials.moduleCore_lv3;
+};
+System.Action checkRunIdentity = delegate {
+    check(StatusManager.Instance != null && StatusManager.Instance.GetInstanceID() == statusId &&
+        MaterialManager.Instance != null && MaterialManager.Instance.GetInstanceID() == materialId,
+        "same persistent Status/Material instances");
+};
+System.Action checkResetBeforeShop = delegate {
+    checkRunIdentity();
+    check(StageCounter.Instance != null && StageCounter.Instance.StageCount == 1 && runStatus.STR == 0 && runStatus.ACC == 0,
+        "new run Stage1 STR0 ACC0");
+    check(runStatus.upgradeShopDay == 0 && !runStatus.hasSavedUpgradeShopLineup && runStatus.savedUpgradeShopLineup.Count == 0,
+        "old Day1 saved stock cleared before new shop initialization");
+    check(materials() == "0,0,0,0,0,0", "all previous-run materials cleared");
+};
+System.Action<ImageSequenceViewer> observeReturn = delegate(ImageSequenceViewer viewer) {
+    if (!(bool)typeof(ImageSequenceViewer).GetField("isTransitioning", flags).GetValue(viewer)) return;
+    checkResetBeforeShop();
+    check(oldScore != null && oldScore.score == 12500 && oldScore.scoreText != null &&
+        oldScore.scoreText.text == "YOUR SCORE : 12500", "old cached score/TMP remain 12500 after return resets run fields");
+    returnObserved = true;
+    UnityEditor.SessionState.SetBool(prefix + "scoreVisible", false);
+    log("RETURN reset observed synchronously before Ending unload; score image may already be hidden by loading");
+};
+System.Action<bool> moveAtCraftTable = delegate(bool inside) {
+    var interaction = UnityEngine.Object.FindFirstObjectByType<UIRangeDisplay>();
+    if (interaction == null || interaction.player == null) throw new System.Exception("Dorm player/interaction missing");
+    craftZone = null;
+    foreach (var zone in UnityEngine.Object.FindObjectsByType<CraftSpaceInteractionZone>(UnityEngine.FindObjectsSortMode.None))
+        if (zone.ActionType == CraftSpaceInteractionAction.CraftTable) { craftZone = zone; break; }
+    if (craftZone == null || craftZone.GetComponent<UnityEngine.Collider2D>() == null) throw new System.Exception("CraftTable trigger missing");
+    var bounds = craftZone.GetComponent<UnityEngine.Collider2D>().bounds;
+    var position = interaction.player.position;
+    position.x = inside ? bounds.center.x : bounds.max.x + UnityEngine.Mathf.Max(2f, bounds.extents.x + 1f);
+    var body = interaction.player.GetComponent<UnityEngine.Rigidbody2D>();
+    if (body != null) body.linearVelocity = UnityEngine.Vector2.zero;
+    interaction.player.position = position;
+    UnityEngine.Physics2D.SyncTransforms();
+    log("TELEPORT " + (inside ? "into" : "outside") + " CraftTable at " + position + "; await real physics trigger");
+};
+System.Func<bool> craftTriggerActive = delegate {
+    var interaction = UnityEngine.Object.FindFirstObjectByType<UIRangeDisplay>();
+    if (interaction == null || craftZone == null) return false;
+    return (CraftSpaceInteractionZone)typeof(UIRangeDisplay).GetField("activeZone", flags).GetValue(interaction) == craftZone &&
+        craftZone.PromptObject != null && craftZone.PromptObject.activeInHierarchy;
+};
+System.Action useCraftTable = delegate {
+    check(craftTriggerActive(), "real CraftTable trigger registered and prompt active");
+    var interaction = UnityEngine.Object.FindFirstObjectByType<UIRangeDisplay>();
+    check(!(bool)typeof(UIRangeDisplay).GetMethod("IsInputBlocked", flags).Invoke(interaction, null), "CraftTable action is not blocked");
+    typeof(UIRangeDisplay).GetMethod("ExecuteActiveAction", flags).Invoke(interaction, null);
+    log("ACTION ExecuteActiveAction through registered trigger; physical Space not simulated");
+};
+System.Func<UpgradeShopManager, System.Collections.Generic.List<UpgradePartSO>> readLineup = delegate(UpgradeShopManager shop) {
+    var lineup = (System.Collections.Generic.List<UpgradePartSO>)typeof(UpgradeShopManager).GetField("currentLineup", flags).GetValue(shop);
+    return new System.Collections.Generic.List<UpgradePartSO>(lineup);
+};
+System.Action<string, bool> inspectShop = delegate(string label, bool compareFirst) {
+    var shop = UnityEngine.Object.FindFirstObjectByType<UpgradeShopManager>();
+    var grid = UpgradeGridManager.Instance;
+    checkRunIdentity();
+    check(shop != null && grid != null && shop.shopParent != null && shop.shopParent.gameObject.activeInHierarchy, label + " shop/grid active");
+    check(shop.shopSlotCount == 6 && shop.allParts != null && shop.allParts.Length == 15, label + " actual scene catalog15/slots6");
+    check(StageCounter.Instance.StageCount == 1 && shop.ShopDay == 1 && runStatus.upgradeShopDay == 1 &&
+        runStatus.hasSavedUpgradeShopLineup, label + " Day1 generated stock is saved");
+    check((bool)typeof(UpgradeShopManager).GetField("hasGeneratedLineup", flags).GetValue(shop), label + " manager generated flag");
+    var lineup = readLineup(shop);
+    var saved = runStatus.savedUpgradeShopLineup;
+    var ui = new System.Collections.Generic.List<UnityEngine.Transform>();
+    for (int i = 0; i < shop.shopParent.childCount; i++) {
+        var child = shop.shopParent.GetChild(i);
+        if (child.gameObject.activeInHierarchy) ui.Add(child);
+    }
+    check(lineup.Count == 6 && saved.Count == 6 && ui.Count == 6, label + " current/saved/active UI each six");
+    var unique = new System.Collections.Generic.HashSet<UpgradePartSO>();
+    int rareCount = 0;
+    for (int i = 0; i < lineup.Count; i++) {
+        var part = lineup[i];
+        check(part != null && unique.Add(part) && System.Array.IndexOf(shop.allParts, part) >= 0, label + " slot" + i + " unique catalog part");
+        if (part.rarity >= PartRarity.Rare) rareCount++;
+        var trigger = ui[i].GetComponent<TooltipTrigger>();
+        var nameTransform = ui[i].Find("NameText");
+        var costTransform = ui[i].Find("CostText");
+        var nameText = nameTransform == null ? null : nameTransform.GetComponent<TMPro.TMP_Text>();
+        var costText = costTransform == null ? null : costTransform.GetComponent<TMPro.TMP_Text>();
+        check(saved[i] == part && trigger != null && trigger.part == part && nameText != null && nameText.text == part.partName,
+            label + " slot" + i + " current/saved/UI part and visible name agree");
+        check(costText != null && !string.IsNullOrEmpty(costText.text), label + " slot" + i + " price text present");
+        log(label + " STOCK " + i + " asset=" + part.name + " name=" + nameText.text + " rarity=" + part.rarity +
+            " price=" + costText.text + " UI=" + pathOf(ui[i]));
+        if (compareFirst) check(firstLineup != null && firstLineup.Count == lineup.Count && firstLineup[i] == part,
+            label + " slot" + i + " same-day identity/order preserved");
+    }
+    check(rareCount >= 1, label + " Rare-or-higher guarantee");
+    check(materials() == beforeInitialMaterials && materials() == "0,0,0,0,0,0", label + " no initial-generation/reentry material charge or supply");
+    check(runStatus.ownedUpgradeParts.Count == 0 && runStatus.savedUpgradePartPlacements.Count == 0 &&
+        grid.PlacedParts.Count == 0 && grid.GridSize == 3, label + " empty ownership/placements and 3x3 grid");
+    check(runStatus.ownedWeapons.Count == 1 && runStatus.ownedWeapons[0] == runStatus.defaultWeapon &&
+        runStatus.currentWeapon == runStatus.defaultWeapon && runStatus.bonusDamage == 0f && runStatus.attackSpeedMult == 1f,
+        label + " default weapon only and no upgrade effect");
+    var tutorial = UnityEngine.Object.FindFirstObjectByType<GearCraft.Scripts.Craft.CraftTutorialController>();
+    var tutorialRoot = tutorial == null ? null : (UnityEngine.GameObject)tutorial.GetType().GetField("tutorialRoot", flags).GetValue(tutorial);
+    check(tutorial != null && tutorialRoot != null && !tutorialRoot.activeInHierarchy, label + " mastered tutorial has not altered stock");
+    if (!compareFirst) {
+        firstLineup = lineup;
+        firstShopId = shop.GetInstanceID();
+        firstGridId = grid.GetInstanceID();
+    } else check(shop.GetInstanceID() != firstShopId && grid.GetInstanceID() != firstGridId, label + " new scene objects restore saved stock");
+    log(label + " materials=" + materials() + " shopID=" + shop.GetInstanceID());
+};
+System.Action<bool, string> finish = delegate(bool passed, string message) {
+    if (finished) return;
+    finished = true;
+    UnityEditor.EditorApplication.update -= tick;
+    UnityEngine.Application.logMessageReceived -= onRuntimeLog;
+    UnityEditor.SessionState.SetBool(prefix + "running", false);
+    UnityEditor.SessionState.SetBool(prefix + "done", true);
+    UnityEditor.SessionState.SetBool(prefix + "passed", passed);
+    UnityEditor.SessionState.SetBool(prefix + "scoreVisible", false);
+    UnityEditor.SessionState.SetInt(prefix + "assertions", assertions);
+    UnityEditor.SessionState.SetString(prefix + "result", message);
+    try { log((passed ? "COMPLETE " : "FAIL ") + message + "; assertions=" + assertions + "; runtimeErrors=" + runtimeErrors +
+        "; Play retained; parent must restore preferences and fixture state"); }
+    catch (System.Exception) { }
+};
+onRuntimeLog = delegate(string condition, string stack, UnityEngine.LogType type) {
+    if (type != UnityEngine.LogType.Exception && type != UnityEngine.LogType.Error && type != UnityEngine.LogType.Assert) return;
+    runtimeErrors++;
+    try { log("RUNTIME " + type + " " + condition + "\n" + stack); } catch (System.Exception) { }
+};
+
+tick = delegate {
+    try {
+        if (UnityEditor.SessionState.GetBool(prefix + "stop", false)) throw new System.Exception("Stop requested by parent");
+        if (!UnityEditor.EditorApplication.isPlaying) throw new System.Exception("Play stopped");
+        double now = UnityEditor.EditorApplication.timeSinceStartup;
+        if (now - started > 180.0) throw new System.Exception("180-second Editor-clock deadline; phase=" + phase);
+        if (runtimeErrors > 0) throw new System.Exception("Unity runtime error logged; see preceding RUNTIME entry");
+        if (now < nextAt || lastActionFrame == UnityEngine.Time.frameCount) return;
+        lastActionFrame = UnityEngine.Time.frameCount;
+        nextAt = now + 0.15;
+        UnityEditor.SessionState.SetInt(prefix + "phase", phase);
+        string scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        var transition = UnityEngine.Object.FindFirstObjectByType<SceneTransitionManager>();
+        if (transition != null && transition.IsLoading) return;
+        if (scene == "CraftSpace" && (ArrivalMessagePresenter.IsMessagePlaying || ArrivalMessagePresenter.IsCameraPresentationPlaying)) return;
+        switch (phase) {
+            case 0:
+                // Fixture preparation only; the later ED return must execute its own reset.
+                runStatus.ResetRunProgress();
+                if (StageCounter.Instance == null) {
+                    new UnityEngine.GameObject("UXNewRunShop_StageCounterFixture").AddComponent<StageCounter>();
+                    log("FIXTURE created missing persistent StageCounter; parent will discard with Play");
+                }
+                StageCounter.Instance.StageCount = 1;
+                runStatus.STR = 7; runStatus.ACC = 5; runStatus.killAllEnemies = false;
+                runStatus.upgradeShopDay = 1; runStatus.hasSavedUpgradeShopLineup = true;
+                runStatus.savedUpgradeShopLineup.Clear(); runStatus.savedUpgradeShopLineup.Add(oldPart);
+                runMaterials.SetAllMaterials(7);
+                UnityEngine.PlayerPrefs.SetInt(CraftTutorialMetrics.CraftMasteryKey, 1);
+                UnityEngine.PlayerPrefs.SetInt(CraftTutorialMetrics.WeaponMasteryKey, 1);
+                UnityEngine.PlayerPrefs.Save();
+                log("FIXTURE old Stage1 STR7 ACC5 killAll=false scoreExpected12500 shopDay1 saved[Damage+2] materials=" + materials());
+                EndingManager.LoadEndingScene(1);
+                phase = 1; break;
+            case 1: {
+                if (scene != "Ending") return;
+                var viewer = UnityEngine.Object.FindFirstObjectByType<ImageSequenceViewer>();
+                if (viewer == null || viewer.scoreManager == null) return;
+                oldScore = viewer.scoreManager;
+                check(oldScore.score == 12500 && runStatus.STR == 7 && runStatus.ACC == 5 && !runStatus.killAllEnemies,
+                    "old-run score12500 and scoring inputs intact before return");
+                var images = (UnityEngine.GameObject[])typeof(ImageSequenceViewer).GetField("images", flags).GetValue(viewer);
+                int index = (int)typeof(ImageSequenceViewer).GetField("currentIndex", flags).GetValue(viewer);
+                if (images != null && images.Length > 0 && index == images.Length - 1) {
+                    var finalImage = images[index] == null ? null : images[index].GetComponent<UnityEngine.UI.Image>();
+                    if (finalImage != null && finalImage.color.a < 0.99f) return;
+                    check(images[index] != null && images[index].activeInHierarchy && oldScore.scoreText != null &&
+                        oldScore.scoreText.isActiveAndEnabled && oldScore.scoreText.text == "YOUR SCORE : 12500", "final old-run score page/TMP visible with12500");
+                    log("SCORE_PAGE index=" + index + " object=" + images[index].name + " text=" + oldScore.scoreText.text);
+                    UnityEditor.SessionState.SetBool(prefix + "scoreVisible", true);
+                    capture("01-old-score");
+                    scoreMarked = true; phase = 2; nextAt = now + 0.2; break;
+                }
+                submitButton((UnityEngine.UI.Button)typeof(ImageSequenceViewer).GetField("advanceButton", flags).GetValue(viewer));
+                nextAt = now + 1.2; break;
+            }
+            case 2: {
+                if (UnityEditor.SessionState.GetBool(prefix + "holdAtScore", false) &&
+                    !UnityEditor.SessionState.GetBool(prefix + "continueScore", false)) return;
+                check(scoreMarked && scene == "Ending", "old score observed before ending return");
+                var viewer = UnityEngine.Object.FindFirstObjectByType<ImageSequenceViewer>();
+                submitButton((UnityEngine.UI.Button)typeof(ImageSequenceViewer).GetField("advanceButton", flags).GetValue(viewer));
+                observeReturn(viewer); phase = 3; nextAt = now + 1.2; break;
+            }
+            case 3:
+                if (scene == "Title") { phase = 4; break; }
+                if (scene == "Ending") {
+                    var viewer = UnityEngine.Object.FindFirstObjectByType<ImageSequenceViewer>();
+                    if ((bool)typeof(ImageSequenceViewer).GetField("showingGalleryUnlockNotice", flags).GetValue(viewer)) {
+                        submitButton((UnityEngine.UI.Button)typeof(ImageSequenceViewer).GetField("galleryNoticeButton", flags).GetValue(viewer));
+                        observeReturn(viewer); nextAt = now + 1.2;
+                    }
+                }
+                break;
+            case 4:
+                if (scene != "Title") return;
+                check(returnObserved, "actual ED ReturnToTitle reset observed");
+                checkResetBeforeShop();
+                check(oldScore == null, "previous scene ScoreManager destroyed on Title load");
+                submit("StartButton"); phase = 5; break;
+            case 5:
+                if (scene == "Story") { if (!sawStory) log("STORY observed; wait for natural playback"); sawStory = true; return; }
+                if (scene != "CraftSpace") return;
+                check(sawStory, "actual Title Start traversed Story");
+                checkResetBeforeShop();
+                moveAtCraftTable(false); phase = 6; nextAt = now + 0.4; break;
+            case 6:
+                check(!craftTriggerActive(), "outside CraftTable before first entry");
+                moveAtCraftTable(true); phase = 7; nextAt = now + 0.4; break;
+            case 7:
+                if (!craftTriggerActive()) return;
+                useCraftTable(); phase = 8; break;
+            case 8: {
+                if (scene != "Craft") return;
+                var craft = UnityEngine.Object.FindFirstObjectByType<CraftManager>();
+                if (craft == null || !craft.IsReadyForTutorial) return;
+                checkResetBeforeShop();
+                beforeInitialMaterials = materials();
+                log("BEFORE_INITIAL_UPGRADE materials=" + beforeInitialMaterials);
+                submit("UpgradeTabButton"); phase = 9; nextAt = now + 0.3; break;
+            }
+            case 9:
+                inspectShop("INITIAL", false);
+                UnityEditor.SessionState.SetBool(prefix + "initialShopVerified", true);
+                scrollShop(1f);
+                phase = 10; nextAt = now + 0.15; break;
+            case 10:
+                // CaptureScreenshot reads at end of frame; never change scroll/scene on its request frame.
+                if (initialCaptureStage == 0) capture("02-initial-shop-top");
+                else if (initialCaptureStage == 1) scrollShop(0f);
+                else if (initialCaptureStage == 2) capture("03-initial-shop-bottom");
+                else { submit("Canvas/UpgradePanel/Close"); phase = 11; }
+                initialCaptureStage++; nextAt = now + 0.2; break;
+            case 11:
+                if (scene != "CraftSpace") return;
+                checkRunIdentity();
+                check(materials() == beforeInitialMaterials && StageCounter.Instance.StageCount == 1, "Dorm return stays same day/materials");
+                moveAtCraftTable(false); phase = 12; nextAt = now + 0.4; break;
+            case 12:
+                check(!craftTriggerActive(), "outside CraftTable before same-day reentry");
+                moveAtCraftTable(true); phase = 13; nextAt = now + 0.4; break;
+            case 13:
+                if (!craftTriggerActive()) return;
+                useCraftTable(); phase = 14; break;
+            case 14: {
+                if (scene != "Craft") return;
+                var craft = UnityEngine.Object.FindFirstObjectByType<CraftManager>();
+                if (craft == null || !craft.IsReadyForTutorial) return;
+                submit("UpgradeTabButton"); phase = 15; nextAt = now + 0.3; break;
+            }
+            case 15:
+                inspectShop("REENTRY", true);
+                scrollShop(1f); phase = 16; nextAt = now + 0.15; break;
+            case 16:
+                capture("04-reentry-shop"); phase = 17; nextAt = now + 0.2; break;
+            case 17:
+                submitButton(UnityEngine.Object.FindFirstObjectByType<CraftTabController>().craftTabButton);
+                phase = 18; nextAt = now + 0.2; break;
+            case 18:
+                submit("Canvas/CraftPanel/Close");
+                phase = 19; break;
+            case 19:
+                if (scene != "CraftSpace") return;
+                checkRunIdentity();
+                check(materials() == beforeInitialMaterials && StageCounter.Instance.StageCount == 1,
+                    "Craft Close also returns to same-day Dorm without charge");
+                finish(true, "A/B/C plus both Close buttons passed: old score12500, new six-part stock, same-day order/state retained, active fade and sound starts");
+                break;
+        }
+    } catch (System.Exception error) { finish(false, error.ToString()); }
+};
+UnityEditor.SessionState.SetBool(prefix + "stop", false);
+UnityEditor.SessionState.SetBool(prefix + "running", true);
+UnityEditor.SessionState.SetBool(prefix + "done", false);
+UnityEditor.SessionState.SetBool(prefix + "passed", false);
+UnityEditor.SessionState.SetBool(prefix + "scoreVisible", false);
+UnityEditor.SessionState.SetBool(prefix + "continueScore", false);
+UnityEditor.SessionState.SetBool(prefix + "initialShopVerified", false);
+UnityEditor.SessionState.SetInt(prefix + "phase", 0);
+UnityEditor.SessionState.SetInt(prefix + "assertions", 0);
+UnityEditor.SessionState.SetString(prefix + "result", "running");
+UnityEngine.Application.logMessageReceived += onRuntimeLog;
+UnityEditor.EditorApplication.update += tick;
+return "Term15 A/B/C scheduled; 180s Editor-clock deadline; .stop=true cancels; screenshot requests are logged, parent verifies PNGs and restores preferences";

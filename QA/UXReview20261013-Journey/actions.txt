@@ -1,0 +1,31 @@
+CLICK StartButton @ (960.00, 444.00)
+CLICK Recipe_ScrapModule @ (244.00, 559.00)
+CLICK ShortageButton @ (804.00, 862.49)
+CLICK NextButton @ (988.00, 862.49)
+CLICK craft_button @ (1200.00, 355.00)
+CLICK NextButton @ (988.00, 880.00)
+CLICK CloseButton @ (756.00, 840.00)
+CLICK Recipe_PunkDrive @ (244.00, 669.00)
+CLICK craft_button @ (1200.00, 355.00)
+CLICK Canvas/CraftPanel/question @ (1823.00, 864.10)
+CLICK YesButton @ (870.00, 468.00)
+CLICK Canvas/CraftPanel/Close @ (1822.40, 1001.80)
+CLICK StartButton @ (960.00, 444.00)
+CLICK Recipe_ScrapModule @ (244.00, 559.00)
+CLICK ShortageButton @ (804.00, 862.49)
+CLICK NextButton @ (988.00, 862.49)
+CLICK craft_button @ (1200.00, 355.00)
+CLICK NextButton @ (988.00, 880.00)
+CLICK CloseButton @ (756.00, 840.00)
+CLICK Recipe_PunkDrive @ (244.00, 669.00)
+CLICK craft_button @ (1200.00, 355.00)
+CLICK Canvas/CraftPanel/question @ (1823.00, 864.10)
+MOVE Up YesButton -> NoButton
+MOVE Left NoButton -> YesButton
+MOVE Down YesButton -> NoButton
+SUBMIT NoButton
+CLICK Canvas/CraftPanel/question @ (1823.00, 864.10)
+SUBMIT YesButton
+CLICK NextButton @ (988.00, 827.74)
+CLICK UpgradeTabButton @ (359.00, 104.00)
+DRAG ShopItem_Damage+1 to (772.00, 779.00)

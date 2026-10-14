@@ -1,0 +1,5 @@
+Automatic post-build identity restore match=True
+Final build preparation: Build job build-ee4574fac9 succeeded in22.4785s, errors0/warnings10. Bundle identifier com.gearcraft.qa.uxready20261013 verified. Not launched while screen lock remains.
+ProjectSettings exact bytes and Editor preference hash match before build. Current Craft scene hash matches build source snapshot. Original company/product/Standalone ID verified in memory after restoration.
+Temporary probe source/meta removed, full AssetDatabase refresh and compilation completed with error CS0. buildWatcher=false/settingsActive=false. No product source/scene changes in this build preparation.
+Next standalone attempt must use this latest probe after screen unlock; older term14 probe predates the Craft Close fix. Output folder should be unique per invocation.

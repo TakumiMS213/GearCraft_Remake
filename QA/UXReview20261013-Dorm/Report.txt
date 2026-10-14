@@ -1,0 +1,109 @@
+GearCraft UX継続テスト: 宿舎設備と作業台の往復（ターム5）
+実施日: 2026-10-13 JST
+環境: Unity 6000.0.67f1 / macOS Editor / 確認画像1920 x 1080
+状態: 今回の修正と往復検証を完了。ゲーム全体のUX検証は継続。
+
+短い変更要約
+1. メニュー表示・閉鎖の入力が背後の宿舎設備へ届かないようにした。
+2. 満タン・利用済みの理由と次にできることを、宿舎の短い表示で伝える。
+3. 門の修理後にSAN回復と出る表示を修正。救急箱はHP100まで回復する。
+4. Craftの重複EventSystem/InputModuleを削除し、両タブ共通の1組に整理。
+
+判断根拠
+安藤昌也教授インタビュー（HIP、2018-03-05）
+https://hiptokyo.jp/hiptalk/ux_design/2/
+  利用前後を含めて体験を調べ、試作とユーザー評価で改善する考え方を参照。
+  設備単体に加え、宿舎→作業台→宿舎→次の防衛への状態保持を検証した。
+Nielsenのユーザビリティ原則
+https://www.nngroup.com/articles/ten-usability-heuristics/
+  状態の可視性、誤操作防止、原因と復帰方法を、再現した挙動と照合した。
+Microsoft XAG 114: UI context
+https://learn.microsoft.com/en-us/xbox/accessibility/xbox-accessibility-guidelines/114
+  操作の目的と結果を判断できる文脈を参照し、利用不可理由と正しい修理結果を追加。
+公開資料は修正の判断根拠。初見の人が理解できたという効果測定ではない。
+
+修正前の再現
+A. 食事設備の範囲でメニューを開く。timeScale=0のまま設備の操作ハンドラーを実行すると、
+   STR+ACCが0→3、UseCraftSpacebuffがfalse→trueになる（03/04画像）。
+B. HP100で救急箱を使うと、HPと利用枠は変わらず、理由の文字表示がない（02画像）。
+   食事後に門修理を試しても同様に理由が表示されない（05画像）。
+   画面上部の「ステータスUP・回復は1回まで」と初回の説明は既に存在している。
+   問題は説明の完全な欠落ではなく、今その設備が使えない理由が操作時に分からないこと。
+C. GATE40のフィクスチャで修理すると90に増える一方、画面には「精神回復：SAN UP」。
+   SANは100のまま。06画像・observations.txtに保存した。
+D. HP55で既存HealPlayerを呼ぶとStatusManager.HP=1054になる。画面のHP最大値と
+   満タン判定は100で、数値の不整合を実ランタイムで確認した。
+E. Craft入場時、EventSystemとCanvas/CraftPanel/CraftManagerObjectの2か所で
+   EventSystemが有効。Consoleに重複の警告が繰り返し出る。
+   二重購入やキーの二重反応を再現したとはしていない。
+
+実装
+Assets/GearCraft/Scripts/CraftSpace/UIRangeDisplay.cs
+  メニューの現在/前フレーム状態、停止、Tab/Escape、到着説明・カメラ演出、
+  入退場のロード中に設備操作を遮断。
+  満タンと利用済みを分けた案内を追加。使用済みなら満タンより利用済み理由を優先。
+  案内は4秒、移動、設備範囲変更、メニュー、ロードで消す。
+  門修理は実際の前後値を表示し、誤ったSAN画像を使わない。
+  医療はHP100まで回復。食事+3、門修理+50、共有1回の利用制限は維持。
+Assets/GearCraft/Scripts/SceneTransitionManager.cs
+  既存のロード中・フェード中の入力遮断状態をIsLoadingとして公開。
+Assets/GearCraft/Scenes/CraftSpace.unity
+  Canvas配下にDormFeedbackPanel/Textをシーンオブジェクトとして配置・配線。
+  下中央、画面幅76%、高さ112、文字30、背景/文字のRaycastを無効化。
+  ランタイムでUIオブジェクトを生成する方式ではない。
+Assets/GearCraft/Scenes/Craft.unity
+  CraftManagerObject側のEventSystem 60426751とInputSystemUIInputModule 60426762を削除。
+  ルートの216416693/216416695を残す。CraftPanelを隠すUPGRADEタブでも入力系が残る。
+  既存タームのCraftシーン修正は保持した。
+
+修正後の確認
+facility-recheck.cs.txt（15段階）: 完走
+  満タン理由、利用枠非消費、4秒での消去、HP55→100を確認。
+  メニューを開いた直後（timeScaleがまだ1）、停止中、閉じたフレームは設備非消費。
+  通常時の食事は+3・1回消費。次の修理は拒否し利用済み理由を表示。
+  新しい利用枠のフィクスチャでは門40→90と正しい結果表示。
+  文字が領域に収まり、移動/メニューで消える。07〜10画像を保存・目視確認。
+  到着演出/入場フェード中の遮断はコードレビュー済みで、個別ランタイム再現は未実施。
+
+roundtrip-recheck.cs.txt（14段階）: 完走
+  Scrap12/Gear5/UpgradeCore2、HP60/GATE90、設備利用済みをテスト用に設定。
+  作業台からCraftに移り、Damage+1を(1,1)、回転1で購入・配置。
+  Scrap12→9、攻撃力+1。Closeで宿舎へ戻っても材料・能力・利用フラグを保持。
+  新しい宿舎UIのuplimitが1になっても、同日の救急箱利用は拒否されHP60のまま。
+  作業台へ再入場し、新しいGridManagerにパーツ・位置・回転が復元。
+  追加の支払い・強化加算はない。11〜13画像。
+  ベッドからMainへ遷移し、PlayerController.Startによる設備利用枠の更新を確認。
+  素材と攻撃力+1も保持（14画像）。防衛を最後まで終えた日跨ぎ試験とは区別する。
+
+input-recheck.cs.txt（6段階）: 完走
+  Craft/UPGRADE/再びCraftの全てで、有効EventSystem・InputModuleが各1組。
+  UIのSubmitでタブを切り替え、?の確認へフォーカスが移り、
+  取り消しで?へ戻る。15画像。
+  Consoleを退避・消去した後の新しいPlayではEventSystem重複警告なし。
+  既存のRender Graph互換モードの警告は残っている。
+
+試験方法と限界
+宿舎はプレイヤー座標を設備へ移して実際の範囲トリガーを待ち、Space入力先の
+ExecuteActiveActionを呼んだ。作業台のタブ/Close/確認はEventSystemのSubmitを使用。
+強化はTryPurchaseAndPlaceを使用。物理キー、徒歩、ドラッグ全体のE2Eとはしない。
+最初の往復用コードはタブ名をUpgradeButtonと誤記して停止したため、実際の
+UpgradeTabButtonへ直して最初から完走した。入力確認も最初はSubmit前に対象選択を
+設定していなかったため、実際のキー操作の前提に合わせて修正し再実行した。
+両方ともテスト手順側の修正であり、ゲームの不具合として数えていない。
+失敗ログもobservations.txtに残した。
+
+接続・復元・最終状態
+MCP切断時のEditorログに「Server no longer running; ending orphaned session.」を確認。
+MCPウィンドウの定期到達確認から接続停止へ進む経路があったため、
+ウィンドウを閉じてブリッジを再接続。その後の今回の追試は接続を維持して完了。
+到達確認の失敗原因を完全に特定したとはしていない。
+接続再開だけを行った一時Editorスクリプト/メタは削除済み。
+退避8キーは /tmp/gearcraft-uxdorm-playerprefs-backup.txt から元の有無/型/値へ復元。
+Play停止後にも書き換えず再照合して8項目一致。backup active=false、Title・Play停止。
+一時ファイル削除後のUnity再コンパイル完了、CSエラー0、git diff --check通過。
+
+後日、人間に評価してもらうこと
+設備の利用不可理由から次の行動を自分で判断できるか。
+表示時間4秒・表示位置・文体が適切か、次の防衛で利用枠が戻ることを理解できるか。
+初見参加者の理解度・自然さ・自力成功率は未測定。QA/UXReviewIndex.txtのH-06に記録。
+今回の通常修正に、新たなユーザー承認ゲートは設けていない。

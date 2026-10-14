@@ -1,0 +1,147 @@
+UX継続テスト・ターム12：Galleryのスクロール復帰と表示寸法
+実施日: 2026-10-13 JST
+環境: Unity Editor Play / macOS
+状態: スクロール復帰を修正し、全25項目・143項目の回帰と表示寸法5種類の診断を完了。
+      最終項目の追試・画像確認、元8キーとGameView設定の最終復元・照合まで完了。Title・Play停止。
+
+目的
+
+一覧の下部を閲覧中にスクロールバーへ操作対象を移し、再び一覧へ戻ったときに、
+見ていた項目と位置を保って閲覧を続けられるかを確認する。
+併せて、Galleryの文字と選択行が複数のGameView寸法で表示枠に収まるかを診断する。
+ターム11で未判定の候補として残した、スクロールバー左方向の先頭固定を今回実行時に確認する。
+
+開始時の保全
+
+担当は元PlayerPrefs8キーを /tmp/gearcraft-uxgallerylayout-playerprefs-backup.txt に退避。
+元のGameViewサイズ一覧と選択indexは /tmp/gearcraft-uxgallerylayout-gameview-backup.txt に退避した。
+追加した試験用サイズはUXGalleryLayout0〜3の4件。終了時に除去し、元のサイズ一覧・選択index=3へ復帰済み。
+全解放の観測はGalleryのpreview fixtureを使用し、解放記録を保存する試験とは区別する。
+記録担当はUnity MCPを使用せず、実行結果・保全状態は担当の報告と保存ログに基づく。
+
+修正前のスクロール復帰
+
+ScrollBefore.cs.txt / scroll-before.txtでは、合成Input System Mouseの位置と押下を送り、
+Entry_24（歯車）が選ばれた状態でスクロールバーのハンドルをクリックした。
+Click actionが発火し、選択対象がScrollTrackへ移った。この時点のcontent.yは1490。
+続く合成Keyboardの左矢印でMove/Navigate actionが発火し、一覧のEntry_0（G-1）へ移った。
+content.yは64となり、見ていた最終項目と下部の位置が失われた。
+
+記録担当もscroll-before-bar.png / scroll-before-left.pngを閲覧し、
+歯車の表示からG-1・一覧上部へ切り替わったことを確認した。
+UGUIハンドラーの直接呼出しだけではなく、合成DeviceからInput Systemのactionと
+UI処理を通した観測。ただしOSマウス・物理キーや人間による操作の検証ではない。
+
+今回の変更
+
+GalleryController.ShowEntryで、scroll.verticalScrollbar.navigation.selectOnLeftを
+現在の項目のButtonへ更新する処理を追加した。スクロールバーがない場合と範囲外indexは除外。
+既存navigationをコピーして左方向だけを変えるため、右・上下移動の設定は維持する。
+既存の戻るButtonの経路も変更しない。レイアウト・シーン配置の変更はない。
+
+修正後の合成入力による回帰
+
+ScrollAfter.cs.txt / scroll-after.txtは全25項目を巡回し、14.86秒・143 PASSで完了した。
+偶数indexを発見済み、奇数indexを未発見とするpreviewを用意。項目の初期選択はfixtureで行い、
+各項目から合成Mouseのクリックでスクロールバーへ移って、合成Keyboard左矢印で戻った。
+Click/Navigate actionの実行、ScrollTrack選択、元のEntryへの復帰、表示名・本文・spriteの
+スナップショット保持と、復帰した行全体がviewport内に見えることを確認した。
+12個の未発見項目では、戻っても名前「？」・本文空・sprite=nullで情報を伏せたまま。
+
+追加してEntry_13からスクロールバーへ選択を設定し、合成上下キーでscrollbar.valueが変わっても
+フォーカスと表示内容が維持されることを確認。右キーで既存Return Buttonへ移り、左キーで
+Entry_13とその詳細に戻れることも確認した。ここでのスクロールバー初期選択は直接設定で、
+クリックから全段階を連続して操作したケースとは区別する。
+実Input System actionを通した回帰であり、OS/物理入力の証明ではない。
+
+保存非変更と画像の注意点
+
+全解放・部分解放previewの後、復元前のGallery保存キーの存在とJSON値が元バックアップに
+完全一致することを担当が照合し、observations.txtにunchanged=Trueを記録した。
+観測callbackの終了・合成Deviceの削除を確認後にPlayを停止した。元8キーは後述の最終復元・照合も完了。
+
+scroll-after-row-13.pngを記録担当が閲覧し、「？」の行と伏せた詳細、発見13/25を確認した。
+scroll-after-row-24.pngは最終項目の証拠に使用しない。ハーネスが撮影依頼後の同一フレームに
+Entry_13を選び直すため、実際の画像はEntry_13の表示になっている。
+担当と記録担当が画像を閲覧してこの不一致を確認。Entry_24への復帰自体はログで合格しているが、
+同ファイルを「歯車へ復帰した画像」とは説明しない。元画像は残し、次の独立追試画像を正とする。
+
+ScrollLastAfter.cs.txt / scroll-after-last.txtで、歯車のみ発見済みのpreviewを作り、
+Entry_24から合成MouseでScrollTrackをクリック→合成左矢印を再実行した。
+クリック後はScrollTrack・content.y1490、左矢印後はEntry_24・content.y1490を確認した。
+その状態を変えずに撮影したscroll-after-last-left.pngを担当と記録担当が閲覧し、
+最終行の歯車とその画像・本文が表示され、他の項目は「？」、発見1/25であることを確認。
+この追試は143項目の一括回帰とは別の観測であり、同じ件数に重複加算しない。
+
+5種類のGameView寸法での診断
+
+LayoutBefore.cs.txt / layout-before.txtは以下の5寸法、全25項目を巡回した。
+  1920×1080 / 1280×720 / 1600×1000 / 1024×768 / 2560×1080
+各項目でEntryName・EntrySubtitle・EntryDesignation・EntryDescription・EntryStateの
+TMP isTextOverflowing/isTextTruncatedと、選択行の高さ全体がviewportに収まるかを取得。
+5テキスト＋選択行1件の計6観測×25項目×5寸法=750観測、overflowOrBounds=0で完了した。
+Canvas寸法・camera.pixelRect・GameView targetSizeと、fontSize×canvas.scaleFactorも記録した。
+記録担当は1024×768のEK-9/アップグレードモジュール、2560×1080の歯車、
+1280×720のEK-9長文、1600×1000のアップグレードモジュール名の画像を閲覧。
+取得した画像では当該本文と選択行が枠内に見えることを確認した。
+担当は1024×768のEK-9と2560×1080のアップグレードモジュールも閲覧した。
+これらは選択移動の修正前の表示診断。今回のレイアウト編集は行っていない。
+
+この診断は文字の欠け・省略と選択行の見切れに対象を絞ったもの。
+全UI要素の重複・コントラスト・読む速度・人間の理解度を合格とする試験ではない。
+fontSize×canvas.scaleFactorは設定値の参考であり、XAG 101が示す画面上の文字body heightを
+画像から測定した値ではない。診断の0件だけで可読性やXAG適合を実証したとは扱わない。
+GameViewで指定した描画寸法は実機の表示対応を保証しない。FullScreenWindowは実際の描画解像度と
+外側の表示領域が異なり、黒帯を伴う場合もあるため、画面の外形比率だけから描画比率を断定しない。
+描画寸法の根拠はログのGameView targetSize/camera.pixelRectと画像寸法であり、
+MCP実行文脈のScreen.widthはゲーム描画外の値になり得るため、今回の根拠に使用しない。
+
+公開資料と適用範囲
+
+Microsoft / Xbox Accessibility Guideline 112: UI navigation
+https://learn.microsoft.com/en-us/xbox/accessibility/xbox-accessibility-guidelines/112
+画面内の移動・復帰を予測可能にする観点を、スクロールバーから閲覧していた項目へ戻す判断に適用。
+実利用者がこの動作を自然だと感じるかは、H-04の別途評価で確かめる。
+
+Microsoft / Xbox Accessibility Guideline 101: Text display
+https://learn.microsoft.com/en-us/xbox/accessibility/xbox-accessibility-guidelines/101
+文字の表示寸法と読みやすさを検討する参考。今回のTMP診断を可読性評価の代替にはしない。
+担当がXAG 112/101を今回取得・参照し、記録担当もXAG 101本文を確認した。
+
+Unity / FullScreenMode.FullScreenWindow
+https://docs.unity3d.com/6000.0/Documentation/ScriptReference/FullScreenMode.FullScreenWindow.html
+実機のウィンドウ外形とレンダリング解像度を区別する技術資料として参照した。
+
+証拠
+
+ScrollBefore.cs.txt / scroll-before.txt: 合成クリック→左矢印での修正前復帰。
+scroll-before-bar.png / scroll-before-left.png: 下部の歯車から先頭G-1への移動。
+ScrollAfter.cs.txt / scroll-after.txt: 全25項目の復帰、未発見の秘匿、上下スクロール/右方向の143項目。
+scroll-after-row-13.png: 未発見項目への復帰後の表示。
+scroll-after-row-24.png: 同フレームで選択が変わったため、Entry_24の画像証拠としては無効。
+ScrollLastAfter.cs.txt / scroll-after-last.txt / scroll-after-last-left.png: 最終行の独立追試と有効な画像。
+Restore.cs.txt / Verify.cs.txt: 元8キーの復元・停止後の別呼出し照合。
+RestoreView.cs.txt: 試験用4サイズの削除と元GameView設定の一致確認。
+observations.txt: 復元前のGallery保存JSON非変更、GameView復帰、元8キーの存在/値一致と最終状態。
+LayoutBefore.cs.txt / layout-before.txt: 5寸法×25項目、750観測のTMPと選択行診断。
+layout-3-row-9.png / layout-3-row-22.png: 1024×768のEK-9・アップグレードモジュール。
+layout-1-row-9.png / layout-2-row-22.png: 1280×720のEK-9長文と1600×1000の長い名称。
+layout-4-row-24.png: 2560×1080の歯車。
+
+終了確認
+
+最終追試後、合成Deviceが残っていないこととscrollRunning=falseを担当が確認し、Playを停止。
+Restore.cs.txtで元8キーを専用ファイルから復元し、別MCP呼出しのVerify.cs.txtで存在/値を照合した。
+observations.txtはTitle・play=False・backup=False、8キー一致を記録している。
+RestoreView.cs.txtは試験用4サイズを除去し、サイズ一覧と選択index=3の完全一致、
+GameView targetSize=1920×1080を確認した。単に見た目を戻すだけでなく元設定との差を照合している。
+最終Consoleの検索「error CS」「Exception」は各0件。全error一覧が0件という意味ではない。
+git diff --check成功。製品変更はGalleryController.csへの7行追加のみで、シーン・レイアウト変更はない。
+
+未実施・別途確認対象
+
+・OS/物理入力、ゲームパッドの実機入力、実機ビルド。
+・初見の人による閲覧再開、読みやすさ、迷い、快適さの評価。
+・Gallery以外の画面での今回5寸法の診断。Galleryの結果を他シーンの表示保証に広げない。
+
+新しい明示承認ゲートは設けていない。

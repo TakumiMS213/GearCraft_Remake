@@ -1,0 +1,36 @@
+2026-10-14 Craft completion feedback timing
+
+Request: Show 作成済み only after the crafting animation ends.
+
+Changed:
+- CraftManager holds a pending recipe before spending materials/committing the result.
+  UI refreshes during that operation hide status text and its feedback panel, and block duplicate input.
+- TransitionFinished clears pending state, refreshes 作成済み, then notifies the tutorial.
+  The event occurs after the animation's final fade. Existing Craft scene duration: 3.4 s.
+- A missing/unavailable animation completes feedback immediately instead of leaving input locked.
+- Disabling the crafting panel clears pending presentation state and cancels the animation.
+  Material consumption and crafted results are still committed once. Tutorial resumes through
+  its existing reconciliation of saved outcomes.
+- Starting/resuming the tutorial during an animation now waits for completion before it
+  interprets ownership or displays completion feedback.
+
+Validation:
+- Unity bundled Roslyn compiled the full Assembly-CSharp response file successfully.
+  Errors: 0. Warnings: 7 (existing TMP enableWordWrapping obsolescence warnings).
+  Output isolated in this QA folder; runtime build artifacts were not replaced.
+- git diff --check for both edited scripts passed.
+- Source review confirmed final fade precedes TransitionFinished and pending state is cleared
+  before completion subscribers run; existing panel cancellation preserves acquired items.
+- Unity console request returned no_unity_session. No runtime/visual pass is claimed.
+
+Pending visual checks when MCP reconnects:
+- During movement, flash, shake and final fade: no status text or feedback panel; no completion tutorial message.
+- After the fade: 作成済み for unique outcomes, tutorial feedback once.
+- Repeated input cannot spend/grant again; repeatable stat modules remain repeatable afterward.
+- Switch tabs during animation, then return: no stuck controls and one retained crafted result.
+- Pause/reopen tutorial during animation: outcome message waits for the end.
+
+Prior shop-test data restoration is still pending the same Unity MCP reconnection.
+Do not overwrite the original backup:
+/tmp/gearcraft-uxshopavailability-playerprefs-backup.txt
+QA/UXReview20261014-ShopAvailability/Restore.cs.txt

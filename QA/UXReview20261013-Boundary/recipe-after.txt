@@ -1,0 +1,26 @@
+Recipe return + invalid/locked fallback + run reset. Direct LoadScene only for fallback fixtures.
+0.01s phase=0 PASS idle CancelShopDrag preserves successful equipment feedback
+0.01s phase=0 SUBMIT CraftTutorialCanvas/CraftTutorialRoot/TutorialMessagePanel/CloseButton
+0.01s phase=0 SUBMIT Canvas/HeaderArea/CraftTabButton
+0.20s phase=1 SUBMIT Canvas/CraftPanel/CraftRecipeScrollView/Viewport/Content/Recipe_PunkDrive
+0.41s phase=2 PASS PunkDrive selected with insufficient materials
+0.41s phase=2 PASS PunkDrive selection remembered immediately
+0.41s phase=2 SUBMIT Canvas/CraftPanel/Close
+3.11s phase=3 TELEPORT outside CraftTable at (11.93, -2.50, 0.00); await real physics trigger
+3.51s phase=4 PASS outside trigger before re-entry
+3.51s phase=4 TELEPORT into CraftTable at (5.63, -3.33, 0.00); await real physics trigger
+3.91s phase=5 PASS actual CraftTable trigger registered and prompt visible
+3.91s phase=5 ACTION ExecuteActiveAction through the registered CraftTable trigger
+6.93s phase=6 PASS PunkDrive survives real Dorm round trip despite material shortage
+6.93s phase=6 PASS PunkDrive visual survives return
+6.93s phase=6 SCREENSHOT 13-recipe-selection-retained
+7.57s phase=8 PASS unknown recipe falls back to first unlocked recipe
+7.57s phase=8 PASS SteamCannon fixture is locked
+7.99s phase=9 PASS locked remembered recipe falls back to first unlocked recipe
+7.99s phase=9 SUBMIT Canvas/CraftPanel/CraftRecipeScrollView/Viewport/Content/Recipe_PunkDrive
+8.19s phase=10 PASS nondefault selection exists before reset
+8.19s phase=10 PASS ResetRunProgress clears remembered recipe
+8.76s phase=11 PASS old Craft teardown does not restore previous selection
+9.36s phase=12 PASS fresh run opens the initial recipe
+9.36s phase=12 SCREENSHOT 14-recipe-new-run-initial
+9.56s phase=13 COMPLETE Recipe continuity and fallback checks passed; assertions=14; Play retained; caller must restore saved preferences

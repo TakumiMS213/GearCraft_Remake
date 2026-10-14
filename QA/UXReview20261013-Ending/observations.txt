@@ -1,0 +1,54 @@
+unlocked=False interactable=False status=True counter=False eventSystem=EventSystem
+Bad entry index=-1 images=9 unlocked=True selected= uiButtons=0
+16:58:42 scene=Ending pending=1 unlocked=True index=9 notice=True selected=null timeScale=1
+After first ED Title gallery button interactable=True; submitted
+Gallery entered and return submitted
+16:59:56 scene=Title pending=1 unlocked=True index=none notice=none selected=GalleryIcon timeScale=1
+17:09:49 scene=Ending pending=1 unlocked=True index=-1 notice=False selected=EndingAdvanceButton timeScale=1
+17:10:11 scene=Ending pending=1 unlocked=True index=0 notice=False selected=EndingAdvanceButton timeScale=1
+17:11:22 scene=Ending pending=1 unlocked=True index=9 notice=True selected=MessageWindow timeScale=1
+17:12:23 scene=Gallery pending=1 unlocked=True index=none notice=none selected=Entry_0 timeScale=0
+17:15:53 scene=Gallery pending=1 unlocked=True index=none notice=none selected=Entry_0 timeScale=0
+backup=True lines=8 active=True Gallery background input-module-equivalent: hits=0 deselect=True before=Entry_0 after=null
+Title background input-module-equivalent: scene=Title hits=1 selectable=null deselect=True before=GalleryIcon after=null
+Title background focus retained StartButton; Down -> SettingButton; setting=False
+Gallery background focus retained Entry_0; Down -> Entry_1; setting=False
+Gallery known fixture
+title=G-1
+description=地面を進んで門へ向かう兵器。
+直接的な攻撃手段を持たないが、耐久性が高く、門へ到達しやすい。
+designation=Ground-1
+count=発見 6 / 25
+caption=遭遇済み
+sprite=G-1_1
+0: Level1 G-1 known=True
+1: Level1 A-1 known=True
+2: Level1 B-1 known=True
+3: Level2 EG-33 known=False
+4: Level2 EA-21 known=False
+5: Level2 BB-12 known=False
+6: Level3 IC-408 known=False
+7: Level3 BB-413 known=False
+8: Level3 AR-227 known=False
+9: Level3 EK-9 known=False
+10: WorkshopWeapons Katana known=True
+11: WorkshopWeapons AR known=False
+12: WorkshopWeapons GearCraft（剣） known=False
+13: WorkshopWeapons GearCraft（斧） known=False
+14: WorkshopWeapons SteamCannon known=False
+15: WorkshopWeapons SteamThrower known=False
+16: WorkshopWeapons SteamGatling known=False
+17: WorkshopWeapons RailCraft known=False
+18: WorkshopWeapons PunkDrive known=False
+19: WorkshopWeapons スクラップモジュール known=False
+20: WorkshopWeapons リペアモジュール known=False
+21: WorkshopWeapons バリアモジュール known=False
+22: WorkshopWeapons アップグレードモジュール known=False
+23: WorkshopWeapons スクラップ known=True
+24: WorkshopWeapons 歯車 known=True
+
+Gallery 25/25 Move navigation + known/unknown title/text/artwork assertions PASS; Right -> GalleryReturnButton returnText=タイトルへ戻る
+Gallery return observed scene=Title selected=GalleryIcon timeScale=1
+8 original PlayerPrefs match after Play stop; scene=Title play=False backup=False
+8 original PlayerPrefs match after Play stop; scene=Title play=False backup=False
+8 original PlayerPrefs match after Play stop; scene=Title play=False backup=False

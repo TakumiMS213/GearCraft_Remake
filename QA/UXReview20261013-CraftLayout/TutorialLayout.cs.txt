@@ -1,0 +1,46 @@
+const string folder="QA/UXReview20261013-CraftLayout/";
+const string prefix="UXCraftLayout20261013.";
+if(UnityEditor.SessionState.GetBool(prefix+"layoutRunning",false))throw new System.Exception("Already running");
+var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.NonPublic;
+var asm=typeof(UnityEditor.Editor).Assembly;var vt=asm.GetType("UnityEditor.GameView");
+var view=Resources.FindObjectsOfTypeAll<UnityEditor.EditorWindow>().First(w=>w.GetType()==vt);view.Focus();
+var st=asm.GetType("UnityEditor.GameViewSizes");var sizes=typeof(UnityEditor.ScriptableSingleton<>).MakeGenericType(st).GetProperty("instance",flags).GetValue(null,null);
+var group=st.GetProperty("currentGroup",flags).GetValue(sizes,null);
+var labels=(string[])group.GetType().GetMethod("GetDisplayTexts",flags).Invoke(group,null);
+int[] indices={3,System.Array.FindIndex(labels,s=>s.StartsWith("UXCraftLayout0")),System.Array.FindIndex(labels,s=>s.StartsWith("UXCraftLayout1")),System.Array.FindIndex(labels,s=>s.StartsWith("UXCraftLayout2")),System.Array.FindIndex(labels,s=>s.StartsWith("UXCraftLayout3"))};
+var c=UnityEngine.Object.FindFirstObjectByType<GearCraft.Scripts.Craft.CraftTutorialController>();var ct=c.GetType();
+var tabs=UnityEngine.Object.FindFirstObjectByType<CraftTabController>();
+var panel=(RectTransform)ct.GetField("messagePanel",flags).GetValue(c);
+var canvas=panel.GetComponentInParent<Canvas>();var root=(RectTransform)canvas.transform;
+var es=UnityEngine.EventSystems.EventSystem.current;
+var log=new System.Text.StringBuilder("5 GameView dimensions x 3 tutorial states. Layout fixtures; not human comprehension or physical input test.\n");
+int si=0,state=0,phase=0,observations=0,flagsCount=0;double started=UnityEditor.EditorApplication.timeSinceStartup,next=started;
+UnityEditor.EditorApplication.CallbackFunction tick=null;
+System.Action<string> finish=s=>{UnityEditor.EditorApplication.update-=tick;UnityEditor.SessionState.SetBool(prefix+"layoutRunning",false);log.AppendLine(s+" observations="+observations+" diagnosticFlags="+flagsCount);System.IO.File.WriteAllText(folder+"tutorial-layout.txt",log.ToString());};
+UnityEditor.SessionState.SetBool(prefix+"layoutRunning",true);
+tick=()=>{try{
+ double now=UnityEditor.EditorApplication.timeSinceStartup;if(now-started>55)throw new System.Exception("Deadline");if(now<next)return;next=now+.12;
+ if(phase==0){vt.GetProperty("selectedSizeIndex",flags).SetValue(view,indices[si],null);view.Repaint();phase=1;next=now+.4;return;}
+ if(phase==1){
+  TooltipSystem.FindInstance().Hide();c.OnCraftSceneLeaving();StatusManager.Instance.CraftTutorials.Reset();StatusManager.Instance.module_scrap=false;
+  PlayerPrefs.SetInt(CraftTutorialMetrics.CraftMasteryKey,1);PlayerPrefs.SetInt(CraftTutorialMetrics.WeaponMasteryKey,1);
+  tabs.SwitchTab(state==2?1:0);
+  if(state!=2){UnityEngine.Object.FindObjectsByType<UnityEngine.UI.Button>(FindObjectsSortMode.None).First(b=>b.name=="Recipe_GearCraft").OnSubmit(new UnityEngine.EventSystems.BaseEventData(es));}
+  PlayerPrefs.SetInt(state==2?CraftTutorialMetrics.WeaponMasteryKey:CraftTutorialMetrics.CraftMasteryKey,0);
+  ct.GetMethod("StartTutorial",flags).Invoke(c,new object[]{state==2?1:0});
+  if(state==1)((UnityEngine.UI.Button)ct.GetField("shortageButton",flags).GetValue(c)).OnSubmit(new UnityEngine.EventSystems.BaseEventData(es));
+  if(state==2)for(int n=0;n<3;n++)ct.GetMethod("ShowNextHint",flags).Invoke(c,null);
+  phase=2;next=now+.25;return;
+ }
+ if(phase==2){
+  Canvas.ForceUpdateCanvases();var panelBounds=RectTransformUtility.CalculateRelativeRectTransformBounds(root,panel);bool panelOut=panelBounds.min.x<root.rect.xMin-.5f||panelBounds.max.x>root.rect.xMax+.5f||panelBounds.min.y<root.rect.yMin-.5f||panelBounds.max.y>root.rect.yMax+.5f;
+  log.AppendLine("SIZE "+labels[indices[si]]+" state="+state+" target="+vt.GetProperty("targetSize",flags).GetValue(view,null)+" panelOutsideCanvas="+panelOut);if(panelOut)flagsCount++;
+  foreach(var t in panel.GetComponentsInChildren<TMPro.TMP_Text>()){
+   t.ForceMeshUpdate();bool overflow=t.isTextOverflowing||t.isTextTruncated;observations++;if(overflow)flagsCount++;
+   log.AppendLine("TEXT "+t.name+" font="+t.fontSize+" overflow="+t.isTextOverflowing+" truncated="+t.isTextTruncated+" renderedHeight="+t.renderedHeight+" rect="+t.rectTransform.rect+" text="+t.text.Replace("\n"," / "));
+  }
+  ScreenCapture.CaptureScreenshot(folder+"tutorial-"+si+"-"+state+".png");phase=3;return;
+ }
+ if(phase==3){state++;if(state==3){state=0;si++;if(si==indices.Length){c.OnCraftSceneLeaving();PlayerPrefs.SetInt(CraftTutorialMetrics.CraftMasteryKey,1);PlayerPrefs.SetInt(CraftTutorialMetrics.WeaponMasteryKey,1);finish("COMPLETE");return;}phase=0;}else phase=1;}
+}catch(System.Exception ex){finish("FAILED "+ex);}};
+UnityEditor.EditorApplication.update+=tick;return "Scheduled tutorial layout diagnostics";

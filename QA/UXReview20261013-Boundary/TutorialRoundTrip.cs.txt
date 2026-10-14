@@ -1,0 +1,447 @@
+// C# 6 execute_code method body. Start in Play/Craft after the boundary checks.
+// Uses real scene transitions and physics triggers, UGUI Submit and drag events.
+// This is an integration check, NOT a physical keyboard/mouse end-to-end test.
+// The caller owns the existing PlayerPrefs backup and restoration. This harness
+// neither replaces the backup nor restores preferences nor stops Play.
+// Preconditions: module_scrap is false, saved upgrade placements are empty,
+// both mastery flags are 1, Time.timeScale > 0, Editor Play is not paused.
+// Only after the first real Close -> Dorm are mastery, tutorial progress and
+// materials reset. No scene, part, recipe or tutorial asset is edited.
+// Stop request: SessionState.SetBool("UXBoundary20261013.tutorialStop", true).
+
+const string prefix = "UXBoundary20261013.";
+const string outDir = "QA/UXReview20261013-Boundary/";
+const string logPath = outDir + "tutorial-roundtrip.txt";
+if (!UnityEditor.SessionState.GetBool(prefix + "active", false))
+    throw new System.Exception("Existing preference backup must be active.");
+if (!UnityEditor.EditorApplication.isPlaying || UnityEditor.EditorApplication.isPaused ||
+    UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "Craft")
+    throw new System.Exception("Unpaused Play in Craft is required.");
+if (UnityEditor.SessionState.GetBool(prefix + "tutorialRunning", false))
+    throw new System.Exception("A tutorial round-trip harness is already running.");
+var runStatus = StatusManager.Instance;
+var runMaterials = MaterialManager.Instance;
+if (runStatus == null || runMaterials == null || UnityEngine.Time.timeScale <= 0f)
+    throw new System.Exception("Status, materials and running physics are required.");
+if (runStatus.module_scrap || runStatus.savedUpgradePartPlacements.Count != 0)
+    throw new System.Exception("Remove boundary-test placements and leave ScrapModule unowned before starting.");
+if (UnityEngine.PlayerPrefs.GetInt(CraftTutorialMetrics.CraftMasteryKey, 0) != 1 ||
+    UnityEngine.PlayerPrefs.GetInt(CraftTutorialMetrics.WeaponMasteryKey, 0) != 1)
+    throw new System.Exception("Both mastery flags must still be 1 before the first Close -> Dorm.");
+
+System.IO.Directory.CreateDirectory(outDir);
+System.IO.File.WriteAllText(logPath,
+    "Craft and Upgrade unfinished tutorial -> Close -> Dorm -> real CraftTable trigger -> Craft.\n" +
+    "UGUI events and teleported physics-trigger entry; not physical input E2E.\n" +
+    "Caller restores the existing backup after completion/failure; Play remains active.\n");
+var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
+double started = UnityEditor.EditorApplication.timeSinceStartup;
+double nextAt = started;
+int phase = 0;
+int assertions = 0;
+int firstCraftControllerId = 0;
+int firstUpgradeControllerId = 0;
+CraftTutorialTrackProgress craftTrack = null;
+CraftTutorialTrackProgress upgradeTrack = null;
+CraftRecipeSO scrapRecipe = null;
+UpgradePartSO damagePart = null;
+GearCraft.Scripts.Craft.CraftTutorialController controller = null;
+CraftManager craftManager = null;
+CraftSpaceInteractionZone craftZone = null;
+UpgradeShopItemDragHandler dragSource = null;
+UnityEngine.EventSystems.PointerEventData dragData = null;
+UnityEngine.Vector2 dragTarget = UnityEngine.Vector2.zero;
+float upgradeBaselineDamage = 0f;
+string suppliedCraftMaterials = null;
+string suppliedUpgradeMaterials = null;
+UnityEditor.EditorApplication.CallbackFunction tick = null;
+
+System.Action<string> log = delegate(string message) {
+    System.IO.File.AppendAllText(logPath,
+        (UnityEditor.EditorApplication.timeSinceStartup - started).ToString("F2") +
+        "s phase=" + phase + " " + message + "\n");
+};
+System.Action<bool, string> check = delegate(bool ok, string message) {
+    if (!ok) throw new System.Exception(message);
+    assertions++;
+    log("PASS " + message);
+};
+System.Func<UnityEngine.Transform, string> pathOf = null;
+pathOf = delegate(UnityEngine.Transform tr) {
+    return tr.parent == null ? tr.name : pathOf(tr.parent) + "/" + tr.name;
+};
+System.Func<string, UnityEngine.GameObject> find = delegate(string name) {
+    foreach (var tr in UnityEngine.Object.FindObjectsByType<UnityEngine.Transform>(
+        UnityEngine.FindObjectsInactive.Include, UnityEngine.FindObjectsSortMode.None)) {
+        if (tr.gameObject.scene.IsValid() && tr.gameObject.activeInHierarchy &&
+            (tr.name == name || pathOf(tr) == name)) return tr.gameObject;
+    }
+    return null;
+};
+System.Action<UnityEngine.UI.Button> submitButton = delegate(UnityEngine.UI.Button button) {
+    if (button == null || !button.IsActive() || !button.IsInteractable())
+        throw new System.Exception("Submit target is unavailable.");
+    var events = UnityEngine.EventSystems.EventSystem.current;
+    if (events == null) throw new System.Exception("EventSystem is missing.");
+    var tooltip = TooltipSystem.FindInstance();
+    if (tooltip != null) tooltip.Hide();
+    button.Select();
+    log("SUBMIT " + pathOf(button.transform));
+    UnityEngine.EventSystems.ExecuteEvents.Execute(button.gameObject,
+        new UnityEngine.EventSystems.BaseEventData(events), UnityEngine.EventSystems.ExecuteEvents.submitHandler);
+};
+System.Action<string> submit = delegate(string name) {
+    var obj = find(name);
+    if (obj == null) throw new System.Exception("Active UI not found: " + name);
+    submitButton(obj.GetComponent<UnityEngine.UI.Button>());
+};
+System.Func<string> materials = delegate {
+    return runMaterials.scrap + "," + runMaterials.gear + "," + runMaterials.upgradeCore + "," +
+        runMaterials.moduleCore_lv1 + "," + runMaterials.moduleCore_lv2 + "," + runMaterials.moduleCore_lv3;
+};
+System.Func<bool> tutorialReady = delegate {
+    controller = UnityEngine.Object.FindFirstObjectByType<GearCraft.Scripts.Craft.CraftTutorialController>();
+    if (controller == null) return false;
+    var root = (UnityEngine.GameObject)controller.GetType().GetField("tutorialRoot", flags).GetValue(controller);
+    return root != null && root.activeInHierarchy;
+};
+System.Func<int> tutorialTab = delegate {
+    return (int)controller.GetType().GetField("currentTab", flags).GetValue(controller);
+};
+System.Action<bool> moveAtCraftTable = delegate(bool inside) {
+    var interaction = UnityEngine.Object.FindFirstObjectByType<UIRangeDisplay>();
+    if (interaction == null || interaction.player == null)
+        throw new System.Exception("Dorm interaction/player is missing.");
+    craftZone = null;
+    foreach (var zone in UnityEngine.Object.FindObjectsByType<CraftSpaceInteractionZone>(UnityEngine.FindObjectsSortMode.None))
+        if (zone.ActionType == CraftSpaceInteractionAction.CraftTable) { craftZone = zone; break; }
+    if (craftZone == null) throw new System.Exception("CraftTable trigger is missing.");
+    var bounds = craftZone.GetComponent<UnityEngine.Collider2D>().bounds;
+    var position = interaction.player.position;
+    position.x = inside ? bounds.center.x : bounds.max.x + UnityEngine.Mathf.Max(2f, bounds.extents.x + 1f);
+    var body = interaction.player.GetComponent<UnityEngine.Rigidbody2D>();
+    if (body != null) body.linearVelocity = UnityEngine.Vector2.zero;
+    interaction.player.position = position;
+    UnityEngine.Physics2D.SyncTransforms();
+    log("TELEPORT " + (inside ? "into" : "outside") + " CraftTable at " + position + "; await real physics trigger");
+};
+System.Func<bool> actualCraftTriggerActive = delegate {
+    var interaction = UnityEngine.Object.FindFirstObjectByType<UIRangeDisplay>();
+    if (interaction == null || craftZone == null) return false;
+    var activeZone = (CraftSpaceInteractionZone)typeof(UIRangeDisplay).GetField("activeZone", flags).GetValue(interaction);
+    return activeZone == craftZone && craftZone.PromptObject != null && craftZone.PromptObject.activeInHierarchy;
+};
+System.Action useCraftTable = delegate {
+    check(actualCraftTriggerActive(), "actual CraftTable trigger registered and prompt visible");
+    var interaction = UnityEngine.Object.FindFirstObjectByType<UIRangeDisplay>();
+    typeof(UIRangeDisplay).GetMethod("ExecuteActiveAction", flags).Invoke(interaction, null);
+    log("ACTION ExecuteActiveAction through the registered CraftTable trigger");
+};
+System.Action<string> capture = delegate(string name) {
+    UnityEngine.ScreenCapture.CaptureScreenshot(outDir + name + ".png");
+    log("SCREENSHOT " + name);
+};
+System.Action<bool, string> finish = delegate(bool passed, string message) {
+    UnityEditor.EditorApplication.update -= tick;
+    if (!passed) {
+        try {
+            var gridUI = UnityEngine.Object.FindFirstObjectByType<UpgradeGridUI>();
+            if (gridUI != null) gridUI.CancelShopDrag();
+        }
+        catch (System.Exception cleanupError) { message += "\nDrag cleanup: " + cleanupError.Message; }
+    }
+    UnityEditor.SessionState.SetBool(prefix + "tutorialRunning", false);
+    UnityEditor.SessionState.SetBool(prefix + "tutorialDone", true);
+    UnityEditor.SessionState.SetBool(prefix + "tutorialPassed", passed);
+    UnityEditor.SessionState.SetInt(prefix + "tutorialAssertions", assertions);
+    UnityEditor.SessionState.SetString(prefix + "tutorialResult", message);
+    log((passed ? "COMPLETE " : "FAIL ") + message + "; assertions=" + assertions +
+        "; Play retained; caller must restore saved preferences");
+};
+
+UnityEditor.SessionState.SetBool(prefix + "tutorialRunning", true);
+UnityEditor.SessionState.SetBool(prefix + "tutorialDone", false);
+UnityEditor.SessionState.SetBool(prefix + "tutorialPassed", false);
+UnityEditor.SessionState.SetBool(prefix + "tutorialStop", false);
+tick = delegate {
+    try {
+        double now = UnityEditor.EditorApplication.timeSinceStartup;
+        if (now - started > 90.0) throw new System.Exception("90-second deadline exceeded.");
+        if (!UnityEditor.EditorApplication.isPlaying || UnityEditor.EditorApplication.isPaused)
+            throw new System.Exception("Play stopped or paused during the harness.");
+        if (UnityEditor.SessionState.GetBool(prefix + "tutorialStop", false))
+            throw new System.Exception("Stopped by caller.");
+        if (now < nextAt) return;
+        nextAt = now + 0.15;
+        UnityEditor.SessionState.SetInt(prefix + "tutorialPhase", phase);
+        string scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        var transition = UnityEngine.Object.FindFirstObjectByType<SceneTransitionManager>();
+        if (transition != null && transition.IsLoading) return;
+        if (scene == "CraftSpace" &&
+            (ArrivalMessagePresenter.IsMessagePlaying || ArrivalMessagePresenter.IsCameraPresentationPlaying)) return;
+        if (StatusManager.Instance != runStatus || MaterialManager.Instance != runMaterials)
+            throw new System.Exception("Persistent run managers changed during the round trip.");
+
+        switch (phase) {
+            case 0: {
+                var currentCraft = UnityEngine.Object.FindFirstObjectByType<CraftManager>();
+                if (currentCraft != null && currentCraft.IsCrafting) return;
+                var close = find("Canvas/UpgradePanel/Close") ?? find("Canvas/CraftPanel/Close");
+                if (close == null) throw new System.Exception("Current workbench Close button is missing.");
+                submitButton(close.GetComponent<UnityEngine.UI.Button>());
+                phase = 1;
+                break;
+            }
+            case 1:
+                if (scene != "CraftSpace") return;
+                check(!runStatus.module_scrap && runStatus.savedUpgradePartPlacements.Count == 0,
+                    "initial Close reached Dorm before fixture reset; no existing practice outcomes");
+                UnityEngine.PlayerPrefs.SetInt(CraftTutorialMetrics.CraftMasteryKey, 0);
+                UnityEngine.PlayerPrefs.SetInt(CraftTutorialMetrics.WeaponMasteryKey, 0);
+                runStatus.CraftTutorials.Reset();
+                runMaterials.ClearAllMaterials();
+                UnityEngine.PlayerPrefs.Save();
+                craftTrack = runStatus.CraftTutorials.craft;
+                upgradeTrack = runStatus.CraftTutorials.weaponCustom;
+                check(materials() == "0,0,0,0,0,0", "Dorm fixture clears materials only after exiting Craft");
+                moveAtCraftTable(false);
+                phase = 2; nextAt = now + 0.4;
+                break;
+            case 2:
+                check(!actualCraftTriggerActive(), "player left the CraftTable trigger before re-entry");
+                moveAtCraftTable(true);
+                phase = 3; nextAt = now + 0.4;
+                break;
+            case 3:
+                if (!actualCraftTriggerActive()) return;
+                useCraftTable(); phase = 4;
+                break;
+            case 4:
+                if (scene != "Craft" || !tutorialReady()) return;
+                craftManager = UnityEngine.Object.FindFirstObjectByType<CraftManager>();
+                if (craftManager == null || !craftManager.IsReadyForTutorial) return;
+                firstCraftControllerId = controller.GetInstanceID();
+                scrapRecipe = craftManager.FindUnlockedRecipe("ScrapModule");
+                check(scrapRecipe != null && tutorialTab() == 0, "Craft auto-starts the actual ScrapModule assessment");
+                check(craftTrack.stepIndex == 0 && !craftTrack.showingFeedback && !craftTrack.practiceSuppliesGranted,
+                    "fresh assessment is unfinished and has supplied nothing");
+                check(materials() == "0,0,0,0,0,0", "opening the assessment itself does not grant materials");
+                submit("Recipe_ScrapModule"); phase = 5;
+                break;
+            case 5:
+                check(craftManager.SelectedRecipe == scrapRecipe && !CraftManager.HasEnoughMaterials(scrapRecipe),
+                    "selected recipe really lacks materials before the player's assessment");
+                submit("ShortageButton"); phase = 6;
+                break;
+            case 6:
+                check(craftTrack.stepIndex == 0 && craftTrack.showingFeedback && craftTrack.practiceSuppliesGranted,
+                    "correct shortage assessment records feedback and one-time practice supply");
+                check(materials() == "0,3,0,1,0,0", "assessment grants exactly Gear 3 and low module core 1");
+                check(CraftManager.CanCraftRecipe(scrapRecipe) && !runStatus.module_scrap,
+                    "supply enables crafting without granting the completed module");
+                suppliedCraftMaterials = materials();
+                capture("tutorial-01-craft-supplied"); phase = 7;
+                break;
+            case 7:
+                submit("NextButton"); phase = 8;
+                break;
+            case 8:
+                check(craftTrack.stepIndex == 1 && !craftTrack.showingFeedback && !craftTrack.mastered,
+                    "crafting practice begins unfinished after assessment feedback");
+                check(materials() == suppliedCraftMaterials && craftTrack.practiceSuppliesGranted,
+                    "moving to practice does not duplicate the supply");
+                submit("CloseButton"); phase = 9;
+                break;
+            case 9:
+                check(!tutorialReady(), "tutorial Later button hides guidance while preserving the unfinished task");
+                submit("Canvas/CraftPanel/Close");
+                check(find("CraftTutorialRoot") == null, "workbench Close immediately removes the tutorial overlay");
+                phase = 10;
+                break;
+            case 10:
+                if (scene != "CraftSpace") return;
+                check(runStatus.CraftTutorials.craft == craftTrack && craftTrack.stepIndex == 1 &&
+                    craftTrack.practiceSuppliesGranted && !craftTrack.showingFeedback && !runStatus.module_scrap,
+                    "Dorm retains the same unfinished craft progress and supplied flag");
+                check(materials() == suppliedCraftMaterials, "Craft -> Dorm retains supplied materials without consuming them");
+                moveAtCraftTable(false); phase = 11; nextAt = now + 0.4;
+                break;
+            case 11:
+                check(!actualCraftTriggerActive(), "second Dorm entry starts outside the CraftTable trigger");
+                moveAtCraftTable(true); phase = 12; nextAt = now + 0.4;
+                break;
+            case 12:
+                if (!actualCraftTriggerActive()) return;
+                useCraftTable(); phase = 13;
+                break;
+            case 13:
+                if (scene != "Craft" || !tutorialReady()) return;
+                craftManager = UnityEngine.Object.FindFirstObjectByType<CraftManager>();
+                if (craftManager == null || !craftManager.IsReadyForTutorial) return;
+                check(controller.GetInstanceID() != firstCraftControllerId, "Craft tutorial resumes in a newly loaded scene controller");
+                check(tutorialTab() == 0 && runStatus.CraftTutorials.craft == craftTrack && craftTrack.stepIndex == 1 &&
+                    !craftTrack.showingFeedback && !craftTrack.mastered && craftTrack.practiceSuppliesGranted,
+                    "re-entry resumes unfinished craft step 1 instead of restarting assessment");
+                check(materials() == suppliedCraftMaterials, "craft re-entry preserves exact supply with no second grant");
+                check(!runStatus.module_scrap && UnityEngine.PlayerPrefs.GetInt(CraftTutorialMetrics.CraftMasteryKey, -1) == 0,
+                    "unfinished task is not mistaken for crafting success or mastery");
+                capture("tutorial-02-craft-resumed"); phase = 14;
+                break;
+            case 14:
+                submit("Recipe_ScrapModule"); phase = 15;
+                break;
+            case 15:
+                check(craftManager.SelectedRecipe == scrapRecipe && craftManager.CanCraft() &&
+                    craftManager.craftButton.IsInteractable(), "resumed practice can craft the selected module");
+                submit("PracticeButton"); phase = 16;
+                break;
+            case 16:
+                submitButton(craftManager.craftButton); phase = 17;
+                break;
+            case 17:
+                if (craftManager.IsCrafting) return;
+                check(runStatus.module_scrap && materials() == "0,0,0,0,0,0", "actual craft consumes the supplied recipe costs once");
+                check(craftTrack.stepIndex == 1 && craftTrack.showingFeedback && !craftTrack.mastered,
+                    "resumed craft receives practice feedback without premature mastery");
+                capture("tutorial-03-craft-completed-after-return"); phase = 18;
+                break;
+            case 18:
+                submit("UpgradeTabButton"); phase = 19;
+                break;
+            case 19: {
+                if (!tutorialReady() || tutorialTab() != 1) return;
+                var grid = UpgradeGridManager.Instance;
+                var shop = UnityEngine.Object.FindFirstObjectByType<UpgradeShopManager>();
+                if (grid == null || shop == null || grid.GridSize <= 0) return;
+                damagePart = shop.FindPart("Damage+1");
+                firstUpgradeControllerId = controller.GetInstanceID();
+                upgradeBaselineDamage = runStatus.bonusDamage;
+                check(damagePart != null && grid.PlacedParts.Count == 0, "Upgrade starts with an empty grid and the practice part available");
+                check(upgradeTrack.stepIndex == 0 && !upgradeTrack.showingFeedback && !upgradeTrack.mastered &&
+                    upgradeTrack.practiceSuppliesGranted, "Upgrade practice is unfinished and its supply is recorded");
+                check(materials() == "3,0,0,0,0,0", "Upgrade grants exactly Scrap 3 for the first placement");
+                suppliedUpgradeMaterials = materials();
+                capture("tutorial-04-upgrade-supplied"); phase = 20;
+                break;
+            }
+            case 20:
+                submit("CloseButton"); phase = 21;
+                break;
+            case 21:
+                check(!tutorialReady(), "Upgrade Later hides guidance without placing a part");
+                submit("Canvas/UpgradePanel/Close");
+                check(find("CraftTutorialRoot") == null, "Upgrade scene exit immediately hides guidance");
+                phase = 22;
+                break;
+            case 22:
+                if (scene != "CraftSpace") return;
+                check(runStatus.CraftTutorials.weaponCustom == upgradeTrack && upgradeTrack.stepIndex == 0 &&
+                    !upgradeTrack.showingFeedback && upgradeTrack.practiceSuppliesGranted &&
+                    runStatus.savedUpgradePartPlacements.Count == 0,
+                    "Dorm retains unfinished Upgrade practice and its supply without a saved placement");
+                check(materials() == suppliedUpgradeMaterials, "Upgrade -> Dorm retains all supplied Scrap");
+                moveAtCraftTable(false); phase = 23; nextAt = now + 0.4;
+                break;
+            case 23:
+                check(!actualCraftTriggerActive(), "third Dorm entry starts outside the CraftTable trigger");
+                moveAtCraftTable(true); phase = 24; nextAt = now + 0.4;
+                break;
+            case 24:
+                if (!actualCraftTriggerActive()) return;
+                useCraftTable(); phase = 25;
+                break;
+            case 25:
+                if (scene != "Craft" || !tutorialReady()) return;
+                check(tutorialTab() == 0 && craftTrack.stepIndex == 1 && craftTrack.showingFeedback && runStatus.module_scrap,
+                    "return to Craft retains the previously completed practice feedback");
+                check(materials() == suppliedUpgradeMaterials, "default Craft tab does not regrant either practice supply");
+                phase = 26;
+                break;
+            case 26:
+                submit("UpgradeTabButton"); phase = 27;
+                break;
+            case 27:
+                if (!tutorialReady() || tutorialTab() != 1) return;
+                check(controller.GetInstanceID() != firstUpgradeControllerId, "Upgrade resumes in a newly loaded scene controller");
+                check(runStatus.CraftTutorials.weaponCustom == upgradeTrack && upgradeTrack.stepIndex == 0 &&
+                    !upgradeTrack.showingFeedback && !upgradeTrack.mastered && upgradeTrack.practiceSuppliesGranted,
+                    "Upgrade re-entry resumes its original unfinished task and supply flag");
+                check(materials() == suppliedUpgradeMaterials && UpgradeGridManager.Instance.PlacedParts.Count == 0,
+                    "Upgrade re-entry neither duplicates Scrap nor invents a placement");
+                check(UnityEngine.PlayerPrefs.GetInt(CraftTutorialMetrics.WeaponMasteryKey, -1) == 0 &&
+                    UpgradeGridManager.Instance.CanPlace(damagePart, 0, 0, 0),
+                    "resumed Upgrade remains unmastered with an available valid placement");
+                capture("tutorial-05-upgrade-resumed"); phase = 28;
+                break;
+            case 28: {
+                var source = find("ShopItem_Damage+1");
+                if (source == null) throw new System.Exception("Practice shop item is missing after resuming.");
+                dragSource = source.GetComponent<UpgradeShopItemDragHandler>();
+                if (dragSource == null) throw new System.Exception("Practice drag handler is missing.");
+                var tooltip = TooltipSystem.FindInstance();
+                if (tooltip != null) tooltip.Hide();
+                var events = UnityEngine.EventSystems.EventSystem.current;
+                var canvas = source.GetComponentInParent<UnityEngine.Canvas>();
+                var camera = canvas.renderMode == UnityEngine.RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
+                var rect = source.GetComponent<UnityEngine.RectTransform>();
+                dragData = new UnityEngine.EventSystems.PointerEventData(events);
+                dragData.button = UnityEngine.EventSystems.PointerEventData.InputButton.Left;
+                dragData.position = UnityEngine.RectTransformUtility.WorldToScreenPoint(camera, rect.TransformPoint(rect.rect.center));
+                var hits = new System.Collections.Generic.List<UnityEngine.EventSystems.RaycastResult>();
+                events.RaycastAll(dragData, hits);
+                check(hits.Count > 0 && UnityEngine.EventSystems.ExecuteEvents.GetEventHandler<UnityEngine.EventSystems.IBeginDragHandler>(hits[0].gameObject) == source,
+                    "resumed practice part is reachable by actual UI raycast");
+                dragData.pointerCurrentRaycast = hits[0];
+                dragData.pointerPressRaycast = hits[0];
+                dragData.pointerDrag = source;
+                dragData.dragging = true;
+                UnityEngine.EventSystems.ExecuteEvents.Execute(source, dragData, UnityEngine.EventSystems.ExecuteEvents.beginDragHandler);
+                var gridUI = UpgradeGridManager.Instance.gridUI;
+                float size = (float)typeof(UpgradeGridUI).GetField("currentCellSize", flags).GetValue(gridUI);
+                float total = UpgradeGridManager.Instance.GridSize * (size + gridUI.cellSpacing) - gridUI.cellSpacing;
+                var local = new UnityEngine.Vector3(-total * 0.5f + size * 0.5f, total * 0.5f - size * 0.5f, 0f);
+                var gridCanvas = gridUI.GetComponentInParent<UnityEngine.Canvas>();
+                var gridCamera = gridCanvas.renderMode == UnityEngine.RenderMode.ScreenSpaceOverlay ? null : gridCanvas.worldCamera;
+                dragTarget = UnityEngine.RectTransformUtility.WorldToScreenPoint(gridCamera, gridUI.gridParent.TransformPoint(local));
+                log("BEGIN DRAG ShopItem_Damage+1 using UGUI handler"); phase = 29;
+                break;
+            }
+            case 29:
+                dragData.position = dragTarget;
+                UnityEngine.EventSystems.ExecuteEvents.Execute(dragSource.gameObject, dragData, UnityEngine.EventSystems.ExecuteEvents.dragHandler);
+                log("DRAG to free grid cell 0,0 at " + dragTarget); phase = 30;
+                break;
+            case 30:
+                capture("tutorial-06-upgrade-drag-after-return"); phase = 31;
+                break;
+            case 31:
+                UnityEngine.EventSystems.ExecuteEvents.Execute(dragSource.gameObject, dragData, UnityEngine.EventSystems.ExecuteEvents.endDragHandler);
+                log("END DRAG using UGUI handler"); phase = 32;
+                break;
+            case 32:
+                check(UpgradeGridManager.Instance.PlacedParts.Count == 1 &&
+                    UpgradeGridManager.Instance.PlacedParts[0].partData == damagePart &&
+                    runStatus.savedUpgradePartPlacements.Count == 1,
+                    "resumed Upgrade successfully places and saves the actual practice part");
+                check(materials() == "0,0,0,0,0,0" &&
+                    UnityEngine.Mathf.Abs(runStatus.bonusDamage - upgradeBaselineDamage - 1f) < 0.001f,
+                    "practice placement consumes Scrap 3 once and adds damage 1 once");
+                check(upgradeTrack.stepIndex == 0 && upgradeTrack.showingFeedback && !upgradeTrack.mastered &&
+                    UnityEngine.PlayerPrefs.GetInt(CraftTutorialMetrics.WeaponMasteryKey, -1) == 0,
+                    "resumed Upgrade receives success feedback without premature mastery");
+                capture("tutorial-07-upgrade-completed-after-return"); phase = 33;
+                break;
+            case 33:
+                finish(true, "Craft and Upgrade unfinished round trips passed; stopped in Craft/Upgrade feedback");
+                break;
+        }
+    }
+    catch (System.Exception error) {
+        // Unsubscribe first even if writing the diagnostic log subsequently fails.
+        UnityEditor.EditorApplication.update -= tick;
+        finish(false, error.ToString());
+    }
+};
+UnityEditor.EditorApplication.update += tick;
+return "Scheduled Craft/Upgrade tutorial round trips (90-second deadline). Observe " +
+    prefix + "tutorialDone/tutorialPassed/tutorialPhase and " + logPath + ". Play and preference restoration remain caller-owned.";

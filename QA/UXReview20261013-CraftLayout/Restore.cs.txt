@@ -1,0 +1,27 @@
+string[] testLines=System.IO.File.ReadAllLines("/tmp/gearcraft-uxcraftlayout-playerprefs-backup.txt");
+var testExpected=new System.Collections.Generic.HashSet<string>(new[]{"GearCraft.Gallery.Progress.v1","GearCraft.CraftTutorial.Metrics.Craft.v5","GearCraft.CraftTutorial.Metrics.WeaponCustom.v5","GearCraft.Main.OpeningNotice.Seen.v1","GearCraft.CraftTutorial.Mastery.Craft.v5","GearCraft.CraftTutorial.Mastery.WeaponCustom.v5","GearCraft.CraftTutorial.AutoPlayed.Craft.v4","GearCraft.CraftTutorial.AutoPlayed.WeaponCustom.v3"});
+var testRecords=new System.Collections.Generic.List<string[]>();
+foreach(var testLine in testLines) {
+ var testRow=testLine.Split('|');
+ if(testRow.Length!=4 || !testExpected.Remove(testRow[0])) throw new System.Exception("Invalid backup key");
+ bool.Parse(testRow[1]);
+ if(testRow[2]=="string") System.Convert.FromBase64String(testRow[3]); else if(testRow[2]=="int") int.Parse(testRow[3]); else throw new System.Exception("Invalid backup type");
+ testRecords.Add(testRow);
+}
+if(testExpected.Count!=0) throw new System.Exception("Incomplete backup");
+foreach(var testRow in testRecords) {
+ if(!bool.Parse(testRow[1])) PlayerPrefs.DeleteKey(testRow[0]);
+ else if(testRow[2]=="string") PlayerPrefs.SetString(testRow[0],System.Text.Encoding.UTF8.GetString(System.Convert.FromBase64String(testRow[3])));
+ else PlayerPrefs.SetInt(testRow[0],int.Parse(testRow[3]));
+}
+PlayerPrefs.Save();
+foreach(var testRow in testRecords) {
+ bool testExists=bool.Parse(testRow[1]);
+ if(PlayerPrefs.HasKey(testRow[0])!=testExists) throw new System.Exception("Presence mismatch "+testRow[0]);
+ if(testExists && testRow[2]=="string" && PlayerPrefs.GetString(testRow[0])!=System.Text.Encoding.UTF8.GetString(System.Convert.FromBase64String(testRow[3]))) throw new System.Exception("Value mismatch "+testRow[0]);
+ if(testExists && testRow[2]=="int" && PlayerPrefs.GetInt(testRow[0])!=int.Parse(testRow[3])) throw new System.Exception("Value mismatch "+testRow[0]);
+}
+var testGalleryField=typeof(GearCraft.Gallery.GalleryProgress).GetField("data",System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.NonPublic);
+if(testGalleryField!=null) testGalleryField.SetValue(null,null);
+UnityEditor.SessionState.SetBool("UXCraftLayout20261013.active",false);
+return "8 original PlayerPrefs restored and verified from file";

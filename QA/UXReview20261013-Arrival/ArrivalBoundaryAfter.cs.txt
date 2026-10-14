@@ -1,0 +1,137 @@
+// Actual arrival/fade states + input-handler boundary checks. Not OS key delivery.
+const string prefix="UXArrival20261013.";
+const string folder="QA/UXReview20261013-Arrival/";
+const bool afterFix=true;
+string logPath=folder+(afterFix?"arrival-after.txt":"arrival-before.txt");
+if(!UnityEditor.SessionState.GetBool(prefix+"active",false)||!UnityEditor.EditorApplication.isPlaying)throw new System.Exception("Active backup and Play required");
+if(UnityEditor.SessionState.GetBool(prefix+"journeyRunning",false))throw new System.Exception("Already running");
+var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
+int oldId=UnityEngine.Object.FindFirstObjectByType<ArrivalMessagePresenter>().GetInstanceID();
+System.IO.File.WriteAllText(logPath,"Real Dorm transition and arrival; direct input-handler boundary test, not physical input.\n");
+double started=UnityEditor.EditorApplication.timeSinceStartup,next=started;
+int phase=0;
+ArrivalMessagePresenter arrival=null;UIHotkeyController hotkey=null;GameObject menu=null;
+ArrivalMessagePageData beforePage=null;
+UnityEditor.EditorApplication.CallbackFunction tick=null;
+System.Action<string> log=delegate(string s){System.IO.File.AppendAllText(logPath,(UnityEditor.EditorApplication.timeSinceStartup-started).ToString("F2")+" phase="+phase+" "+s+"\n");};
+System.Func<ArrivalMessagePageData> page=delegate{return (ArrivalMessagePageData)typeof(ArrivalMessagePresenter).GetField("currentPage",flags).GetValue(arrival);};
+System.Action advance=delegate{typeof(ArrivalMessagePresenter).GetMethod("AdvanceByInput",flags).Invoke(arrival,null);};
+System.Action toggle=delegate{
+ var method=typeof(UIHotkeyController).GetMethod("ToggleMenu",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.NonPublic);
+ if(method!=null){method.Invoke(hotkey,null);log("HANDLER UIHotkeyController.ToggleMenu");}
+ else {hotkey.uiSwitcher.TogglePanel();log("HANDLER existing Tab branch delegate UISwitcher.TogglePanel");}
+};
+System.Action<bool,string> check=delegate(bool ok,string s){log((ok?"PASS ":"OBSERVED DIFFERENCE ")+s);if(afterFix&&!ok)throw new System.Exception(s);};
+System.Action<string> blockedActions=delegate(string label){
+ var mover=UnityEngine.Object.FindFirstObjectByType<PlayerMovement>();
+ var body=mover.GetComponent<Rigidbody2D>();
+ var animator=mover.GetComponent<Animator>();
+ float vertical=body.linearVelocity.y;
+ animator.SetBool("run",true);
+ typeof(PlayerMovement).GetMethod("ApplyMovement",flags).Invoke(mover,new object[]{1f});
+ check(Mathf.Approximately(body.linearVelocity.x,0f)&&Mathf.Approximately(body.linearVelocity.y,vertical)&&!animator.GetBool("run"),
+  label+" held right input stops horizontal motion/run and preserves vertical velocity");
+ var range=UnityEngine.Object.FindFirstObjectByType<UIRangeDisplay>();
+ var priorZone=(CraftSpaceInteractionZone)typeof(UIRangeDisplay).GetField("activeZone",flags).GetValue(range);
+ var status=StatusManager.Instance;
+ var stateBefore=status.HP+","+status.GATE+","+status.STR+","+status.ACC+","+status.UseCraftSpacebuff+","+range.uplimit;
+ var sceneBefore=UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+ int zones=0;
+ foreach(var zone in UnityEngine.Object.FindObjectsByType<CraftSpaceInteractionZone>(FindObjectsSortMode.None)){
+  if(zone.ActionType==CraftSpaceInteractionAction.None)continue;
+  range.RegisterZone(zone);
+  typeof(UIRangeDisplay).GetMethod("ExecuteActiveAction",flags).Invoke(range,null);
+  check(stateBefore==status.HP+","+status.GATE+","+status.STR+","+status.ACC+","+status.UseCraftSpacebuff+","+range.uplimit &&
+    UnityEngine.SceneManagement.SceneManager.GetActiveScene().name==sceneBefore,label+" blocks registered "+zone.ActionType+" action");
+  range.UnregisterZone(zone);zones++;
+ }
+ if(priorZone!=null)range.RegisterZone(priorZone);
+ check(zones==5,label+" covered five active world zones via registration fixture");
+};
+System.Action<string> capture=delegate(string n){ScreenCapture.CaptureScreenshot(folder+(afterFix?"after-":"before-")+n+".png");};
+System.Action<bool,string> finish=delegate(bool passed,string s){
+ UnityEditor.EditorApplication.update-=tick;
+ if(menu!=null&&menu.activeSelf)hotkey.uiSwitcher.HidePanel();
+ UnityEditor.SessionState.SetBool(prefix+"journeyRunning",false);
+ UnityEditor.SessionState.SetBool(prefix+"journeyPassed",passed);
+ UnityEditor.SessionState.SetString(prefix+"journeyResult",s);
+ log((passed?"COMPLETE ":"FAIL ")+s);
+};
+UnityEditor.SessionState.SetBool(prefix+"journeyRunning",true);
+UnityEditor.SessionState.SetBool(prefix+"journeyPassed",false);
+StoryPlaybackRequest.SetReturnScene("CraftSpace",true);
+SceneTransitionManager.LoadSceneWithTransition("CraftSpace");
+tick=delegate{
+ try{
+  double now=UnityEditor.EditorApplication.timeSinceStartup;
+  if(now-started>40)throw new System.Exception("40s deadline");
+  if(now<next)return;next=now+0.02;
+  UnityEditor.SessionState.SetInt(prefix+"journeyPhase",phase);
+  string scene=UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+  var transition=UnityEngine.Object.FindFirstObjectByType<SceneTransitionManager>();
+  if(phase==0){
+   arrival=UnityEngine.Object.FindFirstObjectByType<ArrivalMessagePresenter>();
+   if(scene!="CraftSpace"||arrival==null||arrival.GetInstanceID()==oldId||!ArrivalMessagePresenter.IsMessagePlaying)return;
+   hotkey=UnityEngine.Object.FindFirstObjectByType<UIHotkeyController>();
+   menu=(GameObject)typeof(UISwitcher).GetField("panel",flags).GetValue(hotkey.uiSwitcher);
+   check(transition!=null&&transition.IsLoading,"new Dorm is still in entry fade");
+   beforePage=page();log("ENTRY message="+ArrivalMessagePresenter.IsMessagePlaying+" camera="+ArrivalMessagePresenter.IsCameraPresentationPlaying+" page="+beforePage.Text.Replace("\n"," / "));
+   advance();
+   bool changed=page()!=beforePage;
+   log("ADVANCE during fade changedPage="+changed+" current="+page().Text.Replace("\n"," / "));
+   check(!changed,"entry fade ignores a page-advance request");
+   blockedActions("entry fade"); toggle(); check(!menu.activeSelf,"entry fade ignores menu toggle"); capture("01-entry-fade");phase=1;return;
+  }
+  if(phase==1){
+   if(transition!=null&&transition.IsLoading)return;
+   check(ArrivalMessagePresenter.IsMessagePlaying,"arrival is visible after fade");
+   beforePage=page();blockedActions("arrival message");toggle();phase=2;next=now+0.15;return;
+  }
+  if(phase==2){
+   log("ARRIVAL menu="+menu.activeSelf+" scale="+Time.timeScale);
+   check(!menu.activeSelf&&Time.timeScale>0,"arrival ignores menu toggle");
+   capture("02-arrival-menu");
+   phase=3;next=now+0.15;return;
+  }
+  if(phase==3){
+   if(menu.activeSelf)hotkey.uiSwitcher.HidePanel();
+   phase=4;next=now+0.15;return;
+  }
+  if(phase==4){
+   check(!menu.activeSelf&&Time.timeScale>0,"cleanup returns menu/pause to idle");
+   advance();check(page()!=beforePage||!ArrivalMessagePresenter.IsMessagePlaying,"visible arrival accepts page advance");
+   int guard=0;while(ArrivalMessagePresenter.IsMessagePlaying&&guard++<6)advance();
+   check(!ArrivalMessagePresenter.IsMessagePlaying&&ArrivalMessagePresenter.IsCameraPresentationPlaying,"real finish camera tween is active");
+   blockedActions("camera return");toggle();phase=5;next=now+0.1;return;
+  }
+  if(phase==5){
+   log("CAMERA menu="+menu.activeSelf+" scale="+Time.timeScale+" camera="+ArrivalMessagePresenter.IsCameraPresentationPlaying);
+   check(!menu.activeSelf&&Time.timeScale>0,"camera return ignores menu toggle");
+   capture("03-camera-menu");phase=6;next=now+0.15;return;
+  }
+  if(phase==6){
+   if(menu.activeSelf)hotkey.uiSwitcher.HidePanel();
+   phase=7;next=now+0.15;return;
+  }
+  if(phase==7){
+   if(ArrivalMessagePresenter.IsCameraPresentationPlaying)return;
+   toggle();phase=8;next=now+0.15;return;
+  }
+  if(phase==8){
+   check(menu.activeSelf&&Time.timeScale==0,"normal Dorm accepts menu toggle and pauses");
+   blockedActions("open menu");capture("04-normal-menu");hotkey.CloseMenu();phase=9;next=now+0.15;return;
+  }
+  if(phase==9){
+   check(!menu.activeSelf&&Time.timeScale>0,"normal menu closes and resumes");
+   var mover=UnityEngine.Object.FindFirstObjectByType<PlayerMovement>();
+   var body=mover.GetComponent<Rigidbody2D>();
+   foreach(float input in new[]{1f,-1f,0f}){
+    typeof(PlayerMovement).GetMethod("ApplyMovement",flags).Invoke(mover,new object[]{input});
+    check(Mathf.Approximately(body.linearVelocity.x,input*mover.moveSpeed),"normal movement resumes for input "+input);
+   }
+   finish(true,afterFix?"arrival boundary regression passed":"before-fix observations captured");return;
+  }
+ }catch(System.Exception error){finish(false,error.ToString());}
+};
+UnityEditor.EditorApplication.update+=tick;
+return "Arrival boundary journey scheduled; journeyRunning/Passed/Phase";

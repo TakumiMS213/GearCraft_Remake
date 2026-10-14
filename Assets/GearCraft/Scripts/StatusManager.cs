@@ -34,6 +34,8 @@ public class StatusManager : MonoBehaviour
 
     public int selectWeapon = 0;
 
+    public string LastSelectedCraftRecipeId { get; set; } = string.Empty;
+
     public bool module_scrap = false;
     public bool module_repair = false;
     public bool module_barrier = false;
@@ -409,6 +411,7 @@ public class StatusManager : MonoBehaviour
         ownedUpgradeParts.Clear();
         savedUpgradePartPlacements.Clear();
         selectWeapon = 0;
+        LastSelectedCraftRecipeId = string.Empty;
 
         module_scrap = false;
         module_repair = false;

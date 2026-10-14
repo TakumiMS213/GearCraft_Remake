@@ -1,0 +1,222 @@
+UX継続テスト・ターム10：宿舎の到着演出・ロード中の入力境界
+実施日: 2026-10-13 JST
+環境: Unity Editor Play / macOS
+状態: 実ハンドラーで再現した問題を修正し、到着演出42項目・作業台往復26項目の回帰を完了。
+      通常メニュー画像、Play停止後の元データ復元・照合、Console確認まで完了。
+      OS入力のゲームへの到達と、物理入力E2Eは未検証。
+
+目的
+
+宿舎へ入る際のロード、到着メッセージ、カメラ演出の間に、移動・メニュー・設備利用・
+メッセージ進行の入力が適切な状態でのみ受け付けられるかを確認する。
+ターム5で静的確認にとどまっていた到着演出/入場フェードを今回の対象とする。
+入力が届かなかったことと、届いた入力をゲームが遮断したことを区別する。
+
+開始時のデータ保全
+
+担当はMCP復旧後、Title・Play停止で前の元PlayerPrefs8キーを照合した。
+ターム10専用の /tmp/gearcraft-uxarrival-playerprefs-backup.txt を作成し、
+UXArrival20261013.active=trueとして宿舎でPlayを開始した。
+記録担当はバックアップファイルの存在を確認したが、内容の書換えや復元は行っていない。
+修正前の実ハンドラー検証後、一度Playを停止し、元8キーを専用バックアップから復元済みと担当が報告。
+これは編集に入るための途中復元。ターム終了時の最終復元・照合とは区別する。
+
+macOSの入力権限に関する事前確認
+
+担当がサンドボックス内のPython ctypesによる読み取り専用preflightで以下を確認したと報告。
+  AXIsProcessTrusted: false
+  CGPreflightPostEventAccess: false
+  CGPreflightScreenCaptureAccess: false
+その後、正式なescalationでサンドボックス外の読み取り専用preflightを実行し、
+AXIsProcessTrusted=True、CGPreflightPostEventAccess=Trueを確認した。
+最初のfalseはサンドボックス内の観測であり、macOS権限不足の確定結果ではなかった。
+担当はユーザーへ設定変更不要と説明済み。権限依頼は不要となった。
+画面収録権限のサンドボックス外での再判定値は受領していない。
+この時点のOS未送信から、後述のPID指定送信まで試行を進めた。
+これらの事前確認だけで、ゲーム内の移動/メニュー等に機能不良があるとは判断しない。
+
+GameViewへのイベント送信の試行
+
+InputProbe.cs.txtはEditorのGameView.SendEventを使い、D・Tab・EscapeのKeyDown/KeyUpを送る。
+旧InputのDキー状態とHorizontal軸、新Input SystemのDキー状態、プレイヤーx座標、
+メニューパネルのactiveSelf、Time.timeScaleを観測する。
+Unityの前面化、GameView.Show/Focus、Event.KeyboardEventを使う試行も担当が実施した。
+これはEditorイベント経路のprobeで、OS入力の送信や物理キー操作ではない。
+
+input-probe.txt / input-probe-focused.txt / input-probe-character.txtの3試行で、
+  oldD=False、Horizontal=0、newD=False
+  x=-5のまま、dx=0
+  menu=False、Time.timeScale=1
+を確認した。各ログは約1.31秒の観測でCOMPLETE。
+character試行にはD/Tab/Escapeの各送信でaccepted=True、focused=Trueの記録がある。
+ただし実際のInput状態に変化がないため、ゲームの入力処理へ届いた証拠は得られていない。
+メニューが開かない・移動しないという結果を、到着演出中の入力遮断成功とは扱わない。
+COMPLETEはprobeの予定手順が終了した意味で、入力E2Eの合格を示すものではない。
+
+OS入力の到達確認とグローバル入力の非送信
+
+既存権限と正式なツール経路でUnityのPIDを指定し、CGEventPostToPidによるDの押下/解放を試行。
+通常の試行とUnityを前面化した直後の試行とも、旧/新InputのDが一度もtrueにならず、x=-5。
+os-baseline.txt / os-baseline-front.txtのoldSeen=False、newSeen=False、x=-5が対応する。
+送信APIの試行を実施したことと、UnityのInputへ届いたことを区別する。
+
+HIDのグローバル送信は前面PIDと対象Unity PID=77154の一致を要求した。
+Unity activate、AX frontmost=true、最大3秒待機も試したが、3回とも前面PIDが一致せず、
+os_key_probe.pyのPythonガードが送信前に拒否したと担当が報告。
+ツール自体の故障ではなく、対象を限定するためのガードによる停止。グローバルキーは送っていない。
+os-baseline-hid.txt / os-baseline-activation-wait.txt / os-baseline-ax-front.txtはその際のUnity側観測。
+共通ヘッダーにCGEventPostToPidとあるが、HIDの送信実行を示すログではない。
+これらも入力遮断の合格には数えず、OS入力の到達と物理入力経路は未検証のままとする。
+
+修正前のコード監査と、後続試験との対応
+
+1. 移動の遮断条件がメッセージ再生のみ。
+   CraftSpace/PlayerMovement.UpdateはArrivalMessagePresenter.IsMessagePlayingの時に
+   横速度を0にし、そのフレームの移動入力処理を戻す。
+   IsCameraPresentationPlayingやSceneTransitionManager.IsLoadingの判定はない。
+   ArrivalMessagePresenter.Finishは先にIsMessagePlaying=falseにし、カメラの復帰Tweenが
+   完了するまでIsCameraPresentationPlaying=trueを維持する。
+   修正前の非ゼロ移動入力による再現は未実施。修正後は実移動処理へ1を渡す試験で遮断を確認した。
+
+2. 宿舎メニューのキー経路には演出/ロードの判定がない。
+   CraftSpace/UIHotkeyController.UpdateはTabでUISwitcher.TogglePanel、EscapeでHidePanelを呼ぶ。
+   Title/UISwitcherの該当メソッドにも演出/ロードの入力遮断は見当たらない。
+   後述の実ハンドラー試験で演出中のメニュー表示を確認。ただしTabのInput到達とは区別する。
+
+3. 到着メッセージのクリック進行にはロード判定がない。
+   Story/ArrivalMessagePresenter.UpdateはisPlayingの間に左クリックを受けるとAdvanceByInputへ進む。
+   Update/AdvanceByInput内にSceneTransitionManager.IsLoadingの判定は見当たらない。
+   自動進行にもunscaledTimeを使う。後述の実ハンドラー試験でロード中のページ進行を確認した。
+
+比較対象として、CraftSpace/UIRangeDisplay.IsInputBlockedにはtimeScale、メニュー、
+Tab/Escapeの同フレーム、メッセージ、カメラ演出、ロードの各遮断条件が既にある。
+処理ごとの条件差だけで不具合を確定せず、後述の実際の表示と通常時の対照を確認した。
+
+実ハンドラー境界試験で確認した問題
+
+ArrivalBoundary.cs.txtは実際のSceneTransitionManagerによる宿舎への再入場と到着説明を使用。
+本文進行はArrivalMessagePresenter.AdvanceByInputを呼ぶ。
+メニューは修正前のTab分岐がそのまま委譲するUISwitcher.TogglePanelを呼ぶ。
+UIやPresenterを新しい簡易実装に置き換えた試験ではないが、Input.GetKeyDownや
+Input.GetMouseButtonDownへの到達を通す試験でもない。OS入力・物理入力の合格とは分ける。
+
+arrival-before.txtは4.29秒で修正前観測をCOMPLETE。
+  入場フェード中: IsLoading=trueのままAdvanceByInputを呼び、1ページ目から2ページ目へ変わった。
+  2.44秒のchangedPage=Trueで、ロード表示中でもページ進行処理が受け付けられることを確認。
+  到着説明中: メニュー処理を呼ぶとmenu=True、Time.timeScale=0になった（2.87秒）。
+  カメラ復帰中: 実際の復帰Tweenが動作する間にもmenu=True、Time.timeScale=0になった（3.27秒）。
+  通常宿舎: 演出後は同じメニュー処理で開く/閉じるを行え、timeScale=0→1へ戻った。
+  ロード終了後の到着説明も、本文進行処理へ正常に応答した。
+ログのOBSERVED DIFFERENCEは期待した遮断と観測結果の差を示し、その行を合格とは扱わない。
+
+before-02-arrival-menu.png / before-03-camera-menu.pngでメニューと到着文の重複表示を確認。
+担当と記録担当が画像を閲覧した。メニュー表示時にtimeScaleが0でも、到着演出は
+unscaledTime/SetUpdate(true)を使うため、通常の操作対象が一つに定まらない画面状態が生じていた。
+重複表示と処理状態の不一致は観測済みだが、利用者の理解度・困惑の程度を測定したものではない。
+
+今回の変更
+
+製品コード変更は以下の3ファイル。
+  CraftSpace/UIHotkeyController.cs:
+    Tab/Escapeの実処理をToggleMenu/CloseMenuへまとめ、説明・カメラ演出・ロード中は受け付けない。
+    停止状態だけではメニュー閉鎖を拒まないため、通常メニューを閉じてtimeScale=1に戻せる。
+  CraftSpace/PlayerMovement.cs:
+    Updateが読む横入力をApplyMovementへ渡し、説明・カメラ演出・ロード・timeScale<=0で横速度を0にする。
+    runアニメーションを止め、縦速度を維持。遮断終了後は同じ処理で通常移動へ戻す。
+  Story/ArrivalMessagePresenter.cs:
+    UpdateとAdvanceByInputの両方でロード中の進行を拒否。説明停止後の直接呼出しも拒否する。
+
+修正後の到着演出と入力境界
+
+ArrivalBoundaryAfter.cs.txt / arrival-after.txtは10フェーズ（0〜9）・42 PASS、4.44秒でCOMPLETE。
+  実際の宿舎入場フェード中にAdvanceByInputを呼んでもchangedPage=False。1ページ目を維持した。
+  フェード終了後は同処理で本文を進められ、最後に実カメラ復帰Tweenへ入ることも確認。
+  到着説明中とカメラ復帰中はToggleMenuを呼んでもmenu=False、timeScale=1を維持。
+  入場フェード/到着説明/カメラ復帰/通常メニュー表示の各状態で、ApplyMovement(1)を直接実行。
+  横速度0・run=false・縦速度保持を確認した。
+  同じ各状態で、シーン内の有効な5設備（Freeze/CraftTable/Bed/GateRepair/Medical）を
+  RegisterZoneで登録後、ExecuteActiveActionを呼び、HP/GATE/STR/ACC/UseCraftSpacebuff/uplimitと
+  現在シーンが変わらないことを確認。登録はfixtureであり、徒歩や物理トリガー検証ではない。
+  演出後は通常メニューの開閉でtimeScale=0→1へ戻り、移動処理へ1/-1/0を渡した速度も正しい。
+
+after-02-arrival-menu.png / after-03-camera-menu.pngを担当と記録担当が閲覧し、
+到着説明・カメラ復帰中にメニューが重なっていないことを確認した。
+after-04-normal-menu.pngは、同一フレームで撮影依頼後にメニューを閉じたため、
+実際の撮影時には通常宿舎へ戻っている。通常メニュー可視の画像証拠としては使用しない。
+修正前のbefore-04も同じ撮影順のため、通常メニュー可視の確実な画像証拠は次の08のみとする。
+通常メニューを開いた状態を保持して別の呼出しでafter-08-normal-menu-visible.pngを撮影。
+担当と記録担当が閲覧し、到着説明がなく、通常メニューのGallery/BGM/SEが見えることを確認。
+その後CloseMenuでtimeScale=1へ戻し、全観測callbackのrunning=falseを担当が確認した。
+
+到着説明を伴わない作業台往復の回帰
+
+TransitionBoundaryAfter.cs.txt / transition-after.txtは6フェーズ（0〜5）・26 PASS、6.32秒でCOMPLETE。
+  到着説明・カメラ演出フラグが両方falseの通常宿舎で、登録したCraftTableの実利用処理から出発。
+  Craftシーンの実Close ButtonへUGUI Submitを送り、実際の宿舎入場フェードへ戻った。
+  出発フェードと戻りの入場フェードで、到着演出フラグに頼らずロードによる移動・メニュー・
+  5設備の遮断を確認した。設備登録はfixture、UIはSubmitで、物理キーや徒歩は含まない。
+  入場フェード後、移動1/-1/0、通常メニュー開閉、停止中のCloseMenuによる再開を確認。
+
+設計判断と人間評価の範囲
+
+演出中は既存の設備利用の遮断条件に合わせて宿舎操作を止め、演出が終われば再開する方針を採った。
+公開UX原則の状態可視性・一貫性を、実行状態と画面の重複を整理する判断の参考とした。
+公開原則が、この遮断方法だけを唯一の正解として要求しているとは扱わない。
+今回の回帰は機能の整合性を確認するもの。利便性や理解度の向上を実測したものではない。
+演出中に設定を開けない待ち時間が適切か、操作再開のタイミングが伝わるかは人間評価として残す。
+
+Microsoft / Xbox Accessibility Guideline 112: UI navigation
+https://learn.microsoft.com/en-us/xbox/accessibility/xbox-accessibility-guidelines/112
+一貫した操作と画面内の移動を検討する観点を参照し、既存設備の遮断条件に宿舎操作をそろえた。
+NN/g / User Control and Freedom
+https://www.nngroup.com/articles/user-control-and-freedom/
+利用者が操作の主導権を取り戻せるかという観点を、演出終了後の通常メニュー復帰と待ち時間評価に関連づけた。
+これを演出中の遮断だけが正しいという根拠にはしない。上記2本文は担当が今回取得・参照した。
+安藤昌也教授インタビュー / HIP
+https://hiptokyo.jp/hiptalk/ux_design/2/
+体験の前後を含めた検討と実際の利用者による評価の必要性を参照。
+これらは今回の設計判断と、人間評価を別途残す根拠であり、演出中の設定禁止を唯一解としない。
+H-10: 到着説明中に設定を開けない待ち時間と、終了後の操作再開の理解を後日評価する。
+
+証拠と情報源
+
+InputProbe.cs.txt: GameView.SendEventを用いるEditorイベントprobeの基礎コード。
+input-probe.txt: 初回probe。Input状態の変化なし、dx=0。
+input-probe-focused.txt: 前面化/フォーカス後の試行。Input状態の変化なし、dx=0。
+input-probe-character.txt: accepted/focusedの送信記録を含む試行。Input状態の変化なし、dx=0。
+os_key_probe.py: PID指定OSキー送信と、前面PIDが一致しない場合のグローバル送信拒否。
+os-baseline.txt / os-baseline-front.txt: PID指定送信時のUnity側観測。Input未到達。
+os-baseline-hid.txt / os-baseline-activation-wait.txt / os-baseline-ax-front.txt: 送信ガード停止時の観測。
+ArrivalBoundary.cs.txt / arrival-before.txt: 実際の入場/到着演出を使う実ハンドラー境界試験。
+before-01-entry-fade.png: 入場フェード時の画面。
+before-02-arrival-menu.png / before-03-camera-menu.png: 到着説明/カメラ復帰中のメニュー重複。
+before-04-normal-menu.png: 同フレームでメニュー閉鎖を含む撮影。メニュー可視の証拠として使用しない。
+ArrivalBoundaryAfter.cs.txt / arrival-after.txt: 修正後42項目の到着演出・移動・メニュー・設備境界。
+TransitionBoundaryAfter.cs.txt / transition-after.txt: 到着説明なしの実作業台往復、ロード前後の26項目。
+after-02-arrival-menu.png / after-03-camera-menu.png: 修正後の重複解消。
+after-04-normal-menu.png: メニューを閉じた後の画面。メニュー可視の証拠として使用しない。
+after-05-return-entry.png / after-06-normal-return.png: 作業台からの入場フェードと通常復帰。
+after-08-normal-menu-visible.png: 演出後に通常メニューを開いた状態を保持して撮影した画像。
+observations.txt末尾: 通常メニュー撮影と、Play停止後の元PlayerPrefs8キー照合・最終状態。
+Assets/GearCraft/Scripts/CraftSpace/PlayerMovement.cs: 移動とメッセージ中の遮断。
+Assets/GearCraft/Scripts/CraftSpace/UIHotkeyController.cs / Title/UISwitcher.cs: メニューキー経路。
+Assets/GearCraft/Scripts/Story/ArrivalMessagePresenter.cs: メッセージ・カメラ演出・入力進行。
+Assets/GearCraft/Scripts/CraftSpace/UIRangeDisplay.cs: 設備利用の既存遮断条件。
+Assets/GearCraft/Scripts/SceneTransitionManager.cs: IsLoadingはisLoadingまたはisInputBlocked。
+macOS preflightとターム開始時の8キー照合は、現時点では担当からの結果報告に基づく。
+
+終了確認
+
+全観測callbackの終了と通常メニュー閉鎖後、Playを停止して元バックアップの8キーを復元。
+別のMCP呼出しでも存在/値の一致を照合し、Title・Play=false・backup=falseを確認。
+最終Consoleは検索「error CS」「Exception」がそれぞれ0件。全error一覧の0件という意味ではない。
+git diff --check成功。今回の製品3ファイルの差分は第三者のコードレビューでも問題指摘なし。
+
+未実施・別途確認対象
+
+・OS入力がゲームへ届く通常状態の対照と、その後の到着演出/ロード中の入力確認。
+・OS/物理キー/マウスからの通し入力、ゲームパッド、実機ビルド、人間の理解度・快適さ。
+・H-10の待ち時間・再開の理解。既存H-02/H-05を含む人間評価も引き続き未測定。
+
+当初の権限依頼は入力検証環境に関するもので、その後の再判定で不要となった。
+製品変更の新しい明示承認ゲートは設けていない。

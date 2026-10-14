@@ -4,6 +4,7 @@ using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 /// <summary>
@@ -17,6 +18,9 @@ public class BonusCardsManager : MonoBehaviour
 
     [Header("カードを表示する親オブジェクト")]
     public RectTransform cardParent;
+    [SerializeField] private GameObject inputBlocker;
+
+    public bool IsChoosingReward { get; private set; }
 
     [Header("参照")]
     public TransitionManager transition;
@@ -28,7 +32,90 @@ public class BonusCardsManager : MonoBehaviour
     private AudioSource audioSource;
 
     private List<GameObject> spawnedCards = new List<GameObject>();
+    private readonly HashSet<int> offeredCardIndices = new HashSet<int>();
     private UniTaskCompletionSource cardSelectionCompletion;
+    private GameObject previousSelection;
+    private readonly List<RewardCardVisual> cardVisuals = new List<RewardCardVisual>();
+    private Button lastSelectedCard;
+    private Button focusedCard;
+
+    private sealed class RewardCardVisual
+    {
+        public Button Button;
+        public Vector3 OriginalScale;
+        public Tween ScaleTween;
+    }
+
+    private void Awake()
+    {
+        if (inputBlocker != null) inputBlocker.SetActive(false);
+    }
+
+    private void OnDisable()
+    {
+        UniTaskCompletionSource pending = cardSelectionCompletion;
+        cardSelectionCompletion = null;
+        FinishRewardSelection(false);
+        pending?.TrySetCanceled();
+    }
+
+    private void LateUpdate()
+    {
+        if (!IsChoosingReward || GearCraft.Gallery.GalleryNavigation.IsOpen) return;
+
+        EventSystem events = EventSystem.current;
+        if (events == null || !events.isActiveAndEnabled || events.alreadySelecting) return;
+
+        GameObject selectedObject = events.currentSelectedGameObject;
+        Button selectedCard = null;
+        foreach (RewardCardVisual visual in cardVisuals)
+        {
+            Button button = visual.Button;
+            if (button == null || !button.IsActive() || !button.IsInteractable()) continue;
+            if (selectedObject != null &&
+                (selectedObject == button.gameObject || selectedObject.transform.IsChildOf(button.transform)))
+            {
+                selectedCard = button;
+                break;
+            }
+        }
+
+        // A click on the blocking background clears UI selection. Restore it after
+        // the input module has processed the click, without taking another UI's focus.
+        if (selectedObject == null)
+        {
+            selectedCard = lastSelectedCard;
+            if (selectedCard == null || !selectedCard.IsActive() || !selectedCard.IsInteractable())
+            {
+                selectedCard = null;
+                foreach (RewardCardVisual visual in cardVisuals)
+                {
+                    if (visual.Button == null || !visual.Button.IsActive() || !visual.Button.IsInteractable()) continue;
+                    selectedCard = visual.Button;
+                    break;
+                }
+            }
+            if (selectedCard != null) events.SetSelectedGameObject(selectedCard.gameObject);
+        }
+
+        if (selectedCard != null) lastSelectedCard = selectedCard;
+        SetFocusedCard(selectedCard);
+    }
+
+    private void SetFocusedCard(Button selectedCard)
+    {
+        if (focusedCard == selectedCard) return;
+        focusedCard = selectedCard;
+        foreach (RewardCardVisual visual in cardVisuals)
+        {
+            visual.ScaleTween?.Kill();
+            visual.ScaleTween = null;
+            if (visual.Button == null) continue;
+            Vector3 targetScale = visual.OriginalScale * (visual.Button == selectedCard ? 1.05f : 1f);
+            visual.ScaleTween = visual.Button.transform.DOScale(targetScale, 0.15f)
+                .SetEase(Ease.OutQuad).SetUpdate(true);
+        }
+    }
 
     async void Start()
     {
@@ -42,7 +129,14 @@ public class BonusCardsManager : MonoBehaviour
         if (transition != null)
             transition.PlayTransition(1);
 
-        await UniTask.Delay(TimeSpan.FromSeconds(3f));
+        try
+        {
+            await UniTask.Delay(TimeSpan.FromSeconds(3f), cancellationToken: this.GetCancellationTokenOnDestroy());
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
         ClearText();
 
         audioSource = GetComponent<AudioSource>();
@@ -63,34 +157,84 @@ public class BonusCardsManager : MonoBehaviour
 
     public async UniTask ShowBonusCardsAsync()
     {
+        var destroyToken = this.GetCancellationTokenOnDestroy();
+        if (cardSelectionCompletion != null)
+        {
+            await cardSelectionCompletion.Task.AttachExternalCancellation(destroyToken);
+            return;
+        }
+
         // Victory is decided by StageFlowManager after the final boss is defeated.
         ClearText();
         ClearCards();
+        previousSelection = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
+        var completion = new UniTaskCompletionSource();
+        cardSelectionCompletion = completion;
+        IsChoosingReward = true;
+        if (inputBlocker != null) inputBlocker.SetActive(true);
 
-        cardParent.anchorMin = new Vector2(0.5f, 0.5f);
-        cardParent.anchorMax = new Vector2(0.5f, 0.5f);
-        cardParent.pivot = new Vector2(0.5f, 0.5f);
-        cardParent.DOAnchorPos(Vector2.zero, 0.5f).SetEase(Ease.OutQuad);
-
-        cardSelectionCompletion = new UniTaskCompletionSource();
-        List<int> selectedIndices = WeightedRandomSelect(3);
-        foreach (int i in selectedIndices)
+        try
         {
-            var cardData = cardDataList[i];
-            GameObject card = Instantiate(cardData.cardPrefab, cardParent);
-            Button btn = card.GetComponent<Button>();
-            int cardIndex = i;
-            if (btn != null)
-                btn.onClick.AddListener(() => OnBonusCardSelected(cardIndex));
-            spawnedCards.Add(card);
-        }
+            cardParent.anchorMin = new Vector2(0.5f, 0.5f);
+            cardParent.anchorMax = new Vector2(0.5f, 0.5f);
+            cardParent.pivot = new Vector2(0.5f, 0.5f);
+            cardParent.DOKill();
+            cardParent.DOAnchorPos(Vector2.zero, 0.5f).SetEase(Ease.OutQuad);
 
-        if (spawnedCards.Count == 0)
+            var buttons = new List<Button>();
+            List<int> selectedIndices = WeightedRandomSelect(3);
+            foreach (int i in selectedIndices)
+            {
+                var cardData = cardDataList[i];
+                GameObject card = Instantiate(cardData.cardPrefab, cardParent);
+                Button btn = card.GetComponent<Button>();
+                int cardIndex = i;
+                if (btn != null)
+                {
+                    offeredCardIndices.Add(cardIndex);
+                    btn.onClick.AddListener(() => OnBonusCardSelected(cardIndex));
+                    buttons.Add(btn);
+                    cardVisuals.Add(new RewardCardVisual
+                    {
+                        Button = btn,
+                        OriginalScale = btn.transform.localScale
+                    });
+                }
+                spawnedCards.Add(card);
+            }
+
+            for (int i = 0; i < buttons.Count; i++)
+            {
+                Button button = buttons[i];
+                button.navigation = new Navigation
+                {
+                    mode = Navigation.Mode.Explicit,
+                    selectOnLeft = buttons[Mathf.Max(0, i - 1)],
+                    selectOnRight = buttons[Mathf.Min(buttons.Count - 1, i + 1)],
+                    selectOnUp = button,
+                    selectOnDown = button
+                };
+            }
+
+            if (buttons.Count > 0)
+            {
+                lastSelectedCard = buttons[0];
+                buttons[0].Select();
+                SetFocusedCard(buttons[0]);
+            }
+            else
+                completion.TrySetResult();
+
+            await completion.Task.AttachExternalCancellation(destroyToken);
+        }
+        finally
         {
-            cardSelectionCompletion.TrySetResult();
+            if (ReferenceEquals(cardSelectionCompletion, completion))
+            {
+                cardSelectionCompletion = null;
+                FinishRewardSelection();
+            }
         }
-
-        await cardSelectionCompletion.Task;
     }
 
     private List<int> WeightedRandomSelect(int n)
@@ -165,6 +309,12 @@ public class BonusCardsManager : MonoBehaviour
     /// </summary>
     private void OnBonusCardSelected(int cardIndex)
     {
+        if (!IsChoosingReward || cardSelectionCompletion == null || !offeredCardIndices.Contains(cardIndex))
+            return;
+
+        // Claim the choice before applying effects; Destroy is deferred until the end of the frame.
+        IsChoosingReward = false;
+        StageFlowManager.BlockPlayerInputForCurrentFrame();
         if (audioSource != null && clickSound != null)
             audioSource.PlayOneShot(clickSound);
 
@@ -181,8 +331,10 @@ public class BonusCardsManager : MonoBehaviour
             StatusManager.Instance.MarkUniqueBonusCardSelected(cardData.uniqueSelectionId);
         }
 
-        ClearCards();
-        cardSelectionCompletion?.TrySetResult();
+        UniTaskCompletionSource completed = cardSelectionCompletion;
+        cardSelectionCompletion = null;
+        FinishRewardSelection();
+        completed.TrySetResult();
 
         // ステージ進行はStageFlowManagerに委譲
         // (StageFlowManagerが次ステージ開始 or 宿舎遷移を判断する)
@@ -199,7 +351,7 @@ public class BonusCardsManager : MonoBehaviour
         switch (effect.type)
         {
             case CardEffectType.AddHP:
-                status.HP += (int)effect.value;
+                status.HP = Mathf.Clamp(status.HP + (int)effect.value, 0, 100);
                 break;
 
             case CardEffectType.AddGateHP:
@@ -333,12 +485,51 @@ public class BonusCardsManager : MonoBehaviour
         }
     }
 
-    private void ClearCards()
+    private void FinishRewardSelection(bool animate = true)
     {
+        IsChoosingReward = false;
+        EventSystem events = EventSystem.current;
+        if (events != null && events.isActiveAndEnabled && !events.alreadySelecting)
+        {
+            GameObject selected = events.currentSelectedGameObject;
+            bool selectedReward = spawnedCards.Exists(card => card != null && selected != null &&
+                (selected == card || selected.transform.IsChildOf(card.transform)));
+            if (selected == null || selectedReward)
+            {
+                Selectable previous = previousSelection != null ? previousSelection.GetComponent<Selectable>() : null;
+                events.SetSelectedGameObject(previous != null && previous.IsActive() && previous.IsInteractable()
+                    ? previous.gameObject : null);
+            }
+        }
+        previousSelection = null;
+        ClearCards(animate);
+    }
+
+    private void ClearCards(bool animate = true)
+    {
+        foreach (RewardCardVisual visual in cardVisuals)
+        {
+            visual.ScaleTween?.Kill();
+            if (visual.Button != null) visual.Button.transform.localScale = visual.OriginalScale;
+        }
+        cardVisuals.Clear();
+        lastSelectedCard = null;
+        focusedCard = null;
         foreach (var card in spawnedCards)
+        {
+            if (card == null) continue;
+            card.SetActive(false);
             Destroy(card);
+        }
         spawnedCards.Clear();
-        cardParent.DOAnchorPos(new Vector2(0, -10), 0.5f).SetEase(Ease.InQuad);
+        offeredCardIndices.Clear();
+        if (inputBlocker != null) inputBlocker.SetActive(false);
+        if (cardParent != null)
+        {
+            cardParent.DOKill();
+            if (animate)
+                cardParent.DOAnchorPos(new Vector2(0, -10), 0.5f).SetEase(Ease.InQuad);
+        }
     }
 
     private void ClearText()

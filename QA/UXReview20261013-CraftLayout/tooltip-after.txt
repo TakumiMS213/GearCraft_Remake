@@ -1,0 +1,19 @@
+PASS hidden popup stays hidden on grant
+PASS hover shows current amount
+PASS grant refreshes shown amount
+PASS spend refreshes shown amount
+PASS reset refreshes shown amount
+PASS unrelated material exit does not hide current popup
+PASS unrelated material disable does not hide current popup
+PASS old material does not overwrite another material
+PASS old material exit preserves new material
+PASS own exit hides popup
+PASS own disable hides popup
+PASS disabled trigger does not resurrect popup
+PASS re-enabled trigger refreshes
+PASS re-enable has exactly one subscription
+PASS material event preserves structured part content
+PASS old material exit preserves structured part
+PASS selected recipe is craftable
+PASS UGUI Craft Submit consumes materials and updates visible popup
+COMPLETE checks=18; UI event boundary plus explicit material fixture cases, no OS-input claim.

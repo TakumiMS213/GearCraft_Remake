@@ -1,0 +1,9 @@
+UGUI Submit Craft while Gear tooltip displayed (tutorial provided materials)
+Before=Gear
+入手方法: 敵撃破時、またはステージ報酬で入手
+現在の個数: 3
+After=Gear
+入手方法: 敵撃破時、またはステージ報酬で入手
+現在の個数: 3
+ActualGear=0
+IsCrafting=True

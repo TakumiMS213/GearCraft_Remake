@@ -128,23 +128,26 @@ public class PlayerController : MonoBehaviour
         // 武器同期
         SyncWeaponFromStatus();
 
-        HandleMovement();
-        HandleAttack();
-        CoolTimeUpdate();
+        if (StageFlowManager.IsPlayerInputBlocked)
+        {
+            StopPlayerMovementInput();
+        }
+        else
+        {
+            HandleMovement();
+            HandleAttack();
 
-        if (Input.GetKeyDown(KeyCode.LeftShift))
-        {
-            Instantiate(BurnPtPrehub, transform.position, Quaternion.identity);
-            if (currentWeapon != null && currentWeapon.weaponName == "GearCraft_Sword" && CanUseGearCraft)
+            if (Input.GetKeyDown(KeyCode.LeftShift))
             {
-                ChangeGearCraft();
+                Instantiate(BurnPtPrehub, transform.position, Quaternion.identity);
+                if (currentWeapon != null && currentWeapon.weaponName == "GearCraft_Sword" && CanUseGearCraft)
+                    ChangeGearCraft();
             }
+            if (Input.GetKeyDown(KeyCode.Q))
+                BoostActive().Forget();
         }
+        CoolTimeUpdate();
         UpdateAutoBarrier();
-        if (Input.GetKeyDown(KeyCode.Q))
-        {
-            BoostActive().Forget();
-        }
         if (boostEffect != null && isBoostActive)
         {
             SpawnEffect(boostEffect, transform.position);
@@ -156,6 +159,25 @@ public class PlayerController : MonoBehaviour
         // PunkDrive起動/停止
         if (punkdrive != null)
             punkdrive.SetActive(runtimeStatus != null && runtimeStatus.punkDrive);
+    }
+
+    private void FixedUpdate()
+    {
+        if (StageFlowManager.IsPlayerInputBlocked) StopPlayerMovementInput();
+    }
+
+    private void StopPlayerMovementInput()
+    {
+        dashTimer = 0f;
+        dashDirection = 0;
+        lastTapDirection = 0;
+        lastTapTime = -999f;
+        if (rb != null) rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
+        if (anim != null)
+        {
+            anim.SetBool("run", false);
+            if (isGrounded) anim.SetBool("jump", false);
+        }
     }
 
     /// <summary>

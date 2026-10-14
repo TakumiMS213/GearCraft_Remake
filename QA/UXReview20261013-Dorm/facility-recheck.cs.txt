@@ -1,0 +1,104 @@
+var testUI = UnityEngine.Object.FindFirstObjectByType<UIRangeDisplay>();
+var testStatus = StatusManager.Instance;
+var testFlags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance;
+var testRoot=(GameObject)typeof(UIRangeDisplay).GetField("feedbackRoot",testFlags).GetValue(testUI);
+var testText=(TMPro.TMP_Text)typeof(UIRangeDisplay).GetField("feedbackText",testFlags).GetValue(testUI);
+var testSwitcher=UnityEngine.Object.FindFirstObjectByType<UIHotkeyController>().uiSwitcher;
+System.Action<string> testLog=delegate(string s){System.IO.File.AppendAllText("QA/UXReview20261013-Dorm/observations.txt",s+"\n");};
+System.Action<bool,string> testAssert=delegate(bool ok,string label){if(!ok)throw new System.Exception(label);testLog("PASS "+label);};
+System.Action testUse=delegate{typeof(UIRangeDisplay).GetMethod("ExecuteActiveAction",testFlags).Invoke(testUI,null);};
+System.Func<string> testZone=delegate{var z=(CraftSpaceInteractionZone)typeof(UIRangeDisplay).GetField("activeZone",testFlags).GetValue(testUI);return z==null?"null":z.name;};
+System.Action<float> testMove=delegate(float x){testUI.player.position=new Vector3(x,testUI.player.position.y,testUI.player.position.z);};
+System.Action<string> testCapture=delegate(string n){ScreenCapture.CaptureScreenshot("QA/UXReview20261013-Dorm/"+n+".png");};
+float testFoodBefore=0;
+var testSteps = new System.Collections.Generic.List<System.Action>();
+testSteps.Add(delegate {
+ testAssert(testZone()=="World_Medical","medical range trigger");
+ testStatus.HP=100;testStatus.UseCraftSpacebuff=false;testUI.uplimit=1;testUse();
+ testAssert(testStatus.HP==100&&!testStatus.UseCraftSpacebuff&&testRoot.activeSelf&&testText.text.Contains("十分"),"full HP reason without consumption");
+ testCapture("07-medical-full-hp-after");
+});
+testSteps.Add(delegate {
+ testAssert(!testRoot.activeSelf,"reason expires after four seconds");
+ testStatus.HP=55;testUse();
+ testAssert(testStatus.HP==100&&testStatus.UseCraftSpacebuff,"medical 55 to 100, shared slot consumed");
+ testLog("medical HP="+testStatus.HP);
+});
+testSteps.Add(delegate {
+ testStatus.UseCraftSpacebuff=false;testUI.uplimit=1;testMove(-11.87f);
+});
+testSteps.Add(delegate {
+ testAssert(testZone()=="World_Freeze","food range trigger");
+ testFoodBefore=testStatus.STR+testStatus.ACC;
+ testSwitcher.TogglePanel();
+ testAssert(Time.timeScale==1f,"menu opened before pause Update");
+ testUse();
+ testAssert(testStatus.STR+testStatus.ACC==testFoodBefore&&!testStatus.UseCraftSpacebuff,"menu opening frame blocks facility");
+});
+testSteps.Add(delegate {
+ testAssert(Time.timeScale==0f,"menu pauses game");
+ testUse();
+ testAssert(testStatus.STR+testStatus.ACC==testFoodBefore&&!testStatus.UseCraftSpacebuff,"paused menu blocks facility");
+ testCapture("08-menu-no-facility-action-after");
+});
+testSteps.Add(delegate {
+ testSwitcher.HidePanel();
+ testUse();
+ testAssert(testStatus.STR+testStatus.ACC==testFoodBefore&&!testStatus.UseCraftSpacebuff,"menu closing frame blocks facility");
+});
+testSteps.Add(delegate {
+ testAssert(Time.timeScale==1f,"menu returns to game");
+ testUse();
+ testAssert(testStatus.STR+testStatus.ACC==testFoodBefore+3&&testStatus.UseCraftSpacebuff,"normal food use adds three once");
+});
+testSteps.Add(delegate {testMove(-8.33f);});
+testSteps.Add(delegate {
+ testAssert(testZone()=="World_Flower","repair range trigger");
+ float g=testStatus.GATE; testUse();
+ testAssert(testStatus.GATE==g&&testRoot.activeSelf&&testText.text.Contains("利用済み"),"used shared slot gives reason, no repair");
+ testCapture("09-shared-slot-reason-after");
+});
+testSteps.Add(delegate {
+ testStatus.GATE=40;testStatus.UseCraftSpacebuff=false;testUI.uplimit=1;testUse();
+ testAssert(testStatus.GATE==90&&testStatus.UseCraftSpacebuff&&testRoot.activeSelf&&testText.text.Contains("40")&&testText.text.Contains("90")&&!testText.text.Contains("SAN"),"repair 40 to 90 with correct feedback");
+ testCapture("10-gate-repair-result-after");
+});
+testSteps.Add(delegate {
+ testText.ForceMeshUpdate();
+ testAssert(!testText.isTextOverflowing,"repair text fits scene-authored panel");
+ testMove(-5f);
+});
+testSteps.Add(delegate {
+ testAssert(!testRoot.activeSelf,"movement dismisses feedback");
+ testMove(-16.15f);
+});
+testSteps.Add(delegate {
+ testStatus.HP=100;testUse();
+ testAssert(testRoot.activeSelf&&testText.text.Contains("利用済み")&&!testText.text.Contains("食事か"),"used slot takes priority over full HP");
+ testSwitcher.TogglePanel();
+});
+testSteps.Add(delegate {
+ testAssert(!testRoot.activeSelf,"opening menu dismisses feedback");
+ testSwitcher.HidePanel();
+});
+testSteps.Add(delegate {
+ testLog("FACILITY RECHECK COMPLETE");
+});
+int testStep=0;
+double testNext=UnityEditor.EditorApplication.timeSinceStartup+0.2;
+UnityEditor.EditorApplication.CallbackFunction testTick=null;
+testTick=delegate {
+ if(UnityEditor.EditorApplication.timeSinceStartup<testNext)return;
+ try {
+   testLog("STEP "+testStep);
+   testSteps[testStep]();
+   testNext=UnityEditor.EditorApplication.timeSinceStartup+(testStep==0?4.5:1.0);
+   testStep++;
+   if(testStep>=testSteps.Count)UnityEditor.EditorApplication.update-=testTick;
+ } catch(System.Exception ex) {
+   UnityEditor.EditorApplication.update-=testTick;
+   testLog("FAILED "+testStep+" "+ex);
+ }
+};
+UnityEditor.EditorApplication.update+=testTick;
+return "15-step facility recheck scheduled";

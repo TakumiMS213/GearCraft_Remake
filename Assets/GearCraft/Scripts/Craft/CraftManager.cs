@@ -19,7 +19,8 @@ public class CraftManager : MonoBehaviour
     public CraftRecipeSO SelectedRecipe => selectedRecipe;
     public bool IsInitialized { get; private set; }
     public bool IsReadyForTutorial { get; private set; }
-    public bool IsCrafting => transitionManager != null && transitionManager.IsPlaying;
+    public bool IsCrafting => pendingCraftRecipe != null ||
+        (transitionManager != null && transitionManager.IsPlaying);
 
     [Header("レシピ一覧")]
     public List<CraftRecipeSO> recipes;
@@ -29,6 +30,7 @@ public class CraftManager : MonoBehaviour
     public Button craftButton;
     public MaterialDisplay materialDisplay;
     [SerializeField] private TMP_Text craftStatusText;
+    [SerializeField] private GameObject craftFeedbackPanel;
 
     [Header("効果音")]
     public AudioSource successSE;
@@ -49,22 +51,26 @@ public class CraftManager : MonoBehaviour
     private readonly List<CraftRecipeSO> pendingUnlockNotifications = new List<CraftRecipeSO>();
     private readonly List<Image> recipeVisualImages = new List<Image>();
     private CraftRecipeSO selectedRecipe;
+    private CraftRecipeSO pendingCraftRecipe;
+    private bool showCraftFailure;
 
     private void OnEnable()
     {
         MaterialManager.MaterialsChanged += RefreshMaterialCountLabels;
         if (transitionManager != null)
-            transitionManager.TransitionFinished += RefreshCraftControls;
+            transitionManager.TransitionFinished += OnCraftTransitionFinished;
         RefreshMaterialCountLabels();
         RefreshCraftControls();
     }
 
     private void OnDisable()
     {
+        showCraftFailure = false;
+        pendingCraftRecipe = null;
         MaterialManager.MaterialsChanged -= RefreshMaterialCountLabels;
         if (transitionManager != null)
         {
-            transitionManager.TransitionFinished -= RefreshCraftControls;
+            transitionManager.TransitionFinished -= OnCraftTransitionFinished;
             transitionManager.CancelTransition();
         }
         if (errorImage != null)
@@ -72,6 +78,16 @@ public class CraftManager : MonoBehaviour
             errorImage.DOKill();
             errorImage.gameObject.SetActive(false);
         }
+    }
+
+    private void OnCraftTransitionFinished()
+    {
+        CraftRecipeSO completedRecipe = pendingCraftRecipe;
+        pendingCraftRecipe = null;
+        RefreshCraftControls();
+        // Hidden/cancelled presentations are reconciled when the tutorial is resumed.
+        if (completedRecipe != null && isActiveAndEnabled)
+            RecipeCrafted?.Invoke(completedRecipe);
     }
 
     private void RefreshCraftControls()
@@ -85,8 +101,11 @@ public class CraftManager : MonoBehaviour
         }
         if (craftStatusText != null)
         {
-            craftStatusText.text = IsCrafting ? "作成中…" : alreadyOwned ? "作成済み" : string.Empty;
+            craftStatusText.text = IsCrafting ? string.Empty : alreadyOwned ? "作成済み" :
+                showCraftFailure ? GetCraftFeedback() : string.Empty;
             craftStatusText.gameObject.SetActive(!string.IsNullOrEmpty(craftStatusText.text));
+            if (craftFeedbackPanel != null)
+                craftFeedbackPanel.SetActive(!string.IsNullOrEmpty(craftStatusText.text));
         }
         for (int i = 0; i < recipeButtons.Count && i < displayRecipes.Count; i++)
         {
@@ -109,6 +128,17 @@ public class CraftManager : MonoBehaviour
                 UpdateMaterialCountLabel(image.rectTransform, cost);
             }
         }
+        RefreshCraftControls();
+    }
+
+    private string GetCraftFeedback()
+    {
+        if (selectedRecipe == null) return "作成するレシピを選んでください。";
+        if (!MeetsRequiredWeapon(selectedRecipe))
+            return $"作成には {selectedRecipe.requiredWeapon.weaponName} の装備が必要です。";
+        if (MaterialManager.Instance == null) return "材料を確認できません。作業台を開き直してください。";
+        string shortage = MaterialManager.Instance.GetShortageText(selectedRecipe.costs);
+        return string.IsNullOrEmpty(shortage) ? "材料が揃いました。作成できます。" : $"材料が足りません。\n{shortage}";
     }
 
 private IEnumerator Start()
@@ -119,7 +149,8 @@ private IEnumerator Start()
         ConfigureRecipeButtons();
         if (unlockedRecipes.Count > 0)
         {
-            SelectRecipe(0);
+            CraftRecipeSO previousRecipe = FindUnlockedRecipe(StatusManager.Instance?.LastSelectedCraftRecipeId);
+            SelectRecipe(previousRecipe != null ? unlockedRecipes.IndexOf(previousRecipe) : 0);
         }
 
         IsInitialized = true;
@@ -138,6 +169,11 @@ public void SelectRecipe(int index)
         }
 
         selectedRecipe = unlockedRecipes[index];
+        if (StatusManager.Instance != null)
+        {
+            StatusManager.Instance.LastSelectedCraftRecipeId = selectedRecipe.UnlockId;
+        }
+        showCraftFailure = false;
 
         if (materialDisplay != null)
         {
@@ -288,8 +324,13 @@ public void SelectRecipe(int index)
     {
         if (IsCrafting) return;
         CraftRecipeSO recipe = selectedRecipe;
-        if (CanCraft() && MaterialManager.Instance.SpendCosts(recipe.costs))
+        bool canCraft = CanCraft();
+        // Material/result changes can refresh the UI before the animation starts.
+        // Keep all completion feedback pending until its final fade has finished.
+        if (canCraft) pendingCraftRecipe = recipe;
+        if (canCraft && MaterialManager.Instance.SpendCosts(recipe.costs))
         {
+            showCraftFailure = false;
             // The result is committed once; cancelling its presentation does not undo crafting.
             ApplyCraftResult(recipe);
             if (transitionManager != null)
@@ -301,14 +342,16 @@ public void SelectRecipe(int index)
 
             if (StatusManager.Instance != null)
                 StatusManager.Instance.DormTasks.hasCrafted = true;
-            RecipeCrafted?.Invoke(recipe);
-
             if (materialDisplay != null)
                 materialDisplay.UpdateMaterialAmount();
+
+            if (transitionManager == null || !transitionManager.IsPlaying)
+                OnCraftTransitionFinished();
         }
         else
         {
-            // 失敗
+            pendingCraftRecipe = null;
+            showCraftFailure = true;
             RefreshCraftControls();
             CraftFailed?.Invoke(recipe);
             if (errorSE != null)
@@ -317,12 +360,9 @@ public void SelectRecipe(int index)
             if (errorImage != null)
             {
                 errorImage.DOKill();
-                errorImage.gameObject.SetActive(true);
-                var c = errorImage.color;
-                errorImage.color = new Color(c.r, c.g, c.b, 1f);
-                errorImage.DOFade(0f, errorFadeTime)
-                    .SetDelay(errorDisplayTime)
-                    .OnComplete(() => errorImage.gameObject.SetActive(false));
+                // The legacy image always says "素材不足", even for a weapon mismatch.
+                // Keep the actual cause visible beside the action until the player resolves it.
+                errorImage.gameObject.SetActive(false);
             }
         }
     }

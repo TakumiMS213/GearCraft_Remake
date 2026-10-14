@@ -1,0 +1,4 @@
+Material tooltip while visible
+beforeCount=0 afterCount=3
+beforeText=Gear / 入手方法: 敵撃破時、またはステージ報酬で入手 / 現在の個数: 0
+afterText=Gear / 入手方法: 敵撃破時、またはステージ報酬で入手 / 現在の個数: 0

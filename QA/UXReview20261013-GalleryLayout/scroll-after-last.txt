@@ -1,0 +1,12 @@
+Synthetic pointer click scrollbar -> keyboard Left; original list selected=Entry_24
+INPUT Click control=/UXGalleryLayoutMouse/leftButton
+INPUT Click control=/UXGalleryLayoutMouse/leftButton
+INPUT Click control=/UXGalleryLayoutMouse/leftButton
+INPUT Click control=/UXGalleryLayoutMouse/leftButton
+After pointer selected=ScrollTrack value=0.004010695 content=(0.00, 1490.00)
+INPUT Move control=/UXGalleryLayoutKeyboard/leftArrow
+INPUT Navigate control=/UXGalleryLayoutKeyboard/leftArrow
+INPUT Navigate control=/UXGalleryLayoutKeyboard/leftArrow
+INPUT Navigate control=/UXGalleryLayoutKeyboard/leftArrow
+INPUT Navigate control=/UXGalleryLayoutKeyboard/leftArrow
+After Left selected=Entry_24 value=0.004010695 content=(0.00, 1490.00)

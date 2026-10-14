@@ -1,0 +1,48 @@
+{
+  "allKeysMatch": true,
+  "keyCount": 8,
+  "checks": [
+    {
+      "key": "GearCraft.Gallery.Progress.v1",
+      "matchesOriginal": true
+    },
+    {
+      "key": "GearCraft.CraftTutorial.Metrics.Craft.v5",
+      "matchesOriginal": true
+    },
+    {
+      "key": "GearCraft.CraftTutorial.Metrics.WeaponCustom.v5",
+      "matchesOriginal": true
+    },
+    {
+      "key": "GearCraft.Main.OpeningNotice.Seen.v1",
+      "matchesOriginal": true
+    },
+    {
+      "key": "GearCraft.CraftTutorial.Mastery.Craft.v5",
+      "matchesOriginal": true
+    },
+    {
+      "key": "GearCraft.CraftTutorial.Mastery.WeaponCustom.v5",
+      "matchesOriginal": true
+    },
+    {
+      "key": "GearCraft.CraftTutorial.AutoPlayed.Craft.v4",
+      "matchesOriginal": true
+    },
+    {
+      "key": "GearCraft.CraftTutorial.AutoPlayed.WeaponCustom.v3",
+      "matchesOriginal": true
+    }
+  ],
+  "playing": false,
+  "compiling": false,
+  "scene": "Title",
+  "running": false,
+  "backupReady": false,
+  "done": true,
+  "passed": true,
+  "assertions": 146,
+  "buildWatcher": false,
+  "settingsActive": false
+}

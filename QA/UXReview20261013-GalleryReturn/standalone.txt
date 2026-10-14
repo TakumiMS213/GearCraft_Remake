@@ -1,0 +1,4 @@
+Standalone Gallery with locked preview; synthetic InputSystem Escape, not OS input.
+INPUT Cancel /UXGalleryStandalone/escape
+INPUT Cancel /UXGalleryStandalone/escape
+PASS Configured Cancel reached Title, scale=1 play=True performed=2

@@ -1,0 +1,18 @@
+Scene=Craft
+unlockedRecipes:
+GearCraft
+PunkDrive
+ScrapModule
+pendingUnlockNotifications:
+recipeButtons:
+Recipe_GearCraft text=GearCraft interactable=True
+Recipe_PunkDrive text=PunkDrive interactable=True
+Recipe_ScrapModule text=ScrapModule interactable=True
+Recipe_SteamShoot text=？？？ interactable=False
+Recipe_SteamThrower text=？？？ interactable=False
+Recipe_SteamGatling text=？？？ interactable=False
+Recipe_RailCraft text=？？？ interactable=False
+Recipe_RepairModule text=？？？ interactable=False
+Recipe_BarrierModule text=？？？ interactable=False
+Recipe_UpGradeModule text=？？？ interactable=False
+tutorialActive=False boss=0

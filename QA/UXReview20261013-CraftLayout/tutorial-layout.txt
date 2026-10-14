@@ -1,0 +1,117 @@
+5 GameView dimensions x 3 tutorial states. Layout fixtures; not human comprehension or physical input test.
+SIZE Full HD (1920x1080) state=0 target=(1920.00, 1080.00) panelOutsideCanvas=False
+TEXT OperationState font=20 overflow=False truncated=False renderedHeight=28.96 rect=(x:-502.00, y:-30.00, width:1004.00, height:30.00) text=話を聞きながら、そのまま作業を進めて構いません
+TEXT Title font=28 overflow=False truncated=False renderedHeight=40.544 rect=(x:-502.00, y:-44.00, width:1004.00, height:44.00) text=防衛を支える備え
+TEXT Body font=24 overflow=False truncated=False renderedHeight=69.504 rect=(x:-502.00, y:-73.51, width:1004.00, height:73.51) text=「ScrapModule」があれば、毎日素材を確保できます。今の手持ちで作れるか、確かめておきましょう。
+TEXT Page font=20 overflow=False truncated=False renderedHeight=28.96 rect=(x:-154.00, y:-36.00, width:308.00, height:36.00) text=1/3
+TEXT Text font=22 overflow=False truncated=False renderedHeight=31.856 rect=(x:-72.00, y:-48.00, width:144.00, height:48.00) text=あとで
+TEXT Text font=22 overflow=False truncated=False renderedHeight=31.856 rect=(x:-72.00, y:-48.00, width:144.00, height:48.00) text=足りている
+TEXT Text font=22 overflow=False truncated=False renderedHeight=31.856 rect=(x:-96.00, y:-48.00, width:192.00, height:48.00) text=足りない
+SIZE Full HD (1920x1080) state=1 target=(1920.00, 1080.00) panelOutsideCanvas=False
+TEXT OperationState font=20 overflow=False truncated=False renderedHeight=28.96 rect=(x:-502.00, y:-30.00, width:1004.00, height:30.00) text=話を聞きながら、そのまま作業を進めて構いません
+TEXT Title font=28 overflow=False truncated=False renderedHeight=40.544 rect=(x:-502.00, y:-44.00, width:1004.00, height:44.00) text=防衛を支える備え
+TEXT Body font=24 overflow=False truncated=False renderedHeight=69.504 rect=(x:-502.00, y:-73.51, width:1004.00, height:73.51) text=まずは、毎日素材を集めるScrapModuleを見てください。この装置の材料が足りるか確かめましょう。
+TEXT Page font=20 overflow=False truncated=False renderedHeight=28.96 rect=(x:-154.00, y:-36.00, width:308.00, height:36.00) text=1/3
+TEXT Text font=22 overflow=False truncated=False renderedHeight=31.856 rect=(x:-72.00, y:-48.00, width:144.00, height:48.00) text=あとで
+TEXT Text font=22 overflow=False truncated=False renderedHeight=31.856 rect=(x:-72.00, y:-48.00, width:144.00, height:48.00) text=足りている
+TEXT Text font=22 overflow=False truncated=False renderedHeight=31.856 rect=(x:-96.00, y:-48.00, width:192.00, height:48.00) text=足りない
+SIZE Full HD (1920x1080) state=2 target=(1920.00, 1080.00) panelOutsideCanvas=False
+TEXT OperationState font=20 overflow=False truncated=False renderedHeight=28.96 rect=(x:-502.00, y:-30.00, width:1004.00, height:30.00) text=話を聞きながら、そのまま作業を進めて構いません
+TEXT Title font=28 overflow=False truncated=False renderedHeight=40.544 rect=(x:-502.00, y:-44.00, width:1004.00, height:44.00) text=一撃の威力を高める
+TEXT Body font=24 overflow=False truncated=False renderedHeight=34.752 rect=(x:-502.00, y:-56.00, width:1004.00, height:56.00) text=Damage Plateを、形が収まる空きマスへドラッグしてください。
+TEXT Page font=20 overflow=False truncated=False renderedHeight=28.96 rect=(x:-154.00, y:-36.00, width:308.00, height:36.00) text=1/2
+TEXT Text font=22 overflow=False truncated=False renderedHeight=31.856 rect=(x:-72.00, y:-48.00, width:144.00, height:48.00) text=あとで
+TEXT Text font=22 overflow=False truncated=False renderedHeight=31.856 rect=(x:-108.00, y:-48.00, width:216.00, height:48.00) text=閉じて作業する
+SIZE UXCraftLayout0 (1280x720) state=0 target=(1280.00, 720.00) panelOutsideCanvas=False
+TEXT OperationState font=20 overflow=False truncated=False renderedHeight=28.96 rect=(x:-502.00, y:-30.00, width:1004.00, height:30.00) text=話を聞きながら、そのまま作業を進めて構いません
+TEXT Title font=28 overflow=False truncated=False renderedHeight=40.544 rect=(x:-502.00, y:-44.00, width:1004.00, height:44.00) text=防衛を支える備え
+TEXT Body font=24 overflow=False truncated=False renderedHeight=69.504 rect=(x:-502.00, y:-73.51, width:1004.00, height:73.51) text=「ScrapModule」があれば、毎日素材を確保できます。今の手持ちで作れるか、確かめておきましょう。
+TEXT Page font=20 overflow=False truncated=False renderedHeight=28.96 rect=(x:-154.00, y:-36.00, width:308.00, height:36.00) text=1/3
+TEXT Text font=22 overflow=False truncated=False renderedHeight=31.856 rect=(x:-72.00, y:-48.00, width:144.00, height:48.00) text=あとで
+TEXT Text font=22 overflow=False truncated=False renderedHeight=31.856 rect=(x:-72.00, y:-48.00, width:144.00, height:48.00) text=足りている
+TEXT Text font=22 overflow=False truncated=False renderedHeight=31.856 rect=(x:-96.00, y:-48.00, width:192.00, height:48.00) text=足りない
+SIZE UXCraftLayout0 (1280x720) state=1 target=(1280.00, 720.00) panelOutsideCanvas=False
+TEXT OperationState font=20 overflow=False truncated=False renderedHeight=28.96 rect=(x:-502.00, y:-30.00, width:1004.00, height:30.00) text=話を聞きながら、そのまま作業を進めて構いません
+TEXT Title font=28 overflow=False truncated=False renderedHeight=40.544 rect=(x:-502.00, y:-44.00, width:1004.00, height:44.00) text=防衛を支える備え
+TEXT Body font=24 overflow=False truncated=False renderedHeight=69.504 rect=(x:-502.00, y:-73.51, width:1004.00, height:73.51) text=まずは、毎日素材を集めるScrapModuleを見てください。この装置の材料が足りるか確かめましょう。
+TEXT Page font=20 overflow=False truncated=False renderedHeight=28.96 rect=(x:-154.00, y:-36.00, width:308.00, height:36.00) text=1/3
+TEXT Text font=22 overflow=False truncated=False renderedHeight=31.856 rect=(x:-72.00, y:-48.00, width:144.00, height:48.00) text=あとで
+TEXT Text font=22 overflow=False truncated=False renderedHeight=31.856 rect=(x:-72.00, y:-48.00, width:144.00, height:48.00) text=足りている
+TEXT Text font=22 overflow=False truncated=False renderedHeight=31.856 rect=(x:-96.00, y:-48.00, width:192.00, height:48.00) text=足りない
+SIZE UXCraftLayout0 (1280x720) state=2 target=(1280.00, 720.00) panelOutsideCanvas=False
+TEXT OperationState font=20 overflow=False truncated=False renderedHeight=28.96 rect=(x:-502.00, y:-30.00, width:1004.00, height:30.00) text=話を聞きながら、そのまま作業を進めて構いません
+TEXT Title font=28 overflow=False truncated=False renderedHeight=40.544 rect=(x:-502.00, y:-44.00, width:1004.00, height:44.00) text=一撃の威力を高める
+TEXT Body font=24 overflow=False truncated=False renderedHeight=34.752 rect=(x:-502.00, y:-56.00, width:1004.00, height:56.00) text=Damage Plateを、形が収まる空きマスへドラッグしてください。
+TEXT Page font=20 overflow=False truncated=False renderedHeight=28.96 rect=(x:-154.00, y:-36.00, width:308.00, height:36.00) text=1/2
+TEXT Text font=22 overflow=False truncated=False renderedHeight=31.856 rect=(x:-72.00, y:-48.00, width:144.00, height:48.00) text=あとで
+TEXT Text font=22 overflow=False truncated=False renderedHeight=31.856 rect=(x:-108.00, y:-48.00, width:216.00, height:48.00) text=閉じて作業する
+SIZE UXCraftLayout1 (1600x1000) state=0 target=(1600.00, 1000.00) panelOutsideCanvas=False
+TEXT OperationState font=20 overflow=False truncated=False renderedHeight=28.96 rect=(x:-502.00, y:-30.00, width:1004.00, height:30.00) text=話を聞きながら、そのまま作業を進めて構いません
+TEXT Title font=28 overflow=False truncated=False renderedHeight=40.544 rect=(x:-502.00, y:-44.00, width:1004.00, height:44.00) text=防衛を支える備え
+TEXT Body font=24 overflow=False truncated=False renderedHeight=69.504 rect=(x:-502.00, y:-73.51, width:1004.00, height:73.51) text=「ScrapModule」があれば、毎日素材を確保できます。今の手持ちで作れるか、確かめておきましょう。
+TEXT Page font=20 overflow=False truncated=False renderedHeight=28.96 rect=(x:-154.00, y:-36.00, width:308.00, height:36.00) text=1/3
+TEXT Text font=22 overflow=False truncated=False renderedHeight=31.856 rect=(x:-72.00, y:-48.00, width:144.00, height:48.00) text=あとで
+TEXT Text font=22 overflow=False truncated=False renderedHeight=31.856 rect=(x:-72.00, y:-48.00, width:144.00, height:48.00) text=足りている
+TEXT Text font=22 overflow=False truncated=False renderedHeight=31.856 rect=(x:-96.00, y:-48.00, width:192.00, height:48.00) text=足りない
+SIZE UXCraftLayout1 (1600x1000) state=1 target=(1600.00, 1000.00) panelOutsideCanvas=False
+TEXT OperationState font=20 overflow=False truncated=False renderedHeight=28.96 rect=(x:-502.00, y:-30.00, width:1004.00, height:30.00) text=話を聞きながら、そのまま作業を進めて構いません
+TEXT Title font=28 overflow=False truncated=False renderedHeight=40.544 rect=(x:-502.00, y:-44.00, width:1004.00, height:44.00) text=防衛を支える備え
+TEXT Body font=24 overflow=False truncated=False renderedHeight=69.504 rect=(x:-502.00, y:-73.51, width:1004.00, height:73.51) text=まずは、毎日素材を集めるScrapModuleを見てください。この装置の材料が足りるか確かめましょう。
+TEXT Page font=20 overflow=False truncated=False renderedHeight=28.96 rect=(x:-154.00, y:-36.00, width:308.00, height:36.00) text=1/3
+TEXT Text font=22 overflow=False truncated=False renderedHeight=31.856 rect=(x:-72.00, y:-48.00, width:144.00, height:48.00) text=あとで
+TEXT Text font=22 overflow=False truncated=False renderedHeight=31.856 rect=(x:-72.00, y:-48.00, width:144.00, height:48.00) text=足りている
+TEXT Text font=22 overflow=False truncated=False renderedHeight=31.856 rect=(x:-96.00, y:-48.00, width:192.00, height:48.00) text=足りない
+SIZE UXCraftLayout1 (1600x1000) state=2 target=(1600.00, 1000.00) panelOutsideCanvas=False
+TEXT OperationState font=20 overflow=False truncated=False renderedHeight=28.96 rect=(x:-502.00, y:-30.00, width:1004.00, height:30.00) text=話を聞きながら、そのまま作業を進めて構いません
+TEXT Title font=28 overflow=False truncated=False renderedHeight=40.544 rect=(x:-502.00, y:-44.00, width:1004.00, height:44.00) text=一撃の威力を高める
+TEXT Body font=24 overflow=False truncated=False renderedHeight=34.752 rect=(x:-502.00, y:-56.00, width:1004.00, height:56.00) text=Damage Plateを、形が収まる空きマスへドラッグしてください。
+TEXT Page font=20 overflow=False truncated=False renderedHeight=28.96 rect=(x:-154.00, y:-36.00, width:308.00, height:36.00) text=1/2
+TEXT Text font=22 overflow=False truncated=False renderedHeight=31.856 rect=(x:-72.00, y:-48.00, width:144.00, height:48.00) text=あとで
+TEXT Text font=22 overflow=False truncated=False renderedHeight=31.856 rect=(x:-108.00, y:-48.00, width:216.00, height:48.00) text=閉じて作業する
+SIZE UXCraftLayout2 (1024x768) state=0 target=(1024.00, 768.00) panelOutsideCanvas=False
+TEXT OperationState font=20 overflow=False truncated=False renderedHeight=28.96 rect=(x:-502.00, y:-30.00, width:1004.00, height:30.00) text=話を聞きながら、そのまま作業を進めて構いません
+TEXT Title font=28 overflow=False truncated=False renderedHeight=40.544 rect=(x:-502.00, y:-44.00, width:1004.00, height:44.00) text=防衛を支える備え
+TEXT Body font=24 overflow=False truncated=False renderedHeight=69.504 rect=(x:-502.00, y:-73.51, width:1004.00, height:73.51) text=「ScrapModule」があれば、毎日素材を確保できます。今の手持ちで作れるか、確かめておきましょう。
+TEXT Page font=20 overflow=False truncated=False renderedHeight=28.96 rect=(x:-154.00, y:-36.00, width:308.00, height:36.00) text=1/3
+TEXT Text font=22 overflow=False truncated=False renderedHeight=31.856 rect=(x:-72.00, y:-48.00, width:144.00, height:48.00) text=あとで
+TEXT Text font=22 overflow=False truncated=False renderedHeight=31.856 rect=(x:-72.00, y:-48.00, width:144.00, height:48.00) text=足りている
+TEXT Text font=22 overflow=False truncated=False renderedHeight=31.856 rect=(x:-96.00, y:-48.00, width:192.00, height:48.00) text=足りない
+SIZE UXCraftLayout2 (1024x768) state=1 target=(1024.00, 768.00) panelOutsideCanvas=False
+TEXT OperationState font=20 overflow=False truncated=False renderedHeight=28.96 rect=(x:-502.00, y:-30.00, width:1004.00, height:30.00) text=話を聞きながら、そのまま作業を進めて構いません
+TEXT Title font=28 overflow=False truncated=False renderedHeight=40.544 rect=(x:-502.00, y:-44.00, width:1004.00, height:44.00) text=防衛を支える備え
+TEXT Body font=24 overflow=False truncated=False renderedHeight=69.504 rect=(x:-502.00, y:-73.51, width:1004.00, height:73.51) text=まずは、毎日素材を集めるScrapModuleを見てください。この装置の材料が足りるか確かめましょう。
+TEXT Page font=20 overflow=False truncated=False renderedHeight=28.96 rect=(x:-154.00, y:-36.00, width:308.00, height:36.00) text=1/3
+TEXT Text font=22 overflow=False truncated=False renderedHeight=31.856 rect=(x:-72.00, y:-48.00, width:144.00, height:48.00) text=あとで
+TEXT Text font=22 overflow=False truncated=False renderedHeight=31.856 rect=(x:-72.00, y:-48.00, width:144.00, height:48.00) text=足りている
+TEXT Text font=22 overflow=False truncated=False renderedHeight=31.856 rect=(x:-96.00, y:-48.00, width:192.00, height:48.00) text=足りない
+SIZE UXCraftLayout2 (1024x768) state=2 target=(1024.00, 768.00) panelOutsideCanvas=False
+TEXT OperationState font=20 overflow=False truncated=False renderedHeight=28.96 rect=(x:-502.00, y:-30.00, width:1004.00, height:30.00) text=話を聞きながら、そのまま作業を進めて構いません
+TEXT Title font=28 overflow=False truncated=False renderedHeight=40.544 rect=(x:-502.00, y:-44.00, width:1004.00, height:44.00) text=一撃の威力を高める
+TEXT Body font=24 overflow=False truncated=False renderedHeight=34.752 rect=(x:-502.00, y:-56.00, width:1004.00, height:56.00) text=Damage Plateを、形が収まる空きマスへドラッグしてください。
+TEXT Page font=20 overflow=False truncated=False renderedHeight=28.96 rect=(x:-154.00, y:-36.00, width:308.00, height:36.00) text=1/2
+TEXT Text font=22 overflow=False truncated=False renderedHeight=31.856 rect=(x:-72.00, y:-48.00, width:144.00, height:48.00) text=あとで
+TEXT Text font=22 overflow=False truncated=False renderedHeight=31.856 rect=(x:-108.00, y:-48.00, width:216.00, height:48.00) text=閉じて作業する
+SIZE UXCraftLayout3 (2560x1080) state=0 target=(2560.00, 1080.00) panelOutsideCanvas=False
+TEXT OperationState font=20 overflow=False truncated=False renderedHeight=28.96 rect=(x:-502.00, y:-30.00, width:1004.00, height:30.00) text=話を聞きながら、そのまま作業を進めて構いません
+TEXT Title font=28 overflow=False truncated=False renderedHeight=40.544 rect=(x:-502.00, y:-44.00, width:1004.00, height:44.00) text=防衛を支える備え
+TEXT Body font=24 overflow=False truncated=False renderedHeight=69.504 rect=(x:-502.00, y:-73.51, width:1004.00, height:73.51) text=「ScrapModule」があれば、毎日素材を確保できます。今の手持ちで作れるか、確かめておきましょう。
+TEXT Page font=20 overflow=False truncated=False renderedHeight=28.96 rect=(x:-154.00, y:-36.00, width:308.00, height:36.00) text=1/3
+TEXT Text font=22 overflow=False truncated=False renderedHeight=31.856 rect=(x:-72.00, y:-48.00, width:144.00, height:48.00) text=あとで
+TEXT Text font=22 overflow=False truncated=False renderedHeight=31.856 rect=(x:-72.00, y:-48.00, width:144.00, height:48.00) text=足りている
+TEXT Text font=22 overflow=False truncated=False renderedHeight=31.856 rect=(x:-96.00, y:-48.00, width:192.00, height:48.00) text=足りない
+SIZE UXCraftLayout3 (2560x1080) state=1 target=(2560.00, 1080.00) panelOutsideCanvas=False
+TEXT OperationState font=20 overflow=False truncated=False renderedHeight=28.96 rect=(x:-502.00, y:-30.00, width:1004.00, height:30.00) text=話を聞きながら、そのまま作業を進めて構いません
+TEXT Title font=28 overflow=False truncated=False renderedHeight=40.544 rect=(x:-502.00, y:-44.00, width:1004.00, height:44.00) text=防衛を支える備え
+TEXT Body font=24 overflow=False truncated=False renderedHeight=69.504 rect=(x:-502.00, y:-73.51, width:1004.00, height:73.51) text=まずは、毎日素材を集めるScrapModuleを見てください。この装置の材料が足りるか確かめましょう。
+TEXT Page font=20 overflow=False truncated=False renderedHeight=28.96 rect=(x:-154.00, y:-36.00, width:308.00, height:36.00) text=1/3
+TEXT Text font=22 overflow=False truncated=False renderedHeight=31.856 rect=(x:-72.00, y:-48.00, width:144.00, height:48.00) text=あとで
+TEXT Text font=22 overflow=False truncated=False renderedHeight=31.856 rect=(x:-72.00, y:-48.00, width:144.00, height:48.00) text=足りている
+TEXT Text font=22 overflow=False truncated=False renderedHeight=31.856 rect=(x:-96.00, y:-48.00, width:192.00, height:48.00) text=足りない
+SIZE UXCraftLayout3 (2560x1080) state=2 target=(2560.00, 1080.00) panelOutsideCanvas=False
+TEXT OperationState font=20 overflow=False truncated=False renderedHeight=28.96 rect=(x:-502.00, y:-30.00, width:1004.00, height:30.00) text=話を聞きながら、そのまま作業を進めて構いません
+TEXT Title font=28 overflow=False truncated=False renderedHeight=40.544 rect=(x:-502.00, y:-44.00, width:1004.00, height:44.00) text=一撃の威力を高める
+TEXT Body font=24 overflow=False truncated=False renderedHeight=34.752 rect=(x:-502.00, y:-56.00, width:1004.00, height:56.00) text=Damage Plateを、形が収まる空きマスへドラッグしてください。
+TEXT Page font=20 overflow=False truncated=False renderedHeight=28.96 rect=(x:-154.00, y:-36.00, width:308.00, height:36.00) text=1/2
+TEXT Text font=22 overflow=False truncated=False renderedHeight=31.856 rect=(x:-72.00, y:-48.00, width:144.00, height:48.00) text=あとで
+TEXT Text font=22 overflow=False truncated=False renderedHeight=31.856 rect=(x:-108.00, y:-48.00, width:216.00, height:48.00) text=閉じて作業する
+COMPLETE observations=100 diagnosticFlags=0
