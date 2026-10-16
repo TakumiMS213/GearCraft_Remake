@@ -1,0 +1,19 @@
+ReactiveBotSnippet.cs.txtはC#6の挿入用スニペット。単体execute_codeとして実行しない。
+既存NativeSurvivalRouteのnative攻撃・敵AI・HP/門耐久・報酬処理を保持し、宣言部AとコメントB/C/Dを統合する。
+本体の編集はbenchmark/root担当。Unity MCP操作・production変更はこの担当では行っていない。
+
+1. Aはrecord delegate定義後、tick定義前へ置く。bot-mode.txtがreactiveの時だけ有効。未指定/baselineは従来botのまま。
+2. BはEnemyController targetの選択直後へ。迎撃対象のColliderと通常敵のColliderを分離する。移動は通常敵への距離、狙点と近接攻撃可能距離だけaimBoundsを使う。弾へ走り込まない。
+3. native StartDashはfieldsを設定するだけ。runnerはPlayer.Updateを止めているため、applyReactiveDashを各gameframe1回だけ実行し、通常同様のdashTimer減算・壁チェック・dashSpeedのvelocityを適用する。no-targetでも既存dashだけは終わるまで進める。入力block/報酬/reportではDで停止。
+4. BOOSTはallow-boost.txt=trueの明示時のみ、実在庫をnative BoostActiveが1枚消費。1試験最大2回、5.5秒以上間隔、EK装甲中は開始しない。gear追加、HP補充、無敵付与、敵や敵弾への直接damage/破棄は行わない。
+5. 固定0.2秒ごとの判断、可視かつ8m以内、1.2秒以内に近接しそうなEnemyProjectileDamageable/EnemyBulletControllerを脅威として読む。迎撃はDamageableのみ、通常弾/落下爆弾は回避のみ。0.45秒以内（落下爆弾は1秒以内）の脅威で水平回避を検討、dash再判断間隔1.2秒。爆弾は下方Groundへのraycastと現在の速度/重力から着地時刻、Prefabの爆発半径を概算する。速度・持続は本編player値を使用。完全回避・未来軌道の正解探索にはしない。
+6. 通常射撃は右半面に制限されるので、FirePointを既に通過した背後の弾を迎撃照準へ選ばない。回避判断はできる。壁/敵本体へdash経路が重なる場合は見送る。
+
+初回にbot_mode、迎撃ターゲット変更、dash試行/実行、BOOST実消費をevents.csvへ記録。target選択だけでcounter成功とは数えない。baseline/対応版は別labelで記録し、seed/初期HP/門/装備/素材所持量を揃える。
+repair/barrierフラグはこのスニペットが変更しない。既存UpdateAutoBarrierを継続。装備と素材予算は資源モデル確定後のbootstrapに任せる。
+
+最小版の限界
+EK回転刃・AR突進そのものは専用回避しない。予告に応じたジャンプ等は別段階で追加する。単純な水平dashでは半径5の爆発から逃げ切れない場合があり、回避成功を保証しない。弱い遠距離武器の迎撃が間に合う保証もなく、敵弾を狙う時間はボスDPSとの交換になる。
+AI private stateはBOOSTの装甲判定以外に使わず、迎撃/回避は現在画面の位置・速度を0.2秒おきに読む。反応精度は人間の上限/平均を証明するものではなく、対応方針を持つ有限頻度botとして扱う。
+C#は未コンパイル・未実測。統合後は少数caseでattack_events/cooldown、dash時間/距離、実Gear減算、元状態復元を確認する。
+参照確認済み：PlayerController.dashSpeed/dashDurationはpublic float。StartDash/IsBlockedByWall/BoostActiveとdash状態fieldsはprivateなのでreflection。MaterialManager.GetMaterial(MaterialType)はScripts/Craft/MaterialManager.cs:88のpublic実メソッド。

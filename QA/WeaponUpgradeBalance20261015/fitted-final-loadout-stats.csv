@@ -1,0 +1,7 @@
+case,weapon,profile,STR,ACC,base_damage,damage_per_hit,flat_damage,module_damage,cooldown_multiplier,double_shot,spread_modifier,ricochet,bullet_size,junk_collector,magnet_range,base_spread,effective_spread,bullet_speed
+fitted_SteamCannon_module0,SteamCannon,final_day11_ranged_fitted_speed,20,20,50,75.6,12,0,0.1397978,True,0,0,1,1,3,0,0,25
+fitted_SteamCannon_module20,SteamCannon,final_day11_ranged_fitted_speed_module20,20,20,50,95.6,12,20,0.1397978,True,0,0,1,1,3,0,0,25
+fitted_SteamThrower_module0,SteamThrower,final_day11_thrower_fitted_damage,20,20,1,3.87999988,16,0,0.182742208,True,0,0,1,1,3,0,0,13
+fitted_SteamThrower_module20,SteamThrower,final_day11_thrower_fitted_damage_module20,20,20,1,23.88,16,20,0.182742208,True,0,0,1,1,3,0,0,13
+fitted_RailCraft_module0,RailCraft,final_day11_ranged_fitted_speed,20,20,150,362,12,0,0.1397978,True,0,0,1,1,3,0,0,180
+fitted_RailCraft_module20,RailCraft,final_day11_ranged_fitted_speed_module20,20,20,150,382,12,20,0.1397978,True,0,0,1,1,3,0,0,180

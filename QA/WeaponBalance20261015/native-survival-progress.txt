@@ -1,0 +1,1 @@
+COMPLETE native_SteamGatling_EK gate_destroyed

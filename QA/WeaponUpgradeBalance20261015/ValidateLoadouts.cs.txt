@@ -1,0 +1,29 @@
+const string folder="QA/WeaponUpgradeBalance20261015/";
+if(!Application.isPlaying||UnityEngine.SceneManagement.SceneManager.GetActiveScene().name!="Title")throw new System.Exception("Title Play required");
+if(UpgradeGridManager.Instance!=null)throw new System.Exception("Existing upgrade grid must not be replaced");
+var status=StatusManager.Instance;var materials=MaterialManager.Instance;
+var statusBackup=JsonUtility.ToJson(status);var materialsBackup=JsonUtility.ToJson(materials);
+var placements=System.IO.File.ReadAllLines(folder+"loadout-placements.csv").Skip(1).Where(x=>!string.IsNullOrWhiteSpace(x)).Select(x=>x.Split(',')).ToArray();
+var output=new System.Text.StringBuilder("profile,grid_size,parts,purchased,spent_scrap,spent_gear,spent_core,flat,speed,double,spread,ricochet,size\n");
+GameObject temp=null;
+try{
+ foreach(var row in System.IO.File.ReadAllLines(folder+"loadout-budgets.csv").Skip(1).Where(x=>!string.IsNullOrWhiteSpace(x)).Select(x=>x.Split(','))){
+  status.savedUpgradePartPlacements.Clear();status.ownedUpgradeParts.Clear();status.bossKillCount=int.Parse(row[1])-3;
+  status.currentWeapon=UnityEditor.AssetDatabase.LoadAssetAtPath<WeaponDataSO>("Assets/GearCraft/ScriptableObject/WeaponData/RailCraft.asset");
+  materials.ClearAllMaterials();materials.scrap=int.Parse(row[2]);materials.gear=int.Parse(row[3]);materials.upgradeCore=int.Parse(row[4]);
+  temp=new GameObject("QA_LoadoutValidation");var grid=temp.AddComponent<UpgradeGridManager>();grid.RefreshGridSize();
+  int count=0;
+  foreach(var p in placements.Where(x=>x[0]==row[0])){
+   var part=UnityEditor.AssetDatabase.LoadAssetAtPath<UpgradePartSO>("Assets/GearCraft/ScriptableObject/UpgradeParts/"+p[1]+".asset");
+   if(!grid.TryPurchaseAndPlace(part,int.Parse(p[2]),int.Parse(p[3]),int.Parse(p[4])))throw new System.Exception(row[0]+" rejected "+p[1]+" at "+p[2]+","+p[3]);
+   count++;
+  }
+  output.AppendLine(string.Join(",",new[]{row[0],grid.GridSize.ToString(),count.ToString(),grid.PlacedParts.Count.ToString(),(int.Parse(row[2])-materials.scrap).ToString(),(int.Parse(row[3])-materials.gear).ToString(),(int.Parse(row[4])-materials.upgradeCore).ToString(),status.bonusDamage.ToString("R"),status.attackSpeedMult.ToString("R"),status.hasBulletDouble.ToString(),status.spreadModifier.ToString("R"),status.ricochetCount.ToString(),status.bulletSizeMult.ToString("R")}));
+  UnityEngine.Object.DestroyImmediate(temp);temp=null;
+ }
+ System.IO.File.WriteAllText(folder+"native-purchase-validation.csv",output.ToString());
+}finally{
+ if(temp!=null)UnityEngine.Object.DestroyImmediate(temp);
+ JsonUtility.FromJsonOverwrite(statusBackup,status);JsonUtility.FromJsonOverwrite(materialsBackup,materials);
+}
+return output.ToString();

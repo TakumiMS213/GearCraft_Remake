@@ -1,0 +1,45 @@
+SteamThrower弱体化・EK-9の約60秒調整（2026-10-15）
+
+調整基準
+ユーザー指定の「終盤パーツ＋攻撃力20のアップグレードモジュール」で比較。
+SteamCannon・RailCraft・SteamGatlingの代表構成を約60秒へ合わせた。武器によってEKのHPや被ダメージ倍率を変える処理は入れていない。
+
+SteamThrower
+現行仕様はSTRではなくACC参照。ACC参照のまま、基礎ダメージ1→0.3、ACC係数0.08→0.024、パーツ加算係数0.08→0.024へ変更。
+モジュールの固定加算を据え置くと弱体化がほぼ効かないため、SteamThrowerのモジュール加算係数も1→0.3へ変更。モジュール1個の直接火力増加は5→1.5になる。
+結果として、基礎・能力値・パーツ・モジュールを含む直接ダメージ全体が従来の0.3倍。BOOSTの追加倍率も同じ計算後へ適用される。他武器の倍率は維持。
+オーバーヒートは移動速度55%、持続2.8秒を維持。再付与、発射頻度、当たり判定、継続ダメージカードの効果も維持。ミサイルに対する直接ダメージも0.3倍になる。
+武器説明とGalleryのモジュール説明を実値に合わせて更新。
+
+EK-9
+基礎HP12,000→36,000。wave31のステージ補正込みHPは49,200→147,600。
+HP2/3（98,400）と1/3（49,200）で各3秒の装甲切替。境界を超える一撃は境界で止まり、次段階へ超過分を持ち越さない。
+装甲中は青灰色に明滅し、HP減少・被弾点滅・前進・門攻撃を停止。上部4門から迎撃可能なミサイルを順に4発放つ。状態異常の付与と期限は通常どおり進む。
+第2段階に2門ずつの交差射撃、第3段階に機銃18発＋ミサイル4発の複合攻撃を追加。既存の筒・上部発射穴を使用。
+後退に必要なダメージは4,920を維持し、HP増加と分離。後退中の再開始を抑止し、後退終了後は3秒の猶予を置く。爆発は最後の有効被弾位置、接地とエンジン振動は維持。
+
+実測（EK単体、seed77、60fps相当のゲーム時間）
+武器             討伐秒   補充下での累積HP被害   門被害
+GearCraft        148.750       324               0
+SteamCannon       63.950       162               0
+SteamThrower      40.783       210               0
+RailCraft         60.667       606               0
+SteamGatling      60.483       642               0
+
+基準3武器の中央値は60.667秒。GearCraftは約149秒に延びており、同じ強化段階での近接火力との差は未解消。SteamThrowerは指定の0.3倍へ下げても最大強化時は約41秒で、直接火力はまだ高め。
+全5件で装甲は各3.000秒、HP境界と車体Xは装甲中に一定。交差射撃と複合攻撃の実状態への到達を全5武器で確認。
+これは固定の自動照準・移動、HPと門耐久を毎フレーム補充した処理能力試験。回避や意図的なミサイル迎撃を行わず、通常プレイの生存クリアや実プレイヤーの60秒クリアを保証しない。特に累積被害が100を超えているため、生存可否と分けて読むこと。
+
+検証
+Unityコンパイル成功。9武器・120条件のダメージ計算とSteamThrower実弾48条件の検証は不一致0。既存singleton・8項目のPlayerPrefs・asset・シーン状態の前後一致も確認。
+実画面のスクリーンショットで装甲中の青灰色表示と通常色への復帰を確認。独立コードレビューで境界、多重ヒット、DoT、LastHitPosition、点滅、死亡cleanup、発射口の経路を照合。
+巨大単発・同フレーム32回の多重ヒット（各装甲で実施）・DoTと同じダメージ入口・LastHit位置の保持・装甲中の減速付与・最終段階の致死ダメージ受理等、追加16項目もPASS。これは非アクティブな独立個体で実際のTakeDamageを呼ぶ境界試験で、次の境界へ進める際だけ装甲終了を手動設定している。装甲の実時間・発射状態・死亡は前述の実戦ログで別に確認した。
+2026-10-15 03:26:05 UTCに最終復元完了。PlayerPrefs 8項目一致、Title未保存変更なし、Play停止、Full HDと元サイズ一覧、vSync1/capture0/timeScale1/targetFrameRate-1/backgroundTrue/logger3へ復元を確認。
+今回開始時の406ファイルからの変更は意図した8ファイルのみ。git diff --check通過。ConsoleにはRenderGraph互換・描画surface・Particle Velocity曲線のメッセージがある。Particle Velocity曲線の同文は今回より前のEditorログにも存在することを確認しており、この調整では既存Particle/描画設定を変更していない。実測runnerの例外による中断はない。
+
+根拠
+boss-m20-pass1-results.csv / boss-m20-pass1-boss-states.csv / boss-m20-pass1-loadout-stats.csv
+weapon-scaling-latest.txt が参照する検証CSVとsummary
+implementation-policy.txt / independent-boss-review.txt
+pass1-analysis.txt / boss-boundary-checks.csv / boss-boundary-summary.txt
+final-restoration.txt / source-verification.json / console-review.json

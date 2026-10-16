@@ -1,0 +1,13 @@
+Native PunkDrive upgrade calibration: STR2/STR20 x none/final_day11_melee, 10 game seconds each at captureDeltaTime=1/60. Main attacks disabled; native colliders/DamageLoop/EnemyController.TakeDamage only. Native Start captures STR after actual StatusManager.RecalculateUpgradeEffects(parts).
+Damage from EnemyController.Damaged event is summed in double precision; HP subtraction is also logged but can show float rounding on the high-HP target. No artificial damage is injected. Target AI/Start disabled, position frozen, original layers retained, temporary clone HitEffect disabled.
+This verifies Punk's scaling with the real part effects; it is a controlled single-contact calibration, not a weapon route or survival test.
+source_damage=0 source_interval=0 original_fixed_delta=0.0199999865 stage=31 scaling=31
+START STR2_none cachedSTR=2 flat=0 attackSpeed=1 partCount=0
+RESULT STR2_none,none,2,600,10,600,120.000002,12.000000,112.5,11.25,2,0,0,1,False,0,0,1,0
+START STR2_final_day11_melee cachedSTR=2 flat=12 attackSpeed=0.13807191 partCount=15
+RESULT STR2_final_day11_melee,final_day11_melee,2,600,10,600,120.000002,12.000000,112.5,11.25,2,15,12,0.13807191,False,0,0,1,0
+START STR20_none cachedSTR=20 flat=0 attackSpeed=1 partCount=0
+RESULT STR20_none,none,20,600,10,600,1200.000000,120.000000,1200,120,20,0,0,1,False,0,0,1,0
+START STR20_final_day11_melee cachedSTR=20 flat=12 attackSpeed=0.13807191 partCount=15
+RESULT STR20_final_day11_melee,final_day11_melee,20,600,10,600,1200.000000,120.000000,1200,120,20,15,12,0.13807191,False,0,0,1,0
+COMPLETE Four native collision cases recorded; status/parts_restored=True; runtime settings restored, Play remains active

@@ -1,0 +1,9 @@
+SteamGatling,31,mature,77
+day=11
+boss_kills=3
+HP=100
+GATE=100
+flat_damage=3
+attack_speed=0.6561
+module_damage=20
+asset=Assets/GearCraft/ScriptableObject/WeaponData/SteamGatling.asset

@@ -1,0 +1,70 @@
+SteamThrower 対 AR-227：seed77 の短時間撃破要因と Overheat 適用範囲
+確認日：2026-10-16
+
+対象と結論
+対象は gate_AR227_SteamThrower_seed77-* の native 防衛試験。ボス当日の朝からの一日区間であり、取得日からの連続プレイや人間による操作テストではない。native 敵 AI・弾・物理・報酬を使用し、HP/門耐久の補充は行っていない。以下は保存ログと現在の制作コードの静的確認であり、追加計測は行っていない。
+
+AR-227 は game 105.099976 秒に HP 15200 で出現し、116.966675 秒に撃破された。戦闘時間は 11.8666992 秒、戦闘中の攻撃回数は 661 回。撃破時は HP 96 / 門 100、ボス中の被害は HP 4 / 門 0。日終了時には native Repair により HP 100 に戻っている。
+短時間撃破は、SlipOverheat の重複取得ではなく、Twin の二発、BOOST による高い発射頻度、蒸気弾ごとの再命中、モジュール加算が同時に働く実装・ログと整合する。各要因の寄与率や、同条件から一要因だけ除いた場合の討伐時間は未測定。
+
+1. 実際の報酬と状態
+39.033 秒に選んだカードは ACC_2。Weapon_SteamThrower_SlipOverheat は候補として表示されたが選択されていない。
+83.167 秒に選んだカードは Gear_3。Weapon_SteamThrower_NoFall も候補のみ。
+初期・最終 status の steamThrowerOverheatSlipDamage はともに 0、steamThrowerNoBulletGravity は false、steamThrowerBoostDamageMultiplier は 1。今回の速さにカード由来の継続ダメージ、無重力弾、BOOST 専用の威力増幅は寄与していない。
+ボス時は STR 18 / ACC 20、パーツ bonusDamage 13、craftWeaponDamagebuff 20、hasBulletDouble true、bulletSizeMult 1.25、spreadModifier 0。
+根拠：対象 events.csv、initial-status.json、final-status.json、bootstrap-config.txt。
+
+SlipOverheat の一般仕様も区別する。BonusCardsManager.cs:446 はカード取得で status の値を加算するため、同効果を複数取得した場合は設定値が増える。一方、EnemyController.cs:145 は個々の弾から受ける継続ダメージ値を Max(existing, value) で保持するため、同じ設定値の蒸気弾を多数当てても弾数分の継続ダメージが足される実装ではない。EnemyController.cs:352 の実際の継続ダメージ処理は約 1 秒間隔。今回の設定値は 0 であり、この経路によるダメージはない。
+
+2. 「部分倍率」を含む一命中の値
+SteamThrower.asset:19 の現在値：coolTime 0.08、baseDamage 0.3、ACC 係数 0.024、パーツ加算係数 0.024、モジュール係数 0.17。
+StatusManager.cs:175 と PlayerController.cs:451 に従う一命中の計算は、
+  0.3 + ACC 20 × 0.024 + パーツ 13 × 0.024 + モジュール 20 × 0.17 = 4.492
+となる。各係数を適用した値の加算であり、合計値へ最後にさらに 0.3 倍などをかける処理はない。
+モジュール分は 3.4、全体の約 75.7%。同じ ACC/パーツでモジュール 0 なら 1.092 なので、一命中は約 4.11 倍になる。これは計算上の比較であり、module0 の討伐時間を計測した結果ではない。
+今回の ACC_2 による上昇は 4.444 → 4.492（+0.048、約 1.08%）で、今回の大きな手数を説明する主要因ではない。
+PlayerController.ConfigureSpawnedProjectile は計算値を SteamThrowerBulletController.Configure へ渡す。Prefab の初期 damage 値をそのまま使用しているのではない。今回 BOOST 威力倍率は 1 のため、一命中の値は BOOST で増えない。
+
+3. BOOST・Twin の実効発射数
+105.233 秒に歯車 11 → 10、110.767 秒に歯車 10 → 9 として native BOOST を二回使用している。試験による歯車の自動付与はない。
+通常の待ち時間は 0.08 × 0.391680032 = 0.03133440256 秒。BOOST 中は 0.08 × 0.195840016 = 0.01566720128 秒となり、60fps の一フレームより短い。runner は native private coolTime とフレーム末の CoolTimeUpdate 一回を使用しており、一フレームに何度も発射するループは使っていない。
+ボス出現時 attacks 318 / shots 636、撃破時 attacks 979 / shots 1958。差分は 661 攻撃 / 1322 発、平均約 55.70 攻撃/秒・111.40 発/秒。BOOST 中の複数の 1 秒サンプルでは attacks が 60 増加している。
+PlayerController.cs:424 の Twin は二発目も同じ ConfigureSpawnedProjectile を通し、ダメージを半分に分けない。今回 spread 0 のため両方が同じ方向へ向かう。各弾が独立して 4.492 のダメージ設定を持つ。
+根拠：対象 events.csv / samples.csv、PlayerController.cs:387、QA の ReactiveGateSurvivalRoute.cs.txt:399。runner の射撃は本編の速度・拡散・銃口・弾設定処理を使用し、照準だけを bot が指定する。
+
+4. 蒸気弾の再命中
+SteamThrowerBulletController.cs:22 の lastHitTimes は弾インスタンスごとの Dictionary。OnTriggerEnter2D と OnTriggerStay2D が TryHit を呼び、同じ弾・同じ敵への再命中だけを hitInterval 0.18 秒で制限する（同ファイル:107）。命中で弾を消さず、寿命内に重なり続ければ再命中する。別の弾や Twin の二発の間で共有するダメージ間隔はない。
+Prefab の弾寿命は Configure により武器 attackRange の 2.4 秒へ設定される。BoxCollider のサイズ 1.35 × 0.72 は今回の bulletSizeMult 1.25 で拡大される。AR のサンプル上の本体 AABB 幅は約 5.874。この構造は、横長の本体を通過中に複数回命中する条件を作り得る。
+実測例：107.016663 → 108.016663 秒は、新規 60 攻撃 / 120 発に対し HP が 13169.5313 → 11552.3438、1617.1875 減少した。新規 120 発が一回ずつ当たる場合の 539.04 の約 3 倍で、再命中の実装と整合する。
+ただし、以前に発射した弾も残るため、この比率を「各弾が平均 3 回命中した」という直接計測とは扱わない。弾ごとの命中数・ダメージの発生源はログに記録していない。
+PunkDrive も有効。Main.unity:13450 は damageAmount 0 / damageInterval 0、PunkDriveManager.cs:66 は STR/10 を加算する。接触時の寄与を厳密に分離できない。上記の 107/108 秒サンプルではプレイヤーから AR 本体まで約 5.466 離れており、少なくともそのサンプル位置は近接接触状態ではない。一秒間の全フレームで接触がなかったことまでは、この位置ログだけでは証明できない。
+
+5. 他武器との比較の制約
+同じ主試験の AR 討伐は GearCraft 23.3167 秒、SteamCannon 17.6334 秒。GearCraft は BOOST 二回使用、SteamCannon には BOOST 使用イベントがない。カード取得内容も異なる。この比較は native 報酬・資源収集を含む各防衛ビルドの結果であり、武器本体だけを変更し、BOOST や取得カードを統一した純粋な DPS 比較ではない。
+SteamCannon が BOOST を使わなかった理由を断定できる時点別の歯車残量ログはない。試験終了後の素材数からボス中の在庫を逆算しない。
+bot は継続照準と重力補正を行うため、この発射・命中効率を初見プレイヤーでも再現できるとする根拠はない。
+
+6. 各ボスの Overheat 移動減速経路（制作コードの静的比較）
+共通処理：EnemyController.cs:123 の GetMoveSpeed(baseSpeed) は Overheat 有効中だけ overheatSpeedMultiplier を掛ける。SteamThrowerBullet.prefab:126 は duration 2.8 秒、speedMultiplier 0.55（速度が通常の 55%、45% 低下）。SteamThrowerBulletController.cs:116 は命中ごとに ApplyOverheat を呼ぶ。以下の適用可否は実装からの確認で、各ボスへ付与して実速度を測った追加試験ではない。
+
+IC-408 / EnemyAI_BossTank.cs
+・通常前進は :59-60 の MoveTowards で owner.GetMoveSpeed(data.speed) × 0.3 × delta を使用する。Overheat は門へ向かう前進に適用される。
+・接地補正・画面内補正、画像だけのエンジン振動（:78）、門攻撃の間隔（:69）は減速対象にしていない。門へ到達後の攻撃を遅くする効果ではない。
+
+BB-413 / EnemyAI_BossArtillery.cs
+・横方向の前進は :53-54 の owner.GetMoveSpeed(data.speed) × 0.3 × Time.deltaTime を使用する。Overheat は横方向の前進に適用される。
+・上下揺れは :48 の elapsed += Time.deltaTime と :57 の周期 4 秒の Sin で計算するため、上下の揺れの周期・速度には適用されない。
+・攻撃予告・射撃・召喚の時間経過も通常の deltaTime であり、移動減速と攻撃速度低下は別。
+
+AR-227 / EnemyAI_BossSpeed.cs
+・GetMoveSpeed の参照がない。進入は :74-78 の entryTimer と固定 EntryDuration 1.25 秒、突進と復帰は :265-294 の固定時間の DOVirtual、円弧移動は :311-321 の固定 duration の DOVirtual で動く。
+・このため、Overheat の状態と期限は付与されても、進入・通常の円弧移動・突進・復帰には移動減速が反映されない。HP フェーズによる移動時間の短縮は別途働く。
+・今回の 11.8667 秒撃破を Overheat による AR の移動減速で説明することはできない。明示された減速耐性・無効化ルールをこの AI 内では確認できず、武器説明の「移動速度を下げる」と一致しない機能上の課題として扱う。意図的な耐性かはコードだけでは確定しない。
+
+EK-9 / EnemyAI_BossFinal.cs
+・通常前進と CrusherSurge の加速前進は :502-516 の AdvanceOnGround を共用し、owner.GetMoveSpeed(baseSpeed × advanceSpeedMultiplier × stateMultiplier) を使用する。CrusherSurge の 1.6 倍を含め、その後に Overheat の速度倍率が反映される。
+・装甲切替中は :188-192 の分岐から位置を固定し、前進そのものを停止する。Overheat は装甲時間や射撃間隔を延長しない。
+・被ダメージによる後退は :316-325 の stateElapsed / staggerDuration による補間で、GetMoveSpeed を使用しない。ノックバックの後退距離・時間は Overheat で減衰しない。
+・接地・画面内補正、エンジン振動、門攻撃の間隔は移動減速対象ではない。
+
+比較結果：門へ向かう前進には IC / BB / EK が減速を反映する一方、AR は移動経路全体で未反映。BB の上下揺れと EK の強制後退は個別の演出・動作時間であり、減速の適用範囲を分けて評価する必要がある。AR を修正する場合は「本体の移動」と「攻撃・召喚・爆弾タイマー」を分離し、移動減速が意図せず攻撃頻度まで変える修正を避ける設計が必要。本確認では制作コードを変更していない。

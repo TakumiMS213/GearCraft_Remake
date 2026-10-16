@@ -1,0 +1,64 @@
+{
+  "source_folder": "QA/WeaponUpgradeBalance20261015",
+  "destination_folder": "QA/BossBalance20261015",
+  "copied_files": [
+    {
+      "source": "QA/WeaponUpgradeBalance20261015/UpgradeCombatBenchmark.cs.txt",
+      "destination": "QA/BossBalance20261015/UpgradeCombatBenchmark.cs.txt",
+      "source_sha256": "ead0ba1bb7d2b55d266e98a0cee61c395c9bf5bb2dcb770fd52b4291e1f2d627",
+      "destination_sha256": "77fe1bf18f9a9b580543075253c429224bcb9eff0c3b928b029ba6624c86b532",
+      "change": "folder reference only"
+    },
+    {
+      "source": "QA/WeaponUpgradeBalance20261015/NativeSurvivalBootstrap.cs.txt",
+      "destination": "QA/BossBalance20261015/NativeSurvivalBootstrap.cs.txt",
+      "source_sha256": "4c0d8c7ec56c3c9e1bb2ab51c95b37d91093354ccc6438b0a973b660f1abf2cd",
+      "destination_sha256": "8b8cd9eb91c310c1648b2159b6531b9ee660383b72e6125411ed25c93d3a4f5d",
+      "change": "folder reference only"
+    },
+    {
+      "source": "QA/WeaponUpgradeBalance20261015/PrepareControlledMain.cs.txt",
+      "destination": "QA/BossBalance20261015/PrepareControlledMain.cs.txt",
+      "source_sha256": "0bd64a767d2ee8761cb36bf6af41ecfebe9e6fc3b7d34f69c0f3d4b9fd534304",
+      "destination_sha256": "b53e4ed55d44b55d4a2e5e92542a99dd4153bdea160ce2c1090ecb51075ee507",
+      "change": "folder reference only"
+    },
+    {
+      "source": "QA/WeaponUpgradeBalance20261015/RestoreSession.cs.txt",
+      "destination": "QA/BossBalance20261015/RestoreSession.cs.txt",
+      "source_sha256": "9de7c36ba8136b2f423c2e91b222da60471ad800838fcfdc87d0c7b1f2b68f21",
+      "destination_sha256": "020fd3eaeed602b38c63e052a3b8384ccd83068ad6acd69a4ba11114095de136",
+      "change": "folder reference only"
+    },
+    {
+      "source": "QA/WeaponUpgradeBalance20261015/NativeSurvivalRoute.cs.txt",
+      "destination": "QA/BossBalance20261015/NativeSurvivalRoute.cs.txt",
+      "source_sha256": "f625a1ed3049ab8ab8d0ba4e42fc2917cbf07e4b74548b7fb4d2f910ff6dc6ca",
+      "destination_sha256": "255f74f71831a5e703aa76a0d024e0dba186ffe819b9cde667feb76d167b64cd",
+      "change": "folder reference only"
+    },
+    {
+      "source": "QA/WeaponUpgradeBalance20261015/loadouts.csv",
+      "destination": "QA/BossBalance20261015/loadouts.csv",
+      "source_sha256": "c30851a4fffe8a421b8014f2975d03a6a29d3e08e7e9ad09374c4688a6a8dd75",
+      "destination_sha256": "c30851a4fffe8a421b8014f2975d03a6a29d3e08e7e9ad09374c4688a6a8dd75",
+      "change": "byte-for-byte"
+    },
+    {
+      "source": "QA/WeaponUpgradeBalance20261015/loadout-placements.csv",
+      "destination": "QA/BossBalance20261015/loadout-placements.csv",
+      "source_sha256": "61843ae38b0959b57a70b6dea8beee034f20ff9fd66d2e3115997b1cd44d68c0",
+      "destination_sha256": "61843ae38b0959b57a70b6dea8beee034f20ff9fd66d2e3115997b1cd44d68c0",
+      "change": "byte-for-byte"
+    }
+  ],
+  "copied_backups": [],
+  "initial_case_count": 5,
+  "followup_case_count": 3,
+  "profiles_checked": 22,
+  "notes": [
+    "Only the seven named source files were copied. No results, before-files, backup snapshots or old session state were copied.",
+    "Runtime damage/stats/AI/assets remain resolved through the current game code.",
+    "No Unity or MCP operations were performed."
+  ]
+}

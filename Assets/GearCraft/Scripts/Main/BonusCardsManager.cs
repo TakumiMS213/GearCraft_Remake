@@ -19,6 +19,7 @@ public class BonusCardsManager : MonoBehaviour
     [Header("カードを表示する親オブジェクト")]
     public RectTransform cardParent;
     [SerializeField] private GameObject inputBlocker;
+    [SerializeField] private TooltipSystem cardTooltip;
 
     public bool IsChoosingReward { get; private set; }
 
@@ -191,6 +192,9 @@ public class BonusCardsManager : MonoBehaviour
                 int cardIndex = i;
                 if (btn != null)
                 {
+                    BonusCardTooltipTrigger tooltipTrigger = card.GetComponent<BonusCardTooltipTrigger>();
+                    if (tooltipTrigger == null) tooltipTrigger = card.AddComponent<BonusCardTooltipTrigger>();
+                    tooltipTrigger.Configure(cardData, cardTooltip);
                     offeredCardIndices.Add(cardIndex);
                     btn.onClick.AddListener(() => OnBonusCardSelected(cardIndex));
                     buttons.Add(btn);
@@ -507,6 +511,7 @@ public class BonusCardsManager : MonoBehaviour
 
     private void ClearCards(bool animate = true)
     {
+        if (cardTooltip != null) cardTooltip.Hide();
         foreach (RewardCardVisual visual in cardVisuals)
         {
             visual.ScaleTween?.Kill();

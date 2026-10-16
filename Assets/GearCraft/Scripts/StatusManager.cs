@@ -178,10 +178,10 @@ public class StatusManager : MonoBehaviour
 
         float damageBonus = weapon.weaponType == WeaponType.Melee
             ? STR + weapon.GetScaledFlatDamageBonus(bonusDamage)
-            : weapon.GetScaledFlatDamageBonus(ACC + bonusDamage);
+            : weapon.GetScaledAccDamageBonus(ACC) + weapon.GetScaledFlatDamageBonus(bonusDamage);
 
         if (IsCraftedWeapon(weapon))
-            damageBonus += craftWeaponDamagebuff;
+            damageBonus += craftWeaponDamagebuff * weapon.craftModuleDamageMultiplier;
 
         return damageBonus;
     }

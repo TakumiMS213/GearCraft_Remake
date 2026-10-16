@@ -1,0 +1,15 @@
+id,weapon,day,start_stage,boss_stage,boss,profile,grid_size,STR,ACC,moduleDamage,repair,barrier,scrap_module,punk,initial_hp,initial_gate,seed,condition
+IC-408_GearCraft_standard,GearCraft,3,7,9,IC-408,early_day3_common,3,4,4,0,0,0,1,1,100,100,77,weapon_acquired; resources_model_median; stats_representative; native_rewards
+BB-413_GearCraft_standard,GearCraft,6,16,18,BB-413,mid_day4_common,4,10,10,0,1,0,1,1,100,100,77,weapon_acquired; resources_model_median; stats_representative; native_rewards
+BB-413_SteamCannon_standard,SteamCannon,6,16,18,BB-413,mid_day4_common,4,10,10,0,1,0,1,1,100,100,77,weapon_acquired; resources_model_median; stats_representative; native_rewards
+BB-413_SteamThrower_standard,SteamThrower,6,16,18,BB-413,mid_day4_common,4,10,10,0,1,0,1,1,100,100,77,weapon_acquired; resources_model_median; stats_representative; native_rewards
+AR-227_GearCraft_standard,GearCraft,10,28,30,AR-227,late_day7_melee,5,18,18,20,1,1,1,1,100,100,77,weapon_acquired; resources_model_median; stats_representative; native_rewards
+AR-227_SteamCannon_standard,SteamCannon,10,28,30,AR-227,late_day7_ranged,5,18,18,20,1,1,1,1,100,100,77,weapon_acquired; resources_model_median; stats_representative; native_rewards
+AR-227_SteamThrower_standard,SteamThrower,10,28,30,AR-227,late_day7_ranged,5,18,18,20,1,1,1,1,100,100,77,weapon_acquired; resources_model_median; stats_representative; native_rewards
+AR-227_RailCraft_standard,RailCraft,10,28,30,AR-227,late_day7_ranged,5,18,18,20,1,1,1,1,100,100,77,weapon_acquired; resources_model_median; stats_representative; native_rewards
+AR-227_SteamGatling_standard,SteamGatling,10,28,30,AR-227,late_day7_ranged,5,18,18,20,1,1,1,1,100,100,77,weapon_acquired; resources_model_median; stats_representative; native_rewards
+EK-9_GearCraft_standard,GearCraft,11,31,31,EK-9,final_day11_melee,6,20,20,20,1,1,1,1,100,100,77,weapon_acquired; resources_model_median; stats_representative; native_rewards
+EK-9_SteamCannon_standard,SteamCannon,11,31,31,EK-9,final_day11_ranged_fitted_speed,6,20,20,20,1,1,1,1,100,100,77,weapon_acquired; resources_model_median; stats_representative; native_rewards
+EK-9_SteamThrower_standard,SteamThrower,11,31,31,EK-9,final_day11_thrower_fitted_damage,6,20,20,20,1,1,1,1,100,100,77,weapon_acquired; resources_model_median; stats_representative; native_rewards
+EK-9_RailCraft_standard,RailCraft,11,31,31,EK-9,final_day11_ranged_fitted_speed,6,20,20,20,1,1,1,1,100,100,77,weapon_acquired; resources_model_median; stats_representative; native_rewards
+EK-9_SteamGatling_standard,SteamGatling,11,31,31,EK-9,final_day11_ranged,6,20,20,20,1,1,1,1,100,100,77,weapon_acquired; resources_model_median; stats_representative; native_rewards

@@ -1,0 +1,12 @@
+result=gate_destroyed
+start_stage=7
+last_stage=9
+completed_native_waves=2
+rewards_selected=2
+game_seconds=124.300
+wall_seconds=12.920
+shots=83
+player_damage=10.00
+gate_damage=100.00
+player_healed=0.00
+gate_healed=0.00

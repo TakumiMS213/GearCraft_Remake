@@ -1,0 +1,8 @@
+GearCraft.Gallery.Progress.v1|True|eyJoYXNSZWFjaGVkRW5kaW5nIjpmYWxzZSwiZW5jb3VudGVyZWRFbmVtaWVzIjpbImx2MV9BLTEiLCJsdjNfRmluYWxCb3NzIiwibHYxX0ctMSIsImx2MV9CLTEiLCJsdjNfSUMtNDA4Il0sImFjcXVpcmVkV2VhcG9ucyI6WyJLYXRhbmEiLCJBUiJdLCJjcmFmdGVkUmVjaXBlcyI6WyJQdW5rRHJpdmUiXSwiYWNxdWlyZWRNYXRlcmlhbHMiOlsxLDJdfQ==
+GearCraft.Main.OpeningNotice.Seen.v1|True|1
+CraftTutorial.Metrics.Craft.v5|False|
+CraftTutorial.Metrics.WeaponCustom.v5|False|
+CraftTutorial.Mastery.Craft.v5|False|0
+CraftTutorial.Mastery.WeaponCustom.v5|False|0
+CraftTutorial.AutoPlayed.Craft.v4|False|0
+CraftTutorial.AutoPlayed.WeaponCustom.v3|False|0

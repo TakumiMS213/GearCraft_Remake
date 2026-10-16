@@ -1,0 +1,51 @@
+IC 速度型上位構成の感度試験（2026-10-16）
+
+profile: ic_speed_budget
+用途: Day3 / wave7開始、IC wave9、日頭Gear8持込、BOOST最大6回の比較。初期HP/門、STR/ACCなどはrootのcase設定を使う。本ファイルは装備・費用の準備であり、防衛成功を示す実測結果ではない。
+「平均装備」とは呼ばない。資源中央値モデルの範囲に収まる速度重視の上位構成で、ショップでSpeed Gear+を3枚確保できる確率は未検証。
+
+部品と費用
+SpeedGear+ ×3 : Scrap18 / Gear3、速度係数 .85^3
+SpeedGear  ×1 : Scrap4、速度係数 .90
+Damage+1  ×1 : Scrap3、攻撃力+1
+合計         : Scrap25 / Gear3 / UpgradeCore0
+通常速度係数 : .85^3×.90 = .5527125
+BOOST時係数  : .27635625（native .05下限には達しない）
+Module       : 0
+元early_day3_speedよりScrap3、flat+1だけ追加。旧early予算S24からはS1超過するため、その予算内の同一条件とはせず、本追加条件の部品予算S25として区別する。
+
+配置（x,y,rotation；rotationは90度を1とするnative方式）
+A SpeedGear+ : (0,0,0)
+B SpeedGear+ : (1,0,0)
+C SpeedGear+ : (2,0,0)
+D SpeedGear  : (0,2,1)
+E Damage+1  : (2,2,0)
+y=0: A B C
+y=1: A B C
+y=2: D D E
+既存early_day3_speedの4部品を移動せず、唯一の空き(2,2)を埋める。UpgradePartSO.GetRotatedShape/Rotate90とUpgradeGridManager.GetPlacementFailureの処理をオフラインで再現し、9セル・範囲内・重複なしを確認。Unity実行による配置確認ではない。詳細はic-speed-budget-validation.json。
+
+中央値残高との比較（買い替え費を省略しない保守的な例）
+progression-economic-snapshot.jsonのDay3朝はScrap87 / Gear39。これは全予定敵撃破・回収、教材ScrapModule/Punk費用を控除済み、その他購入前という資源モデルで、プレイヤー実測の平均ではない。
+以下は旧部品を再利用・返金しない条件として、教材部品相当Damage+1/2費S9、旧early_day3_common費S22/G1をさらに全額引く。実際に無料配布や再利用があれば、この計算より余裕が出る。
+Scrap: 87 − 教材部品相当9 − 旧early部品22 − 新部品25 = 31残
+Gear : 39 − GearCraft10 − 旧early部品1 − 新部品3 − リロール費予約5 = 20残
+この20から日頭持込8を確保しても、別の余剰12を残せる。持込8からBOOST最大6個を実消費しても2個残る（当日の回収を含めない計算）。Scrap/Gearを同時にこの中央値以上持つ確率や、リロール予約5で部品を揃えられる確率は、この周辺中央値だけから証明できない。
+Repair/Barrier/攻撃ModuleはIC前未解禁なので予算に入れず、今回も付与しない。食事STR上振れなど別の有利条件を自動で加えない。
+
+比較時の注意
+既存reactive ICは日頭素材0、BOOST上限2回。本ケースは部品と持込素材/BOOST回数を同時に変えるため、成功しても個々の変更の因果効果を切り分ける比較ではない。
+6回のBOOSTは約30秒相当で、既存31.2167秒のIC締切全体を保証して覆うものではない。nativeの残時間更新、実消費、攻撃倍率復帰をログで確認する。
+native近接は旋回中の再攻撃や物理接触の結果が命中数に影響するため、速度係数の逆数をそのまま実効DPS倍率と扱わない。
+
+変更
+QA/DefenseBalance20261016/loadouts.csv：profile1行を末尾追加
+QA/DefenseBalance20261016/loadout-placements.csv：配置5行を末尾追加
+既存CSV内容をバイト列prefix比較で保持確認。production/MCP/runner/実行設定ファイルは変更なし。
+
+根拠
+Assets/GearCraft/ScriptableObject/UpgradeParts/{SpeedGear+,SpeedGear,Damage+1,Damage+2}.asset
+Assets/GearCraft/Scripts/Data/UpgradePartSO.cs:GetRotatedShape / Rotate90
+Assets/GearCraft/Scripts/Upgrade/UpgradeGridManager.cs:GetPlacementFailure
+Assets/GearCraft/Scripts/Main/PlayerController.cs:BoostActive
+QA/DefenseBalance20261016/{progression.txt,progression-economic-snapshot.json}

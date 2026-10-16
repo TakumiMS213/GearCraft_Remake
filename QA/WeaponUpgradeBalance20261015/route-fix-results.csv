@@ -1,0 +1,2 @@
+id,weapon,stage,day,profile,seed,result,seconds,total_including_summons,killed,escaped_or_suicided,remaining,damage,shots,player_damage,gate_damage,boss_name,boss_seconds,boss_remaining_hp,average_game_dt,frames,scheduled_count,scheduled_killed,scheduled_escaped,scheduled_remaining,attack_events
+route_GearCraft_4,GearCraft,4,2,tutorial_day2,77,cleared,26.450,21,21,0,0,434.00,10,0.00,0.00,,-1.000,0.00,0.016667,1587,21,21,0,0,10

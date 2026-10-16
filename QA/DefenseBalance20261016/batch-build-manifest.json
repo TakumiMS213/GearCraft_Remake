@@ -1,0 +1,28 @@
+{
+  "generated_utc": "2026-10-16T03:15:56.393674+00:00",
+  "output": "BatchDefense.cs.txt",
+  "output_sha256": "5f87289526665e9f6109df16674c8d249030d4b509c3189a8c123999bec57753",
+  "cases": "batch-cases.csv",
+  "cases_sha256": "7970438534bde9f5625308c83a83b31d74017097b31a0af0ba80e0753a587e55",
+  "case_count": 14,
+  "cases_created": false,
+  "source_sha256": {
+    "NativeSurvivalBootstrap.cs.txt": "38fbb8cf679d4fa1e6a02592b9f59bd9f5ed8e210b5943fc9649648a481f9484",
+    "ReactiveGateSurvivalRoute.cs.txt": "cd5be87ab32620c92d9c5a985acfd21164f49a2043c445222e72d554b3e8d36c"
+  },
+  "transformations": [
+    "Bootstrap: expose readyCheck removal hook only",
+    "Route: expose native finish callback only",
+    "Route: replace one isPlaying=false with timeScale=0; all native cleanup retained"
+  ],
+  "runtime_verification": "Not executed by agent; pending root",
+  "offline_compile": {
+    "compiler": "Unity 6000.0.67f1 Mono mcs",
+    "language_version": "6",
+    "exit_code": 0,
+    "warnings": 0,
+    "errors": 0,
+    "generated_body_sha256": "5f87289526665e9f6109df16674c8d249030d4b509c3189a8c123999bec57753",
+    "utc": "2026-10-16T03:15:57.814972+00:00"
+  }
+}

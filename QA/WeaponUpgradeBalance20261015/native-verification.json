@@ -1,0 +1,1034 @@
+{
+  "generated_at": "2026-10-15T02:33:49.918488+00:00",
+  "expected_cases": 16,
+  "verified_complete_cases": 16,
+  "states": {
+    "verified_complete": 16
+  },
+  "expected_restore_keys": 8,
+  "read_notes": [],
+  "cases": [
+    {
+      "label": "native_GearCraft_day2",
+      "state": "verified_complete",
+      "plan": {
+        "label": "native_GearCraft_day2",
+        "weapon": "GearCraft",
+        "stage": "4",
+        "profile": "tutorial_day2",
+        "seed": "77"
+      },
+      "result": "native_day_cleared_and_dorm_reached",
+      "initial_hp": 100,
+      "initial_gate": 100.0,
+      "final_hp": 100,
+      "final_gate": 100.0,
+      "player_damage": 0.0,
+      "gate_damage": 0.0,
+      "player_healed": 0.0,
+      "gate_healed": 0.0,
+      "completed_stages": [
+        4,
+        5,
+        6
+      ],
+      "rewards": [
+        {
+          "card": "STR_3",
+          "at_seconds": 31.733,
+          "hp_before": 100.0,
+          "hp_restored": 0.0,
+          "gate_restored": 0.0,
+          "effects": [
+            [
+              2,
+              3.0
+            ]
+          ],
+          "offer_scores": [
+            [
+              "ACC_to_STR",
+              102.0
+            ],
+            [
+              "STR_3",
+              103.0
+            ],
+            [
+              "Weapon_GearCraft_AxeSize",
+              63.50000023841858
+            ]
+          ]
+        },
+        {
+          "card": "Weapon_GearCraft_TransformGear",
+          "at_seconds": 61.1,
+          "hp_before": 100.0,
+          "hp_restored": 0.0,
+          "gate_restored": 0.0,
+          "effects": [
+            [
+              102,
+              1.0
+            ]
+          ],
+          "offer_scores": [
+            [
+              "Weapon_GearCraft_TransformGear",
+              0.0
+            ],
+            [
+              "ModuleCore_1",
+              0.0
+            ],
+            [
+              "ACC_1",
+              0.0
+            ]
+          ]
+        }
+      ],
+      "initial_hit_damage": 46.0,
+      "shots": 31,
+      "attack_events": 31,
+      "observed_spawned": 60,
+      "observed_killed": 60,
+      "observed_escaped": 0,
+      "boss_battles": [],
+      "initial_kill_all_enemies": true,
+      "initial_boss_kills": 0,
+      "restore_record": "Verified 8 backup keys. EditorPlaying=False UTC=2026-10-15T02:22:55.3338940Z",
+      "pending": [],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "label": "native_GearCraft_day3",
+      "state": "verified_complete",
+      "plan": {
+        "label": "native_GearCraft_day3",
+        "weapon": "GearCraft",
+        "stage": "7",
+        "profile": "early_day3_common",
+        "seed": "77"
+      },
+      "result": "gate_destroyed",
+      "initial_hp": 100,
+      "initial_gate": 100.0,
+      "final_hp": 90,
+      "final_gate": 0.0,
+      "player_damage": 10.0,
+      "gate_damage": 100.0,
+      "player_healed": 0.0,
+      "gate_healed": 0.0,
+      "completed_stages": [
+        7,
+        8
+      ],
+      "rewards": [
+        {
+          "card": "STR_3",
+          "at_seconds": 31.733,
+          "hp_before": 100.0,
+          "hp_restored": 0.0,
+          "gate_restored": 0.0,
+          "effects": [
+            [
+              2,
+              3.0
+            ]
+          ],
+          "offer_scores": [
+            [
+              "ACC_to_STR",
+              102.0
+            ],
+            [
+              "STR_3",
+              103.0
+            ],
+            [
+              "Weapon_GearCraft_AxeSize",
+              63.50000023841858
+            ]
+          ]
+        },
+        {
+          "card": "Weapon_GearCraft_TransformGear",
+          "at_seconds": 61.1,
+          "hp_before": 100.0,
+          "hp_restored": 0.0,
+          "gate_restored": 0.0,
+          "effects": [
+            [
+              102,
+              1.0
+            ]
+          ],
+          "offer_scores": [
+            [
+              "Weapon_GearCraft_TransformGear",
+              0.0
+            ],
+            [
+              "ModuleCore_1",
+              0.0
+            ],
+            [
+              "ACC_1",
+              0.0
+            ]
+          ]
+        }
+      ],
+      "initial_hit_damage": 50.0,
+      "shots": 99,
+      "attack_events": 99,
+      "observed_spawned": 60,
+      "observed_killed": 59,
+      "observed_escaped": 0,
+      "boss_battles": [
+        {
+          "name": "IC-408",
+          "appeared": 93.083,
+          "defeated": false,
+          "battle_seconds": 31.217,
+          "spawn_details": "IC-408 hp=13600 last=True"
+        }
+      ],
+      "initial_kill_all_enemies": true,
+      "initial_boss_kills": 0,
+      "restore_record": "Verified 8 backup keys. EditorPlaying=False UTC=2026-10-15T02:23:36.8201800Z",
+      "pending": [],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "label": "native_SteamCannon_day4",
+      "state": "verified_complete",
+      "plan": {
+        "label": "native_SteamCannon_day4",
+        "weapon": "SteamCannon",
+        "stage": "10",
+        "profile": "mid_day4_common",
+        "seed": "77"
+      },
+      "result": "native_day_cleared_and_dorm_reached",
+      "initial_hp": 100,
+      "initial_gate": 100.0,
+      "final_hp": 94,
+      "final_gate": 100.0,
+      "player_damage": 6.0,
+      "gate_damage": 0.0,
+      "player_healed": 0.0,
+      "gate_healed": 0.0,
+      "completed_stages": [
+        10,
+        11,
+        12
+      ],
+      "rewards": [
+        {
+          "card": "ACC_1",
+          "at_seconds": 32.1,
+          "hp_before": 100.0,
+          "hp_restored": 0.0,
+          "gate_restored": 0.0,
+          "effects": [
+            [
+              3,
+              1.0
+            ]
+          ],
+          "offer_scores": [
+            [
+              "Weapon_SteamCannon_GiantShot",
+              60.20000000298023
+            ],
+            [
+              "ACC_1",
+              101.0
+            ],
+            [
+              "STR_2",
+              0.0
+            ]
+          ]
+        },
+        {
+          "card": "Weapon_SteamCannon_SlowBigExplosion",
+          "at_seconds": 70.433,
+          "hp_before": 97.0,
+          "hp_restored": 0.0,
+          "gate_restored": 0.0,
+          "effects": [
+            [
+              110,
+              0.5
+            ],
+            [
+              111,
+              1.5
+            ]
+          ],
+          "offer_scores": [
+            [
+              "Weapon_SteamCannon_SlowBigExplosion",
+              61.5
+            ],
+            [
+              "Gear_1",
+              0.0
+            ],
+            [
+              "GateRepair",
+              0.0
+            ]
+          ]
+        }
+      ],
+      "initial_hit_damage": 62.0,
+      "shots": 43,
+      "attack_events": 43,
+      "observed_spawned": 59,
+      "observed_killed": 59,
+      "observed_escaped": 0,
+      "boss_battles": [],
+      "initial_kill_all_enemies": true,
+      "initial_boss_kills": 1,
+      "restore_record": "Verified 8 backup keys. EditorPlaying=False UTC=2026-10-15T02:24:16.3024830Z",
+      "pending": [],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "label": "native_SteamThrower_day4",
+      "state": "verified_complete",
+      "plan": {
+        "label": "native_SteamThrower_day4",
+        "weapon": "SteamThrower",
+        "stage": "10",
+        "profile": "mid_day4_common",
+        "seed": "77"
+      },
+      "result": "native_day_cleared_and_dorm_reached",
+      "initial_hp": 100,
+      "initial_gate": 100.0,
+      "final_hp": 76,
+      "final_gate": 100.0,
+      "player_damage": 24.0,
+      "gate_damage": 0.0,
+      "player_healed": 0.0,
+      "gate_healed": 0.0,
+      "completed_stages": [
+        10,
+        11,
+        12
+      ],
+      "rewards": [
+        {
+          "card": "Weapon_SteamThrower_SlipOverheat",
+          "at_seconds": 34.733,
+          "hp_before": 97.0,
+          "hp_restored": 0.0,
+          "gate_restored": 0.0,
+          "effects": [
+            [
+              120,
+              0.3499999940395355
+            ]
+          ],
+          "offer_scores": [
+            [
+              "Gear_3",
+              0.0
+            ],
+            [
+              "Gear_1",
+              0.0
+            ],
+            [
+              "Weapon_SteamThrower_SlipOverheat",
+              60.349999994039536
+            ]
+          ]
+        },
+        {
+          "card": "ACC_2",
+          "at_seconds": 70.667,
+          "hp_before": 79.0,
+          "hp_restored": 0.0,
+          "gate_restored": 0.0,
+          "effects": [
+            [
+              3,
+              2.0
+            ]
+          ],
+          "offer_scores": [
+            [
+              "ACC_2",
+              102.0
+            ],
+            [
+              "Weapon_SteamThrower_NoFall",
+              0.0
+            ],
+            [
+              "HP_20",
+              0.0
+            ]
+          ]
+        }
+      ],
+      "initial_hit_damage": 2.200000047683716,
+      "shots": 446,
+      "attack_events": 446,
+      "observed_spawned": 51,
+      "observed_killed": 51,
+      "observed_escaped": 0,
+      "boss_battles": [],
+      "initial_kill_all_enemies": true,
+      "initial_boss_kills": 1,
+      "restore_record": "Verified 8 backup keys. EditorPlaying=False UTC=2026-10-15T02:25:01.6166090Z",
+      "pending": [],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "label": "native_RailCraft_day7",
+      "state": "verified_complete",
+      "plan": {
+        "label": "native_RailCraft_day7",
+        "weapon": "RailCraft",
+        "stage": "19",
+        "profile": "late_day7_ranged",
+        "seed": "77"
+      },
+      "result": "native_day_cleared_and_dorm_reached",
+      "initial_hp": 100,
+      "initial_gate": 100.0,
+      "final_hp": 100,
+      "final_gate": 100.0,
+      "player_damage": 0.0,
+      "gate_damage": 0.0,
+      "player_healed": 0.0,
+      "gate_healed": 0.0,
+      "completed_stages": [
+        19,
+        20,
+        21
+      ],
+      "rewards": [
+        {
+          "card": "Weapon_RailCraft_Overheat",
+          "at_seconds": 35.3,
+          "hp_before": 100.0,
+          "hp_restored": 0.0,
+          "gate_restored": 0.0,
+          "effects": [
+            [
+              131,
+              1.0
+            ]
+          ],
+          "offer_scores": [
+            [
+              "Weapon_RailCraft_Overheat",
+              61.0
+            ],
+            [
+              "HP_20",
+              0.0
+            ],
+            [
+              "Weapon_RailCraft_Ricochet",
+              0.0
+            ]
+          ]
+        },
+        {
+          "card": "ACC_1",
+          "at_seconds": 69.8,
+          "hp_before": 100.0,
+          "hp_restored": 0.0,
+          "gate_restored": 0.0,
+          "effects": [
+            [
+              3,
+              1.0
+            ]
+          ],
+          "offer_scores": [
+            [
+              "STR_1",
+              0.0
+            ],
+            [
+              "STR_3",
+              0.0
+            ],
+            [
+              "ACC_1",
+              101.0
+            ]
+          ]
+        }
+      ],
+      "initial_hit_damage": 283.0,
+      "shots": 104,
+      "attack_events": 52,
+      "observed_spawned": 67,
+      "observed_killed": 67,
+      "observed_escaped": 0,
+      "boss_battles": [],
+      "initial_kill_all_enemies": true,
+      "initial_boss_kills": 2,
+      "restore_record": "Verified 8 backup keys. EditorPlaying=False UTC=2026-10-15T02:25:44.6535990Z",
+      "pending": [],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "label": "native_SteamGatling_day7",
+      "state": "verified_complete",
+      "plan": {
+        "label": "native_SteamGatling_day7",
+        "weapon": "SteamGatling",
+        "stage": "19",
+        "profile": "late_day7_ranged",
+        "seed": "77"
+      },
+      "result": "native_day_cleared_and_dorm_reached",
+      "initial_hp": 100,
+      "initial_gate": 100.0,
+      "final_hp": 85,
+      "final_gate": 100.0,
+      "player_damage": 15.0,
+      "gate_damage": 0.0,
+      "player_healed": 0.0,
+      "gate_healed": 0.0,
+      "completed_stages": [
+        19,
+        20,
+        21
+      ],
+      "rewards": [
+        {
+          "card": "Weapon_SteamGatling_BulletSpeed",
+          "at_seconds": 34.433,
+          "hp_before": 97.0,
+          "hp_restored": 0.0,
+          "gate_restored": 0.0,
+          "effects": [
+            [
+              140,
+              2.0
+            ]
+          ],
+          "offer_scores": [
+            [
+              "Weapon_SteamGatling_BulletSpeed",
+              0.0
+            ],
+            [
+              "STR_2",
+              0.0
+            ],
+            [
+              "STR_3",
+              0.0
+            ]
+          ]
+        },
+        {
+          "card": "ACC_3",
+          "at_seconds": 70.867,
+          "hp_before": 94.0,
+          "hp_restored": 0.0,
+          "gate_restored": 0.0,
+          "effects": [
+            [
+              3,
+              3.0
+            ]
+          ],
+          "offer_scores": [
+            [
+              "Weapon_SteamGatling_TargetDamage",
+              -5.960464477539062e-07
+            ],
+            [
+              "STR_3",
+              0.0
+            ],
+            [
+              "ACC_3",
+              103.0
+            ]
+          ]
+        }
+      ],
+      "initial_hit_damage": 2.25,
+      "shots": 3046,
+      "attack_events": 1523,
+      "observed_spawned": 62,
+      "observed_killed": 62,
+      "observed_escaped": 0,
+      "boss_battles": [],
+      "initial_kill_all_enemies": true,
+      "initial_boss_kills": 2,
+      "restore_record": "Verified 8 backup keys. EditorPlaying=False UTC=2026-10-15T02:26:31.1222110Z",
+      "pending": [],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "label": "native_GearCraft_final_module0",
+      "state": "verified_complete",
+      "plan": {
+        "label": "native_GearCraft_final_module0",
+        "weapon": "GearCraft",
+        "stage": "31",
+        "profile": "final_day11_melee",
+        "seed": "77"
+      },
+      "result": "gate_destroyed",
+      "initial_hp": 100,
+      "initial_gate": 100.0,
+      "final_hp": 95,
+      "final_gate": -20.0,
+      "player_damage": 5.0,
+      "gate_damage": 120.0,
+      "player_healed": 0.0,
+      "gate_healed": 0.0,
+      "completed_stages": [],
+      "rewards": [],
+      "initial_hit_damage": 72.0,
+      "shots": 47,
+      "attack_events": 47,
+      "observed_spawned": 23,
+      "observed_killed": 22,
+      "observed_escaped": 0,
+      "boss_battles": [
+        {
+          "name": "EK-9",
+          "appeared": 15.467,
+          "defeated": false,
+          "battle_seconds": 11.316,
+          "spawn_details": "EK-9 hp=49200 last=True"
+        }
+      ],
+      "initial_kill_all_enemies": true,
+      "initial_boss_kills": 3,
+      "restore_record": "Verified 8 backup keys. EditorPlaying=False UTC=2026-10-15T02:27:03.6443180Z",
+      "pending": [],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "label": "native_SteamCannon_final_module0",
+      "state": "verified_complete",
+      "plan": {
+        "label": "native_SteamCannon_final_module0",
+        "weapon": "SteamCannon",
+        "stage": "31",
+        "profile": "final_day11_ranged_fitted_speed",
+        "seed": "77"
+      },
+      "result": "ending_reached_3",
+      "initial_hp": 100,
+      "initial_gate": 100.0,
+      "final_hp": 95,
+      "final_gate": 100.0,
+      "player_damage": 5.0,
+      "gate_damage": 0.0,
+      "player_healed": 0.0,
+      "gate_healed": 0.0,
+      "completed_stages": [
+        31
+      ],
+      "rewards": [],
+      "initial_hit_damage": 75.5999984741211,
+      "shots": 362,
+      "attack_events": 181,
+      "observed_spawned": 22,
+      "observed_killed": 22,
+      "observed_escaped": 0,
+      "boss_battles": [
+        {
+          "name": "EK-9",
+          "appeared": 15.017,
+          "defeated": true,
+          "battle_seconds": 24.349999999999998,
+          "spawn_details": "EK-9 hp=49200 last=True"
+        }
+      ],
+      "initial_kill_all_enemies": true,
+      "initial_boss_kills": 3,
+      "restore_record": "Verified 8 backup keys. EditorPlaying=False UTC=2026-10-15T02:27:38.1731980Z",
+      "pending": [],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "label": "native_SteamThrower_final_module0",
+      "state": "verified_complete",
+      "plan": {
+        "label": "native_SteamThrower_final_module0",
+        "weapon": "SteamThrower",
+        "stage": "31",
+        "profile": "final_day11_thrower_fitted_damage",
+        "seed": "77"
+      },
+      "result": "ending_reached_3",
+      "initial_hp": 100,
+      "initial_gate": 100.0,
+      "final_hp": 89,
+      "final_gate": 100.0,
+      "player_damage": 11.0,
+      "gate_damage": 0.0,
+      "player_healed": 0.0,
+      "gate_healed": 0.0,
+      "completed_stages": [
+        31
+      ],
+      "rewards": [],
+      "initial_hit_damage": 3.880000114440918,
+      "shots": 2864,
+      "attack_events": 1432,
+      "observed_spawned": 23,
+      "observed_killed": 23,
+      "observed_escaped": 0,
+      "boss_battles": [
+        {
+          "name": "EK-9",
+          "appeared": 16.0,
+          "defeated": true,
+          "battle_seconds": 21.683,
+          "spawn_details": "EK-9 hp=49200 last=True"
+        }
+      ],
+      "initial_kill_all_enemies": true,
+      "initial_boss_kills": 3,
+      "restore_record": "Verified 8 backup keys. EditorPlaying=False UTC=2026-10-15T02:29:14.1559040Z",
+      "pending": [],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "label": "native_RailCraft_final_module0",
+      "state": "verified_complete",
+      "plan": {
+        "label": "native_RailCraft_final_module0",
+        "weapon": "RailCraft",
+        "stage": "31",
+        "profile": "final_day11_ranged_fitted_speed",
+        "seed": "77"
+      },
+      "result": "ending_reached_3",
+      "initial_hp": 100,
+      "initial_gate": 100.0,
+      "final_hp": 95,
+      "final_gate": 100.0,
+      "player_damage": 5.0,
+      "gate_damage": 0.0,
+      "player_healed": 0.0,
+      "gate_healed": 0.0,
+      "completed_stages": [
+        31
+      ],
+      "rewards": [],
+      "initial_hit_damage": 362.0,
+      "shots": 158,
+      "attack_events": 79,
+      "observed_spawned": 21,
+      "observed_killed": 21,
+      "observed_escaped": 0,
+      "boss_battles": [
+        {
+          "name": "EK-9",
+          "appeared": 15.633,
+          "defeated": true,
+          "battle_seconds": 19.017,
+          "spawn_details": "EK-9 hp=49200 last=True"
+        }
+      ],
+      "initial_kill_all_enemies": true,
+      "initial_boss_kills": 3,
+      "restore_record": "Verified 8 backup keys. EditorPlaying=False UTC=2026-10-15T02:29:48.4019210Z",
+      "pending": [],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "label": "native_SteamGatling_final_module0",
+      "state": "verified_complete",
+      "plan": {
+        "label": "native_SteamGatling_final_module0",
+        "weapon": "SteamGatling",
+        "stage": "31",
+        "profile": "final_day11_ranged",
+        "seed": "77"
+      },
+      "result": "player_dead",
+      "initial_hp": 100,
+      "initial_gate": 100.0,
+      "final_hp": -7,
+      "final_gate": 40.0,
+      "player_damage": 107.0,
+      "gate_damage": 60.0,
+      "player_healed": 0.0,
+      "gate_healed": 0.0,
+      "completed_stages": [],
+      "rewards": [],
+      "initial_hit_damage": 2.5999999046325684,
+      "shots": 2176,
+      "attack_events": 1088,
+      "observed_spawned": 23,
+      "observed_killed": 21,
+      "observed_escaped": 0,
+      "boss_battles": [
+        {
+          "name": "EK-9",
+          "appeared": 15.467,
+          "defeated": false,
+          "battle_seconds": 10.1,
+          "spawn_details": "EK-9 hp=49200 last=True"
+        }
+      ],
+      "initial_kill_all_enemies": true,
+      "initial_boss_kills": 3,
+      "restore_record": "Verified 8 backup keys. EditorPlaying=False UTC=2026-10-15T02:30:22.8322550Z",
+      "pending": [],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "label": "native_GearCraft_final_module20",
+      "state": "verified_complete",
+      "plan": {
+        "label": "native_GearCraft_final_module20",
+        "weapon": "GearCraft",
+        "stage": "31",
+        "profile": "final_day11_melee_module20",
+        "seed": "77"
+      },
+      "result": "ending_reached_3",
+      "initial_hp": 100,
+      "initial_gate": 100.0,
+      "final_hp": 5,
+      "final_gate": 100.0,
+      "player_damage": 95.0,
+      "gate_damage": 0.0,
+      "player_healed": 0.0,
+      "gate_healed": 0.0,
+      "completed_stages": [
+        31
+      ],
+      "rewards": [],
+      "initial_hit_damage": 92.0,
+      "shots": 522,
+      "attack_events": 522,
+      "observed_spawned": 22,
+      "observed_killed": 22,
+      "observed_escaped": 0,
+      "boss_battles": [
+        {
+          "name": "EK-9",
+          "appeared": 15.017,
+          "defeated": true,
+          "battle_seconds": 47.766000000000005,
+          "spawn_details": "EK-9 hp=49200 last=True"
+        }
+      ],
+      "initial_kill_all_enemies": true,
+      "initial_boss_kills": 3,
+      "restore_record": "Verified 8 backup keys. EditorPlaying=False UTC=2026-10-15T02:31:01.7391480Z",
+      "pending": [],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "label": "native_SteamCannon_final_module20",
+      "state": "verified_complete",
+      "plan": {
+        "label": "native_SteamCannon_final_module20",
+        "weapon": "SteamCannon",
+        "stage": "31",
+        "profile": "final_day11_ranged_fitted_speed_module20",
+        "seed": "77"
+      },
+      "result": "ending_reached_3",
+      "initial_hp": 100,
+      "initial_gate": 100.0,
+      "final_hp": 95,
+      "final_gate": 100.0,
+      "player_damage": 5.0,
+      "gate_damage": 0.0,
+      "player_healed": 0.0,
+      "gate_healed": 0.0,
+      "completed_stages": [
+        31
+      ],
+      "rewards": [],
+      "initial_hit_damage": 95.5999984741211,
+      "shots": 292,
+      "attack_events": 146,
+      "observed_spawned": 21,
+      "observed_killed": 21,
+      "observed_escaped": 0,
+      "boss_battles": [
+        {
+          "name": "EK-9",
+          "appeared": 14.833,
+          "defeated": true,
+          "battle_seconds": 19.284,
+          "spawn_details": "EK-9 hp=49200 last=True"
+        }
+      ],
+      "initial_kill_all_enemies": true,
+      "initial_boss_kills": 3,
+      "restore_record": "Verified 8 backup keys. EditorPlaying=False UTC=2026-10-15T02:31:38.7803500Z",
+      "pending": [],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "label": "native_SteamThrower_final_module20",
+      "state": "verified_complete",
+      "plan": {
+        "label": "native_SteamThrower_final_module20",
+        "weapon": "SteamThrower",
+        "stage": "31",
+        "profile": "final_day11_thrower_fitted_damage_module20",
+        "seed": "77"
+      },
+      "result": "ending_reached_3",
+      "initial_hp": 100,
+      "initial_gate": 100.0,
+      "final_hp": 92,
+      "final_gate": 100.0,
+      "player_damage": 8.0,
+      "gate_damage": 0.0,
+      "player_healed": 0.0,
+      "gate_healed": 0.0,
+      "completed_stages": [
+        31
+      ],
+      "rewards": [],
+      "initial_hit_damage": 23.880001068115234,
+      "shots": 658,
+      "attack_events": 329,
+      "observed_spawned": 25,
+      "observed_killed": 25,
+      "observed_escaped": 0,
+      "boss_battles": [
+        {
+          "name": "EK-9",
+          "appeared": 16.9,
+          "defeated": true,
+          "battle_seconds": 3.900000000000002,
+          "spawn_details": "EK-9 hp=49200 last=True"
+        }
+      ],
+      "initial_kill_all_enemies": true,
+      "initial_boss_kills": 3,
+      "restore_record": "Verified 8 backup keys. EditorPlaying=False UTC=2026-10-15T02:32:27.4095030Z",
+      "pending": [],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "label": "native_RailCraft_final_module20",
+      "state": "verified_complete",
+      "plan": {
+        "label": "native_RailCraft_final_module20",
+        "weapon": "RailCraft",
+        "stage": "31",
+        "profile": "final_day11_ranged_fitted_speed_module20",
+        "seed": "77"
+      },
+      "result": "ending_reached_3",
+      "initial_hp": 100,
+      "initial_gate": 100.0,
+      "final_hp": 95,
+      "final_gate": 100.0,
+      "player_damage": 5.0,
+      "gate_damage": 0.0,
+      "player_healed": 0.0,
+      "gate_healed": 0.0,
+      "completed_stages": [
+        31
+      ],
+      "rewards": [],
+      "initial_hit_damage": 382.0,
+      "shots": 152,
+      "attack_events": 76,
+      "observed_spawned": 21,
+      "observed_killed": 21,
+      "observed_escaped": 0,
+      "boss_battles": [
+        {
+          "name": "EK-9",
+          "appeared": 15.633,
+          "defeated": true,
+          "battle_seconds": 18.166999999999998,
+          "spawn_details": "EK-9 hp=49200 last=True"
+        }
+      ],
+      "initial_kill_all_enemies": true,
+      "initial_boss_kills": 3,
+      "restore_record": "Verified 8 backup keys. EditorPlaying=False UTC=2026-10-15T02:33:05.5267450Z",
+      "pending": [],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "label": "native_SteamGatling_final_module20",
+      "state": "verified_complete",
+      "plan": {
+        "label": "native_SteamGatling_final_module20",
+        "weapon": "SteamGatling",
+        "stage": "31",
+        "profile": "final_day11_ranged_module20",
+        "seed": "77"
+      },
+      "result": "ending_reached_3",
+      "initial_hp": 100,
+      "initial_gate": 100.0,
+      "final_hp": 89,
+      "final_gate": 100.0,
+      "player_damage": 11.0,
+      "gate_damage": 0.0,
+      "player_healed": 0.0,
+      "gate_healed": 0.0,
+      "completed_stages": [
+        31
+      ],
+      "rewards": [],
+      "initial_hit_damage": 22.600000381469727,
+      "shots": 2542,
+      "attack_events": 1271,
+      "observed_spawned": 20,
+      "observed_killed": 20,
+      "observed_escaped": 0,
+      "boss_battles": [
+        {
+          "name": "EK-9",
+          "appeared": 14.917,
+          "defeated": true,
+          "battle_seconds": 18.199999999999996,
+          "spawn_details": "EK-9 hp=49200 last=True"
+        }
+      ],
+      "initial_kill_all_enemies": true,
+      "initial_boss_kills": 3,
+      "restore_record": "Verified 8 backup keys. EditorPlaying=False UTC=2026-10-15T02:33:47.4658370Z",
+      "pending": [],
+      "errors": [],
+      "warnings": []
+    }
+  ],
+  "errors": []
+}

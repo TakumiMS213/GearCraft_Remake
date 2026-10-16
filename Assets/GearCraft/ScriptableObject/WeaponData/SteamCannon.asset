@@ -17,7 +17,7 @@ MonoBehaviour:
   description: "\u91CD\u3044\u84B8\u6C17\u7206\u767A\u3092\u8D77\u3053\u3059\u30ED\u30B1\u30C3\u30C8\u3092\u653E\u3064\u5927\u7832\u5F62\u306E\u5DE5\u623F\u6B66\u88C5\u3002"
   weaponType: 1
   coolTime: 1
-  baseDamage: 50
+  baseDamage: 57
   accDamageMultiplier: 0.8
   attackRange: 3
   bulletSpeed: 25

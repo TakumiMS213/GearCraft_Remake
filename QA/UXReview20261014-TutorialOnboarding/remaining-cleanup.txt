@@ -1,0 +1,1 @@
+8 original preferences and original GameView choices restored/verified before exiting Play. Guidance closed; parent must independently verify after Play exit.

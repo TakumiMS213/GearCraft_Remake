@@ -1,0 +1,5 @@
+case,profile,STR,frames,game_seconds,native_damage_events,event_damage,event_dps,hp_damage,hp_dps,cached_STR,part_count,flat_damage,attack_speed,bullet_double,spread_modifier,ricochet,bullet_size,module_damage
+STR2_none,none,2,600,10,600,120.000002,12.000000,112.5,11.25,2,0,0,1,False,0,0,1,0
+STR2_final_day11_melee,final_day11_melee,2,600,10,600,120.000002,12.000000,112.5,11.25,2,15,12,0.13807191,False,0,0,1,0
+STR20_none,none,20,600,10,600,1200.000000,120.000000,1200,120,20,0,0,1,False,0,0,1,0
+STR20_final_day11_melee,final_day11_melee,20,600,10,600,1200.000000,120.000000,1200,120,20,15,12,0.13807191,False,0,0,1,0

@@ -1,0 +1,2 @@
+id,weapon,stage,day,profile,seed,result,seconds,total_including_summons,killed,escaped_or_suicided,remaining,damage,shots,player_damage,gate_damage,boss_name,boss_seconds,boss_remaining_hp,average_game_dt,frames,scheduled_count,scheduled_killed,scheduled_escaped,scheduled_remaining,attack_events
+entry_SteamGatling_19_module0_seed77,SteamGatling,19,7,late_day7_ranged,77,cleared,29.517,20,20,0,0,2624.50,536,6.00,0.00,,-1.000,0.00,0.016667,1771,20,20,0,0,268

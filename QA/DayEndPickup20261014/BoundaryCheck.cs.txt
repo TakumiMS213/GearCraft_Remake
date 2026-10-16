@@ -1,0 +1,32 @@
+const string folder="QA/DayEndPickup20261014/";
+var flow=StageFlowManager.Instance;var materials=MaterialManager.Instance;var manager=UnityEngine.Object.FindFirstObjectByType<BonusCardsManager>();
+if(!UnityEditor.EditorApplication.isPlaying||flow==null||materials==null||EndingManager.IsLoadingEnding)throw new System.Exception("Initialized Main required");
+var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Public;
+var enemies=(System.Collections.Generic.List<EnemyController>)flow.GetType().GetField("activeEnemies",flags).GetValue(flow);
+GearCraft.Scripts.Items.DroppedMaterialItem drop=null;int baseline=materials.scrap,phase=0,checks=0;bool done=false;double started=UnityEditor.EditorApplication.timeSinceStartup,next=started;
+UnityEditor.EditorApplication.CallbackFunction tick=null;
+System.IO.File.WriteAllText(folder+"boundary-result.txt","Normal wave completion and final-stage completion branch. Final defeat flag is a fixture; stopping before ED loading.\n");
+System.Action<string> log=s=>System.IO.File.AppendAllText(folder+"boundary-result.txt",(UnityEditor.EditorApplication.timeSinceStartup-started).ToString("F2")+"s "+s+"\n");
+System.Action<bool,string> check=(ok,s)=>{if(!ok)throw new System.Exception(s);checks++;log("PASS "+s);};
+System.Action<int,bool> prepare=(stage,final)=>{manager.enabled=false;manager.enabled=true;enemies.Clear();flow.GetType().GetField("currentStage",flags).SetValue(flow,stage);flow.GetType().GetField("stagesSinceRest",flags).SetValue(flow,0);flow.GetType().GetField("stageLastEnemyKilled",flags).SetValue(flow,true);flow.GetType().GetField("stageCompletionTriggered",flags).SetValue(flow,false);flow.GetType().GetField("gateWasHit",flags).SetValue(flow,true);flow.GetType().GetField("finalBossDefeated",flags).SetValue(flow,final);flow.GetType().GetProperty("IsStageActive",flags).SetValue(flow,true,null);StageCounter.Instance.StageCount=stage;};
+System.Action<bool,string> finish=(passed,message)=>{if(done)return;done=true;UnityEditor.EditorApplication.update-=tick;manager.enabled=false;log((passed?"COMPLETE ":"FAILED ")+message+" checks="+checks);foreach(var row in System.IO.File.ReadAllLines(folder+"playerprefs-before.txt")){var p=row.Split('|');if(!bool.Parse(p[1]))PlayerPrefs.DeleteKey(p[0]);else if(p[0].Contains("Progress"))PlayerPrefs.SetString(p[0],System.Text.Encoding.UTF8.GetString(System.Convert.FromBase64String(p[2])));else PlayerPrefs.SetInt(p[0],int.Parse(p[2]));}PlayerPrefs.Save();typeof(GearCraft.Gallery.GalleryProgress).GetField("data",flags).SetValue(null,null);UnityEditor.EditorApplication.isPlaying=false;};
+tick=()=>{try{
+ double now=UnityEditor.EditorApplication.timeSinceStartup;if(now-started>10)throw new System.Exception("Watchdog");if(now<next)return;next=now+.15;
+ foreach(var s in UnityEngine.Object.FindObjectsByType<EnemySpawner>(FindObjectsSortMode.None))s.StopSpawning();foreach(var enemy in UnityEngine.Object.FindObjectsByType<EnemyController>(FindObjectsSortMode.None))enemy.gameObject.SetActive(false);
+ switch(phase){
+ case 0:
+  if(!flow.IsStageActive&&!manager.IsChoosingReward)return;
+  foreach(var item in UnityEngine.Object.FindObjectsByType<GearCraft.Scripts.Items.DroppedMaterialItem>(FindObjectsSortMode.None)){item.gameObject.SetActive(false);UnityEngine.Object.Destroy(item.gameObject);}
+  baseline=materials.scrap;prepare(1,false);
+  var player=GameObject.FindGameObjectWithTag("Player").transform;var go=UnityEngine.Object.Instantiate(UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/GearCraft/ScriptableObject/Prehubs/Drops/Drop_Scrap.prefab"),player.position+Vector3.right*20f,Quaternion.identity);drop=go.GetComponent<GearCraft.Scripts.Items.DroppedMaterialItem>();drop.Configure(MaterialManager.MaterialType.Scrap,1);drop.GetType().GetField("scatterForce",flags).SetValue(drop,0f);go.GetComponent<Rigidbody2D>().simulated=false;
+  flow.GetType().GetMethod("TryCompleteStage",flags).Invoke(flow,null);phase=1;next=now+.8;break;
+ case 1:
+  check(drop!=null&&!drop.IsPickupComplete,"normal-wave drop stays uncollected");check(!(bool)drop.GetType().GetField("isEndOfDayPickup",flags).GetValue(drop),"normal wave does not enable forced collection");check(materials.scrap==baseline,"normal wave does not add remote material");phase=2;break;
+ case 2:
+  if(!manager.IsChoosingReward)return;
+  check(drop!=null&&materials.scrap==baseline,"remote material remains during normal reward choice");check(flow.restResultReportUI==null||!flow.restResultReportUI.IsShowing,"normal wave opens reward rather than day report");prepare(flow.stageConfig.totalStages,true);flow.GetType().GetMethod("TryCompleteStage",flags).Invoke(flow,null);check((bool)flow.GetType().GetField("isCollectingRemainingMaterials",flags).GetValue(flow),"final-stage branch starts collection even before rest interval");phase=3;next=now+.9;break;
+ case 3:
+  check(drop==null&&materials.scrap==baseline+1,"final-stage branch collects remaining drop");check(!(bool)flow.GetType().GetField("isCollectingRemainingMaterials",flags).GetValue(flow),"final collection completes");check(!EndingManager.IsLoadingEnding,"verified before ED loads");finish(true,"Normal-wave and final-stage boundaries passed; preferences restored and Play stopped");break;
+ }
+ }catch(System.Exception ex){finish(false,ex.ToString());}};
+UnityEditor.EditorApplication.update+=tick;return "Scheduled normal-wave/final-stage boundary check with automatic cleanup";

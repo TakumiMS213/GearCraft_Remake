@@ -1,0 +1,20 @@
+diff --git a/Assets/GearCraft/Scripts/Craft/CraftManager.cs b/Assets/GearCraft/Scripts/Craft/CraftManager.cs
+index f9430a9..e78c6a6 100644
+--- a/Assets/GearCraft/Scripts/Craft/CraftManager.cs
++++ b/Assets/GearCraft/Scripts/Craft/CraftManager.cs
+@@ -14,6 +14,7 @@ using TMPro;
+ public class CraftManager : MonoBehaviour
+ {
+     public event Action<CraftRecipeSO> RecipeCrafted;
++    public event Action<CraftRecipeSO> RecipeSelected;
+     public event Action<CraftRecipeSO> CraftFailed;
+ 
+     public CraftRecipeSO SelectedRecipe => selectedRecipe;
+@@ -182,6 +183,7 @@ public void SelectRecipe(int index)
+ 
+         ApplyRecipeVisuals(selectedRecipe);
+         RefreshCraftControls();
++        RecipeSelected?.Invoke(selectedRecipe);
+     }
+ 
+     public bool TrySelectRecipe(CraftRecipeSO recipe)

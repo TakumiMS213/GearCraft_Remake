@@ -1,0 +1,66 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1425352c4609545668409183e6f64f57, type: 3}
+  m_Name: CraftTutorialData
+  m_EditorClassIdentifier:
+  craftSteps:
+  - title: "防衛を支える備え"
+    body: "「ScrapModule」があれば、毎日素材を確保できます。今の手持ちで作れるか、確かめておきましょう。"
+    targetName: "Recipe_ScrapModule|Material_lv1_drop|Material_Gear"
+    waitCondition: 3
+    learningGoal: "作りたいものを選び、所持数と必要数から素材の不足を判断できる。"
+    hint1: "手持ちの数が、作るために使う数を満たしているかが重要です。"
+    hint2: "この装置のレシピで、必要な素材と手持ちを見比べられます。"
+    hint3: "この装置を選んで、素材を確認してください。全てそろっていますか？"
+    areaTargetName: "CraftRecipeScrollView|Material_lv1_drop|Material_Gear"
+    independent: 0
+  - title: "素材を安定して確保する"
+    body: "この装置を仕上げて、明日からの素材集めに役立てましょう。"
+    targetName: "Recipe_ScrapModule|craft_button"
+    waitCondition: 1
+    learningGoal: "必要な素材を消費して機能を作成し、得られた効果を確認できる。"
+    hint1: "作成には材料を使いますが、完成すれば毎日の収入につながります。"
+    hint2: "作る装置と、使う材料に間違いがないか見ておきましょう。"
+    hint3: "この装置を選び、ハンマーを押せば作成できます。"
+    areaTargetName: "Result_ScrapModule|Material_lv1_drop|Material_Gear"
+    independent: 0
+  - title: "次の戦いに備える"
+    body: "次に何を備えるかは、あなた次第です。まだ持っていないものから、戦いに役立つものを選んで作りましょう。"
+    targetName: "craft_button"
+    waitCondition: 4
+    learningGoal: "効果と必要素材を読み、別のレシピを自分で選んで作成できる。"
+    hint1: "欲しい効果と、今ある素材で作れるか。その両方で選ぶとよいでしょう。"
+    hint2: "他のレシピにも目を通して、戦い方に合う効果を探してみてください。"
+    hint3: "選んだものの材料をそろえたら、ハンマーを押して仕上げましょう。"
+    areaTargetName: "CraftRecipeScrollView"
+    independent: 1
+  weaponCustomSteps:
+  - title: "一撃の威力を高める"
+    body: "敵を倒すのに手数がかかるなら、一撃の威力を高めましょう。攻撃力を上げるパーツを選んで、武器に組み込んでください。"
+    targetName: "ShopItem_Damage+1|GridArea"
+    waitCondition: 2
+    learningGoal: "目的に合う効果のパーツを選び、形に合う空きへ装着して武器を強化できる。"
+    hint1: "「ダメージ＋」の効果があれば、一撃の威力を高められます。"
+    hint2: "候補のパーツは、効果と必要な材料を見比べて選びましょう。"
+    hint3: "Damage Plateを、形が収まる空きマスへドラッグしてください。"
+    areaTargetName: "ShopArea|EffectSummary"
+    independent: 0
+  - title: "戦い方に合わせて改良する"
+    body: "威力を伸ばすか、攻撃の間隔を縮めるか。先ほどとは違うパーツで、戦い方に合う強化を加えましょう。"
+    targetName: "ShopArea|GridArea"
+    waitCondition: 5
+    learningGoal: "効果・必要素材・形を比較し、別のパーツで狙った性能をさらに高められる。"
+    hint1: "効果だけでなく、手持ちの材料と組み込める形かどうかも判断の材料です。"
+    hint2: "今の武器の性能と見比べれば、次に伸ばしたい部分が見えてきます。"
+    hint3: "選んだパーツを空きマスへドラッグして、性能の変化を確かめましょう。"
+    areaTargetName: "ShopArea|EffectSummary"
+    independent: 1

@@ -1,0 +1,184 @@
+// Unity MCP execute_code C# 6 method body. Main must be playing; other tests, flow/spawners and enemies must be stopped by caller.
+// Uses native colliders and PunkDriveManager.DamageLoop. No direct invocation of trigger/damage methods.
+// Leaves Main playing and restores all runtime settings changed here. No source assets or scene files are saved.
+const string punkFolder = "QA/WeaponBalance20261015/";
+const string punkResult = punkFolder + "punk-calibration.txt";
+const string punkProgress = punkFolder + "punk-calibration-progress.txt";
+const string punkCancel = punkFolder + "punk-calibration-cancel.txt";
+if (!UnityEditor.EditorApplication.isPlaying || UnityEditor.EditorApplication.isPaused)
+    throw new System.Exception("Unpaused Main Play mode required");
+if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "Main")
+    throw new System.Exception("Active Main scene required");
+if (System.IO.File.Exists(punkProgress) && System.IO.File.ReadAllText(punkProgress).StartsWith("RUNNING"))
+    throw new System.Exception("Punk calibration already running; write punk-calibration-cancel.txt to cancel");
+var punkPlayer = UnityEngine.Object.FindFirstObjectByType<PlayerController>();
+if (punkPlayer == null || punkPlayer.punkdrive == null)
+    throw new System.Exception("Existing player/PunkDrive required");
+var punkOriginal = punkPlayer.punkdrive;
+var punkSource = punkOriginal.GetComponent<PunkDriveManager>();
+var punkEnemyPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/GearCraft/ScriptableObject/Prehubs/Enemy/G-1.prefab");
+if (punkSource == null || punkEnemyPrefab == null) throw new System.Exception("Native Punk/G-1 missing");
+if (Physics2D.GetIgnoreLayerCollision(punkOriginal.layer, punkEnemyPrefab.layer))
+    throw new System.Exception("Native Punk/Enemy layers do not collide; calibration cannot silently override layers");
+System.IO.Directory.CreateDirectory(punkFolder);
+if (System.IO.File.Exists(punkCancel)) throw new System.Exception("Remove stale cancel sentinel before starting");
+var punkFlags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public;
+var punkCachedSTR = typeof(PunkDriveManager).GetField("STR", punkFlags);
+var punkLoops = typeof(PunkDriveManager).GetField("activeCoroutines", punkFlags);
+bool punkPlayerEnabledBefore = punkPlayer.enabled;
+int punkPlayerSTRBefore = punkPlayer.STR;
+bool punkOriginalActiveBefore = punkOriginal.activeSelf;
+float punkTimeScaleBefore = Time.timeScale;
+float punkCaptureBefore = Time.captureDeltaTime;
+float punkFixedBefore = Time.fixedDeltaTime;
+Vector3 punkSourceScale = punkOriginal.transform.lossyScale;
+int[] punkFPS = { 60, 60, 30, 60 };
+int[] punkInitialSTR = { 0, 10, 10, 0 };
+string[] punkLabels = { "STR0_60fps", "STR10_60fps", "STR10_30fps", "STR0_then10_60fps" };
+int punkCase = 0, punkPhase = 0, punkPhaseFrame = 0, punkLastFrame = -1, punkMeasureFrame = 0, punkNextProgressFrame = 0;
+float punkInitialHP = 0f, punkMeasureTime = 0f, punkMidHP = 0f;
+bool punkCacheChanged = false, punkDone = false;
+double punkStarted = UnityEditor.EditorApplication.timeSinceStartup;
+double punkLastAdvanced = punkStarted;
+GameObject punkClone = null, punkTargetObject = null;
+PunkDriveManager punkManager = null;
+EnemyController punkEnemy = null;
+UnityEditor.EditorApplication.CallbackFunction punkTick = null;
+var punkRows = new System.Collections.Generic.List<string>();
+System.IO.File.WriteAllText(punkResult,
+    "Native PunkDrive calibration, four 10-game-second conditions. Enemy is fixed, high HP, AI disabled; native collision/DamageLoop retained.\n" +
+    "VFX only suppressed on disposable Punk clones. Player input disabled during test. No weapon/balance source values changed.\n" +
+    "captureDeltaTime sets game-frame duration; this is controlled simulation frame-rate sensitivity, not a hardware FPS benchmark.\n" +
+    "original captureDeltaTime=" + punkCaptureBefore + " fixedDeltaTime=" + punkFixedBefore + " timeScale=" + punkTimeScaleBefore + "\n" +
+    "source damageAmount=" + typeof(PunkDriveManager).GetField("damageAmount", punkFlags).GetValue(punkSource) +
+    " damageInterval=" + typeof(PunkDriveManager).GetField("damageInterval", punkFlags).GetValue(punkSource) + "\n");
+System.Action<string> punkLog = s => System.IO.File.AppendAllText(punkResult, s + "\n");
+System.Action punkDestroyCase = () => {
+    if (punkClone != null) { punkClone.SetActive(false); UnityEngine.Object.Destroy(punkClone); }
+    if (punkTargetObject != null) { punkTargetObject.SetActive(false); UnityEngine.Object.Destroy(punkTargetObject); }
+    punkClone = null; punkTargetObject = null; punkManager = null; punkEnemy = null;
+};
+System.Action<bool, string> punkFinish = (passed, reason) => {
+    if (punkDone) return;
+    punkDone = true;
+    UnityEditor.EditorApplication.update -= punkTick;
+    punkDestroyCase();
+    Time.captureDeltaTime = punkCaptureBefore;
+    Time.timeScale = punkTimeScaleBefore;
+    Time.fixedDeltaTime = punkFixedBefore;
+    if (punkPlayer != null) { punkPlayer.STR = punkPlayerSTRBefore; punkPlayer.enabled = punkPlayerEnabledBefore; }
+    if (punkOriginal != null) punkOriginal.SetActive(punkOriginalActiveBefore);
+    string end = (passed ? "COMPLETE " : "FAILED ") + reason + "; runtime settings restored; Play remains active if caller has not stopped it";
+    punkLog(end);
+    System.IO.File.WriteAllText(punkProgress, end + "\n");
+};
+punkPlayer.enabled = false;
+punkOriginal.SetActive(false);
+Time.timeScale = 1f;
+System.IO.File.WriteAllText(punkProgress, "RUNNING preparing\n");
+punkTick = () => {
+    try {
+        double punkNow = UnityEditor.EditorApplication.timeSinceStartup;
+        if (!UnityEditor.EditorApplication.isPlaying) { punkFinish(false, "Play stopped by caller"); return; }
+        if (System.IO.File.Exists(punkCancel)) { punkFinish(false, "Cancelled by sentinel"); return; }
+        if (punkNow - punkStarted > 240.0) throw new System.Exception("240s wall-clock watchdog");
+        if (Time.frameCount == punkLastFrame) {
+            if (punkNow - punkLastAdvanced > 30.0) throw new System.Exception("Game frames did not advance for 30s");
+            return;
+        }
+        punkLastFrame = Time.frameCount;
+        punkLastAdvanced = punkNow;
+        if (punkPlayer == null || punkOriginal == null) throw new System.Exception("Original player/Punk lost");
+        if (punkPhase == 0) {
+            Time.captureDeltaTime = 1f / punkFPS[punkCase];
+            punkPlayer.STR = punkInitialSTR[punkCase];
+            Vector3 arena = new Vector3(1000f + punkCase * 30f, 1000f, 0f);
+            punkClone = UnityEngine.Object.Instantiate(punkOriginal, arena, Quaternion.identity);
+            punkClone.name = "QA_PunkCalibration_" + punkLabels[punkCase];
+            punkClone.transform.SetParent(null, true);
+            punkClone.transform.localScale = punkSourceScale;
+            punkManager = punkClone.GetComponent<PunkDriveManager>();
+            punkManager.HitEffect = null;
+            // Original was inactive before cloning, so native Start has not run yet.
+            punkClone.SetActive(true);
+            punkPhase = 1;
+            punkPhaseFrame = Time.frameCount;
+            System.IO.File.WriteAllText(punkProgress, "RUNNING " + punkLabels[punkCase] + " warming native Start\n");
+            return;
+        }
+        if (punkPhase == 1) {
+            if (Time.frameCount - punkPhaseFrame < 5) return;
+            float cached = (float)punkCachedSTR.GetValue(punkManager);
+            if (cached != punkInitialSTR[punkCase]) throw new System.Exception("Native Start STR mismatch: " + cached);
+            punkTargetObject = UnityEngine.Object.Instantiate(punkEnemyPrefab, punkClone.transform.position, Quaternion.identity);
+            punkTargetObject.name = "QA_PunkCalibration_G1";
+            punkEnemy = punkTargetObject.GetComponent<EnemyController>();
+            // Prevent Start from attaching moving AI/registering progression; TakeDamage remains the native method.
+            punkEnemy.enabled = false;
+            punkEnemy.HP = 1000000f;
+            typeof(EnemyController).GetField("galleryEncounterRecorded", punkFlags).SetValue(punkEnemy, true);
+            var body = punkTargetObject.GetComponent<Rigidbody2D>();
+            body.gravityScale = 0f;
+            body.constraints = RigidbodyConstraints2D.FreezeAll;
+            body.linearVelocity = Vector2.zero;
+            body.angularVelocity = 0f;
+            body.simulated = true;
+            body.WakeUp();
+            Physics2D.SyncTransforms();
+            punkPhase = 2;
+            punkPhaseFrame = Time.frameCount;
+            return;
+        }
+        if (punkPhase == 2) {
+            var loops = (System.Collections.IDictionary)punkLoops.GetValue(punkManager);
+            if (loops.Count != 1) {
+                if (Time.frameCount - punkPhaseFrame > punkFPS[punkCase] * 2)
+                    throw new System.Exception("Native overlap failed to establish exactly one damage coroutine; count=" + loops.Count);
+                return;
+            }
+            // Begin after initial trigger/startup frames; measure an exact frame interval thereafter.
+            punkInitialHP = punkEnemy.HP;
+            punkMeasureFrame = Time.frameCount;
+            punkMeasureTime = Time.time;
+            punkNextProgressFrame = punkMeasureFrame + punkFPS[punkCase];
+            punkCacheChanged = false;
+            punkMidHP = punkInitialHP;
+            punkPhase = 3;
+            punkLog("START " + punkLabels[punkCase] + " cachedSTR=" + punkCachedSTR.GetValue(punkManager) +
+                " frame=" + punkMeasureFrame + " hp=" + punkInitialHP + " nativeDamageLoops=" + loops.Count);
+            return;
+        }
+        if (punkPhase == 3) {
+            int frames = Time.frameCount - punkMeasureFrame;
+            if (punkCase == 3 && !punkCacheChanged && frames >= punkFPS[punkCase] * 5) {
+                punkMidHP = punkEnemy.HP;
+                punkPlayer.STR = 10;
+                punkCacheChanged = true;
+                punkLog("MID STR0_then10_60fps player.STR=10 cachedSTR=" + punkCachedSTR.GetValue(punkManager) + " frame=" + frames);
+            }
+            if (Time.frameCount >= punkNextProgressFrame) {
+                System.IO.File.WriteAllText(punkProgress, "RUNNING " + punkLabels[punkCase] + " frame=" + frames +
+                    "/" + (punkFPS[punkCase] * 10) + " damage=" + (punkInitialHP - punkEnemy.HP) + "\n");
+                punkNextProgressFrame = Time.frameCount + punkFPS[punkCase];
+            }
+            if (frames < punkFPS[punkCase] * 10) return;
+            float elapsed = Time.time - punkMeasureTime;
+            float damage = punkInitialHP - punkEnemy.HP;
+            float cached = (float)punkCachedSTR.GetValue(punkManager);
+            string row = "RESULT " + punkLabels[punkCase] + " frames=" + frames + " gameSeconds=" + elapsed.ToString("F4") +
+                " damage=" + damage.ToString("F4") + " dps=" + (damage / elapsed).ToString("F4") +
+                " cachedSTR=" + cached + " playerSTR=" + punkPlayer.STR + " postChangeDamage=" + (punkMidHP - punkEnemy.HP);
+            punkRows.Add(row);
+            punkLog(row);
+            if (punkInitialSTR[punkCase] == 0 && damage != 0f) throw new System.Exception("STR0 clone unexpectedly damaged enemy");
+            if (punkInitialSTR[punkCase] == 10 && damage <= 0f) throw new System.Exception("STR10 clone dealt no damage");
+            if (cached != punkInitialSTR[punkCase]) throw new System.Exception("Cached STR unexpectedly changed");
+            punkDestroyCase();
+            punkCase++;
+            if (punkCase >= punkFPS.Length) { punkFinish(true, "four native-physics cases recorded"); return; }
+            punkPhase = 0;
+        }
+    } catch (System.Exception ex) { punkFinish(false, ex.ToString()); }
+};
+UnityEditor.EditorApplication.update += punkTick;
+return "Scheduled Punk calibration: 4 x 10 game seconds, native collision, automatic restore; see " + punkProgress;

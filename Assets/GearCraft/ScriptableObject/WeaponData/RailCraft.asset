@@ -17,8 +17,9 @@ MonoBehaviour:
   description: "\u6975\u5F37\u306E\u84B8\u6C17\u5727\u306B\u3088\u308A\u8D85\u9AD8\u901F\u306E\u8CAB\u901A\u5F3E\u3092\u6253\u3061\u51FA\u3059\u6B66\u5668\u3002\n\u5168\u5DE5\u623F\u6B66\u88C5\u306E\u4E2D\u3067\u6700\u901F\u306E\u5F3E\u901F\u3092\u8A87\u308B\u3002"
   weaponType: 1
   coolTime: 2
-  baseDamage: 150
-  accDamageMultiplier: 1
+  baseDamage: 300
+  accDamageMultiplier: 10
+  flatDamageMultiplier: 1
   attackRange: 10
   bulletSpeed: 180
   bulletPrefab: {fileID: 3699647882942459135, guid: 9c3a9aa5c0f44e5abf4359f71a04be11, type: 3}

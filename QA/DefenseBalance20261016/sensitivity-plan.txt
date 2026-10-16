@@ -1,0 +1,59 @@
+IC 速度構成・持込資源の感度試験（2026-10-16）
+
+目的
+通常14条件から独立し、資源中央値モデル内で購入費を賄える速度重視の上位構成と有限の持込Gearで、IC防衛が成立する余地を調べる。実プレイヤーの平均装備・平均成功率の測定ではない。部品の棚抽選確保率は未検証。
+
+ケース
+sensitivity-cases.csv：main batchと同じ14列、seed77/101/202の3行。labelはgate_sensitivity_IC408_GearCraft_speed6_gear8_seed{seed}で独立させる。
+全行 GearCraft / Day3 / 日頭wave7→IC wave9 / ic_speed_budget / STR4・ACC4 / Module0 / HP100・門100 / Punk・ScrapModuleあり / Repair・Barrierなし。
+sensitivity-extra-setup.csv：各labelに初期Gear8、BOOST上限6、routeファイル名を対応付ける。
+CSVにinitial_gear列を増やすと現在のmain batchの厳密header検証が拒否するため、本体14列と追加設定を分けた。mainのbatch-cases.csv / progression / execution-casesには一切追加しない。
+
+比較対象との差
+primary gate-aware IC：early_day3_common（flat6/速度.765）、日頭Gear0、BOOST最大2。
+追加感度試験：ic_speed_budget（flat1/速度.5527125）、日頭Gear8、BOOST最大6。
+初期STR/ACC・HP/門・モジュール条件・反応判断/迎撃/回避の頻度・native攻撃/敵AI・日中の報酬選択方針は同じ。
+構成と持込資源/BOOST上限を同時変更するため、差を「速度パーツだけ」「BOOSTだけ」の効果とは呼ばない。同seedでも戦闘による乱数消費で前座・報酬候補が異なり得る。3seedは少数の頑健性確認で、母集団成功率の推定には使わない。
+
+用意したroute
+ReactiveGateSpeedSurvivalRoute.cs.txt は ReactiveGateSurvivalRoute.cs.txt のコピー。実行ロジックの変更は reactiveBoostBudget=2→6 の1か所だけ。
+header / per-case meta / bot_modeの文言を6回・持込Gear8・上位構成の感度試験へ更新。generatorが検証するreactive_gate_v1 markerは保持。
+5.5秒のBOOST再判断間隔・native残時間終了待ち・visible/near脅威判定・gate迎撃・dash・弾/近接・有限watchdog・cleanupは変更なし。route自身は素材を配らない。
+コピー元/先のSHA256と差分はsensitivity-build-manifest.json / sensitivity-route.diff.txt。
+
+rootの追加setup（mainrunnerを変更しない）
+通常bootstrapで、各CSV行に対応する GearCraft,7,ic_speed_budget,seed をTitleからMainへ準備する。READY・timeScale0・戦闘開始前に通常の初期値を適用した後、下記を一度だけ行い、それからCaptureDayStartSnapshot、最後に追加routeを呼ぶ。
+
+var sensitivityMaterials = MaterialManager.Instance;
+if (sensitivityMaterials == null || Time.timeScale != 0f ||
+    StageCounter.Instance == null || StageCounter.Instance.StageCount != 7 ||
+    StageFlowManager.Instance == null || StageFlowManager.Instance.IsStageActive)
+    throw new System.Exception("Sensitivity carry requires paused pre-battle Main wave7");
+if (sensitivityMaterials.GetMaterial(MaterialManager.MaterialType.Gear) != 0)
+    throw new System.Exception("Expected cleared initial Gear; refusing duplicate carry setup");
+sensitivityMaterials.gear = 8;
+// Existing root setup follows with CaptureDayStartSnapshot before invoking route.
+
+初期値として公開fieldへ代入する理由：AddMaterialはStageFlowManager.RecordMaterialGainedへ入り、過去日からの持込を当日の獲得素材として計上してしまう。MaterialManager.LateUpdateは表示変更を通知する。routeのinitial-materials.jsonはgear8を記録する。実行setupログにも「initial_carry Gear0→8; model-budgeted; before battle」と明記する。
+戦闘開始後にはGear/HP/門を追加しない。ボス出現時には前座回収や報酬でGear8より多くなってよい。BOOSTは手持ち在庫をnative UseMaterialで1個ずつ消費し、通算6回まで。
+
+独立batch（生成済み）
+python3 QA/DefenseBalance20261016/build_sensitivity_batch.py
+これにより最新のnative bootstrap / template / 6回routeを読み、BatchDefenseSensitivity.cs.txt と sensitivity-batch-build-manifest.json のみへ出力する。main generatorの小さなpure helper関数はimportするがmain()を呼ばないので、共通manifestを一時上書きすることもない。通常14条件のrunner/manifest/template/planなど9ファイルを生成前後のバイトhashで保持確認する。
+生成版だけSnapshot前へ上記Gear8処理とinitial_carryイベントを追加。route前にGear8/flat1/速度.5527125/STR4/ACC4/HP100/門100/Module0/モジュールflagsをValidateし、sensitivity_validatedイベントへ記録する。sidecarを含む入力hashを実行時に確認し、変更があれば再生成を要求する。CSVのCRLFを含めFile.ReadAllBytesと同じhashになることも静的確認済み。
+独立batchを使う場合、追加setupを外から二重に実行しない。生成版はGear0を期待し、既に8なら安全に停止する。main batch完了後、安定したTitle Playから生成版をrootが実行する。RUNNING/cancel guard、既存result/部分ログの上書き拒否、scene安定待ち、native cleanup、Watchdogは最新templateを保持する。
+batch-progressやnative-survival-progressなど共通の実行調整ファイルは順次利用するため、通常14条件と同時実行しない。イベント類はsession timestampと独立case labelで区別する。3条件終了後は既存のroot復元手順でPrefs8・Editor設定・開始画面を戻す。
+
+実測後の採否チェック
+初期profile/flat1/速度.5527125/gear8/HP100/門100/STR4/ACC4を確認。
+IC初期HP13600、stage9/scaling_stage7を確認。
+BOOST eventは最大6回、各before→afterが-1、速度は通常.5527125/BOOST.27635625、終了解除時には通常へ復帰。
+出現→撃破/門破壊の秒数、開始/終了HP・門、IC残HP、攻撃イベント数、射程外/入力block時間を集計。
+6回はnative約5秒×6で、5.5秒間隔のため隙間があり、既存約31.2秒の門締切を連続BOOSTで覆う条件ではない。この制限は変更しない。
+撃破時は native_day_report→CraftSpace 到達を成功条件とし、HP/門0、timeout、scene/lifecycle errorを区別する。後者を火力不足と誤認しない。
+
+資源根拠
+ic-speed-budget.txt / ic-speed-budget-validation.json。新部品S25/G3、旧部品購入費も保守的に全額差し引いて朝S31/G20が残る例ではGear8持込は範囲内。旧earlyパーツ予算S24より1高い別条件。詳細な棚抽選の確保率や実プレイヤー行動は未測定。
+
+実行状況
+独立batchを生成し、CSV構造・予算/メタデータ・入力byte hash・保護対象9ファイル不変・git diff --checkを確認。Unity compile / Play / MCPは未実施。

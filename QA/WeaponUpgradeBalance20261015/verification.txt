@@ -1,0 +1,46 @@
+パーツ強化版・計測整合性の独立検証
+生成UTC: 2026-10-15T02:27:02.221152+00:00
+
+完了CSV行のみ検証し、実行中のcaseは未完了として扱います。何度でも再実行できます。
+damage_per_hitはnative StatusManagerによる初期計算値のログです。全命中のHP差を個別に記録した検証ではありません。GearCraftは初期剣の値で、途中の斧切替を一つの値に平均していません。
+clearedと全撃破を区別し、逃走・自爆を数えます。mode=boss/maxSeconds=60は意図的観測打切りです。補充ありの処理時間を通常クリアタイムにしません。
+
+native購入検証: 22/22構成、件数/費用/効果不一致0件。
+購入検証の費用列はパーツ分です。module20条件の追加費UpgradeCore12＋中級モジュールコア4は別途必要で、この購入ログだけではモジュール4個の作成操作まで確認したことにはなりません。
+nativeダメージ係数ログ: 8武器、基礎/ACC/flat/module不一致0件。
+Punkのパーツ校正: 4/4条件、不一致0件、runtime復元記録=True。
+  STR2_none: nativeイベントDPS=12.0、イベント数=600、HP減算との差=-7.500001999999995。
+  STR2_final_day11_melee: nativeイベントDPS=12.0、イベント数=600、HP減算との差=-7.500001999999995。
+  STR20_none: nativeイベントDPS=120.0、イベント数=600、HP減算との差=0.0。
+  STR20_final_day11_melee: nativeイベントDPS=120.0、イベント数=600、HP減算との差=0.0。
+
+[route] 完了98/98件、異常0件、注意0件。
+完了caseの設定効果・初期1ヒット値・shots/attack_events・敵収支・予定初期HPを照合。対照計画比較22組、スポーン位置比較480件。
+実Y位置最大差=0.33399999999999985、実出現時刻最大差=0.016659999999999897秒、予定からの最大遅れ=0.016799999999999926秒。
+実行中sidecar: 
+正規採用: route_GearCraft_4 は route-fix の完了結果と全sidecarを優先。元記録を変更していません。
+
+[probes] 完了77/77件、異常0件、注意0件。
+完了caseの設定効果・初期1ヒット値・shots/attack_events・敵収支・予定初期HPを照合。対照計画比較7組、スポーン位置比較166件。
+実Y位置最大差=0.33299999999999996、実出現時刻最大差=0.016601000000000088秒、予定からの最大遅れ=0.01689000000000007秒。
+実行中sidecar: 
+
+[fitted-final] 完了6/6件、異常0件、注意0件。
+完了caseの設定効果・初期1ヒット値・shots/attack_events・敵収支・予定初期HPを照合。対照計画比較1組、スポーン位置比較19件。
+実Y位置最大差=0.0、実出現時刻最大差=1.600000000046009e-05秒、予定からの最大遅れ=0.016004000000000573秒。
+実行中sidecar: 
+旧記録の履歴異常（正規結果から除外）: {"batch": "route", "case": "route_GearCraft_4", "kind": "unexpected_unscheduled_enemies", "scheduled": 21, "observed": 39, "extra": 18}
+正規バッチ横断のstage/seed出現列比較: 6組、不一致0組。
+
+履歴の破棄や結果の差替えはこのスクリプトでは行いません。再測定・正式マージ後に再実行すると、その時点の正規CSVを評価します。
+
+初回asyncと報酬UI残留の影響監査：
+最初のroute_GearCraft_4原記録は予定21体へbootstrap由来の通常スポーン18体が重なったため不採用。route-fix完了結果があれば単独再測定の21/21体を優先し、元の異常は履歴として分離します。以後は通常wave完了処理が報酬選択のawaitで停止し、同じ余剰出現は検出されていません。
+報酬UIは選択しない限りTime.timeScaleや攻撃能力を変更せず、入力blockを参照する通常Player.Update/FixedUpdateはrunner中disabled。native敵AI・弾・近接判定にそのフラグ参照はありません。case2以降の通常戦闘結果は整合性検証を通った範囲で使用し、残留UI入りの画像は通常UXの根拠には使用しません。
+遅延したカード抽選がwave5の共有RNGを消費した可能性はありますが、lv1敵のAIは乱数を使わず、射撃RNGは分離し各caseで再seed。素材抽選差はあり得るものの、購入・BOOSTなしの固定ビルドの直接火力に結びつく経路は見つかりません。
+親担当のManager無効化はOnDisableによるpromiseのcancelです（未解決維持ではありません）。await後のstage++/StartNextStageへ進まないこととruntimeのIsStageActive=falseは親担当が確認済み。詳細はindependent-runner-review.txt、実介入はruntime-interventionsの記録を参照。
+
+速度・二重弾・精度の解釈：
+Gatlingの基礎間隔0.03秒×0.39168=約0.01175秒は、60gamefpsの1フレーム約0.01667秒より短く、1フレーム1攻撃の上限に達します。さらに速度だけを上げても攻撃回数は毎秒60回を超えません。Twinは1攻撃の弾数、Precisionは散布角を変えるので、速度のみの効果と分けて評価します。
+描画解像度は途中960×540から480×270へ変更されています。同じ16:9、captureDeltaTime=1/60と物理stepを維持し、botはワールド座標照準です。実時間描画性能や解像度別UXの比較には使いません。介入履歴はruntime-interventions.txt。
+再実行: python3 -B QA/WeaponUpgradeBalance20261015/verify_measurements.py

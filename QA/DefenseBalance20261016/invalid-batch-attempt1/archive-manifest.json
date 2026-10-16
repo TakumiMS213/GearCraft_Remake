@@ -1,0 +1,106 @@
+{
+  "utc": "2026-10-16T03:14:19.774817+00:00",
+  "reason": "Continuous-Play attempt1: stale Ending loading flag; subsequent native manager loss. Excluded from weapon-defense outcomes. Valid IC retained in parent folder.",
+  "files": [
+    {
+      "name": "gate_BB413_GearCraft_seed77-final-materials.json",
+      "sha256": "b674cc0f4c1db7c71c4dda5dbc0c94931ad3740e728a51d9ad56480e3b608855"
+    },
+    {
+      "name": "gate_BB413_GearCraft_seed77-initial-status.json",
+      "sha256": "bd109a5c6ab1d1cf7506a7be9a747dfb8bc892ecf61b0d8632dba76090f7c337"
+    },
+    {
+      "name": "gate_BB413_GearCraft_seed77-waves.csv",
+      "sha256": "4a3d141dc8f69a4260af678d61f8db0aff0d9c642f274374cc05952a04504236"
+    },
+    {
+      "name": "gate_BB413_GearCraft_seed77-bosses.csv",
+      "sha256": "4b65486e7dd66ff9970c9406499911318a3a877625ba4da460d13db8e2be1326"
+    },
+    {
+      "name": "gate_BB413_GearCraft_seed77-events.csv",
+      "sha256": "9cc0ba330625679dcd3cf887f498fb4bc250d03c54e9eaf3e4869dd428dbe17c"
+    },
+    {
+      "name": "gate_BB413_GearCraft_seed77-restore-pending.txt",
+      "sha256": "11103013372c1737f5368771a5970de2f21430e40c9b437cccef82e3152e2c16"
+    },
+    {
+      "name": "gate_BB413_GearCraft_seed77-meta.txt",
+      "sha256": "ea727fdf0bc94d9b51297d80b273e276d89ab3a2b7338d7cda43553e25dafeb5"
+    },
+    {
+      "name": "gate_BB413_GearCraft_seed77-bootstrap-config.txt",
+      "sha256": "c4473e08afb3d7bf04e64348ae7ee5e5aaeceaf00a92c15eedca66654e91bb24"
+    },
+    {
+      "name": "gate_BB413_GearCraft_seed77-samples.csv",
+      "sha256": "99d37fd5b52df3a7b523d5db4fcd79a7a2c18aeea85e49a1a6a1a2f61cdca0fc"
+    },
+    {
+      "name": "gate_BB413_GearCraft_seed77-initial-materials.json",
+      "sha256": "31de711603d39904fdab6362afff4970c7956f265afd109c52305ea53da07a14"
+    },
+    {
+      "name": "gate_BB413_GearCraft_seed77-final-status.json",
+      "sha256": "063b7abd1147921abfe1505c910b2db332f1e1b1564fb4c556fe6e66b4014459"
+    },
+    {
+      "name": "gate_BB413_GearCraft_seed77-result.txt",
+      "sha256": "3e12a01d89bc4e0622e709e4c334d3ff50eb0502293be6477f27dc863223706e"
+    },
+    {
+      "name": "gate_BB413_SteamCannon_seed77-errors.txt",
+      "sha256": "357977c6984ca940798c39052809aa65722f0593e695f1952bf3fc04f22cd08a"
+    },
+    {
+      "name": "gate_BB413_SteamCannon_seed77-samples.csv",
+      "sha256": "c74ab8fbfe9abe5f0486ffcbb310734ed0e0c28bc07bc08191ca22c13f421f15"
+    },
+    {
+      "name": "gate_BB413_SteamCannon_seed77-bootstrap-config.txt",
+      "sha256": "484f4c47c422b3a5b845b0343a67e9a880328186421bc5ad69fb4682c88994a1"
+    },
+    {
+      "name": "gate_BB413_SteamCannon_seed77-result.txt",
+      "sha256": "7955f96ccbdef60da868eb2b03be9b361c415e4bb2baa873c29f4bc245f591cc"
+    },
+    {
+      "name": "gate_BB413_SteamCannon_seed77-meta.txt",
+      "sha256": "ea727fdf0bc94d9b51297d80b273e276d89ab3a2b7338d7cda43553e25dafeb5"
+    },
+    {
+      "name": "gate_BB413_SteamCannon_seed77-initial-status.json",
+      "sha256": "e606aaacbe13d8e2cd195e7194ddb081dc8c43b611bbb66961febd8d234dfca5"
+    },
+    {
+      "name": "gate_BB413_SteamCannon_seed77-initial-materials.json",
+      "sha256": "31de711603d39904fdab6362afff4970c7956f265afd109c52305ea53da07a14"
+    },
+    {
+      "name": "gate_BB413_SteamCannon_seed77-restore-pending.txt",
+      "sha256": "11103013372c1737f5368771a5970de2f21430e40c9b437cccef82e3152e2c16"
+    },
+    {
+      "name": "gate_BB413_SteamCannon_seed77-waves.csv",
+      "sha256": "5fded56f06b742db7184ecd070d3f9d9471688124ccc6a9480e3779fbc7e85ee"
+    },
+    {
+      "name": "gate_BB413_SteamCannon_seed77-final-status.json",
+      "sha256": "e606aaacbe13d8e2cd195e7194ddb081dc8c43b611bbb66961febd8d234dfca5"
+    },
+    {
+      "name": "gate_BB413_SteamCannon_seed77-final-materials.json",
+      "sha256": "31de711603d39904fdab6362afff4970c7956f265afd109c52305ea53da07a14"
+    },
+    {
+      "name": "gate_BB413_SteamCannon_seed77-events.csv",
+      "sha256": "925aebacea275d987534d2097ab9e6c849af80e36f5d8a586626428022ad84fb"
+    },
+    {
+      "name": "gate_BB413_SteamCannon_seed77-bosses.csv",
+      "sha256": "4b65486e7dd66ff9970c9406499911318a3a877625ba4da460d13db8e2be1326"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+result=player_dead
+start_hp=100
+start_gate=100
+end_hp=-1
+end_gate=80
+start_stage=16
+last_stage=16
+completed_native_waves=0
+rewards_selected=0
+game_seconds=78.017
+wall_seconds=10.435
+shots=0
+attack_events=0
+player_damage=101.00
+gate_damage=20.00
+player_healed=0.00
+gate_healed=0.00

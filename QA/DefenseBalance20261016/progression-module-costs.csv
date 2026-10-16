@@ -1,0 +1,5 @@
+day,attack_module_count,moduleDamage,attack_UpgradeCore,attack_ModuleCore_lv2,repair_Scrap,repair_ModuleCore_lv1,barrier_Gear,barrier_ModuleCore_lv2,notes
+3,0,0,0,0,0,0,0,0,one-time cumulative costs; part costs separate
+6,0,0,0,0,10,1,0,0,one-time cumulative costs; part costs separate
+10,4,20,12,4,10,1,5,1,one-time cumulative costs; part costs separate
+11,4,20,12,4,10,1,5,1,one-time cumulative costs; part costs separate

@@ -1,0 +1,55 @@
+2026-10-15 完了追記（11:36 JST）
+
+再接続後の残作業は完了しました。以下の旧再開手順は履歴であり、再実行は不要です。
+・実パーツ購入/配置22構成、正規戦闘比較181件（route98/probes77/fitted6）、Punk接触4件、通常耐久native16区間を完了。
+・Gear最終Module0は同条件の追加位置診断を1件実行し、ED3へ到達。元試験の攻撃停止は再現せず、原因未確定として報告。
+・RestoreSessionの最終成功UTC 2026-10-15T02:35:57.1989570Z。8 PlayerPrefs一致、Title clean/Play停止、Full HD index3/元GameView一覧、vSync1/capture0/timeScale1/target-1/backgroundTrue/logger3を復元確認。
+・Rail変更後の270ファイルに追加差分なし。git diff --check通過。native試験開始以降のEditor.log追記41,518,809 bytesにException/CSコンパイルエラー/Assertion/Crash/Fatalの検出なし。
+・production変更は引き続きRail ACC係数1→10と固定加算倍率の分離、計3ファイルのみ。
+・最終根拠はreport.txt、verification.json、native-verification.json、source-verification.json、final-restoration.txt。Gear診断分析は独立補足として残す。
+
+―― 以下、切断時点の旧メモ ――
+
+2026-10-15 再開用メモ（MCP復旧待ち）
+
+本番変更はRailCraftのACC+1につきダメージ+10だけ。WeaponDataSO/StatusManager/RailCraft.assetの3ファイル。固定加算パーツの倍率はRail=1で維持。Unityコンパイルと8武器の係数を実行中に確認済み。
+
+完了済み
+・実UpgradeGridManager.TryPurchaseAndPlaceによる元16構成の配置/費用/効果確認。
+・route 98件、probes 77件。全完了。route初回GearCraft wave4だけnative初期spawnが18体混入したため、route-fix 1件を再測定し正規採用。旧記録は保管。
+・正規175件は敵収支・パーツ・初期ダメージ・発射数の不一致0。古いQA/WeaponBalance20261015は変更していない。
+・比較中HP/門は補充、各wave reset。通常の連続生存プレイではない。
+・source-snapshotから270ファイル差分なし。snapshotは依頼されたRail変更後。git diff --check通過。
+
+現在のEditor状態
+最後のcallbackはbenchmark-progress.txtに COMPLETE All cases finished cases=77/77 を記録して終了。
+Main Playのまま、元のTime.timeScale=0へ復元されている見込み（切断後なのでMCPで再確認すること）。本番Scene/assetの保存はしていない。
+GameViewは試験中にFullHDから960x540、次いで480x270へ変更。同16:9、game delta1/60/物理stepは変更なし。
+Unity MCP instance_count=0。ユーザーへ「Unity再生は止めずMCP接続のみ再開」を依頼済み。復旧が来たら元の仕事を続行する。
+PlayerPrefs8キーとGameViewの最終復元はまだ。playerprefs-before.txt/editor-before.txt/gameview-before.txtは今回開始前の退避データなので上書きしない。
+
+復旧直後に行うこと
+1. MCP instances/editor state、Application.isPlaying、scene/timeScale、QA callback progressを確認する。
+2. 先にPlay停止→RestoreSession.cs.txtで元データ/Title/画面を復元し、その8キー照合を確認する。これで切断中のテスト状態を安全に解消できる。
+3. 残りテストを続けるならPlay Titleから開始し、ValidateLoadouts.cs.txtで追加を含む22profileを再検証。Module20行の購入検証はpartsだけで、Module費は別（U12+中級Core4）。
+4. 必要ならGameViewを480x270/16:9へ戻す。最終復元は同じbeforeファイルを使う。
+
+残りの計画（準備済み、実測を捏造しない）
+・fitted-final-cases.csv: Cannon/Railの無効Nozzleを速度へ、Throwerを攻撃力へ交換した最終wave、Module0/20各3武器の6件。
+・PunkUpgradeCalibration.cs.txt: STR2/20×none/final_day11_melee、計4条件。
+・native-plan.csv: 入手段階の一日6件＋最終wave Module0/20各5件、計16件。native初期装備を与えるテストで、ゲーム開始からの取得・購入込み連続通しではない。
+
+実行方法
+NativeSurvivalBootstrap.cs.txtはTitle Playからのみ。native-survival-config.csvは weapon,startStage,profile,seed の1行。
+native-survival-bootstrap-progress.txtのREADYを待って次へ。
+処理能力比較の新規Mainでは、その直後にPrepareControlledMain.cs.txtを実行し、controlled-main-progress.txtのREADY（初期spawn停止・cleanup完了・timeScale0）を待ってから比較runnerを開始する。既存比較終了Mainやnative生存runnerではこの前処理を呼ばない。
+処理能力比較ならcases.csvへfitted-final-cases.csvをコピーし、batch-name.txt=fitted-final、UpgradeCombatBenchmark.cs.txt実行。
+注意：BootstrapのMain.StartはShowDayAsync後にStartNextStageする。比較開始前にその初期非同期処理が終了してからflow.IsStageActive=false/StopSpawning/cleanupにする。旧runnerの単純な0.25秒待ちでは初回混入する。正規routeでは初回再測定で解決済み。native生存runnerはこの進行を止めず使用するので問題ない。
+Punkはflow停止・spawner停止・敵0のMainで実行し、punk-upgrade-calibration-progress.txtを確認。
+native生存はbootstrap READY後にNativeSurvivalRoute.cs.txt。native-survival-name.txtはnative-plan.csvのlabel。終了時にPlayを自動停止しPlayerPrefsを復元、restore-verified.txtのEditorPlaying=Falseまで確認して次へ。
+
+復元と最終化
+全callback終了→Play停止→RestoreSession.cs.txt。8Prefs/Title clean/FullHD/元GameView一覧/時間設定を確認。
+analyze_upgrades.py、verify_measurements.py --batches route probes fitted-final、native検証スクリプトを実行。
+source-verification.jsonを再生成し、git diff --check。Rail変更3ファイル以外のゲーム変更は行わない。
+report.txtは175件時点の途中報告。fitted/native/Punk/最終復元を追記してから完了報告とする。

@@ -1,0 +1,6 @@
+id,weapon,stage,profile,seed,maxSeconds,mode
+boss31_GearCraft_module20_seed77,GearCraft,31,final_day11_melee_module20,77,240,boss
+boss31_SteamCannon_module20_seed77,SteamCannon,31,final_day11_ranged_fitted_speed_module20,77,240,boss
+boss31_SteamThrower_module20_seed77,SteamThrower,31,final_day11_thrower_fitted_damage_module20,77,240,boss
+boss31_RailCraft_module20_seed77,RailCraft,31,final_day11_ranged_fitted_speed_module20,77,240,boss
+boss31_SteamGatling_module20_seed77,SteamGatling,31,final_day11_ranged_module20,77,240,boss

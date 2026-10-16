@@ -1,0 +1,1 @@
+COMPLETE four native-physics cases recorded; runtime settings restored; Play remains active if caller has not stopped it

@@ -1,0 +1,7 @@
+timeScale=1
+captureDeltaTime=0
+vSync=1
+targetFrameRate=-1
+runInBackground=True
+loggerEnabled=True
+loggerFilter=2

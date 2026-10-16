@@ -1,0 +1,17 @@
+check,pass
+huge_hit_stops_at_two_thirds,True
+phase2_armored,True
+event_reports_only_applied_damage,True
+same_frame_hits_and_dot_entry_blocked,True
+blocked_hits_keep_last_hit,True
+overheat_applies_during_armor,True
+phase2_armor_clears,True
+huge_hit_stops_at_one_third,True
+phase3_armored,True
+second_armor_blocks_same_frame_hits,True
+second_armor_keeps_last_hit,True
+final_phase_accepts_lethal_damage,True
+dead_has_no_armor_or_damage,True
+existing_status_unchanged,True
+no_test_enemy_remaining,True
+paused_main_preserved,True

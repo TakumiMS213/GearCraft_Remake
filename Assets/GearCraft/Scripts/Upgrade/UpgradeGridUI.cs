@@ -57,6 +57,8 @@ public class UpgradeGridUI : MonoBehaviour
     private int draggingRotation;
     private Vector2 lastDragScreenPosition;
 
+    public bool IsShopDragging => draggingPart != null;
+
     private struct ShapeBounds
     {
         public int minX;

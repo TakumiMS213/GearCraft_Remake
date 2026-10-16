@@ -1,0 +1,13 @@
+result=ending_reached_3
+start_stage=31
+last_stage=31
+completed_native_waves=1
+rewards_selected=0
+game_seconds=64.700
+wall_seconds=65.172
+shots=2864
+attack_events=1432
+player_damage=11.00
+gate_damage=0.00
+player_healed=0.00
+gate_healed=0.00

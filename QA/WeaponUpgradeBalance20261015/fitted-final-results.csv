@@ -1,0 +1,7 @@
+id,weapon,stage,day,profile,seed,result,seconds,total_including_summons,killed,escaped_or_suicided,remaining,damage,shots,player_damage,gate_damage,boss_name,boss_seconds,boss_remaining_hp,average_game_dt,frames,scheduled_count,scheduled_killed,scheduled_escaped,scheduled_remaining,attack_events
+fitted_SteamCannon_module0,SteamCannon,31,11,final_day11_ranged_fitted_speed,77,cleared,38.883,19,19,0,0,50881.00,352,5.00,0.00,EK-9,24.367,0.00,0.016666,2333,19,19,0,0,176
+fitted_SteamCannon_module20,SteamCannon,31,11,final_day11_ranged_fitted_speed_module20,77,cleared,33.800,19,19,0,0,50881.00,284,5.00,0.00,EK-9,19.283,0.00,0.016667,2028,19,19,0,0,142
+fitted_SteamThrower_module0,SteamThrower,31,11,final_day11_thrower_fitted_damage,77,cleared,36.083,19,19,0,0,50881.00,2804,8.00,0.00,EK-9,21.567,0.00,0.016666,2165,19,19,0,0,1402
+fitted_SteamThrower_module20,SteamThrower,31,11,final_day11_thrower_fitted_damage_module20,77,cleared,18.383,19,19,0,0,50881.00,646,8.00,0.00,EK-9,3.867,0.00,0.016667,1103,19,19,0,0,323
+fitted_RailCraft_module0,RailCraft,31,11,final_day11_ranged_fitted_speed,77,cleared,33.533,19,19,0,0,50881.00,162,8.00,0.00,EK-9,19.017,0.00,0.016667,2012,19,19,0,0,81
+fitted_RailCraft_module20,RailCraft,31,11,final_day11_ranged_fitted_speed_module20,77,cleared,32.683,19,19,0,0,50881.00,156,8.00,0.00,EK-9,18.167,0.00,0.016667,1961,19,19,0,0,78

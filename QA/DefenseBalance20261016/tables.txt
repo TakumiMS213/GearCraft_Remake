@@ -1,0 +1,281 @@
+防衛バランス試験・ログ集計
+生成UTC: 2026-10-16T03:33:24.762947+00:00
+主試験結果 14/14、有効 14・無効 0、防衛成功 9/14有効試験。追加/対照ログ 17件。
+成功条件：bosses.csvで対象ボスのdefeatedを確認し、native_day_clearedまたはending_reachedまで遷移。
+ボス秒は出現から撃破/終了まで。失敗例の秒数は撃破タイムではない。ボス未到達は明記し、欠測値を0に置換しない。
+
+主試験
+ボス | 武器 | 判定 | ボス秒 | ボス残HP | 本人HP 終了 | 門 終了 | ボス中無攻撃最大秒
+IC-408 | GearCraft | 防衛失敗・ボス未撃破 | 31.217 | 7652.167 | 87 | 0 | 0
+BB-413 | GearCraft | 防衛失敗・ボス未撃破 | 10.467 | 8803 | 25 | 0 | 0
+BB-413 | SteamCannon | 防衛失敗・ボス未撃破 | 10.467 | 9317 | 97 | -20 | 0
+BB-413 | SteamThrower | 防衛失敗・ボス未撃破 | 14.017 | 11789.809 | -26 | 100 | 0
+AR-227 | GearCraft | 防衛成功 | 23.317 | -1.702 | 100 | 100 | 0
+AR-227 | SteamCannon | 防衛成功 | 17.633 | -172.579 | 100 | 100 | 0
+AR-227 | SteamThrower | 防衛成功 | 11.867 | -15.977 | 100 | 100 | 0
+AR-227 | RailCraft | 防衛成功 | 5.633 | -22 | 100 | 100 | 0
+AR-227 | SteamGatling | 防衛成功 | 4.433 | -23.719 | 100 | 100 | 0
+EK-9 | GearCraft | 防衛失敗・ボス未撃破 | 106.05 | 25852 | -8 | 100 | 0
+EK-9 | SteamCannon | 防衛成功 | 59.883 | -66.162 | 30 | 100 | 0
+EK-9 | SteamThrower | 防衛成功 | 59.65 | -2.247 | 100 | 100 | 0
+EK-9 | RailCraft | 防衛成功 | 45.383 | -286 | 48 | 100 | 0
+EK-9 | SteamGatling | 防衛成功 | 44.967 | -11.725 | 84 | 100 | 0
+
+追加・対照試験（主試験件数へ混入しない）
+ボス | 武器 | 判定 | ボス秒 | ボス残HP | 本人HP 終了 | 門 終了 | ボス中無攻撃最大秒
+IC-408 | GearCraft | 防衛失敗・ボス未撃破 | 31.217 | 8799.068 | 90 | 0 | 0
+AR-227 | GearCraft | 防衛成功 | 22.933 | -13.313 | 89 | 100 | 0
+AR-227 | GearCraft | 防衛成功 | 25.8 | -71.708 | 92 | 100 | 0
+AR-227 | RailCraft | 防衛成功 | 6.467 | -190 | 100 | 100 | 0
+AR-227 | SteamCannon | 防衛成功 | 16.567 | -6.774 | 100 | 100 | 0
+AR-227 | SteamCannon | 防衛成功 | 8.767 | -21.418 | 100 | 100 | 0
+AR-227 | SteamGatling | 防衛成功 | 4.583 | -56.764 | 100 | 100 | 0
+AR-227 | SteamThrower | 防衛成功 | 13.117 | -10.717 | 100 | 100 | 0
+AR-227 | SteamThrower | 実行中/結果未完了 | 0 | 15200 | — | — | 0
+EK-9 | GearCraft | 異常落下を伴う防衛失敗 | 11.3 | 146654 | 100 | -20 | 10.283
+EK-9 | RailCraft | 防衛成功 | 45.383 | -282 | 48 | 100 | 0
+EK-9 | SteamCannon | 防衛成功 | 59.883 | -66.162 | 30 | 100 | 0
+EK-9 | SteamGatling | 防衛成功 | 44.983 | -11.725 | 84 | 100 | 0
+EK-9 | SteamThrower | 防衛成功 | 59.9 | -2.247 | 100 | 100 | 0
+BB-413 | GearCraft | 防衛失敗・ボス未撃破 | 10.467 | 8702 | 80 | -20 | 0
+BB-413 | SteamCannon | 防衛失敗・ボス未撃破 | 10.467 | 9317 | 100 | -20 | 0
+IC-408 | GearCraft | 防衛失敗・ボス未撃破 | 31.217 | 7970.12 | 87 | 0 | 0
+
+詳細（初期条件と終了理由）
+gate_IC408_GearCraft_seed77
+  profile=early_day3_common、初期STR/ACC=4/4、PartsFlat=6.0、Module=0、間隔倍率=0.7649999856948853、Punk/Repair/Barrier=True/False/False
+  result=gate_destroyed、日全体124.317秒、native完了wave=2、報酬=2、ダッシュ=2、迎撃対象選択=0、BOOST=2
+  ボス開始/終了 本人HP=97/87、門=100/0、ボス初期/残HP=13600/7652.167
+  wave別秒=7:completed:28.5;8:completed:26.35;9:gate_destroyed:62.183。ボス前完了wave合計=54.85秒、ボスwave内前座=30.967秒、出現までの全経過=93.1秒。
+  ボス出現時装備=GearCraft_Sword、STR/ACC=7/4、PartsFlat=6.000、Module=0、間隔倍率=0.765、二連=False、拡散補正=0。
+  約1秒samples=126時刻、最大間隔1秒。攻撃数不増(敵生存/両端操作可、1秒以上)=19区間、最大4秒、うち対象ボス生存0区間。理由=cooldown → no_visible_target; melee_attack → no_visible_target; no_visible_target → melee_out_of_range; no_visible_target → no_visible_target
+gate_BB413_GearCraft_seed77
+  profile=mid_day4_common、初期STR/ACC=10/10、PartsFlat=9.0、Module=0、間隔倍率=0.585224986076355、Punk/Repair/Barrier=True/True/False
+  result=gate_destroyed、日全体103.583秒、native完了wave=2、報酬=2、ダッシュ=0、迎撃対象選択=0、BOOST=2
+  ボス開始/終了 本人HP=100/25、門=120/0、ボス初期/残HP=13000/8803
+  wave別秒=16:completed:28.067;17:completed:27.283;18:gate_destroyed:40.95。ボス前完了wave合計=55.35秒、ボスwave内前座=30.483秒、出現までの全経過=93.117秒。
+  ボス出現時装備=GearCraft_Sword、STR/ACC=10/10、PartsFlat=9.000、Module=0、間隔倍率=0.585225、二連=False、拡散補正=0。
+  約1秒samples=105時刻、最大間隔1秒。攻撃数不増(敵生存/両端操作可、1秒以上)=17区間、最大5秒、うち対象ボス生存0区間。理由=cooldown → no_visible_target; no_visible_target → melee_out_of_range; no_visible_target → no_visible_target
+gate_BB413_SteamCannon_seed77
+  profile=mid_day4_common、初期STR/ACC=10/10、PartsFlat=9.0、Module=0、間隔倍率=0.585224986076355、Punk/Repair/Barrier=True/True/False
+  result=gate_destroyed、日全体105.417秒、native完了wave=2、報酬=2、ダッシュ=8、迎撃対象選択=1、BOOST=1
+  ボス開始/終了 本人HP=97/97、門=100/-20、ボス初期/残HP=13000/9317
+  wave別秒=16:completed:26.833;17:completed:29.633;18:gate_destroyed:41.667。ボス前完了wave合計=56.467秒、ボスwave内前座=31.2秒、出現までの全経過=94.95秒。
+  ボス出現時装備=SteamCannon、STR/ACC=10/11、PartsFlat=9.000、Module=0、間隔倍率=0.585225、二連=False、拡散補正=0。
+  約1秒samples=107時刻、最大間隔1秒。攻撃数不増(敵生存/両端操作可、1秒以上)=20区間、最大4秒、うち対象ボス生存0区間。理由=cooldown → no_visible_target; no_visible_target → no_visible_target
+gate_BB413_SteamThrower_seed77
+  profile=mid_day4_common、初期STR/ACC=10/10、PartsFlat=9.0、Module=0、間隔倍率=0.585224986076355、Punk/Repair/Barrier=True/True/False
+  result=player_dead、日全体121.483秒、native完了wave=2、報酬=2、ダッシュ=12、迎撃対象選択=3、BOOST=2
+  ボス開始/終了 本人HP=94/-26、門=100/100、ボス初期/残HP=13000/11789.809
+  wave別秒=16:completed:32.317;17:completed:36.817;18:player_dead:45.067。ボス前完了wave合計=69.133秒、ボスwave内前座=31.05秒、出現までの全経過=107.467秒。
+  ボス出現時装備=SteamThrower、STR/ACC=12/10、PartsFlat=9.000、Module=0、間隔倍率=0.585225、二連=False、拡散補正=0。
+  約1秒samples=123時刻、最大間隔1秒。攻撃数不増(敵生存/両端操作可、1秒以上)=13区間、最大6秒、うち対象ボス生存0区間。理由=cooldown → no_visible_target; no_visible_target → no_visible_target
+gate_AR227_GearCraft_seed77
+  profile=late_day7_melee_defense_module20、初期STR/ACC=18/18、PartsFlat=12.0、Module=20、間隔倍率=0.28553473949432373、Punk/Repair/Barrier=True/True/True
+  result=native_day_cleared_and_dorm_reached、日全体158.167秒、native完了wave=3、報酬=2、ダッシュ=6、迎撃対象選択=4、BOOST=2
+  ボス開始/終了 本人HP=100/90、門=100/100、ボス初期/残HP=15200/-1.702
+  wave別秒=28:completed:34.8;29:completed:36.833;30:completed:46。ボス前完了wave合計=71.633秒、ボスwave内前座=21.683秒、出現までの全経過=100.6秒。
+  ボス出現時装備=GearCraft_Sword、STR/ACC=20/18、PartsFlat=12.000、Module=20、間隔倍率=0.285534739、二連=False、拡散補正=0。
+  約1秒samples=160時刻、最大間隔1秒。攻撃数不増(敵生存/両端操作可、1秒以上)=26区間、最大5秒、うち対象ボス生存0区間。理由=melee_attack → melee_out_of_range; no_visible_target → melee_out_of_range; no_visible_target → no_visible_target
+gate_AR227_SteamCannon_seed77
+  profile=late_day7_ranged_defense_module20、初期STR/ACC=18/18、PartsFlat=13.0、Module=20、間隔倍率=0.3916800320148468、Punk/Repair/Barrier=True/True/True
+  result=native_day_cleared_and_dorm_reached、日全体144.017秒、native完了wave=3、報酬=2、ダッシュ=11、迎撃対象選択=3、BOOST=0
+  ボス開始/終了 本人HP=100/94、門=100/100、ボス初期/残HP=15200/-172.579
+  wave別秒=28:completed:31.833;29:completed:36.733;30:completed:40.883。ボス前完了wave合計=68.567秒、ボスwave内前座=22.25秒、出現までの全経過=98.1秒。
+  ボス出現時装備=SteamCannon、STR/ACC=18/18、PartsFlat=13.000、Module=20、間隔倍率=0.391680032、二連=True、拡散補正=0。
+  約1秒samples=145時刻、最大間隔1秒。攻撃数不増(敵生存/両端操作可、1秒以上)=30区間、最大5秒、うち対象ボス生存0区間。理由=cooldown → no_visible_target; no_visible_target → no_visible_target
+gate_AR227_SteamThrower_seed77
+  profile=late_day7_ranged_defense_module20、初期STR/ACC=18/18、PartsFlat=13.0、Module=20、間隔倍率=0.3916800320148468、Punk/Repair/Barrier=True/True/True
+  result=native_day_cleared_and_dorm_reached、日全体145.033秒、native完了wave=3、報酬=2、ダッシュ=7、迎撃対象選択=0、BOOST=2
+  ボス開始/終了 本人HP=100/96、門=100/100、ボス初期/残HP=15200/-15.977
+  wave別秒=28:completed:35.8;29:completed:41.1;30:completed:33.783。ボス前完了wave合計=76.9秒、ボスwave内前座=20.917秒、出現までの全経過=105.1秒。
+  ボス出現時装備=SteamThrower、STR/ACC=18/20、PartsFlat=13.000、Module=20、間隔倍率=0.391680032、二連=True、拡散補正=0。
+  約1秒samples=147時刻、最大間隔1秒。攻撃数不増(敵生存/両端操作可、1秒以上)=22区間、最大6秒、うち対象ボス生存0区間。理由=no_visible_target → no_visible_target
+gate_AR227_RailCraft_seed77
+  profile=late_day7_ranged_defense_module20、初期STR/ACC=18/18、PartsFlat=13.0、Module=20、間隔倍率=0.3916800320148468、Punk/Repair/Barrier=True/True/True
+  result=native_day_cleared_and_dorm_reached、日全体135.267秒、native完了wave=3、報酬=2、ダッシュ=5、迎撃対象選択=2、BOOST=1
+  ボス開始/終了 本人HP=100/98、門=100/100、ボス初期/残HP=15200/-22
+  wave別秒=28:completed:34.433;29:completed:35.25;30:completed:27.767。ボス前完了wave合計=69.683秒、ボスwave内前座=21.133秒、出現までの全経過=98.1秒。
+  ボス出現時装備=RailCraft、STR/ACC=18/21、PartsFlat=13.000、Module=20、間隔倍率=0.391680032、二連=True、拡散補正=0。
+  約1秒samples=137時刻、最大間隔1秒。攻撃数不増(敵生存/両端操作可、1秒以上)=27区間、最大5秒、うち対象ボス生存0区間。理由=cooldown → no_visible_target; no_visible_target → no_visible_target; ranged_attack → no_visible_target
+gate_AR227_SteamGatling_seed77
+  profile=late_day7_ranged_defense_module20、初期STR/ACC=18/18、PartsFlat=13.0、Module=20、間隔倍率=0.3916800320148468、Punk/Repair/Barrier=True/True/True
+  result=native_day_cleared_and_dorm_reached、日全体124.533秒、native完了wave=3、報酬=2、ダッシュ=2、迎撃対象選択=0、BOOST=1
+  ボス開始/終了 本人HP=100/99、門=100/100、ボス初期/残HP=15200/-23.719
+  wave別秒=28:completed:33.533;29:completed:32.233;30:completed:26.067。ボス前完了wave合計=65.767秒、ボスwave内前座=21.1秒、出現までの全経過=94.15秒。
+  ボス出現時装備=SteamGatling、STR/ACC=16/20、PartsFlat=13.000、Module=20、間隔倍率=0.391680032、二連=True、拡散補正=0。
+  約1秒samples=126時刻、最大間隔1秒。攻撃数不増(敵生存/両端操作可、1秒以上)=27区間、最大5秒、うち対象ボス生存0区間。理由=no_visible_target → no_visible_target
+gate_EK9_GearCraft_seed77
+  profile=final_day11_melee_defense_module20、初期STR/ACC=20/20、PartsFlat=12.0、Module=20、間隔倍率=0.1380719095468521、Punk/Repair/Barrier=True/True/True
+  result=player_dead、日全体120.617秒、native完了wave=0、報酬=0、ダッシュ=4、迎撃対象選択=1、BOOST=2
+  ボス開始/終了 本人HP=100/-8、門=100/100、ボス初期/残HP=147600/25852
+  wave別秒=31:player_dead:119.4。ボス前完了wave合計=0秒、ボスwave内前座=13.35秒、出現までの全経過=14.567秒。
+  ボス出現時装備=GearCraft_Sword、STR/ACC=20/20、PartsFlat=12.000、Module=20、間隔倍率=0.13807191、二連=False、拡散補正=0。
+  約1秒samples=122時刻、最大間隔1秒。攻撃数不増(敵生存/両端操作可、1秒以上)=2区間、最大3秒、うち対象ボス生存0区間。理由=no_visible_target → melee_out_of_range; no_visible_target → no_visible_target
+  EK状態観測: phases=0;1;2、ArmorTransition=6sample、Staggered=17sample、CrossfireBurst=True、CombinedVolley=True。約1秒sampleの観測数であり厳密な持続秒/発射数ではない。
+gate_EK9_SteamCannon_seed77
+  profile=final_day11_ranged_fitted_speed_defense_module20、初期STR/ACC=20/20、PartsFlat=12.0、Module=20、間隔倍率=0.13979780673980713、Punk/Repair/Barrier=True/True/True
+  result=ending_reached_3、日全体98.683秒、native完了wave=1、報酬=0、ダッシュ=8、迎撃対象選択=2、BOOST=0
+  ボス開始/終了 本人HP=100/10、門=100/100、ボス初期/残HP=147600/-66.162
+  wave別秒=31:completed:74.5。ボス前完了wave合計=0秒、ボスwave内前座=13.617秒、出現までの全経過=14.833秒。
+  ボス出現時装備=SteamCannon、STR/ACC=20/20、PartsFlat=12.000、Module=20、間隔倍率=0.1397978、二連=True、拡散補正=0。
+  約1秒samples=100時刻、最大間隔1秒。攻撃数不増(敵生存/両端操作可、1秒以上)=2区間、最大2秒、うち対象ボス生存0区間。理由=no_visible_target → no_visible_target
+  EK状態観測: phases=0;1;2、ArmorTransition=6sample、Staggered=12sample、CrossfireBurst=True、CombinedVolley=True。約1秒sampleの観測数であり厳密な持続秒/発射数ではない。
+gate_EK9_SteamThrower_seed77
+  profile=final_day11_thrower_fitted_damage_defense_module20、初期STR/ACC=20/20、PartsFlat=16.0、Module=20、間隔倍率=0.18274220824241638、Punk/Repair/Barrier=True/True/True
+  result=ending_reached_3、日全体93.767秒、native完了wave=1、報酬=0、ダッシュ=9、迎撃対象選択=11、BOOST=0
+  ボス開始/終了 本人HP=97/97、門=100/100、ボス初期/残HP=147600/-2.247
+  wave別秒=31:completed:75.433。ボス前完了wave合計=0秒、ボスwave内前座=14.783秒、出現までの全経過=16秒。
+  ボス出現時装備=SteamThrower、STR/ACC=20/20、PartsFlat=16.000、Module=20、間隔倍率=0.182742208、二連=True、拡散補正=0。
+  約1秒samples=95時刻、最大間隔1秒。攻撃数不増(敵生存/両端操作可、1秒以上)=4区間、最大2秒、うち対象ボス生存0区間。理由=no_visible_target → no_visible_target
+  EK状態観測: phases=0;1;2、ArmorTransition=6sample、Staggered=11sample、CrossfireBurst=True、CombinedVolley=True。約1秒sampleの観測数であり厳密な持続秒/発射数ではない。
+gate_EK9_RailCraft_seed77
+  profile=final_day11_ranged_fitted_speed_defense_module20、初期STR/ACC=20/20、PartsFlat=12.0、Module=20、間隔倍率=0.13979780673980713、Punk/Repair/Barrier=True/True/True
+  result=ending_reached_3、日全体77.083秒、native完了wave=1、報酬=0、ダッシュ=6、迎撃対象選択=13、BOOST=0
+  ボス開始/終了 本人HP=100/28、門=100/100、ボス初期/残HP=147600/-286
+  wave別秒=31:completed:60.8。ボス前完了wave合計=0秒、ボスwave内前座=14.417秒、出現までの全経過=15.633秒。
+  ボス出現時装備=RailCraft、STR/ACC=20/20、PartsFlat=12.000、Module=20、間隔倍率=0.1397978、二連=True、拡散補正=0。
+  約1秒samples=79時刻、最大間隔1秒。攻撃数不増(敵生存/両端操作可、1秒以上)=3区間、最大2秒、うち対象ボス生存0区間。理由=no_visible_target → no_visible_target
+  EK状態観測: phases=0;1;2、ArmorTransition=6sample、Staggered=6sample、CrossfireBurst=True、CombinedVolley=True。約1秒sampleの観測数であり厳密な持続秒/発射数ではない。
+gate_EK9_SteamGatling_seed77
+  profile=final_day11_ranged_defense_module20、初期STR/ACC=20/20、PartsFlat=12.0、Module=20、間隔倍率=0.17258988320827484、Punk/Repair/Barrier=True/True/True
+  result=ending_reached_3、日全体84.667秒、native完了wave=1、報酬=0、ダッシュ=7、迎撃対象選択=12、BOOST=2
+  ボス開始/終了 本人HP=100/64、門=100/100、ボス初期/残HP=147600/-11.725
+  wave別秒=31:completed:60.3。ボス前完了wave合計=0秒、ボスwave内前座=14.333秒、出現までの全経過=15.55秒。
+  ボス出現時装備=SteamGatling、STR/ACC=20/20、PartsFlat=12.000、Module=20、間隔倍率=0.172589883、二連=True、拡散補正=-8。
+  約1秒samples=86時刻、最大間隔1秒。攻撃数不増(敵生存/両端操作可、1秒以上)=2区間、最大2秒、うち対象ボス生存0区間。理由=no_visible_target → no_visible_target
+  EK状態観測: phases=0;1;2、ArmorTransition=6sample、Staggered=9sample、CrossfireBurst=True、CombinedVolley=True。約1秒sampleの観測数であり厳密な持続秒/発射数ではない。
+baseline_IC_GearCraft_seed77
+  profile=early_day3_common、初期STR/ACC=4/4、PartsFlat=6.0、Module=0、間隔倍率=0.7649999856948853、Punk/Repair/Barrier=True/False/False
+  result=gate_destroyed、日全体124.3秒、native完了wave=2、報酬=2、ダッシュ=0、迎撃対象選択=0、BOOST=0
+  ボス開始/終了 本人HP=100/90、門=100/0、ボス初期/残HP=13600/8799.068
+  wave別秒=7:completed:28.5;8:completed:26.333;9:gate_destroyed:62.183。ボス前完了wave合計=54.833秒、ボスwave内前座=30.967秒、出現までの全経過=93.083秒。
+  ボス出現時装備=GearCraft_Sword、STR/ACC=7/4、PartsFlat=6.000、Module=0、間隔倍率=0.765、二連=False、拡散補正=0。
+  約1秒samples=126時刻、最大間隔1.017秒。攻撃数不増(敵生存/両端操作可、1秒以上)=19区間、最大3秒、うち対象ボス生存0区間。理由=cooldown → no_visible_target; no_visible_target → melee_out_of_range; no_visible_target → no_visible_target
+gate_AR227_GearCraft_seed101
+  profile=late_day7_melee_defense_module20、初期STR/ACC=18/18、PartsFlat=12.0、Module=20、間隔倍率=0.28553473949432373、Punk/Repair/Barrier=True/True/True
+  result=native_day_cleared_and_dorm_reached、日全体163.633秒、native完了wave=3、報酬=2、ダッシュ=8、迎撃対象選択=3、BOOST=2
+  ボス開始/終了 本人HP=100/69、門=100/100、ボス初期/残HP=15200/-13.313
+  wave別秒=28:completed:38.783;29:completed:37.767;30:completed:45.383。ボス前完了wave合計=76.55秒、ボスwave内前座=21.45秒、出現までの全経過=105.283秒。
+  ボス出現時装備=GearCraft_Axe、STR/ACC=19/18、PartsFlat=12.000、Module=20、間隔倍率=0.285534739、二連=False、拡散補正=0。
+  約1秒samples=165時刻、最大間隔1.017秒。攻撃数不増(敵生存/両端操作可、1秒以上)=25区間、最大7秒、うち対象ボス生存0区間。理由=cooldown → melee_out_of_range; no_visible_target → melee_out_of_range; no_visible_target → no_visible_target
+gate_AR227_GearCraft_seed202
+  profile=late_day7_melee_defense_module20、初期STR/ACC=18/18、PartsFlat=12.0、Module=20、間隔倍率=0.28553473949432373、Punk/Repair/Barrier=True/True/True
+  result=native_day_cleared_and_dorm_reached、日全体161.05秒、native完了wave=3、報酬=2、ダッシュ=9、迎撃対象選択=5、BOOST=2
+  ボス開始/終了 本人HP=100/72、門=100/100、ボス初期/残HP=15200/-71.708
+  wave別秒=28:completed:37.217;29:completed:33.283;30:completed:50.633。ボス前完了wave合計=70.5秒、ボスwave内前座=23.833秒、出現までの全経過=101.617秒。
+  ボス出現時装備=GearCraft_Sword、STR/ACC=18/18、PartsFlat=12.000、Module=20、間隔倍率=0.285534739、二連=False、拡散補正=0。
+  約1秒samples=163時刻、最大間隔1秒。攻撃数不増(敵生存/両端操作可、1秒以上)=24区間、最大7秒、うち対象ボス生存0区間。理由=cooldown → no_visible_target; melee_attack → no_visible_target; no_visible_target → melee_out_of_range; no_visible_target → no_visible_target
+gate_AR227_RailCraft_seed101
+  profile=late_day7_ranged_defense_module20、初期STR/ACC=18/18、PartsFlat=13.0、Module=20、間隔倍率=0.3916800320148468、Punk/Repair/Barrier=True/True/True
+  result=native_day_cleared_and_dorm_reached、日全体131.933秒、native完了wave=3、報酬=2、ダッシュ=5、迎撃対象選択=4、BOOST=2
+  ボス開始/終了 本人HP=100/98、門=100/100、ボス初期/残HP=15200/-190
+  wave別秒=28:completed:37.567;29:completed:36;30:completed:28.633。ボス前完了wave合計=73.567秒、ボスwave内前座=21.6秒、出現までの全経過=102.45秒。
+  ボス出現時装備=RailCraft、STR/ACC=18/18、PartsFlat=13.000、Module=20、間隔倍率=0.391680032、二連=True、拡散補正=0。
+  約1秒samples=133時刻、最大間隔1.017秒。攻撃数不増(敵生存/両端操作可、1秒以上)=27区間、最大6秒、うち対象ボス生存0区間。理由=cooldown → no_visible_target; no_visible_target → no_visible_target
+gate_AR227_SteamCannon_seed101
+  profile=late_day7_ranged_defense_module20、初期STR/ACC=18/18、PartsFlat=13.0、Module=20、間隔倍率=0.3916800320148468、Punk/Repair/Barrier=True/True/True
+  result=native_day_cleared_and_dorm_reached、日全体150.567秒、native完了wave=3、報酬=2、ダッシュ=6、迎撃対象選択=1、BOOST=0
+  ボス開始/終了 本人HP=100/95、門=100/100、ボス初期/残HP=15200/-6.774
+  wave別秒=28:completed:37.183;29:completed:31.533;30:completed:39.967。ボス前完了wave合計=68.717秒、ボスwave内前座=22.4秒、出現までの全経過=98.4秒。
+  ボス出現時装備=SteamCannon、STR/ACC=18/18、PartsFlat=13.000、Module=20、間隔倍率=0.391680032、二連=True、拡散補正=0。
+  約1秒samples=152時刻、最大間隔1秒。攻撃数不増(敵生存/両端操作可、1秒以上)=27区間、最大6秒、うち対象ボス生存0区間。理由=cooldown → no_visible_target; no_visible_target → no_visible_target
+gate_AR227_SteamCannon_seed202
+  profile=late_day7_ranged_defense_module20、初期STR/ACC=18/18、PartsFlat=13.0、Module=20、間隔倍率=0.3916800320148468、Punk/Repair/Barrier=True/True/True
+  result=native_day_cleared_and_dorm_reached、日全体138.65秒、native完了wave=3、報酬=2、ダッシュ=6、迎撃対象選択=1、BOOST=2
+  ボス開始/終了 本人HP=100/97、門=100/100、ボス初期/残HP=15200/-21.418
+  wave別秒=28:completed:37.283;29:completed:36.733;30:completed:32.3。ボス前完了wave合計=74.017秒、ボスwave内前座=22.533秒、出現までの全経過=103.833秒。
+  ボス出現時装備=SteamCannon、STR/ACC=16/20、PartsFlat=13.000、Module=20、間隔倍率=0.391680032、二連=True、拡散補正=0。
+  約1秒samples=140時刻、最大間隔1秒。攻撃数不増(敵生存/両端操作可、1秒以上)=31区間、最大6秒、うち対象ボス生存0区間。理由=cooldown → no_visible_target; no_visible_target → no_visible_target
+gate_AR227_SteamGatling_seed101
+  profile=late_day7_ranged_defense_module20、初期STR/ACC=18/18、PartsFlat=13.0、Module=20、間隔倍率=0.3916800320148468、Punk/Repair/Barrier=True/True/True
+  result=native_day_cleared_and_dorm_reached、日全体138.9秒、native完了wave=3、報酬=2、ダッシュ=5、迎撃対象選択=0、BOOST=1
+  ボス開始/終了 本人HP=100/99、門=100/100、ボス初期/残HP=15200/-56.764
+  wave別秒=28:completed:36.983;29:completed:33.217;30:completed:27.467。ボス前完了wave合計=70.2秒、ボスwave内前座=22.333秒、出現までの全経過=99.817秒。
+  ボス出現時装備=SteamGatling、STR/ACC=18/21、PartsFlat=13.000、Module=20、間隔倍率=0.391680032、二連=True、拡散補正=0。
+  約1秒samples=140時刻、最大間隔1秒。攻撃数不増(敵生存/両端操作可、1秒以上)=20区間、最大6秒、うち対象ボス生存0区間。理由=no_visible_target → no_visible_target
+gate_AR227_SteamThrower_seed101
+  profile=late_day7_ranged_defense_module20、初期STR/ACC=18/18、PartsFlat=13.0、Module=20、間隔倍率=0.3916800320148468、Punk/Repair/Barrier=True/True/True
+  result=native_day_cleared_and_dorm_reached、日全体151.667秒、native完了wave=3、報酬=2、ダッシュ=12、迎撃対象選択=1、BOOST=2
+  ボス開始/終了 本人HP=100/90、門=100/100、ボス初期/残HP=15200/-10.717
+  wave別秒=28:completed:40.367;29:completed:32.6;30:completed:35.983。ボス前完了wave合計=72.967秒、ボスwave内前座=21.867秒、出現までの全経過=102.117秒。
+  ボス出現時装備=SteamThrower、STR/ACC=18/20、PartsFlat=13.000、Module=20、間隔倍率=0.391680032、二連=True、拡散補正=0。
+  約1秒samples=153時刻、最大間隔1秒。攻撃数不増(敵生存/両端操作可、1秒以上)=19区間、最大6秒、うち対象ボス生存0区間。理由=no_visible_target → no_visible_target
+gate_AR227_SteamThrower_seed202
+  profile=late_day7_ranged_defense_module20、初期STR/ACC=18/18、PartsFlat=13.0、Module=20、間隔倍率=0.3916800320148468、Punk/Repair/Barrier=True/True/True
+  result=未記録、日全体—秒、native完了wave=、報酬=、ダッシュ=9、迎撃対象選択=0、BOOST=2
+  ボス開始/終了 本人HP=100/100、門=100/100、ボス初期/残HP=15200/15200
+  wave別秒=28:completed:40.183;29:completed:32.15。ボス前完了wave合計=72.333秒、ボスwave内前座=—秒、出現までの全経過=102.217秒。
+  ボス出現時装備=SteamThrower、STR/ACC=18/21、PartsFlat=13.000、Module=20、間隔倍率=0.391680032、二連=True、拡散補正=0。
+  約1秒samples=110時刻、最大間隔1秒。攻撃数不増(敵生存/両端操作可、1秒以上)=19区間、最大6秒、うち対象ボス生存0区間。理由=no_visible_target → no_visible_target
+gate_EK9_GearCraft_seed101
+  profile=final_day11_melee_defense_module20、初期STR/ACC=20/20、PartsFlat=12.0、Module=20、間隔倍率=0.1380719095468521、Punk/Repair/Barrier=True/True/True
+  result=gate_destroyed、日全体26.3秒、native完了wave=0、報酬=0、ダッシュ=0、迎撃対象選択=0、BOOST=2
+  ボス開始/終了 本人HP=100/100、門=100/-20、ボス初期/残HP=147600/146654
+  wave別秒=31:gate_destroyed:25.083。ボス前完了wave合計=0秒、ボスwave内前座=13.783秒、出現までの全経過=15秒。
+  ボス出現時装備=GearCraft_Sword、STR/ACC=20/20、PartsFlat=12.000、Module=20、間隔倍率=0.13807191、二連=False、拡散補正=0。
+  約1秒samples=28時刻、最大間隔1秒。攻撃数不増(敵生存/両端操作可、1秒以上)=4区間、最大10.283秒、うち対象ボス生存1区間。理由=melee_out_of_range → finished:gate_destroyed;previous=frame_start; no_visible_target → melee_out_of_range; no_visible_target → no_visible_target
+  要確認: player_y最小-1815.992310 < -20（異常落下）。原因未確定。記録の有効性とは分離し、通常DPS/所要時間の統計から除外
+  EK状態観測: phases=0、ArmorTransition=0sample、Staggered=0sample、CrossfireBurst=False、CombinedVolley=False。約1秒sampleの観測数であり厳密な持続秒/発射数ではない。
+gate_EK9_RailCraft_seed101
+  profile=final_day11_ranged_fitted_speed_defense_module20、初期STR/ACC=20/20、PartsFlat=12.0、Module=20、間隔倍率=0.13979780673980713、Punk/Repair/Barrier=True/True/True
+  result=ending_reached_3、日全体75.733秒、native完了wave=1、報酬=0、ダッシュ=6、迎撃対象選択=13、BOOST=0
+  ボス開始/終了 本人HP=100/28、門=100/100、ボス初期/残HP=147600/-282
+  wave別秒=31:completed:60.25。ボス前完了wave合計=0秒、ボスwave内前座=13.867秒、出現までの全経過=15.083秒。
+  ボス出現時装備=RailCraft、STR/ACC=20/20、PartsFlat=12.000、Module=20、間隔倍率=0.1397978、二連=True、拡散補正=0。
+  約1秒samples=77時刻、最大間隔1秒。攻撃数不増(敵生存/両端操作可、1秒以上)=3区間、最大3秒、うち対象ボス生存0区間。理由=no_visible_target → no_visible_target
+  EK状態観測: phases=0;1;2、ArmorTransition=6sample、Staggered=9sample、CrossfireBurst=True、CombinedVolley=True。約1秒sampleの観測数であり厳密な持続秒/発射数ではない。
+gate_EK9_SteamCannon_seed101
+  profile=final_day11_ranged_fitted_speed_defense_module20、初期STR/ACC=20/20、PartsFlat=12.0、Module=20、間隔倍率=0.13979780673980713、Punk/Repair/Barrier=True/True/True
+  result=ending_reached_3、日全体96.233秒、native完了wave=1、報酬=0、ダッシュ=8、迎撃対象選択=3、BOOST=0
+  ボス開始/終了 本人HP=100/10、門=100/100、ボス初期/残HP=147600/-66.162
+  wave別秒=31:completed:74.8。ボス前完了wave合計=0秒、ボスwave内前座=13.917秒、出現までの全経過=15.133秒。
+  ボス出現時装備=SteamCannon、STR/ACC=20/20、PartsFlat=12.000、Module=20、間隔倍率=0.1397978、二連=True、拡散補正=0。
+  約1秒samples=98時刻、最大間隔1秒。攻撃数不増(敵生存/両端操作可、1秒以上)=3区間、最大3秒、うち対象ボス生存0区間。理由=no_visible_target → no_visible_target
+  EK状態観測: phases=0;1;2、ArmorTransition=6sample、Staggered=11sample、CrossfireBurst=True、CombinedVolley=True。約1秒sampleの観測数であり厳密な持続秒/発射数ではない。
+gate_EK9_SteamGatling_seed101
+  profile=final_day11_ranged_defense_module20、初期STR/ACC=20/20、PartsFlat=12.0、Module=20、間隔倍率=0.17258988320827484、Punk/Repair/Barrier=True/True/True
+  result=ending_reached_3、日全体85.133秒、native完了wave=1、報酬=0、ダッシュ=5、迎撃対象選択=12、BOOST=0
+  ボス開始/終了 本人HP=100/64、門=100/100、ボス初期/残HP=147600/-11.725
+  wave別秒=31:completed:59.45。ボス前完了wave合計=0秒、ボスwave内前座=13.467秒、出現までの全経過=14.683秒。
+  ボス出現時装備=SteamGatling、STR/ACC=20/20、PartsFlat=12.000、Module=20、間隔倍率=0.172589883、二連=True、拡散補正=-8。
+  約1秒samples=87時刻、最大間隔1秒。攻撃数不増(敵生存/両端操作可、1秒以上)=2区間、最大3秒、うち対象ボス生存0区間。理由=no_visible_target → no_visible_target
+  EK状態観測: phases=0;1;2、ArmorTransition=6sample、Staggered=9sample、CrossfireBurst=True、CombinedVolley=True。約1秒sampleの観測数であり厳密な持続秒/発射数ではない。
+gate_EK9_SteamThrower_seed101
+  profile=final_day11_thrower_fitted_damage_defense_module20、初期STR/ACC=20/20、PartsFlat=16.0、Module=20、間隔倍率=0.18274220824241638、Punk/Repair/Barrier=True/True/True
+  result=ending_reached_3、日全体106.733秒、native完了wave=1、報酬=0、ダッシュ=7、迎撃対象選択=11、BOOST=0
+  ボス開始/終了 本人HP=100/100、門=100/100、ボス初期/残HP=147600/-2.247
+  wave別秒=31:completed:74.55。ボス前完了wave合計=0秒、ボスwave内前座=13.65秒、出現までの全経過=14.867秒。
+  ボス出現時装備=SteamThrower、STR/ACC=20/20、PartsFlat=16.000、Module=20、間隔倍率=0.182742208、二連=True、拡散補正=0。
+  約1秒samples=108時刻、最大間隔1秒。攻撃数不増(敵生存/両端操作可、1秒以上)=2区間、最大3秒、うち対象ボス生存0区間。理由=no_visible_target → no_visible_target
+  EK状態観測: phases=0;1;2、ArmorTransition=6sample、Staggered=11sample、CrossfireBurst=True、CombinedVolley=True。約1秒sampleの観測数であり厳密な持続秒/発射数ではない。
+reactive_BB413_GearCraft_seed77
+  profile=mid_day4_common、初期STR/ACC=10/10、PartsFlat=9.0、Module=0、間隔倍率=0.585224986076355、Punk/Repair/Barrier=True/True/False
+  result=gate_destroyed、日全体106.3秒、native完了wave=2、報酬=2、ダッシュ=1、迎撃対象選択=0、BOOST=2
+  ボス開始/終了 本人HP=100/80、門=100/-20、ボス初期/残HP=13000/8702
+  wave別秒=16:completed:28.017;17:completed:31.367;18:gate_destroyed:39.633。ボス前完了wave合計=59.383秒、ボスwave内前座=29.167秒、出現までの全経過=95.833秒。
+  ボス出現時装備=GearCraft_Axe、STR/ACC=11/10、PartsFlat=9.000、Module=0、間隔倍率=0.585225、二連=False、拡散補正=0。
+  約1秒samples=108時刻、最大間隔1.017秒。攻撃数不増(敵生存/両端操作可、1秒以上)=24区間、最大5秒、うち対象ボス生存0区間。理由=cooldown → no_visible_target; no_visible_target → melee_out_of_range; no_visible_target → no_visible_target
+reactive_BB413_SteamCannon_seed77
+  profile=mid_day4_common、初期STR/ACC=10/10、PartsFlat=9.0、Module=0、間隔倍率=0.585224986076355、Punk/Repair/Barrier=True/True/False
+  result=gate_destroyed、日全体105.433秒、native完了wave=2、報酬=2、ダッシュ=8、迎撃対象選択=1、BOOST=1
+  ボス開始/終了 本人HP=100/100、門=100/-20、ボス初期/残HP=13000/9317
+  wave別秒=16:completed:26.833;17:completed:29.65;18:gate_destroyed:41.667。ボス前完了wave合計=56.483秒、ボスwave内前座=31.2秒、出現までの全経過=94.967秒。
+  ボス出現時装備=SteamCannon、STR/ACC=10/11、PartsFlat=9.000、Module=0、間隔倍率=0.585225、二連=False、拡散補正=0。
+  約1秒samples=107時刻、最大間隔1秒。攻撃数不増(敵生存/両端操作可、1秒以上)=20区間、最大4秒、うち対象ボス生存0区間。理由=cooldown → no_visible_target; no_visible_target → no_visible_target
+reactive_IC408_GearCraft_seed77
+  profile=early_day3_common、初期STR/ACC=4/4、PartsFlat=6.0、Module=0、間隔倍率=0.7649999856948853、Punk/Repair/Barrier=True/False/False
+  result=gate_destroyed、日全体126.8秒、native完了wave=2、報酬=2、ダッシュ=2、迎撃対象選択=0、BOOST=2
+  ボス開始/終了 本人HP=97/87、門=100/0、ボス初期/残HP=13600/7970.12
+  wave別秒=7:completed:29.717;8:completed:27.817;9:gate_destroyed:61.983。ボス前完了wave合計=57.533秒、ボスwave内前座=30.767秒、出現までの全経過=95.583秒。
+  ボス出現時装備=GearCraft_Axe、STR/ACC=4/4、PartsFlat=6.000、Module=0、間隔倍率=0.765、二連=False、拡散補正=0。
+  約1秒samples=128時刻、最大間隔1.017秒。攻撃数不増(敵生存/両端操作可、1秒以上)=19区間、最大4秒、うち対象ボス生存0区間。理由=cooldown → no_visible_target; no_visible_target → melee_out_of_range; no_visible_target → no_visible_target
+
+解釈上の範囲：
+・取得済みの代表パーツ/強化から、当日の通常耐久・native進行で防衛する試験。全キャンペーン連続走破、実プレイヤー平均、成功率の統計推定ではない。
+・初期値はinitial-status.jsonを優先。Punk/モジュールの有無は実データを表示し、計画と不一致なら警告する。
+・攻撃不増はattack_events累計が同じsample間。敵別の同時刻行は重複除去。対象ボスが両端で生存し、flow_activeかつinput非blockの区間を別集計する。
+・約1秒の観測なので区間内部のUI/クールダウン/照準判断や命中を全て保証しない。正当な待機も含むため無攻撃を直ちにボット不具合/火力不足と断定しない。詳細はattack-pauses.csv。
+・被害/回復はframe間のnet変化であり、同一frameに生じる回復と被害を分離できない。迎撃対象選択回数は迎撃成功数ではない。
+・player_y < -20を観測した試験は異常落下を別分類する。記録自体の有効性と原因の確定は別で、通常の火力/所要時間の統計から除外する。
+・この集計はセーブ/Editor復元を実行・認定しない。復元記録はrootの最終確認を参照。

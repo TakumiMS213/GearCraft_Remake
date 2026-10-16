@@ -1,0 +1,1 @@
+Independent verification: 8 original PlayerPrefs keys match existence and values. Play stopped; Title scene.

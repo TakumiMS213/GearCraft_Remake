@@ -1,0 +1,50 @@
+アップグレード込み武器比較の収集計画（確定profileを使う案）
+
+まず代表waveの候補比較83件、選んだ構成のnative生存11件、Punk効果分離4件＝計98件。候補の詳細比較と、取得段階から31までの全wave集計を分ける。全waveは候補選定後に各武器1ルートだけ測る。
+
+固定条件
+Module攻撃加算0、Scrap/Repair/Barrierモジュールなし、Punkなし、BOOSTなし、専用カードなし。STR=ACC=2×(day−1)。実パーツ配置から効果を算出し、同wave内では同じ予定敵・時刻・seedを使う。none/plate_only は予算最適化候補ではなく基準点。共通予算は既定の素材ベクトルとし、Moduleや直設定bonusを上乗せしない。
+代表waveではHP/GATE補充ありの処理能力と累積被害を記録。native生存では補充せず、本来の報酬・回収・帰還を動かす。両者を同じ「通常クリア時間」と呼ばない。
+
+代表wave比較：83件、まずseedを1つに固定
+9：GearCraft 5件
+  none / plate_only / tutorial_day2 / early_day3_common / early_day3_speed。
+10：11件
+  GearCraft：none / mid_day4_common / mid_day4_speed（3）。
+  Cannon・Thrower：各 none / mid_day4_common / mid_day4_speed / mid_day4_size（8）。
+18：10と同じ11件。IC後の雑魚処理とBB迎撃・召喚処理を区別する。
+19：22件
+  GearCraft：none / late_day7_common / late_day7_melee（3）。
+  Cannon・Rail・Gatling：各 none / late_day7_common / late_day7_ranged / late_day7_precision / late_day7_reflect（15）。
+  Thrower：none / late_day7_common / late_day7_ranged / late_day7_precision（4）。Reflectionは専用蒸気処理に適用されないため除く。
+28：13件
+  GearCraft：late_day7_common / late_day7_melee（2）。
+  Cannon・Rail・Gatling：各 late_day7_common / late_day7_ranged / late_day7_precision（9）。
+  Thrower：late_day7_common / late_day7_ranged（2）。
+31：21件
+  GearCraft：late_day7_common / late_day7_melee / final_day11_melee（3）。
+  Cannon・Rail・Gatling：各 late_day7_common / late_day7_ranged / late_day7_precision / late_day7_reflect / final_day11_ranged（15）。
+  Thrower：late_day7_common / late_day7_ranged / final_day11_ranged（3）。
+
+収集項目と選定
+wave完了/時間切れ、最終敵HP、出現数、撃破数、門到達/自爆数、実攻撃回数・生成弾数、HP/GATE累積被害、ボス出現→撃破時間、取得パーツ費用・抽選費込み費用、最終計算ステータス。日頭に固定される敵HP補正を維持する。
+主指標は殲滅所要時間と門/プレイヤーへの被害。時間短縮だけで最良とせず、nativeで生存するかを最後に確認する。early/mid speedは当日収集率11～14%の構成なので、速くても「同予算で揃った場合の性能」と明記し、通常入手の確実性とは分ける。差が小さい/乱数依存の候補だけ追加seedで再試験し、全件を機械的に反復しない。
+
+native生存・選択検証：11件
+GearCraftのDay2（tutorial_day2）とDay3（選定early）、Cannon/ThrowerのDay4（選定mid）、Rail/GatlingのDay7（選定late）の計6件。実waveを3回連続して報酬2回→日末素材回収→宿舎帰還まで確認する。
+さらに主武器5種それぞれ、選定した後半/最終構成でwave31→生存/門破壊/プレイヤー死亡/EDを確認する。報酬選択は既定policyを固定し、選ばれた効果と再装備後の配置・効果値も記録する。通常の回避/迎撃/BOOSTを行わないボットの限界は引き続き付記する。
+
+全段階ルート：上記選定後、主武器5種・合計98 wave測定
+GearCraft：4～31（28件）。4～6はtutorial、7～9は選定early、10～18は選定mid、19～30は選定late、31は選定final。
+Cannon/Thrower：各10～31（22件×2）。10～18は選定mid、19～30は選定late、31は選定final。
+Rail/Gatling：各19～31（13件×2）。19～30は選定late、31は選定final。
+代表waveで同じ武器・profile・seedの結果が既にある場合は再利用する。これは各段階の実パーツ構成に切り替える処理能力ルートで、各waveリセットの合計は連続生存クリア時間ではない。AR未提示ならCannon/Throwerの実入手日は遅れるため、「Day4に入手できた場合」という条件を残す。GearCraftのDay2入手にも素材条件がある。
+
+PunkDriveの扱い：主武器と別枠、4件の確認案
+静的確認済み：PunkDriveManager.DamageLoop は damageAmount + Start時に保存したSTR/10を、damageIntervalごとにEnemyControllerへ直接与える。bonusDamage、attackSpeedMult、bulletSizeMult、double、ricochet、Module攻撃加算を読まない。主武器用の攻撃パーツは直接適用されない。Junk/回収範囲はプレイヤー全体の素材処理へ間接的に効くので「全パーツの影響が完全にゼロ」とは表現しない。
+Main.unity:13450-13451 は damageAmount=0、damageInterval=0。現実装はStart時STRとフレーム進行に依存するため、Punkを主武器のパーツ伸長ランキングに混ぜない。
+確認するなら、主武器攻撃を止め同じ敵と同じ接触距離・秒数・フレーム数で、STR2/20 × none/final_day11_melee の4条件。Punk.Start前にSTRを揃え、パーツ前後で接触ダメージと回数が一致することを測る。Punkオンによる主武器の殲滅改善を測る追加試験はこの4件とは分ける。
+根拠：Assets/GearCraft/Scripts/Main/PunkDriveManager.cs:16,61、PlayerController.cs:159、Scenes/Main.unity:13450。
+
+前提確認
+native-purchase-validation.csvの16構成は全件 parts=purchased、盤面・費用・効果がJSONと整合。これはTryPurchaseAndPlaceでの購入配置成功の証拠。ショップ抽選で毎回同じ日に揃う保証はなく、別資料のstock/witness条件を併記する。

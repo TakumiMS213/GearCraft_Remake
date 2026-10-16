@@ -1,0 +1,73 @@
+// Unity MCP execute_code C#6 body. Fresh NativeSurvivalBootstrap READY Main only.
+// Drains the initial ShowDayAsync -> StartNextStage handoff before a controlled combat batch.
+// Do not use after an existing benchmark has already stopped native progression.
+const string controlledFolder="QA/BossBalance20261015/";
+const string controlledProgress=controlledFolder+"controlled-main-progress.txt";
+if(!Application.isPlaying||UnityEditor.EditorApplication.isPaused||UnityEngine.SceneManagement.SceneManager.GetActiveScene().name!="Main")throw new System.Exception("Unpaused fresh Main Play required");
+foreach(string file in new[]{"benchmark-progress.txt","native-survival-progress.txt","punk-upgrade-calibration-progress.txt","controlled-main-progress.txt"})
+ if(System.IO.File.Exists(controlledFolder+file)&&System.IO.File.ReadAllText(controlledFolder+file).StartsWith("RUNNING"))throw new System.Exception("Another QA callback is active: "+file);
+var controlledFlags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.NonPublic;
+var controlledFlow=StageFlowManager.Instance;var controlledPlayer=UnityEngine.Object.FindFirstObjectByType<PlayerController>();
+if(controlledFlow==null||controlledPlayer==null||controlledPlayer.runtimeStatus==null||controlledPlayer.armRotation==null||controlledFlow.enemySpawner==null)throw new System.Exception("Initialized native Main/player/spawner required");
+var controlledSpawner=controlledFlow.enemySpawner;var controlledArm=controlledPlayer.armRotation;
+var controlledActiveProperty=typeof(StageFlowManager).GetProperty("IsStageActive",controlledFlags);
+var controlledEnemiesField=typeof(StageFlowManager).GetField("activeEnemies",controlledFlags);
+var controlledSpawnerCts=typeof(EnemySpawner).GetField("cts",controlledFlags);
+if(controlledActiveProperty==null||controlledEnemiesField==null||controlledSpawnerCts==null)throw new System.Exception("Native flow/spawner members missing");
+var controlledEnemies=(System.Collections.Generic.List<EnemyController>)controlledEnemiesField.GetValue(controlledFlow);
+bool controlledPlayerEnabled=controlledPlayer.enabled,controlledArmEnabled=controlledArm.enabled;
+var controlledPunk=controlledPlayer.punkdrive;bool controlledPunkActive=controlledPunk!=null&&controlledPunk.activeSelf;
+float controlledScaleBefore=Time.timeScale,controlledCaptureBefore=Time.captureDeltaTime;
+int controlledVsyncBefore=QualitySettings.vSyncCount,controlledTargetBefore=Application.targetFrameRate;bool controlledBackgroundBefore=Application.runInBackground;
+double controlledStarted=UnityEditor.EditorApplication.timeSinceStartup;int controlledStopFrame=-1,controlledLastFrame=-1,controlledPhase=0,controlledRemoved=0;bool controlledDone=false;
+UnityEditor.EditorApplication.CallbackFunction controlledTick=null;
+System.Action controlledCleanup=()=>{
+ var objects=new System.Collections.Generic.HashSet<GameObject>();
+ foreach(var value in UnityEngine.Object.FindObjectsByType<EnemyController>(FindObjectsSortMode.None))objects.Add(value.gameObject);
+ foreach(var value in UnityEngine.Object.FindObjectsByType<BulletController>(FindObjectsSortMode.None))objects.Add(value.gameObject);
+ foreach(var value in UnityEngine.Object.FindObjectsByType<GearCraft.Scripts.Main.SteamThrowerBulletController>(FindObjectsSortMode.None))objects.Add(value.gameObject);
+ foreach(var value in UnityEngine.Object.FindObjectsByType<EnemyBulletController>(FindObjectsSortMode.None))objects.Add(value.gameObject);
+ foreach(var value in UnityEngine.Object.FindObjectsByType<EnemyProjectileDamageable>(FindObjectsSortMode.None))objects.Add(value.gameObject);
+ foreach(var value in UnityEngine.Object.FindObjectsByType<LineHitboxController>(FindObjectsSortMode.None))objects.Add(value.gameObject);
+ foreach(var value in UnityEngine.Object.FindObjectsByType<GearCraft.Scripts.Items.DroppedMaterialItem>(FindObjectsSortMode.None))objects.Add(value.gameObject);
+ foreach(var value in objects){if(value==null)continue;value.SetActive(false);UnityEngine.Object.Destroy(value);controlledRemoved++;}
+ controlledEnemies.Clear();
+};
+System.Action<bool,string> controlledFinish=(success,reason)=>{
+ if(controlledDone)return;controlledDone=true;UnityEditor.EditorApplication.update-=controlledTick;
+ if(controlledPlayer!=null)controlledPlayer.enabled=controlledPlayerEnabled;
+ if(controlledArm!=null)controlledArm.enabled=controlledArmEnabled;
+ if(controlledPunk!=null)controlledPunk.SetActive(controlledPunkActive);
+ Time.captureDeltaTime=controlledCaptureBefore;QualitySettings.vSyncCount=controlledVsyncBefore;Application.targetFrameRate=controlledTargetBefore;Application.runInBackground=controlledBackgroundBefore;
+ // READY deliberately leaves the prepared Main paused; failure restores the pre-call scale.
+ Time.timeScale=success?0f:controlledScaleBefore;
+ System.IO.File.WriteAllText(controlledProgress,(success?"READY ":"FAILED ")+reason+"; removed="+controlledRemoved+"; elapsed_wall="+(UnityEditor.EditorApplication.timeSinceStartup-controlledStarted).ToString("F3",System.Globalization.CultureInfo.InvariantCulture)+"; timeScale="+Time.timeScale+"; player/arm/capture/frame settings restored\n");
+};
+System.Action controlledStop=()=>{
+ // StartNextStage synchronously sets active and starts EnemySpawner; stop it only after that handoff occurred.
+ controlledActiveProperty.SetValue(controlledFlow,false,null);controlledSpawner.StopSpawning();controlledCleanup();
+ controlledPhase=1;controlledStopFrame=Time.frameCount;Time.timeScale=0f;
+ System.IO.File.WriteAllText(controlledProgress,"RUNNING native StartNextStage observed and stopped; waiting one frame for Destroy cleanup\n");
+};
+controlledTick=()=>{try{
+ if(!Application.isPlaying){controlledFinish(false,"Play stopped by caller");return;}
+ if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name!="Main"||controlledFlow==null||controlledPlayer==null||controlledSpawner==null){controlledFinish(false,"Scene or required native objects changed");return;}
+ if(UnityEditor.EditorApplication.timeSinceStartup-controlledStarted>10.0){controlledFinish(false,"10 wall second watchdog: native initial stage did not become ready");return;}
+ if(Time.frameCount==controlledLastFrame)return;controlledLastFrame=Time.frameCount;
+ if(controlledPhase==0){if(controlledFlow.IsStageActive)controlledStop();return;}
+ if(Time.frameCount<=controlledStopFrame)return;
+ if(controlledFlow.IsStageActive)throw new System.Exception("Native flow resumed after initial handoff was stopped");
+ var cts=(System.Threading.CancellationTokenSource)controlledSpawnerCts.GetValue(controlledSpawner);
+ if(cts!=null)throw new System.Exception("Spawner still has a cancellation source after StopSpawning");
+ if(controlledEnemies.Count!=0||UnityEngine.Object.FindObjectsByType<EnemyController>(FindObjectsSortMode.None).Length!=0)throw new System.Exception("Enemies appeared after initial cleanup");
+ controlledFinish(true,"Fresh Main initial spawn handoff completed; controlled benchmark may start");
+}catch(System.Exception ex){controlledFinish(false,ex.ToString());}};
+try{
+ controlledPlayer.enabled=false;controlledArm.enabled=false;if(controlledPunk!=null)controlledPunk.SetActive(false);
+ Time.timeScale=1f;Time.captureDeltaTime=1f/60f;QualitySettings.vSyncCount=0;Application.targetFrameRate=-1;Application.runInBackground=true;
+ System.IO.File.WriteAllText(controlledProgress,"RUNNING waiting for native ShowDayAsync -> StartNextStage\n");
+ UnityEditor.EditorApplication.update+=controlledTick;
+ // If bootstrap's native handoff already completed, stop it during this call rather than allowing another game frame.
+ if(controlledFlow.IsStageActive)controlledStop();
+}catch(System.Exception ex){controlledFinish(false,ex.ToString());throw;}
+return "Preparing fresh controlled Main; wait for READY in "+controlledProgress;

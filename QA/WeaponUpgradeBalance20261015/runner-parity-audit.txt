@@ -1,0 +1,40 @@
+UpgradeCombatBenchmark 発射・パーツ効果監査（2026-10-15）
+
+対象: PlayerController.PerformShotAttack/ConfigureSpawnedProjectile、StatusManager.RecalculateUpgradeEffects、MeleeWeapon.OnTriggerEnter2D。
+このメモは静的確認。実コンパイル・計測は親エージェントが MCP で行う。
+
+通常発射との一致
+・基礎角度の取得だけをマウス座標から自動照準へ置換。画面範囲内の敵、武器別距離、重力補正、atan2 - asin(muzzleOffset.y / distance) を前回から維持。
+・初弾: currentWeapon.spreadAngle + status.spreadModifier を native CalculateSpreadAngle へ渡す。負の拡散は native 側が0へ制限。
+・弾口: native GetMuzzlePosition、弾速: native GetCurrentBulletSpeed を使用。
+・攻撃力の基礎値: native HandleAttack と同じ weapon.baseDamage を currentDamage に設定。
+・当たり判定型: useLineHitbox の場合 native PerformLineHitboxAttack を呼ぶ。この分岐は通常ゲームと同じく2発化・反動を通らない。
+・通常弾: native prefabを生成し native速度を設定、ConfigureSpawnedProjectileを呼ぶ。
+・2発化: hasBulletDouble が真の場合のみ独立に拡散角を再抽選、別弾口、別弾体、native速度設定、ConfigureSpawnedProjectileを再実行。
+・反動: 通常弾発射の末尾で native ApplySteamGatlingDownwardRecoil。今回武器固有報酬カードは使用しないため無効。
+・弾サイズ、攻撃力係数、Ricochet、貫通、爆風、蒸気の継続判定は native ConfigureSpawnedProjectile / BulletController / SteamThrowerBulletController の処理をそのまま使用。
+・攻撃待ちは PlayerController の private coolTime <= 0 を判定し、攻撃直前に weapon.coolTime * attackSpeedMult を同フィールドへ代入。フレーム末の finally で native CoolTimeUpdate を1回呼ぶ。UI阻止・敵なし等の早期returnでも更新し、同一フレーム重複callbackでは更新しない。Time.time + 間隔による絶対時刻判定は撤去。ケース開始時は0へ初期化し、終了後は元の値へ戻す。終了してnative PlayerController.Updateを再開した後にはrunner側から減算しない。
+・射撃RNGは初弾の角度→初弾Configure→2発目の角度→2発目Configureの順序を保った上で敵AIのRNGから隔離。各戦闘の敵スポーン計画はseed固定。
+・剣/斧は native PerformMeleeAttack。ダメージはMeleeWeaponがStatusManager.GetWeaponDamageを使用。斧5秒/剣5秒の切替は前回比較と同じ。
+
+パーツの反映
+・入力は UpgradePartSO の実アセット名。武器をstatus.currentWeaponへ設定してから RecalculateUpgradeEffects(parts) を呼ぶ。
+・DamageFlat、AttackSpeedMult、BulletDouble、SpreadReduction、SpreadIncrease、Ricochet、BulletSizeUp を発射/近接とつなげた。
+・JunkCollector、MagnetRangeUp も native計算へ渡し、最終値を記録する。波ごとにビルド固定のため拾得増加が次のwaveの購入へ波及する経済効果は対象外。
+・rangedOnly は native再計算が判断。適用/除外をeffects.csvに記録。
+・複数個の同一パーツはリスト中の個数分native再計算される。2発化だけはnative boolによる重複非加算。
+・アップグレードモジュールはパーツとは別の moduleDamage 入力。0/5/20等をそのままcraftWeaponDamagebuffへ与える。
+・STR=ACC=2*(day-1)。パーツなしprofileでもこの能力値は有効。noneは「完全初期能力値」ではなく「その日基準でパーツなし」。
+・前回の直接bonusDamage=3、attackSpeedMult=0.6561等の設定を撤去。今回の値は全て実パーツの組合せによる。
+・武器固有カード値を全項目初期化、PunkDriveとBOOSTは無効。
+
+出力
+・results.csv: shots=実生成弾数（近接/lineは1）、attack_events=攻撃回数。2発化の射撃ではshots=2*attack_eventsとなる。
+・loadout-effects.csv: case/profile/実アセット/各効果/近接制限による適用可否。
+・loadout-stats.csv: 能力値、native計算の1命中ダメージ、パーツ加算、モジュール加算、間隔倍率、2発化、拡散、跳弾、弾サイズ、回収、磁力、実弾速。
+
+制約
+・パーツの購入/配置の実現性、同予算、抽選による入手時期は別監査。本runnerは指定partsを直接計算へ渡すため盤面配置自体を操作しない。
+・敵AI/Physics/命中処理はゲーム実装そのものだが、人間の操作ではない。HPと門は毎フレーム補充し、被害を別計上する。通常プレイでの生存や通しクリア時間を示さない。
+・同じnative予定スポーンでもフレーム丸めにより出現位置に1フレーム分の揺れがある。
+・保存データの復元は全テスト後に親側が実施。runner単体はPlayerPrefsを復元しない。

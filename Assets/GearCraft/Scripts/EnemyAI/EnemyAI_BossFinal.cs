@@ -16,12 +16,33 @@ public sealed class EnemyAI_BossFinal : MonoBehaviour, IEnemyAI
     private const float MissileShotInterval = 0.55f;
     private const float GateCrushInterval = 2.5f;
     private const float GateCrushWarning = 0.85f;
-    private const float StaggerDamageRatio = 0.1f;
-    private const float StaggerDistance = 1f;
-    private const float StaggerDuration = 0.85f;
     private const float EngineVibrationAmplitude = 0.012f;
     private const float EngineVibrationFrequency = 12f;
-    private enum ActionState { Entering, Recovering, GunWindup, GunBurst, MissileWindup, MissileVolley, CrusherWindup, CrusherSurge, Staggered, Dead }
+    private const float CrossfireWindup = 1f;
+    private const float CombinedWindup = 1.2f;
+
+    [Header("Approach and damage stagger")]
+    [SerializeField, Min(0f)] private float advanceSpeedMultiplier = 0.3f;
+    [SerializeField, Min(1f)] private float staggerDamageThreshold = 4920f;
+    [SerializeField, Min(0f)] private float staggerDistance = 1f;
+    [SerializeField, Min(0.01f)] private float staggerDuration = 0.85f;
+    [SerializeField, Min(0f)] private float staggerRecoveryGrace = 3f;
+
+    [Header("Armor change at two-thirds and one-third HP")]
+    [SerializeField, Min(0.1f)] private float armorTransitionDuration = 3f;
+    [SerializeField, Min(0f)] private float armorMissileWindup = 0.45f;
+    [SerializeField, Min(0.01f)] private float armorMissileInterval = 0.55f;
+    [SerializeField] private Color armorColor = new Color(0.32f, 0.62f, 0.82f, 1f);
+
+    private enum ActionState
+    {
+        Entering, Recovering, GunWindup, GunBurst, MissileWindup, MissileVolley,
+        CrusherWindup, CrusherSurge, CrossfireWindup, CrossfireBurst,
+        CombinedWindup, CombinedVolley, ArmorTransition, Staggered, Dead
+    }
+
+    public bool IsArmored => state == ActionState.ArmorTransition;
+    public int CurrentPhase => phase + 1;
 
     private readonly List<GameObject> projectiles = new List<GameObject>();
     private EnemyController owner;
@@ -46,6 +67,8 @@ public sealed class EnemyAI_BossFinal : MonoBehaviour, IEnemyAI
     private float shotTimer;
     private int shotsFired;
     private int shotCount;
+    private float secondaryShotTimer;
+    private int secondaryShotsFired;
     private int phase;
     private int nextAttack;
     private Vector3 aimedTarget;
@@ -54,6 +77,8 @@ public sealed class EnemyAI_BossFinal : MonoBehaviour, IEnemyAI
     private float staggerDamage;
     private float staggerStartX;
     private float staggerTargetX;
+    private float staggerAvailableAt;
+    private Vector3 armorPosition;
     private float vibrationTime;
     private int lastStaggerFrame = -1;
     private Transform visual;
@@ -75,6 +100,7 @@ public sealed class EnemyAI_BossFinal : MonoBehaviour, IEnemyAI
         visualRestPosition = visual != null ? visual.localPosition : Vector3.zero;
         vibrationTime = 0f;
         staggerDamage = 0f;
+        staggerAvailableAt = 0f;
         lastStaggerFrame = -1;
         owner.Damaged += OnDamaged;
         originalColor = sprite != null ? sprite.color : Color.white;
@@ -103,6 +129,55 @@ public sealed class EnemyAI_BossFinal : MonoBehaviour, IEnemyAI
         SetState(ActionState.Entering);
     }
 
+    /// <summary>
+    /// EnemyControllerがHP・命中点・被弾イベントを更新する前に呼ぶ、EK専用の装甲判定。
+    /// 一発の超過ダメージを次の段階へ持ち越さず、必ず二回の装甲切替を通す。
+    /// </summary>
+    public float FilterIncomingDamage(float amount)
+    {
+        if (owner == null || owner.HP <= 0f || state == ActionState.Dead || IsArmored) return 0f;
+        float damage = Mathf.Max(0f, amount);
+        return phase < 2 ? Mathf.Min(damage, Mathf.Max(0f, owner.HP - GetNextPhaseHp())) : damage;
+    }
+
+    private float GetNextPhaseHp()
+    {
+        return runtimeMaxHp * (2 - phase) / 3f;
+    }
+
+    private void BeginArmorTransition()
+    {
+        phase++;
+        nextAttack = 0;
+        staggerDamage = 0f;
+        staggerAvailableAt = Time.time + armorTransitionDuration + staggerRecoveryGrace;
+        armorPosition = groundArena.Ground(owner.transform.position);
+        owner.transform.position = armorPosition;
+        atGate = false;
+        bladeHit = false;
+        gateCrushTimer = GateCrushWarning;
+        shotsFired = 0;
+        shotTimer = armorMissileWindup;
+        SetState(ActionState.ArmorTransition);
+        UpdateVisuals();
+    }
+
+    private void UpdateArmorTransition(float delta)
+    {
+        // 装甲を閉じている間は前進・押し込み・門攻撃を止め、上部四門からだけ反撃する。
+        owner.transform.position = groundArena.Ground(armorPosition);
+        shotTimer -= delta;
+        if (shotsFired < 4 && shotTimer <= 0f)
+        {
+            FireMissile(shotsFired);
+            shotsFired++;
+            shotTimer = Mathf.Max(0.01f, armorMissileInterval);
+        }
+        if (stateElapsed < armorTransitionDuration || shotsFired < 4) return;
+        staggerAvailableAt = Time.time + staggerRecoveryGrace;
+        SetState(ActionState.Recovering);
+    }
+
     public void UpdateAI()
     {
         if (owner == null || data == null || owner.HP <= 0f || state == ActionState.Dead) return;
@@ -110,8 +185,12 @@ public sealed class EnemyAI_BossFinal : MonoBehaviour, IEnemyAI
         float delta = Time.deltaTime;
         if (delta <= 0f) return;
         stateElapsed += delta;
-        float hpRatio = owner.HP / runtimeMaxHp;
-        phase = hpRatio <= 0.3f ? 2 : hpRatio <= 0.6f ? 1 : 0;
+        if (IsArmored)
+        {
+            UpdateArmorTransition(delta);
+            UpdateVisuals();
+            return;
+        }
         if (state == ActionState.Staggered)
         {
             UpdateStagger();
@@ -151,6 +230,28 @@ public sealed class EnemyAI_BossFinal : MonoBehaviour, IEnemyAI
             case ActionState.MissileVolley:
                 UpdateVolley(delta, true);
                 break;
+            case ActionState.CrossfireWindup:
+                if (stateElapsed >= CrossfireWindup)
+                {
+                    shotCount = 6;
+                    StartVolley(ActionState.CrossfireBurst);
+                }
+                break;
+            case ActionState.CrossfireBurst:
+                UpdateCrossfire(delta);
+                break;
+            case ActionState.CombinedWindup:
+                if (stateElapsed >= CombinedWindup)
+                {
+                    shotCount = 18;
+                    secondaryShotsFired = 0;
+                    secondaryShotTimer = 0.3f;
+                    StartVolley(ActionState.CombinedVolley);
+                }
+                break;
+            case ActionState.CombinedVolley:
+                UpdateCombinedVolley(delta);
+                break;
             case ActionState.CrusherWindup:
                 if (stateElapsed >= CrusherWindup)
                 {
@@ -169,17 +270,25 @@ public sealed class EnemyAI_BossFinal : MonoBehaviour, IEnemyAI
 
     private void OnDamaged(float amount)
     {
-        if (owner == null || owner.HP <= 0f || state == ActionState.Dead) return;
-        staggerDamage += Mathf.Max(0f, amount);
-        float threshold = runtimeMaxHp * StaggerDamageRatio;
+        if (owner == null || owner.HP <= 0f || state == ActionState.Dead || IsArmored) return;
+        if (phase < 2 && owner.HP <= GetNextPhaseHp() + 0.001f)
+        {
+            BeginArmorTransition();
+            return;
+        }
+
+        float threshold = Mathf.Max(1f, staggerDamageThreshold);
+        // 後退中の被弾は次の一回まで蓄積するが、後退アニメーションを再開始しない。
+        staggerDamage = Mathf.Min(threshold, staggerDamage + Mathf.Max(0f, amount));
+        if (state == ActionState.Staggered || Time.time < staggerAvailableAt) return;
         if (staggerDamage < threshold) return;
 
-        // 大きな一撃の演出は一度にまとめ、閾値未満の端数だけ次へ持ち越す。
-        staggerDamage %= threshold;
+        staggerDamage = 0f;
         if (lastStaggerFrame == Time.frameCount) return;
         lastStaggerFrame = Time.frameCount;
         staggerStartX = owner.transform.position.x;
-        staggerTargetX = Mathf.Min(staggerStartX + StaggerDistance, visualArena.GetMovementRect().xMax);
+        staggerTargetX = Mathf.Min(staggerStartX + staggerDistance, visualArena.GetMovementRect().xMax);
+        staggerAvailableAt = Time.time + Mathf.Max(0.01f, staggerDuration) + staggerRecoveryGrace;
         atGate = false;
         bladeHit = false;
         gateCrushTimer = GateCrushWarning;
@@ -206,7 +315,7 @@ public sealed class EnemyAI_BossFinal : MonoBehaviour, IEnemyAI
 
     private void UpdateStagger()
     {
-        float progress = Mathf.Clamp01(stateElapsed / StaggerDuration);
+        float progress = Mathf.Clamp01(stateElapsed / Mathf.Max(0.01f, staggerDuration));
         float eased = 1f - (1f - progress) * (1f - progress);
         Vector3 position = owner.transform.position;
         // 武器側で追加されたノックバックも保持し、後退中に左へ巻き戻さない。
@@ -218,6 +327,13 @@ public sealed class EnemyAI_BossFinal : MonoBehaviour, IEnemyAI
 
     private void LateUpdate()
     {
+        // 直前の被弾点滅より装甲表示を優先する。振動は従来どおりVisualだけに加える。
+        if (IsArmored && owner != null && owner.HP > 0f)
+        {
+            // 武器側のノックバックが同じフレームに走っても、装甲中の車体は固定する。
+            owner.transform.position = groundArena.Ground(armorPosition);
+            UpdateVisuals();
+        }
         if (visual == null || owner == null || !owner.isActiveAndEnabled || owner.HP <= 0f || state == ActionState.Dead || Time.deltaTime <= 0f) return;
         vibrationTime += Time.deltaTime;
         float offset = Mathf.Sin(vibrationTime * EngineVibrationFrequency * Mathf.PI * 2f) * EngineVibrationAmplitude;
@@ -231,19 +347,13 @@ public sealed class EnemyAI_BossFinal : MonoBehaviour, IEnemyAI
         projectiles.RemoveAll(projectile => projectile == null);
         // 射撃は予告時点の位置を狙う。車体はプレイヤーの上下移動を追わない。
         aimedTarget = player != null ? player.transform.position : gate != null ? gate.transform.position : owner.transform.position + Vector3.left * 10f;
-        if (nextAttack == 0)
-        {
-            SetState(ActionState.GunWindup);
-        }
-        else if (nextAttack == 1)
-        {
-            SetState(ActionState.MissileWindup);
-        }
+        if (phase == 0)
+            SetState(nextAttack == 0 ? ActionState.GunWindup : nextAttack == 1 ? ActionState.MissileWindup : ActionState.CrusherWindup);
+        else if (phase == 1)
+            SetState(nextAttack == 0 ? ActionState.CrossfireWindup : nextAttack == 1 ? ActionState.MissileWindup : nextAttack == 2 ? ActionState.GunWindup : ActionState.CrusherWindup);
         else
-        {
-            SetState(ActionState.CrusherWindup);
-        }
-        nextAttack = (nextAttack + 1) % 3;
+            SetState(nextAttack == 0 ? ActionState.CombinedWindup : nextAttack == 1 ? ActionState.CrossfireWindup : ActionState.CrusherWindup);
+        nextAttack = (nextAttack + 1) % (phase == 1 ? 4 : 3);
     }
 
     private void StartVolley(ActionState volleyState)
@@ -265,16 +375,53 @@ public sealed class EnemyAI_BossFinal : MonoBehaviour, IEnemyAI
         if (shotsFired >= shotCount) SetState(ActionState.Recovering);
     }
 
+    private void UpdateCrossfire(float delta)
+    {
+        shotTimer -= delta;
+        if (shotTimer > 0f) return;
+        // 前側と上側の別々の筒から対になる掃射。各発射口の向き±18度は守る。
+        float sweep = Mathf.Lerp(-12f, 12f, shotsFired / (float)Mathf.Max(1, shotCount - 1));
+        FireGunFromPort(shotsFired % 3, sweep);
+        FireGunFromPort(shotsFired % 3 + 3, -sweep);
+        shotsFired++;
+        shotTimer = GunShotInterval * 2f;
+        if (shotsFired >= shotCount) SetState(ActionState.Recovering);
+    }
+
+    private void UpdateCombinedVolley(float delta)
+    {
+        shotTimer -= delta;
+        secondaryShotTimer -= delta;
+        if (shotsFired < shotCount && shotTimer <= 0f)
+        {
+            FireGun();
+            shotsFired++;
+            shotTimer = GunShotInterval;
+        }
+        if (secondaryShotsFired < 4 && secondaryShotTimer <= 0f)
+        {
+            FireMissile(secondaryShotsFired);
+            secondaryShotsFired++;
+            secondaryShotTimer = MissileShotInterval;
+        }
+        if (shotsFired >= shotCount && secondaryShotsFired >= 4) SetState(ActionState.Recovering);
+    }
+
     private void FireGun()
     {
+        float sweep = Mathf.Lerp(-6f, 6f, shotCount <= 1 ? 0.5f : shotsFired / (float)(shotCount - 1));
+        FireGunFromPort(shotsFired, sweep);
+    }
+
+    private void FireGunFromPort(int portIndex, float sweep)
+    {
         GameObject prefab = GetProjectilePrefab(0);
-        Transform muzzle = weaponPorts != null ? weaponPorts.GetGunMuzzle(shotsFired) : null;
+        Transform muzzle = weaponPorts != null ? weaponPorts.GetGunMuzzle(portIndex) : null;
         if (prefab == null || muzzle == null) return;
         // 筒の先端から、その筒の向きに沿って掃射。背面へ折れ曲がる射撃を避ける。
         Vector2 toTarget = aimedTarget - muzzle.position;
         float axisAngle = Mathf.Atan2(muzzle.right.y, muzzle.right.x) * Mathf.Rad2Deg;
         float targetAngle = Mathf.Atan2(toTarget.y, toTarget.x) * Mathf.Rad2Deg;
-        float sweep = Mathf.Lerp(-6f, 6f, shotCount <= 1 ? 0.5f : shotsFired / (float)(shotCount - 1));
         float offset = Mathf.Clamp(Mathf.DeltaAngle(axisAngle, targetAngle) + sweep, -18f, 18f);
         Vector2 direction = Quaternion.Euler(0f, 0f, offset) * muzzle.right;
         GameObject projectile = SpawnProjectile(prefab, muzzle.position, direction);
@@ -290,8 +437,13 @@ public sealed class EnemyAI_BossFinal : MonoBehaviour, IEnemyAI
 
     private void FireMissile()
     {
+        FireMissile(shotsFired);
+    }
+
+    private void FireMissile(int portIndex)
+    {
         GameObject prefab = GetProjectilePrefab(1);
-        Transform muzzle = weaponPorts != null ? weaponPorts.GetMissileMuzzle(shotsFired) : null;
+        Transform muzzle = weaponPorts != null ? weaponPorts.GetMissileMuzzle(portIndex) : null;
         if (prefab == null || muzzle == null) return;
         // 上部の4連発射穴を順に使用。まず穴から外へ射出し、その後に既存の追尾を開始。
         Vector2 direction = muzzle.right;
@@ -356,7 +508,7 @@ public sealed class EnemyAI_BossFinal : MonoBehaviour, IEnemyAI
             : visibleRange.xMin;
         advanceLimit = Mathf.Min(advanceLimit, visibleRange.xMax);
         float multiplier = state == ActionState.CrusherSurge ? 1.6f : 1f;
-        float speed = owner.GetMoveSpeed(Mathf.Max(0f, data.speed) * 0.3f * multiplier);
+        float speed = owner.GetMoveSpeed(Mathf.Max(0f, data.speed) * Mathf.Max(0f, advanceSpeedMultiplier) * multiplier);
         Vector3 position = owner.transform.position;
         // 武器のノックバックで画面外や門の奥へ押されても、その場で有効範囲へ戻す。
         position.x = Mathf.Clamp(position.x, advanceLimit, visibleRange.xMax);
@@ -389,12 +541,28 @@ public sealed class EnemyAI_BossFinal : MonoBehaviour, IEnemyAI
 
     private void UpdateVisuals()
     {
+        if (IsArmored)
+        {
+            if (sprite != null)
+            {
+                Color shield = Color.Lerp(armorColor, new Color(0.65f, 0.85f, 1f, 1f),
+                    Mathf.PingPong(stateElapsed * 1.5f, 0.35f));
+                shield.a = originalColor.a;
+                sprite.color = shield;
+            }
+            if (animator != null) animator.speed = originalAnimationSpeed * 0.65f;
+            return;
+        }
         bool crushingGate = atGate && gateCrushTimer <= GateCrushWarning;
         bool blade = state == ActionState.CrusherWindup || state == ActionState.CrusherSurge || crushingGate;
-        bool warning = state == ActionState.GunWindup || state == ActionState.MissileWindup || state == ActionState.CrusherWindup || crushingGate;
+        bool crossfire = state == ActionState.CrossfireWindup;
+        bool combined = state == ActionState.CombinedWindup;
+        bool warning = state == ActionState.GunWindup || state == ActionState.MissileWindup || state == ActionState.CrusherWindup || crossfire || combined || crushingGate;
         if (sprite != null)
         {
-            Color warningColor = blade ? new Color(1f, 0.28f, 0.16f, originalColor.a) : new Color(1f, 0.7f, 0.25f, originalColor.a);
+            Color warningColor = crossfire ? new Color(0.8f, 0.45f, 1f, originalColor.a)
+                : blade || combined ? new Color(1f, 0.28f, 0.16f, originalColor.a)
+                : new Color(1f, 0.7f, 0.25f, originalColor.a);
             sprite.color = warning ? Color.Lerp(originalColor, warningColor, 0.55f + Mathf.PingPong(stateElapsed * 3f, 0.45f)) : originalColor;
         }
         if (animator != null) animator.speed = originalAnimationSpeed * (blade ? 2.5f : phase == 2 ? 1.5f : 1f);

@@ -1,0 +1,47 @@
+NativeSurvival 独立記録レビュー（2026-10-15）
+
+対象：native_*-events.csv、initial-status.json、final-status.json、result.txt、restore-verified.txt の 11 ケース。Unity/MCP は操作せず、保存記録と現行コードを照合した。
+結論：進行・選択処理・装備・終了理由に記録上の不整合はない。直設定 bonusDamage=3 の消失例は今回の 11 件にはない。SteamThrower の EK 撃破から Ending 3 への接続は確認できる。ただし指定した終盤ビルドから開始した 31 wave 限定の結果であり、通常入手から全行程を通して真 ED を達成したという意味ではない。
+
+ケース                  stage     完了wave/報酬  終了時刻秒  HP/GATE  結果
+GearCraft_day2           4→7       3/2          129.450     100/100  宿舎帰還
+GearCraft_day3           7→9       2/2          124.300      90/0    門破壊
+SteamCannon_day4        10→13      3/2          140.017      91/100  宿舎帰還
+SteamThrower_day4       10→13      3/2          138.250      85/100  宿舎帰還
+RailCraft_day7          19→22      3/2          142.433      68/60   宿舎帰還
+SteamGatling_day7       19→22      3/2          166.700      16/70   宿舎帰還
+GearCraft_EK            31→31      0/0           40.800      -6/60   プレイヤー死亡
+SteamCannon_EK          31→31      0/0           40.483     -14/100  プレイヤー死亡
+SteamThrower_EK         31→31      1/0           71.283      89/100  Ending 3 到達
+RailCraft_EK            31→31      0/0           25.267      -8/40   プレイヤー死亡
+SteamGatling_EK         31→31      0/0           25.667      89/-20  門破壊
+時刻は開始演出・カード・日末回収・レポート・シーン遷移を含む runner 開始からのゲーム内経過時間。ボス単体討伐時間ではない。
+
+進行の照合
+・宿舎帰還 5 件は、連続する 3 wave の開始と完了、途中 2 回の報酬選択、stage +3、native_day_report_confirmed、CraftSpace での finished がすべて揃っている。日末 wave にカードがない点は StageFlowManager.OnStageComplete の willReturnToRest 分岐どおり。
+・GearCraft_day3 は wave 7/8 を完了し、wave 9 の IC-408（HP 13600、93.083 秒出現）が生存中に門が 0。完了 2 wave の記録と一致。
+・全ケースで result.txt の終了理由・終了時刻・完了数・報酬数が CSV と一致。初期 HP/GATE − 累積被ダメージ ＋ 回復量が final-status と一致。HP/GATE の負値は致死攻撃の超過分を含む。
+・11 件すべてに EditorPlaying=False 状態で 8 キー復元済みの記録があり、対応する errors.txt はない。これは保存された検証ログの確認であり、Editor を直接再確認したものではない。
+
+報酬と実反映
+・GearCraft_day2/day3：STR_3 → Weapon_GearCraft_TransformGear。STR はそれぞれ 2→5 / 4→7、gearCraftTransformGearGain は 0→1。
+・SteamCannon_day4：SlowBigExplosion → Knockback。弾速倍率 1→0.5、爆発半径倍率 1→1.5、直撃ノックバック 0→0.35 が final-status に反映。
+・SteamThrower_day4：HP_20 → Gear_3。最初の選択時 HP 94、回復優先閾値 60 より上なので全候補 score0 の先頭選択。実回復は上限までの 6、累積被ダメージ 21、最終 HP 85 と整合。
+・RailCraft_day7：Overheat → ACC_1。railCraftApplyOverheat=true、ACC 12→13。
+・SteamGatling_day7：ModuleCore_1 → STR_1。全候補 score0 の先頭選択で、STR 12→13、ACC 12 のまま。弾速カードは採点対象外、TargetDamage は対ボス 0.7 と対雑魚 1.3 の加算スコアが相殺して 0。この選択は runner 方針どおりだが、プレイヤーの最適な報酬判断を再現してはいない。
+・全 12 選択について CSV 記載候補中の最大 score、同点なら先頭という規則に一致。HP<=60 かつ回復候補を持つ場面の優先挙動は今回の提示内容では実証されていない。
+
+装備・固定 bonus3 の照合
+・全 CSV 行で対象武器を維持。GearCraft のみ Sword/Axe を交互に使用。それ以外への装備切替は観測されない。
+・全 CSV 行、全 initial/final-status で bonusDamage=3。target_reequipped_after_reward イベントは 0 件。武器獲得カードによる EquipWeapon 再計算で +3 が落ちる潜在条件は今回発生せず、発生時の安全性を検証したわけではない。
+・通常日ケースは module damage 0／攻撃間隔倍率 1。EK ケースは module damage 20／倍率約 0.6561、STR=ACC=20 を維持。防御モジュールと PunkDrive はすべて false。
+・GearCraft の変形は runner が currentWeapon を直接代入するため、選択した変形時歯車 +1 は native ChangeGearCraft の付与処理を通らない。効果フラグの反映は確認できるが、通常の変形による素材獲得まで検証できていない。BOOST/追加クラフトなしの本条件では、この未付与が火力を直接変えてはいない。
+
+SteamThrower_EK の撃破・ED 証拠
+・native_SteamThrower_EK-events.csv：15.100 秒 enemy_spawned「EK-9 hp=49200 last=True」→44.233 秒 enemy_killed「EK-9」→45.233 秒 native_wave_completed（stage31）→71.283 秒 Ending シーンで finished「ending_reached_3」。出現から撃破観測までは 29.133 秒。
+・全敵 21 体出現／21 体 killed、escaped 0、bossKillCount 3→4、HP 100→89、GATE 100 維持、killAllEnemies=true。
+・StageFlowManager.cs:166-174 は final stage の last enemy が Boss_Final かつ HP<=0 の時だけ finalBossDefeated を立てる。TryCompleteStage（同:398）はそのフラグなしでは最終 wave を完了しない。HandleGameClearAsync（同:517）は killAllEnemies が true なら Ending 3、false なら Ending 2 を呼ぶ。記録はこれらの分岐と一致。
+・runner は最終ボス死亡フラグも PendingEndingNum も直接設定しない。ただし bootstrap は killAllEnemies=true、既撃破ボス数3として 31 wave から始めている。Ending 3 接続確認と、最初からの全敵撃破達成は区別する。
+
+比較上の制約
+native 進行は編成・報酬の乱数消費が各戦闘に応じて進むため、同日でも出現数／カード内容が違う（例：day4 Cannon 62 体、Thrower 56 体）。これは同編成固定の CombatBenchmark の代わりとなる厳密な火力順位ではなく、native 連続進行・耐久・報酬・回収・帰還／ED 接続の補助証拠として扱う。回避・意図的迎撃・BOOST を使わない点などは native-survival-limitations.txt を参照。

@@ -1,0 +1,63 @@
+const string folder="QA/DayEndPickup20261014/";
+if(!UnityEditor.EditorApplication.isPlaying||UnityEngine.SceneManagement.SceneManager.GetActiveScene().name!="Main")throw new System.Exception("Main Play required");
+var flow=StageFlowManager.Instance;var materials=MaterialManager.Instance;var status=StatusManager.Instance;
+if(flow==null||materials==null||status==null||EndingManager.IsLoadingEnding)throw new System.Exception("Initialized non-ending Main required");
+var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Public;
+var player=GameObject.FindGameObjectWithTag("Player").transform;
+var manager=UnityEngine.Object.FindFirstObjectByType<BonusCardsManager>();manager.enabled=false;
+foreach(var spawner in UnityEngine.Object.FindObjectsByType<EnemySpawner>(FindObjectsSortMode.None))spawner.StopSpawning();
+foreach(var enemy in UnityEngine.Object.FindObjectsByType<EnemyController>(FindObjectsSortMode.None))enemy.gameObject.SetActive(false);
+foreach(var drop in UnityEngine.Object.FindObjectsByType<GearCraft.Scripts.Items.DroppedMaterialItem>(FindObjectsSortMode.None)){drop.gameObject.SetActive(false);UnityEngine.Object.Destroy(drop.gameObject);}
+var enemyList=(System.Collections.Generic.List<EnemyController>)flow.GetType().GetField("activeEnemies",flags).GetValue(flow);enemyList.Clear();
+flow.GetType().GetField("currentStage",flags).SetValue(flow,3);flow.GetType().GetField("stagesSinceRest",flags).SetValue(flow,2);flow.GetType().GetField("stageLastEnemyKilled",flags).SetValue(flow,false);flow.GetType().GetField("stageCompletionTriggered",flags).SetValue(flow,false);flow.GetType().GetField("gateWasHit",flags).SetValue(flow,true);flow.GetType().GetMethod("ResetRestResultStats",flags).Invoke(flow,null);flow.GetType().GetProperty("IsStageActive",flags).SetValue(flow,true,null);
+StageCounter.Instance.StageCount=3;status.HP=100;status.GATE=5000;status.module_scrap=false;status.module_repair=false;status.junkCollectorMult=1f;
+var config=UnityEngine.Object.Instantiate(flow.stageConfig);config.dropMultiplierCurve=AnimationCurve.Constant(0f,31f,1f);flow.stageConfig=config;
+var prefab=UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/GearCraft/ScriptableObject/Prehubs/Enemy/A-1.prefab");
+var last=UnityEngine.Object.Instantiate(prefab,player.position+Vector3.right*16f,Quaternion.identity).GetComponent<EnemyController>();
+var lastData=UnityEngine.Object.Instantiate(last.enemyData);lastData.drops=new[]{new MaterialDropEntry{type=MaterialManager.MaterialType.Gear,minAmount=1,maxAmount=1,dropChance=1f}};last.enemyData=lastData;last.deathEffect=null;last.SetLastEnemy(true);
+var types=(MaterialManager.MaterialType[])System.Enum.GetValues(typeof(MaterialManager.MaterialType));var baseline=new int[6];for(int i=0;i<6;i++)baseline[i]=materials.GetMaterial(types[i]);
+string[] names={"Scrap","Gear","UpgradeCore","ModuleCore_lv1","ModuleCore_lv2","ModuleCore_lv3"};
+var drops=new GearCraft.Scripts.Items.DroppedMaterialItem[6];var positions=new Vector3[6];int[] gains={3,2,1,1,1,1};
+GearCraft.Scripts.Items.DroppedMaterialItem far=null;int phase=0,checks=0;bool done=false;double started=UnityEditor.EditorApplication.timeSinceStartup,next=started+.25;RestResultReportUI report=null;
+UnityEditor.EditorApplication.CallbackFunction tick=null;
+System.IO.File.WriteAllText(folder+"runtime-result.txt","Actual last-enemy death -> day-end pickup -> report -> Dorm. Six types, off-screen, near-expiry, pre-Start and already-collected/burned drops.\n");
+System.Action<string> log=s=>System.IO.File.AppendAllText(folder+"runtime-result.txt",(UnityEditor.EditorApplication.timeSinceStartup-started).ToString("F2")+"s "+s+"\n");
+System.Action<bool,string> check=(ok,s)=>{if(!ok)throw new System.Exception(s);checks++;log("PASS "+s);};
+System.Func<int,Vector3,GearCraft.Scripts.Items.DroppedMaterialItem> spawn=(index,position)=>{var item=UnityEngine.Object.Instantiate(UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/GearCraft/ScriptableObject/Prehubs/Drops/Drop_"+names[index]+".prefab"),position,Quaternion.identity).GetComponent<GearCraft.Scripts.Items.DroppedMaterialItem>();item.Configure(types[index],1);item.GetType().GetField("scatterForce",flags).SetValue(item,0f);return item;};
+System.Action<bool,string> finish=(passed,message)=>{
+ if(done)return;done=true;UnityEditor.EditorApplication.update-=tick;log((passed?"COMPLETE ":"FAILED ")+message+" checks="+checks);
+ foreach(var row in System.IO.File.ReadAllLines(folder+"playerprefs-before.txt")){var p=row.Split('|');if(!bool.Parse(p[1]))PlayerPrefs.DeleteKey(p[0]);else if(p[0].Contains("Progress"))PlayerPrefs.SetString(p[0],System.Text.Encoding.UTF8.GetString(System.Convert.FromBase64String(p[2])));else PlayerPrefs.SetInt(p[0],int.Parse(p[2]));}PlayerPrefs.Save();typeof(GearCraft.Gallery.GalleryProgress).GetField("data",flags).SetValue(null,null);UnityEditor.EditorApplication.isPlaying=false;
+};
+tick=()=>{try{
+ double now=UnityEditor.EditorApplication.timeSinceStartup;if(now-started>20)throw new System.Exception("20s watchdog");if(now<next)return;next=now+.15;
+ if(flow!=null&&flow.enemySpawner!=null)flow.enemySpawner.StopSpawning();
+ switch(phase){
+ case 0:
+  check(enemyList.Contains(last),"actual final enemy registered");last.enabled=false;
+  var already=spawn(0,player.position);var pickup=already.GetType().GetMethod("Pickup",flags);pickup.Invoke(already,null);pickup.Invoke(already,null);
+  var burned=spawn(0,player.position+Vector3.right*20f);burned.Burn();
+  for(int i=0;i<6;i++){positions[i]=player.position+new Vector3(5f+i*2f,1f,0f);drops[i]=spawn(i,positions[i]);drops[i].GetType().GetField("elapsedTime",flags).SetValue(drops[i],9.999f);}
+  far=spawn(0,player.position+Vector3.right*40f);last.TakeDamage(100000f);
+  check(flow.IsBlockingGameplayUI,"day end blocks player input during collection");check((bool)flow.GetType().GetField("isCollectingRemainingMaterials",flags).GetValue(flow),"day-end collection started from real enemy death");
+  for(int i=0;i<6;i++)check(!drops[i].GetComponent<Rigidbody2D>().simulated,"pickup bypasses physical obstacles "+types[i]);
+  phase=1;next=now+.25;break;
+ case 1:
+  for(int i=0;i<6;i++)check(drops[i]!=null&&Vector3.Distance(drops[i].transform.position,player.position)<Vector3.Distance(positions[i],player.position)-.1f,"visible travel before expiry "+types[i]);
+  drops[2].Burn();ScreenCapture.CaptureScreenshot(folder+"absorbing.png");phase=2;next=now+.65;break;
+ case 2:
+  for(int i=0;i<6;i++)check(materials.GetMaterial(types[i])==baseline[i]+gains[i],"exact final collection count "+types[i]);
+  check(far==null,"off-screen drop collected");check(UnityEngine.Object.FindObjectsByType<GearCraft.Scripts.Items.DroppedMaterialItem>(FindObjectsSortMode.None).Length==0,"no drops remain before report");
+  check(!(bool)flow.GetType().GetField("isCollectingRemainingMaterials",flags).GetValue(flow),"collection releases input block");check(GearCraft.Scripts.Items.MaterialPickupFeedback.Instance!=null,"head feedback remains connected");
+  ScreenCapture.CaptureScreenshot(folder+"collected.png");phase=3;break;
+ case 3:
+  report=flow.restResultReportUI;if(report==null||!report.IsShowing||!report.continueButton.interactable)return;
+  var displayed=(System.Collections.Generic.Dictionary<MaterialManager.MaterialType,int>)report.GetType().GetField("displayedMaterialAmounts",flags).GetValue(report);
+  for(int i=0;i<6;i++)check(displayed.ContainsKey(types[i])&&displayed[types[i]]==gains[i],"daily report includes automatic pickups "+types[i]);
+  check(StageCounter.Instance.StageCount==4,"day advance occurs after collection");ScreenCapture.CaptureScreenshot(folder+"daily-report.png");phase=4;break;
+ case 4:report.continueButton.onClick.Invoke();phase=5;break;
+ case 5:
+  if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name!="CraftSpace")return;
+  for(int i=0;i<6;i++)check(MaterialManager.Instance.GetMaterial(types[i])==baseline[i]+gains[i],"collected material survives Dorm transition "+types[i]);finish(true,"Day-end collection, final enemy drop and report/Dorm integration passed; original preferences restored");break;
+ }
+ }catch(System.Exception ex){finish(false,ex.ToString());}};
+UnityEditor.EditorApplication.update+=tick;return "Scheduled day-end integration check with automatic preference restoration/Play exit";

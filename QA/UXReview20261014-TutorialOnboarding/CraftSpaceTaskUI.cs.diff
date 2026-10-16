@@ -1,0 +1,24 @@
+diff --git a/Assets/GearCraft/Scripts/CraftSpace/CraftSpaceTaskUI.cs b/Assets/GearCraft/Scripts/CraftSpace/CraftSpaceTaskUI.cs
+index 84db308..b80e037 100644
+--- a/Assets/GearCraft/Scripts/CraftSpace/CraftSpaceTaskUI.cs
++++ b/Assets/GearCraft/Scripts/CraftSpace/CraftSpaceTaskUI.cs
+@@ -15,8 +15,8 @@ public sealed class CraftSpaceTaskUI : MonoBehaviour
+     [Header("Tasks")]
+     [SerializeField] private string sleepTask = "ベッドで眠って明日に備える";
+     [SerializeField] private string defenseTask = "門の防衛を続ける";
+-    [SerializeField] private string craftTask = "作業台でCRAFTを行う";
+-    [SerializeField] private string upgradeTask = "作業台で武器のアップグレードを行う";
++    [SerializeField] private string craftTask = "作業台で新しい装備を作る";
++    [SerializeField] private string upgradeTask = "作業台で武器の性能を高める";
+ 
+     [Header("Layout")]
+     [SerializeField, Min(220f)] private float panelWidth = 670f;
+@@ -124,6 +124,8 @@ public sealed class CraftSpaceTaskUI : MonoBehaviour
+ 
+             string content = phase == DormTaskPhase.Preparation ? sleepTask
+                 : i == 0 ? defenseTask : i == 1 ? craftTask : upgradeTask;
++            if (phase == DormTaskPhase.Preparation)
++                content += "\nA / D：移動　ベッドのそばで Space";
+             // 防衛は継続目標なので、宿舎に戻った後も未完了のまま次の日へ案内する。
+             bool complete = phase == DormTaskPhase.FirstBossBuild &&
+                 (i == 1 ? progress.hasCrafted : i == 2 && progress.hasUpgradedWeapon);

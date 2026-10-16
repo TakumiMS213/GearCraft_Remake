@@ -1,0 +1,82 @@
+工房武装・入手段階の静的調査（2026-10-15）
+この資料は現行コード/データの調査とオフライン経済モデル。Unity実プレイ、殲滅速度、死亡率の実測結果ではない。
+
+1. 確定する解放条件
+対象                     最早の解放       現在の作成コスト/条件
+GearCraft（大剣＋斧）      初期             Gear 10、Katanaを装備中
+PunkDrive                初期             Gear 4
+SteamCannon              IC撃破後         Gear 30、ARを装備中（UIレシピ名はSteamShoot）
+SteamThrower             IC撃破後         Gear 30、ARを装備中
+RailCraft                BB撃破後         Gear 30＋上級モジュールコア1
+SteamGatling             BB撃破後         Gear 30＋上級モジュールコア1
+
+根拠：Assets/GearCraft/ScriptableObject/CraftRecipe/*.asset
+解放はbossKillCount比較。requiredWeaponは所有だけでなくcurrentWeapon一致が必要。
+根拠：Scripts/Craft/CraftRecipeUnlockModel.cs:109、CraftManager.cs:293-306, 416-420
+作成時、必要武器は消費されない。GearCraft作成は大剣と斧を同時所有。
+根拠：CraftManager.cs:328-342, 375-410
+
+2. 日程と敵の出現
+現行設定は31wave、1日3wave。IC=wave9/Day3、BB=wave18/Day6、AR=wave30/Day10、EK=wave31/Day11。
+したがってCannon/Throwerの解放直後はDay4/wave10、Rail/GatlingはDay7/wave19。
+根拠：ScriptableObject/StageGeneratorConfig/StageGeneratorConfig.asset:15-17（bossStagesはlittle-endian整数列）。
+EnemyScalingStageはMain入場時に固定され、日中のwave間では増えない。敵HPはbaseHP×(1＋日頭wave/10)。
+ICの日は7、BBは16、ARは28、EKは31を使う。wave番号そのものの補正を与える単体試験とはHPが異なる。
+根拠：Scripts/Main/StageFlowManager.cs:107-114、EnemyController.cs:71-78、EnemySpawner.cs:395-403
+初日は予定2群/wave。G系の主敵には初日も別の雑魚1体が付く。2日目以降は主敵ごとに1～3体の群れ、G系は最小2体。
+IC前は低級3種、IC後は各wave最低3群が上級＋残り80%低級、BB後は低級5群のまとまり＋残り上級。
+ボスwaveは予定9群の前座＋ボス。BBなどが戦闘中に召喚する敵は別枠。
+根拠：Scripts/Main/EnemySpawner.cs:137-221, 257-303, 406-459、Stage/Application/StageSpawnPlanner.cs:19
+
+3. 通常入手時期を固定できない理由
+Title初期値はKatana、STR/ACC=0、素材全0。初回CRAFT教材でScrapModuleの不足材料を補充し、次課題でGear所持数を4まで補充する。
+初回教材を進めればPunkDriveを最初の作業台で作成可能。教材の実施がDay1前かDay2前かでGearCraft購入日は変わる。
+ScrapModuleは日終了ごとにGear+5。WeaponCustom教材はScrap不足分を3→6まで補充し、Damage Plate / Plate+ / Speed Gearを品揃えに含める。
+根拠：Scenes/Title.unity:569-573,6377、Scripts/Craft/CraftTutorialController.cs:260-305,560-582、Main/StageFlowManager.cs:276-279
+
+ARは現行Mainの共通報酬カード20種類中の1枚（重み0.025、共通総重み1.19）。3枚を重み付き非復元抽選し、日ごとに最初の2wave終了時に選ぶ。
+Katana固定・提示されたARを必ず選ぶ条件でも、ARがIC撃破までの6回に提示される確率は33.58%、20回では74.44%。
+GearCraftの専用カード3枚が全て未取得のままの固定プールなら、6回で22.41%、20回で57.07%。実プレイは専用カード取得や持ち替えで変わる。
+「Cannon/ThrowerをDay4で必ず入手」は現行仕様から保証できない。レシピ解放と、AR/材料を満たす実購入時点を分けて記録すべき。
+根拠：Scripts/Main/BonusCardsManager.cs:244-309、ScriptableObject/BonusCard/AR.asset、Scenes/Main.unity:9363
+式：P(AR無し)=Σ[i,j,k≠AR、重複なし] wi/W×wj/(W-wi)×wk/(W-wi-wj)。n回までに提示=1−P(AR無し)^n。
+
+4. 素材・強化条件で比較が混ざる点
+低級敵は低級コア、上級敵は中級/UpgradeCoreを落とす。ボスは上級コア1とGear5～15、Scrap15～20（EKはさらに多い）を確定で落とす。
+ボスはUpgradeCoreを落とさない。Rail/Gatling用上級コアはICの時点でも確保可能で、主な壁はBB撃破条件。
+スクラップ4→Gear1の自動変換は現行Scripts内で見つからない。素材収支は旧説明ではなく現行Drop/カード/Moduleに合わせること。
+根拠：ScriptableObject/EnemyData/*.asset、Scripts/Items/MaterialDropper.cs:59-93、Craft/MaterialManager.cs
+dropMultiplierCurveはキー終点x=1/value=1をraw wave番号で評価するため、現行全waveの倍率は1。junkCollectorMultは別途乗る。
+
+ショップは6枠、Rare以上を1枠保証、残りランダム。Gear1でリロール。盤面は(3＋ボス撃破数)四方。
+Damage PlateはScrap3で+1、Plate+はScrap6で+3、Plate++はScrap9で+5。Speed GearはScrap4で攻撃間隔×0.9。
+食事は各夜1設備の選択としてランダムSTRまたはACC+3。報酬カードでも+1～3等。したがって「通常強化値」は一つに定まらない。
+根拠：Scenes/Craft.unity:12422-12439、Scripts/Upgrade/UpgradeShopManager.cs:353-385、StatusManager.cs:316-318、CraftSpace/UIRangeDisplay.cs:242-264
+
+UpGradeModuleはBB後、ModC2×1＋UpgradeCore×3で工房武装ダメージ+5。繰り返し作成可能。
+この+5はACC倍率の後に固定加算される。Gatling/Throwerの基礎1に対して相対効果が大きく、未強化比較だけでは通常ビルドの順位を代表しない。
+根拠：ScriptableObject/CraftRecipe/UpgradeModule.asset、Scripts/StatusManager.cs:175-185、Craft/CraftManager.cs:267,408-409
+RepairModuleは各敵撃破ではなく各wave終了時にHP+20。Barrier/Scrap/Repairの有無は全武器の比較条件として固定する。
+根拠：Scripts/Main/StageFlowManager.cs:249-251
+
+5. PunkDriveの扱い
+PunkDriveは主武器を変更せずstatus.punkDriveを立てる常時併用補助。主武器5種と独立の「有無差分」で比較する。
+現行Main実シリアライズ値はdamageAmount=0、damageInterval=0。接触ダメージはSTR/10でWaitForSeconds(0)ごと、STRはStart時だけ取得。
+STR=0で基礎ダメージ0、フレーム依存の継続火力、同一Main中のSTR報酬非追従の疑いがあり、基礎設定値0.1/0.5を使う机上DPSとは一致しない。
+根拠：Scenes/Main.unity:13450-13451、Scripts/Main/PunkDriveManager.cs:7-30,61-76、PlayerController.cs:159-161
+
+6. 再現可能な経済モデル
+同ディレクトリ economic_model.py を標準Pythonで実行する。
+python3 QA/WeaponBalance20261015/economic_model.py --runs 3000 --seed 20261015
+結果：economic-model-results.json。使用asset/scriptのSHA256と仮定を含む。
+全予定敵撃破/全回収、Katana固定、AR最優先→Gear最優先報酬、ScrapModule＋PunkDriveのみ購入、ショップ投資なし、召喚ドロップなし。
+各レシピの独立購入可能日を同じ未使用残高で評価しており、全武器同時購入可能性でも、生存できる通常プレイの実測でもない。
+
+3,000試行×教材開始2条件のモデル結果（条件付き推定）：
+教材Day1前：GearCraft最初の購入可能日の中央値Day2、62.4%がDay2、残りDay3。PunkDriveはDay1。
+教材Day2前：GearCraftほぼDay3、PunkDriveはDay2。
+Cannon/Thrower：Day4に購入可能なのは約33%、クリア前に可能な試行内で中央値Day5。全試行の約26～27%は最後までAR未提示。
+Rail/Gatling：この未使用資源モデルでは全試行Day7。既存武器やパーツへの投資が多い実プレイでは遅れる可能性がある。
+教材Day1前のGear平均収入（ドロップ＋選択報酬＋Module）：Day1 10.64、Day2 28.28、Day3 38.63、Day4 31.19。
+Day4のUpgradeCore平均は4.19/日、以後も入手するため、BB後にUpGradeModuleを1個採用する比較は経済的に実現可能な範囲にある。
+数値は経済モデルであり、武器バランスの実測値へ混入させないこと。

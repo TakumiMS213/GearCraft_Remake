@@ -1,0 +1,981 @@
+{
+  "kind": "Offline economy model; not combat or normal-play measurement",
+  "seed": 20261015,
+  "assumptions": [
+    "Every scheduled enemy and boss is defeated; every spawned drop is recovered. No expiry/burning/gate loss/death.",
+    "Boss-summoned enemies are excluded because their count depends on combat time; their extra income is not modelled.",
+    "Two scenarios: first-time tutorial completed before Day 1, or on first return before Day 2.",
+    "Tutorial crafts ScrapModule and PunkDrive. No other purchase/reroll/weapon-transform Gear income occurs.",
+    "Affordability of each recipe is considered independently against the same unspent balance, not all crafted together.",
+    "Reward screen uses Katana pool throughout. Choose first AR whenever offered; otherwise highest Gear reward, then other material quantity, then first card.",
+    "AR can be equipped at the workbench once owned; AR materials are not consumed by crafting.",
+    "No weapon-specific rewards, upgrade-part purchases, junkCollectorMult, or upgrade tutorial materials are modelled.",
+    "Python random is reproducible with its own seed; it does not reproduce Unity.Random sequences.",
+    "Enemy groups, unlock thresholds and actual recipe/drop assets are read/reproduced from current source; survival is assumed, never measured."
+  ],
+  "ar_formula": "P(no AR) = sum over ordered triples i,j,k != AR of wi/W * wj/(W-wi) * wk/(W-wi-wj); P(at least one in n offers) = 1 - P(no AR)^n",
+  "ar_offers": {
+    "Katana": {
+      "eligible_cards": 20,
+      "weight_sum": 1.19,
+      "ar_per_offer": 0.0659318773243176,
+      "ar_at_least_once_6_offers": 0.3358421564570546,
+      "ar_at_least_once_12_offers": 0.5588943588603844,
+      "ar_at_least_once_20_offers": 0.7443940143171922,
+      "assumption": "Pool remains unchanged; no weapon-specific once-only cards removed."
+    },
+    "GearCraft_Sword": {
+      "eligible_cards": 23,
+      "weight_sum": 1.94,
+      "ar_per_offer": 0.041397302788860224,
+      "ar_at_least_once_6_offers": 0.22405331912632087,
+      "ar_at_least_once_12_offers": 0.39790674844112084,
+      "ar_at_least_once_20_offers": 0.5706880942703985,
+      "assumption": "Pool remains unchanged; no weapon-specific once-only cards removed."
+    }
+  },
+  "config": {
+    "totalStages": 31,
+    "stagesPerRest": 3,
+    "baseEnemyCount": 9,
+    "maxEnemyCount": 18,
+    "firstDayEnemyCount": 2,
+    "bossStages": [
+      9,
+      18,
+      30,
+      31
+    ],
+    "difficulty": [
+      {
+        "time": 0.0,
+        "value": 0.0,
+        "inSlope": 0.0,
+        "outSlope": 0.0
+      },
+      {
+        "time": 0.8562551,
+        "value": 0.36801797,
+        "inSlope": 1.5041766,
+        "outSlope": 1.5041766
+      },
+      {
+        "time": 1.0,
+        "value": 1.0,
+        "inSlope": 2.0,
+        "outSlope": 2.0
+      }
+    ],
+    "drop_curve": [
+      {
+        "time": 0.0,
+        "value": 0.0,
+        "inSlope": 2.0,
+        "outSlope": 2.0
+      },
+      {
+        "time": 1.0,
+        "value": 1.0,
+        "inSlope": 0.0,
+        "outSlope": 0.0
+      }
+    ]
+  },
+  "recipes": {
+    "BarrierModule": {
+      "unlock_boss_kills": 2,
+      "costs": {
+        "ModuleCore_lv2": 1,
+        "Gear": 5
+      },
+      "required_weapon": "{fileID: 0}",
+      "display_name": "BarrierModule"
+    },
+    "GearCraft": {
+      "unlock_boss_kills": 0,
+      "costs": {
+        "Gear": 10
+      },
+      "required_weapon": "{fileID: 11400000, guid: 7ea165434b8ce4244bec51255964e394, type: 2}",
+      "display_name": "GearCraft"
+    },
+    "PunkDrive": {
+      "unlock_boss_kills": 0,
+      "costs": {
+        "Gear": 4
+      },
+      "required_weapon": "{fileID: 0}",
+      "display_name": "PunkDrive"
+    },
+    "RailCraft": {
+      "unlock_boss_kills": 2,
+      "costs": {
+        "Gear": 30,
+        "ModuleCore_lv3": 1
+      },
+      "required_weapon": "{fileID: 0}",
+      "display_name": "RailCraft"
+    },
+    "RepairModule": {
+      "unlock_boss_kills": 1,
+      "costs": {
+        "ModuleCore_lv1": 1,
+        "Scrap": 10
+      },
+      "required_weapon": "{fileID: 0}",
+      "display_name": "Repair Module"
+    },
+    "ScrapModule": {
+      "unlock_boss_kills": 0,
+      "costs": {
+        "ModuleCore_lv1": 1,
+        "Gear": 3
+      },
+      "required_weapon": "{fileID: 0}",
+      "display_name": "ScrapModule"
+    },
+    "SteamCannon": {
+      "unlock_boss_kills": 1,
+      "costs": {
+        "Gear": 30
+      },
+      "required_weapon": "{fileID: 11400000, guid: c67894c193a09784b99ba2fa502db3dd, type: 2}",
+      "display_name": "SteamShoot"
+    },
+    "SteamGatling": {
+      "unlock_boss_kills": 2,
+      "costs": {
+        "Gear": 30,
+        "ModuleCore_lv3": 1
+      },
+      "required_weapon": "{fileID: 0}",
+      "display_name": "SteamGatling"
+    },
+    "SteamThrower": {
+      "unlock_boss_kills": 1,
+      "costs": {
+        "Gear": 30
+      },
+      "required_weapon": "{fileID: 11400000, guid: c67894c193a09784b99ba2fa502db3dd, type: 2}",
+      "display_name": "SteamThrower"
+    },
+    "UpgradeModule": {
+      "unlock_boss_kills": 2,
+      "costs": {
+        "ModuleCore_lv2": 1,
+        "UpgradeCore": 3
+      },
+      "required_weapon": "{fileID: 0}",
+      "display_name": "UpGradeModule"
+    }
+  },
+  "scenarios": [
+    {
+      "tutorial_before_day": 1,
+      "runs": 3000,
+      "daily": [
+        {
+          "day": 1,
+          "mean_scheduled_enemies": 8.057666666666666,
+          "ar_owned_fraction": 0.12566666666666668,
+          "mean_earned": {
+            "Scrap": 10.659,
+            "Gear": 10.643,
+            "UpgradeCore": 0,
+            "ModuleCore_lv1": 0.99,
+            "ModuleCore_lv2": 0.06233333333333333,
+            "ModuleCore_lv3": 0.041666666666666664
+          },
+          "mean_unspent_inventory": {
+            "Scrap": 10.659,
+            "Gear": 10.643,
+            "UpgradeCore": 0,
+            "ModuleCore_lv1": 0.99,
+            "ModuleCore_lv2": 0.06233333333333333,
+            "ModuleCore_lv3": 0.041666666666666664
+          }
+        },
+        {
+          "day": 2,
+          "mean_scheduled_enemies": 57.034666666666666,
+          "ar_owned_fraction": 0.23566666666666666,
+          "mean_earned": {
+            "Scrap": 76.892,
+            "Gear": 28.276333333333334,
+            "UpgradeCore": 0,
+            "ModuleCore_lv1": 6.344333333333333,
+            "ModuleCore_lv2": 0.06566666666666666,
+            "ModuleCore_lv3": 0.04033333333333333
+          },
+          "mean_unspent_inventory": {
+            "Scrap": 87.551,
+            "Gear": 38.919333333333334,
+            "UpgradeCore": 0,
+            "ModuleCore_lv1": 7.334333333333333,
+            "ModuleCore_lv2": 0.128,
+            "ModuleCore_lv3": 0.082
+          }
+        },
+        {
+          "day": 3,
+          "mean_scheduled_enemies": 57.91866666666667,
+          "ar_owned_fraction": 0.3293333333333333,
+          "mean_earned": {
+            "Scrap": 94.177,
+            "Gear": 38.63,
+            "UpgradeCore": 0,
+            "ModuleCore_lv1": 6.270666666666667,
+            "ModuleCore_lv2": 0.071,
+            "ModuleCore_lv3": 1.0426666666666666
+          },
+          "mean_unspent_inventory": {
+            "Scrap": 181.728,
+            "Gear": 77.54933333333334,
+            "UpgradeCore": 0,
+            "ModuleCore_lv1": 13.605,
+            "ModuleCore_lv2": 0.199,
+            "ModuleCore_lv3": 1.1246666666666667
+          }
+        },
+        {
+          "day": 4,
+          "mean_scheduled_enemies": 56.931333333333335,
+          "ar_owned_fraction": 0.41533333333333333,
+          "mean_earned": {
+            "Scrap": 118.653,
+            "Gear": 31.186666666666667,
+            "UpgradeCore": 4.1946666666666665,
+            "ModuleCore_lv1": 3.6406666666666667,
+            "ModuleCore_lv2": 3.842,
+            "ModuleCore_lv3": 0.03833333333333333
+          },
+          "mean_unspent_inventory": {
+            "Scrap": 300.381,
+            "Gear": 108.736,
+            "UpgradeCore": 4.1946666666666665,
+            "ModuleCore_lv1": 17.245666666666665,
+            "ModuleCore_lv2": 4.041,
+            "ModuleCore_lv3": 1.163
+          }
+        },
+        {
+          "day": 5,
+          "mean_scheduled_enemies": 57.184,
+          "ar_owned_fraction": 0.48933333333333334,
+          "mean_earned": {
+            "Scrap": 118.715,
+            "Gear": 31.326666666666668,
+            "UpgradeCore": 4.119666666666666,
+            "ModuleCore_lv1": 3.708,
+            "ModuleCore_lv2": 3.764,
+            "ModuleCore_lv3": 0.04
+          },
+          "mean_unspent_inventory": {
+            "Scrap": 419.096,
+            "Gear": 140.06266666666667,
+            "UpgradeCore": 8.314333333333334,
+            "ModuleCore_lv1": 20.953666666666667,
+            "ModuleCore_lv2": 7.805,
+            "ModuleCore_lv3": 1.203
+          }
+        },
+        {
+          "day": 6,
+          "mean_scheduled_enemies": 57.867,
+          "ar_owned_fraction": 0.56,
+          "mean_earned": {
+            "Scrap": 136.13933333333333,
+            "Gear": 41.492333333333335,
+            "UpgradeCore": 4.163,
+            "ModuleCore_lv1": 3.693,
+            "ModuleCore_lv2": 3.7743333333333333,
+            "ModuleCore_lv3": 1.0466666666666666
+          },
+          "mean_unspent_inventory": {
+            "Scrap": 555.2353333333333,
+            "Gear": 181.555,
+            "UpgradeCore": 12.477333333333334,
+            "ModuleCore_lv1": 24.64666666666667,
+            "ModuleCore_lv2": 11.579333333333333,
+            "ModuleCore_lv3": 2.2496666666666667
+          }
+        },
+        {
+          "day": 7,
+          "mean_scheduled_enemies": 63.258,
+          "ar_owned_fraction": 0.6096666666666667,
+          "mean_earned": {
+            "Scrap": 158.11566666666667,
+            "Gear": 36.178,
+            "UpgradeCore": 6.431,
+            "ModuleCore_lv1": 2.8996666666666666,
+            "ModuleCore_lv2": 5.996333333333333,
+            "ModuleCore_lv3": 0.04033333333333333
+          },
+          "mean_unspent_inventory": {
+            "Scrap": 713.351,
+            "Gear": 217.733,
+            "UpgradeCore": 18.908333333333335,
+            "ModuleCore_lv1": 27.546333333333333,
+            "ModuleCore_lv2": 17.575666666666667,
+            "ModuleCore_lv3": 2.29
+          }
+        },
+        {
+          "day": 8,
+          "mean_scheduled_enemies": 69.568,
+          "ar_owned_fraction": 0.6576666666666666,
+          "mean_earned": {
+            "Scrap": 177.73033333333333,
+            "Gear": 39.35933333333333,
+            "UpgradeCore": 7.548333333333333,
+            "ModuleCore_lv1": 2.8063333333333333,
+            "ModuleCore_lv2": 7.089,
+            "ModuleCore_lv3": 0.036
+          },
+          "mean_unspent_inventory": {
+            "Scrap": 891.0813333333333,
+            "Gear": 257.09233333333333,
+            "UpgradeCore": 26.456666666666667,
+            "ModuleCore_lv1": 30.352666666666668,
+            "ModuleCore_lv2": 24.664666666666665,
+            "ModuleCore_lv3": 2.326
+          }
+        },
+        {
+          "day": 9,
+          "mean_scheduled_enemies": 75.99233333333333,
+          "ar_owned_fraction": 0.6986666666666667,
+          "mean_earned": {
+            "Scrap": 197.743,
+            "Gear": 42.943333333333335,
+            "UpgradeCore": 8.731666666666667,
+            "ModuleCore_lv1": 2.8573333333333335,
+            "ModuleCore_lv2": 8.092333333333332,
+            "ModuleCore_lv3": 0.04633333333333333
+          },
+          "mean_unspent_inventory": {
+            "Scrap": 1088.8243333333332,
+            "Gear": 300.03566666666666,
+            "UpgradeCore": 35.18833333333333,
+            "ModuleCore_lv1": 33.21,
+            "ModuleCore_lv2": 32.757,
+            "ModuleCore_lv3": 2.372333333333333
+          }
+        },
+        {
+          "day": 10,
+          "mean_scheduled_enemies": 79.181,
+          "ar_owned_fraction": 0.735,
+          "mean_earned": {
+            "Scrap": 222.10533333333333,
+            "Gear": 53.727666666666664,
+            "UpgradeCore": 9.188,
+            "ModuleCore_lv1": 2.781,
+            "ModuleCore_lv2": 8.323666666666666,
+            "ModuleCore_lv3": 1.0463333333333333
+          },
+          "mean_unspent_inventory": {
+            "Scrap": 1310.9296666666667,
+            "Gear": 353.7633333333333,
+            "UpgradeCore": 44.376333333333335,
+            "ModuleCore_lv1": 35.991,
+            "ModuleCore_lv2": 41.080666666666666,
+            "ModuleCore_lv3": 3.4186666666666667
+          }
+        },
+        {
+          "day": 11,
+          "mean_scheduled_enemies": 20.060333333333332,
+          "ar_owned_fraction": 0.735,
+          "mean_earned": {
+            "Scrap": 75.88566666666667,
+            "Gear": 28.825,
+            "UpgradeCore": 1.831,
+            "ModuleCore_lv1": 0.927,
+            "ModuleCore_lv2": 1.6786666666666668,
+            "ModuleCore_lv3": 2.4886666666666666
+          },
+          "mean_unspent_inventory": {
+            "Scrap": 1386.8153333333332,
+            "Gear": 382.5883333333333,
+            "UpgradeCore": 46.20733333333333,
+            "ModuleCore_lv1": 36.918,
+            "ModuleCore_lv2": 42.75933333333333,
+            "ModuleCore_lv3": 5.907333333333334
+          }
+        }
+      ],
+      "independent_affordability": {
+        "GearCraft": {
+          "available_before_clear_fraction": 1.0,
+          "median_day_if_available": 2.0,
+          "day_distribution": {
+            "1": 0.0,
+            "2": 0.6243333333333333,
+            "3": 0.37566666666666665,
+            "4": 0.0,
+            "5": 0.0,
+            "6": 0.0,
+            "7": 0.0,
+            "8": 0.0,
+            "9": 0.0,
+            "10": 0.0,
+            "11": 0.0
+          },
+          "not_available_fraction": 0.0
+        },
+        "PunkDrive": {
+          "available_before_clear_fraction": 1.0,
+          "median_day_if_available": 1.0,
+          "day_distribution": {
+            "1": 1.0,
+            "2": 0.0,
+            "3": 0.0,
+            "4": 0.0,
+            "5": 0.0,
+            "6": 0.0,
+            "7": 0.0,
+            "8": 0.0,
+            "9": 0.0,
+            "10": 0.0,
+            "11": 0.0
+          },
+          "not_available_fraction": 0.0
+        },
+        "SteamCannon": {
+          "available_before_clear_fraction": 0.735,
+          "median_day_if_available": 5,
+          "day_distribution": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0,
+            "4": 0.3293333333333333,
+            "5": 0.086,
+            "6": 0.074,
+            "7": 0.07066666666666667,
+            "8": 0.049666666666666665,
+            "9": 0.048,
+            "10": 0.041,
+            "11": 0.036333333333333336
+          },
+          "not_available_fraction": 0.265
+        },
+        "SteamThrower": {
+          "available_before_clear_fraction": 0.735,
+          "median_day_if_available": 5,
+          "day_distribution": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0,
+            "4": 0.3293333333333333,
+            "5": 0.086,
+            "6": 0.074,
+            "7": 0.07066666666666667,
+            "8": 0.049666666666666665,
+            "9": 0.048,
+            "10": 0.041,
+            "11": 0.036333333333333336
+          },
+          "not_available_fraction": 0.265
+        },
+        "RailCraft": {
+          "available_before_clear_fraction": 1.0,
+          "median_day_if_available": 7.0,
+          "day_distribution": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0,
+            "4": 0.0,
+            "5": 0.0,
+            "6": 0.0,
+            "7": 1.0,
+            "8": 0.0,
+            "9": 0.0,
+            "10": 0.0,
+            "11": 0.0
+          },
+          "not_available_fraction": 0.0
+        },
+        "SteamGatling": {
+          "available_before_clear_fraction": 1.0,
+          "median_day_if_available": 7.0,
+          "day_distribution": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0,
+            "4": 0.0,
+            "5": 0.0,
+            "6": 0.0,
+            "7": 1.0,
+            "8": 0.0,
+            "9": 0.0,
+            "10": 0.0,
+            "11": 0.0
+          },
+          "not_available_fraction": 0.0
+        }
+      }
+    },
+    {
+      "tutorial_before_day": 2,
+      "runs": 3000,
+      "daily": [
+        {
+          "day": 1,
+          "mean_scheduled_enemies": 8.037333333333333,
+          "ar_owned_fraction": 0.12733333333333333,
+          "mean_earned": {
+            "Scrap": 10.767333333333333,
+            "Gear": 5.554333333333333,
+            "UpgradeCore": 0,
+            "ModuleCore_lv1": 0.9996666666666667,
+            "ModuleCore_lv2": 0.06733333333333333,
+            "ModuleCore_lv3": 0.03666666666666667
+          },
+          "mean_unspent_inventory": {
+            "Scrap": 10.767333333333333,
+            "Gear": 5.554333333333333,
+            "UpgradeCore": 0,
+            "ModuleCore_lv1": 0.9996666666666667,
+            "ModuleCore_lv2": 0.06733333333333333,
+            "ModuleCore_lv3": 0.03666666666666667
+          }
+        },
+        {
+          "day": 2,
+          "mean_scheduled_enemies": 56.80466666666667,
+          "ar_owned_fraction": 0.235,
+          "mean_earned": {
+            "Scrap": 76.40066666666667,
+            "Gear": 28.405666666666665,
+            "UpgradeCore": 0,
+            "ModuleCore_lv1": 6.174333333333333,
+            "ModuleCore_lv2": 0.06666666666666667,
+            "ModuleCore_lv3": 0.04
+          },
+          "mean_unspent_inventory": {
+            "Scrap": 87.168,
+            "Gear": 28.992333333333335,
+            "UpgradeCore": 0,
+            "ModuleCore_lv1": 6.558333333333334,
+            "ModuleCore_lv2": 0.134,
+            "ModuleCore_lv3": 0.07666666666666666
+          }
+        },
+        {
+          "day": 3,
+          "mean_scheduled_enemies": 58.04633333333334,
+          "ar_owned_fraction": 0.335,
+          "mean_earned": {
+            "Scrap": 94.35233333333333,
+            "Gear": 38.403,
+            "UpgradeCore": 0,
+            "ModuleCore_lv1": 6.256333333333333,
+            "ModuleCore_lv2": 0.068,
+            "ModuleCore_lv3": 1.0416666666666667
+          },
+          "mean_unspent_inventory": {
+            "Scrap": 181.52033333333333,
+            "Gear": 67.39533333333334,
+            "UpgradeCore": 0,
+            "ModuleCore_lv1": 12.814666666666668,
+            "ModuleCore_lv2": 0.202,
+            "ModuleCore_lv3": 1.1183333333333334
+          }
+        },
+        {
+          "day": 4,
+          "mean_scheduled_enemies": 56.894666666666666,
+          "ar_owned_fraction": 0.4246666666666667,
+          "mean_earned": {
+            "Scrap": 118.371,
+            "Gear": 31.242333333333335,
+            "UpgradeCore": 4.119,
+            "ModuleCore_lv1": 3.719333333333333,
+            "ModuleCore_lv2": 3.7396666666666665,
+            "ModuleCore_lv3": 0.04566666666666667
+          },
+          "mean_unspent_inventory": {
+            "Scrap": 299.8913333333333,
+            "Gear": 98.63766666666666,
+            "UpgradeCore": 4.119,
+            "ModuleCore_lv1": 16.534,
+            "ModuleCore_lv2": 3.941666666666667,
+            "ModuleCore_lv3": 1.164
+          }
+        },
+        {
+          "day": 5,
+          "mean_scheduled_enemies": 56.86,
+          "ar_owned_fraction": 0.493,
+          "mean_earned": {
+            "Scrap": 118.72733333333333,
+            "Gear": 31.306333333333335,
+            "UpgradeCore": 4.187,
+            "ModuleCore_lv1": 3.709,
+            "ModuleCore_lv2": 3.728,
+            "ModuleCore_lv3": 0.04066666666666666
+          },
+          "mean_unspent_inventory": {
+            "Scrap": 418.6186666666667,
+            "Gear": 129.944,
+            "UpgradeCore": 8.306,
+            "ModuleCore_lv1": 20.243,
+            "ModuleCore_lv2": 7.669666666666667,
+            "ModuleCore_lv3": 1.2046666666666668
+          }
+        },
+        {
+          "day": 6,
+          "mean_scheduled_enemies": 57.964333333333336,
+          "ar_owned_fraction": 0.5556666666666666,
+          "mean_earned": {
+            "Scrap": 136.25633333333334,
+            "Gear": 41.522666666666666,
+            "UpgradeCore": 4.137,
+            "ModuleCore_lv1": 3.7236666666666665,
+            "ModuleCore_lv2": 3.7773333333333334,
+            "ModuleCore_lv3": 1.0366666666666666
+          },
+          "mean_unspent_inventory": {
+            "Scrap": 554.875,
+            "Gear": 171.46666666666667,
+            "UpgradeCore": 12.443,
+            "ModuleCore_lv1": 23.966666666666665,
+            "ModuleCore_lv2": 11.447,
+            "ModuleCore_lv3": 2.2413333333333334
+          }
+        },
+        {
+          "day": 7,
+          "mean_scheduled_enemies": 63.422333333333334,
+          "ar_owned_fraction": 0.6066666666666667,
+          "mean_earned": {
+            "Scrap": 157.28033333333335,
+            "Gear": 36.18866666666667,
+            "UpgradeCore": 6.462,
+            "ModuleCore_lv1": 2.8183333333333334,
+            "ModuleCore_lv2": 6.091666666666667,
+            "ModuleCore_lv3": 0.04566666666666667
+          },
+          "mean_unspent_inventory": {
+            "Scrap": 712.1553333333334,
+            "Gear": 207.65533333333335,
+            "UpgradeCore": 18.905,
+            "ModuleCore_lv1": 26.785,
+            "ModuleCore_lv2": 17.538666666666668,
+            "ModuleCore_lv3": 2.287
+          }
+        },
+        {
+          "day": 8,
+          "mean_scheduled_enemies": 69.529,
+          "ar_owned_fraction": 0.651,
+          "mean_earned": {
+            "Scrap": 177.54366666666667,
+            "Gear": 39.107,
+            "UpgradeCore": 7.682666666666667,
+            "ModuleCore_lv1": 2.837,
+            "ModuleCore_lv2": 7.044,
+            "ModuleCore_lv3": 0.037
+          },
+          "mean_unspent_inventory": {
+            "Scrap": 889.699,
+            "Gear": 246.76233333333334,
+            "UpgradeCore": 26.587666666666667,
+            "ModuleCore_lv1": 29.622,
+            "ModuleCore_lv2": 24.582666666666668,
+            "ModuleCore_lv3": 2.324
+          }
+        },
+        {
+          "day": 9,
+          "mean_scheduled_enemies": 76.06533333333333,
+          "ar_owned_fraction": 0.6876666666666666,
+          "mean_earned": {
+            "Scrap": 198.08366666666666,
+            "Gear": 42.614,
+            "UpgradeCore": 8.715666666666667,
+            "ModuleCore_lv1": 2.881666666666667,
+            "ModuleCore_lv2": 8.105,
+            "ModuleCore_lv3": 0.041666666666666664
+          },
+          "mean_unspent_inventory": {
+            "Scrap": 1087.7826666666667,
+            "Gear": 289.3763333333333,
+            "UpgradeCore": 35.303333333333335,
+            "ModuleCore_lv1": 32.50366666666667,
+            "ModuleCore_lv2": 32.687666666666665,
+            "ModuleCore_lv3": 2.365666666666667
+          }
+        },
+        {
+          "day": 10,
+          "mean_scheduled_enemies": 79.07033333333334,
+          "ar_owned_fraction": 0.7256666666666667,
+          "mean_earned": {
+            "Scrap": 221.946,
+            "Gear": 53.48233333333334,
+            "UpgradeCore": 9.077333333333334,
+            "ModuleCore_lv1": 2.816666666666667,
+            "ModuleCore_lv2": 8.428333333333333,
+            "ModuleCore_lv3": 1.0453333333333332
+          },
+          "mean_unspent_inventory": {
+            "Scrap": 1309.7286666666666,
+            "Gear": 342.8586666666667,
+            "UpgradeCore": 44.38066666666667,
+            "ModuleCore_lv1": 35.32033333333333,
+            "ModuleCore_lv2": 41.116,
+            "ModuleCore_lv3": 3.411
+          }
+        },
+        {
+          "day": 11,
+          "mean_scheduled_enemies": 19.96,
+          "ar_owned_fraction": 0.7256666666666667,
+          "mean_earned": {
+            "Scrap": 75.12533333333333,
+            "Gear": 28.684333333333335,
+            "UpgradeCore": 1.7723333333333333,
+            "ModuleCore_lv1": 0.8996666666666666,
+            "ModuleCore_lv2": 1.6483333333333334,
+            "ModuleCore_lv3": 2.4886666666666666
+          },
+          "mean_unspent_inventory": {
+            "Scrap": 1384.854,
+            "Gear": 371.543,
+            "UpgradeCore": 46.153,
+            "ModuleCore_lv1": 36.22,
+            "ModuleCore_lv2": 42.76433333333333,
+            "ModuleCore_lv3": 5.899666666666667
+          }
+        }
+      ],
+      "independent_affordability": {
+        "GearCraft": {
+          "available_before_clear_fraction": 1.0,
+          "median_day_if_available": 3.0,
+          "day_distribution": {
+            "1": 0.0,
+            "2": 0.0003333333333333333,
+            "3": 0.9996666666666667,
+            "4": 0.0,
+            "5": 0.0,
+            "6": 0.0,
+            "7": 0.0,
+            "8": 0.0,
+            "9": 0.0,
+            "10": 0.0,
+            "11": 0.0
+          },
+          "not_available_fraction": 0.0
+        },
+        "PunkDrive": {
+          "available_before_clear_fraction": 1.0,
+          "median_day_if_available": 2.0,
+          "day_distribution": {
+            "1": 0.0,
+            "2": 1.0,
+            "3": 0.0,
+            "4": 0.0,
+            "5": 0.0,
+            "6": 0.0,
+            "7": 0.0,
+            "8": 0.0,
+            "9": 0.0,
+            "10": 0.0,
+            "11": 0.0
+          },
+          "not_available_fraction": 0.0
+        },
+        "SteamCannon": {
+          "available_before_clear_fraction": 0.7256666666666667,
+          "median_day_if_available": 5,
+          "day_distribution": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0,
+            "4": 0.335,
+            "5": 0.08966666666666667,
+            "6": 0.06833333333333333,
+            "7": 0.06266666666666666,
+            "8": 0.051,
+            "9": 0.044333333333333336,
+            "10": 0.03666666666666667,
+            "11": 0.038
+          },
+          "not_available_fraction": 0.2743333333333333
+        },
+        "SteamThrower": {
+          "available_before_clear_fraction": 0.7256666666666667,
+          "median_day_if_available": 5,
+          "day_distribution": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0,
+            "4": 0.335,
+            "5": 0.08966666666666667,
+            "6": 0.06833333333333333,
+            "7": 0.06266666666666666,
+            "8": 0.051,
+            "9": 0.044333333333333336,
+            "10": 0.03666666666666667,
+            "11": 0.038
+          },
+          "not_available_fraction": 0.2743333333333333
+        },
+        "RailCraft": {
+          "available_before_clear_fraction": 1.0,
+          "median_day_if_available": 7.0,
+          "day_distribution": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0,
+            "4": 0.0,
+            "5": 0.0,
+            "6": 0.0,
+            "7": 1.0,
+            "8": 0.0,
+            "9": 0.0,
+            "10": 0.0,
+            "11": 0.0
+          },
+          "not_available_fraction": 0.0
+        },
+        "SteamGatling": {
+          "available_before_clear_fraction": 1.0,
+          "median_day_if_available": 7.0,
+          "day_distribution": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0,
+            "4": 0.0,
+            "5": 0.0,
+            "6": 0.0,
+            "7": 1.0,
+            "8": 0.0,
+            "9": 0.0,
+            "10": 0.0,
+            "11": 0.0
+          },
+          "not_available_fraction": 0.0
+        }
+      }
+    }
+  ],
+  "source_sha256": {
+    "Assets/GearCraft/Scripts/Main/EnemySpawner.cs": "36ebac657187d1a78093223410a171dfe861487333ccdf4b24d65f253763b5e5",
+    "Assets/GearCraft/Scripts/Main/StageFlowManager.cs": "9d06145cc20925b67b68a24d02ce795eed0c308c21320fcfaf1062be20cecca2",
+    "Assets/GearCraft/Scripts/Main/BonusCardsManager.cs": "25c8c1f0a48a7cf6b3e6b6d2b0c52c9ced9f1f67110d6000e0dcf36061a18172",
+    "Assets/GearCraft/Scripts/Stage/Application/StageSpawnPlanner.cs": "7579b0cfa5b830488bc23f7437dc72ea3e32702ba1bbfb3bbf81799b2985bee8",
+    "Assets/GearCraft/Scripts/Data/StageGeneratorSO.cs": "62b1c903b32ff0e29ffc19c6a339fa5241a55664be729bbee329e335cb7888fa",
+    "Assets/GearCraft/Scripts/Items/MaterialDropper.cs": "463428a124bf78bf20a878a6c4e67e146bf5d6f3ba08a5ca2e58c9c4daa98d71",
+    "Assets/GearCraft/Scripts/Craft/CraftTutorialController.cs": "1f6f1248a850738440022e0415269f01c0d6d745c2967f951c9264d45ba52826",
+    "Assets/GearCraft/Scripts/Craft/CraftManager.cs": "44f9d1eedae5b848ca165f53c5c24bad7a7250f091291e8034a8a17d6f29f907",
+    "Assets/GearCraft/ScriptableObject/StageGeneratorConfig/StageGeneratorConfig.asset": "a2cb790f42f9d174ae5321dc476241a64aa12ae6ce15fbdb2ee191a061779e14",
+    "Assets/GearCraft/ScriptableObject/EnemyData/lv2_BB-12.asset.meta": "c27d6a0ad4e1c50f7b88ab1043670fcbe0d0c161265d728cd56e696e71eed905",
+    "Assets/GearCraft/ScriptableObject/EnemyData/lv1_G-1.asset.meta": "fbbe9e03849c01ca40d8de6da014099bb03532d8eaf04e48d3ffb11de7a4e820",
+    "Assets/GearCraft/ScriptableObject/EnemyData/lv1_A-1.asset.meta": "a9cd245c462c2c1d14c59834f2988dd341f454716cd9ac4ba69d589b79651d97",
+    "Assets/GearCraft/ScriptableObject/EnemyData/lv3_BB-413.asset.meta": "f3ce13b58faa14888263dd3f41bf56d59891f6fde5c5320814dcc6ba6161b097",
+    "Assets/GearCraft/ScriptableObject/EnemyData/lv3_FinalBoss.asset.meta": "f028e1a0ac62f8b78a1573f7fd10283ba4fcb28875406274f14ba4f669a5de88",
+    "Assets/GearCraft/ScriptableObject/EnemyData/lv2_EG-33.asset.meta": "d4a6b638cedbc2558ef2ea817e21e623e4f7bb6cc11432112ba1a9a59bf966a9",
+    "Assets/GearCraft/ScriptableObject/EnemyData/lv2_EA-21.asset.meta": "a8ae6c756ab83da818989d1f2faaaad9fd9d7adf7bbc406406b8af1a582d163a",
+    "Assets/GearCraft/ScriptableObject/EnemyData/lv3_IC-408.asset.meta": "ff76647bfa7ec92172e7810dd4593f1e005fa434b73a58a2893d767ebf733b7e",
+    "Assets/GearCraft/ScriptableObject/EnemyData/lv3_AR-227.asset.meta": "ea50d922a4dbb5b9e05cca3a5823bc67e13d24f3b4f04167dd443b4cb68d9b7f",
+    "Assets/GearCraft/ScriptableObject/EnemyData/lv1_B-1.asset.meta": "c23ac3f95044c84db926ff34ae675f08a8f5de71423be79c50eb5446a7aa7588",
+    "Assets/GearCraft/ScriptableObject/EnemyData/lv1_A-1.asset": "6a92c98b3beea980bf17ccdec9c7dc1b3b0a5265519d9593068330a059b3ac36",
+    "Assets/GearCraft/ScriptableObject/EnemyData/lv1_B-1.asset": "3a43b1e2da3750284a9f3ad7792e3fd1e1bfd9de0e6c66d949e0ac15c60c157d",
+    "Assets/GearCraft/ScriptableObject/EnemyData/lv1_G-1.asset": "c7ef245c211e5ae590f3ec015f54fbcd86341175225f7f7fdf9e8cc49add7484",
+    "Assets/GearCraft/ScriptableObject/EnemyData/lv2_BB-12.asset": "912e6e3d69488f1f34a7ac96f83203bba27e9514ab22a1e85724649fdddb090a",
+    "Assets/GearCraft/ScriptableObject/EnemyData/lv2_EA-21.asset": "2808cdbe9e7c518c6ca50faf272ecc266a7765b77ba78b5ac713312c68ac5355",
+    "Assets/GearCraft/ScriptableObject/EnemyData/lv2_EG-33.asset": "0e10af2cf558710e8129a387400adff1237a17c31cfb55f9475cad71dae06b7a",
+    "Assets/GearCraft/ScriptableObject/EnemyData/lv3_IC-408.asset": "4a79378025eaa6076bb99446bf5249602432bf2a17de0a0c02d7882803c25227",
+    "Assets/GearCraft/ScriptableObject/EnemyData/lv3_BB-413.asset": "5acc9d8ccd2725cfa4f04ed8944c0ee01adcf2253e82c477448352797eb4ff08",
+    "Assets/GearCraft/ScriptableObject/EnemyData/lv3_AR-227.asset": "26ea74c6d076fec9010b0589e669a2ad830afe2f347d7bff4f308ab6e61995da",
+    "Assets/GearCraft/ScriptableObject/EnemyData/lv3_FinalBoss.asset": "3b200c8bed9650774ac3a59e9082c25958fce597cb86dec86280d41a1d996dc0",
+    "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_SteamGatling_TargetDamage.asset.meta": "36e61ab3832dfb650b8f75ff1d8d9e00a801f4a0dbe632a0e4cd548b41e78628",
+    "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_SteamCannon_GiantShot.asset.meta": "2155bf141f31a777a008fa9b88867c4dab7fd76628dbdb04e61d6013362a431a",
+    "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_SteamGatling_RecoilJump.asset.meta": "e0449a7f8c2e2d720c2d0abf375622251e1a489fcd5b378acde44612f19bd92a",
+    "Assets/GearCraft/ScriptableObject/BonusCard/HP_20.asset.meta": "997b60abdd1d19a63d29f55370a3b2f856dc2df6816d5919b36cf257dc00919b",
+    "Assets/GearCraft/ScriptableObject/BonusCard/ACC_2.asset.meta": "4d0dbfd94ef0ab7857281199085380db42a371d680a1c7511243eeb136129ef5",
+    "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_GearCraft_AxeSize.asset.meta": "d327ffd3ec7317cd6e99ec0c28d66708818603d236b70d6c9b3cd280e48a92ab",
+    "Assets/GearCraft/ScriptableObject/BonusCard/ModuleCore_2.asset.meta": "ce2b8c8adbb37f9fa0e664ecf01bd4c9df5ea4f5bf196d2da5263504321c65e7",
+    "Assets/GearCraft/ScriptableObject/BonusCard/STR_3.asset.meta": "0095d6e0bed5e2e779e965eaa2c1c7456333ba663bbfdab75468cea7dd16162c",
+    "Assets/GearCraft/ScriptableObject/BonusCard/Scrap_4.asset.meta": "0b3bedceb388163e9014050c04224704b35c79e14e6cc37982f2489f791553f3",
+    "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_RailCraft_Ricochet.asset.meta": "6f58c5deb150b511cd61c48f139edfae8757ee25ba109f502b3bedb67083fb7e",
+    "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_GearCraft_SwordMove.asset.meta": "7236f6324986a94844d67f9d1e7eddfff9e29c8009022ce23626c21f5bb8a412",
+    "Assets/GearCraft/ScriptableObject/BonusCard/Gear_2.asset.meta": "22e85fac2d64a4a7fa063a189a8c86c0a272319e9364d386a7bab302a98a098d",
+    "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_SteamCannon_SlowBigExplosion.asset.meta": "b89312d064fb204f38cca3de2975aefbaa3efea60f29feb74b2dbc75e1c5b151",
+    "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_SteamThrower_BoostBurn.asset.meta": "546f0ebfe970c9a1e25df8224a7f4f73045e915b074a27f12920e1bd20afe590",
+    "Assets/GearCraft/ScriptableObject/BonusCard/STR_1.asset.meta": "42718493bb3cca109425263745c12a10fd49b8be1259b6ef15d089e2d9e24251",
+    "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_RailCraft_BulletSize.asset.meta": "f364c3f50219cbbdcea6e0640691bd22de84970533880f85a2e3b5a698da9bbb",
+    "Assets/GearCraft/ScriptableObject/BonusCard/STR_to_ACC.asset.meta": "e1cd49e9f02935563c40aec8c05c5df7aa6ecc6e8515b7d89abd85b84621a36a",
+    "Assets/GearCraft/ScriptableObject/BonusCard/ACC_to_STR.asset.meta": "ed53d88678f707620db99a6a69dd68603644628a116e1eb629ab3bcceae014f4",
+    "Assets/GearCraft/ScriptableObject/BonusCard/ACC_3.asset.meta": "ceea414f70c5da04fa17e56af4b58cbf72a241b54010d556071557fb2a3ee09c",
+    "Assets/GearCraft/ScriptableObject/BonusCard/HP_100.asset.meta": "e923a922e9ad274dbb2161b2da210c03c7d85af03485792431c150ff29264998",
+    "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_SteamCannon_Knockback.asset.meta": "ac61598d0f57e4255fababd380c4ce886822ee50efc06d1f721109c7650bc73e",
+    "Assets/GearCraft/ScriptableObject/BonusCard/Scrap_2.asset.meta": "74296446b7e0c74547bd786129f54ca4914c987d26087af88068767c558c7216",
+    "Assets/GearCraft/ScriptableObject/BonusCard/ModuleCore_3.asset.meta": "021279c589704d48c634757a5b3dc91ce4a443b5711b9f6a462050cecb8a3697",
+    "Assets/GearCraft/ScriptableObject/BonusCard/STR_2.asset.meta": "d6932a8a4ecd2ca4111f06cf4999cc7b8fee33765483f0a1519f32a1b67d659f",
+    "Assets/GearCraft/ScriptableObject/BonusCard/Katana.asset.meta": "92c58b5a1486aa91da446d67ce21da13f6213eb785bc13c358bb96099d32876d",
+    "Assets/GearCraft/ScriptableObject/BonusCard/Gear_1.asset.meta": "1a2a0aba6f353fa1732ae00559875526cedd38271635005a20b4e3fc2d57a98e",
+    "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_SteamThrower_SlipOverheat.asset.meta": "44b3c215792d84ec5ceeb6f76eae4ff15a5cfebe44054667e9f3df87af97ca42",
+    "Assets/GearCraft/ScriptableObject/BonusCard/ACC_1.asset.meta": "6a7ff1b6a8e6df1ad61d6b03f2dcc1699ab054f8de8bdcdf68d80f7fb66a9859",
+    "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_RailCraft_Overheat.asset.meta": "b998f44261beca3517f50e9ae95b372d411bc1e4179b266f9c42bd1165d50d3e",
+    "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_SteamThrower_NoFall.asset.meta": "f0ecaef08a2fcccc0b40d94bd32617265b21be5fd1018af820e887ed97c5a1a0",
+    "Assets/GearCraft/ScriptableObject/BonusCard/GateRepair.asset.meta": "9fd8242de63510d45a3e17eb202d40d2673400b437448e599911c5c8f16db6af",
+    "Assets/GearCraft/ScriptableObject/BonusCard/ModuleCore_1.asset.meta": "8c4dad48bfae25ca44a195d9b9ba5d6878053191093a4f5573affe9e37d181ea",
+    "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_SteamGatling_BulletSpeed.asset.meta": "d4ccc68742792ddf84e78418e09faea3de822e91b3129586873a721109382afb",
+    "Assets/GearCraft/ScriptableObject/BonusCard/Gear_3.asset.meta": "c7cb539d8b731078c96f1af31090ab56b2e37cf9692b42837e058848a27b85af",
+    "Assets/GearCraft/ScriptableObject/BonusCard/AR.asset.meta": "159314c91d2fe5eb42422687588c0b4761e1dc6cdc9d88ef681eaf2efa45f3e8",
+    "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_GearCraft_TransformGear.asset.meta": "6cc68e6690da802ec57e68c91cb6e3d338ef021b60ae017d8e65e9fca7f62bfc",
+    "Assets/GearCraft/Scenes/Main.unity": "02572fef0ea82a7318c983381f55a2878b250e5235dae45eee13b8e32d8f4305",
+    "Assets/GearCraft/ScriptableObject/BonusCard/STR_1.asset": "8e9af14ee1b7c3aee5efdf091b50fe803f6e65108216bf37b0f81a4ea868a716",
+    "Assets/GearCraft/ScriptableObject/BonusCard/ACC_1.asset": "db6035ee2462a9b99609dd21b2c9f7922466146b6fbe4bcbd82d327368e202bf",
+    "Assets/GearCraft/ScriptableObject/BonusCard/ACC_2.asset": "5273a892a163f78a96ac1fac315c3cbf7bf77157e2fa618a56fcf7efdc5d701a",
+    "Assets/GearCraft/ScriptableObject/BonusCard/ACC_3.asset": "55a6e792a812419d43a93d889dbc6b06dee4c10b66a83e2a92596dca51d3dcf4",
+    "Assets/GearCraft/ScriptableObject/BonusCard/STR_2.asset": "59c84fa8a02fd6fd61c5637d3855f32f53a71e30a084fce5fa12ef8faaf270e3",
+    "Assets/GearCraft/ScriptableObject/BonusCard/STR_3.asset": "80c1daf7878050d28bc262cff263a8ae085435ef40ff44c87afeb1e9c7b0816a",
+    "Assets/GearCraft/ScriptableObject/BonusCard/HP_20.asset": "10e2a2d6fd6fd838f53f3ea417862bc48505f9aa9d12caeb5eba82ba64e8d755",
+    "Assets/GearCraft/ScriptableObject/BonusCard/HP_100.asset": "2493e437afd7d6b0900386e111dbc03d7650c741b6d10c29ef58db804dea849d",
+    "Assets/GearCraft/ScriptableObject/BonusCard/GateRepair.asset": "5c0103769a10e269c8788100e6352bab6a7e848b56589691b298db7cdf157912",
+    "Assets/GearCraft/ScriptableObject/BonusCard/Gear_1.asset": "f6152586a58bc4b66f20a4850baaba70c970c6b12d6889858c1d41db20af2b54",
+    "Assets/GearCraft/ScriptableObject/BonusCard/Gear_2.asset": "9b59d28421b1684fdbf8d277315b6e3056088d55b9f8b3d08c3299880728d987",
+    "Assets/GearCraft/ScriptableObject/BonusCard/Gear_3.asset": "1019b53aa035f7c8778dfc82b6143d41cc78c0cf62a4514a5d083282976c4dbc",
+    "Assets/GearCraft/ScriptableObject/BonusCard/Scrap_2.asset": "c73c3dfc097b29b77813c9c187662267dc355b496d6dd6ed9628e5c212434bd1",
+    "Assets/GearCraft/ScriptableObject/BonusCard/Scrap_4.asset": "467ceeb29c90c945a7574df23e9bb5f2077af06bd1c3e3fd15b5ba316b338f09",
+    "Assets/GearCraft/ScriptableObject/BonusCard/ModuleCore_1.asset": "b071437bdb1db844232fc61cf301b6ae5448ffb34c01152c7859bac2b3bce47f",
+    "Assets/GearCraft/ScriptableObject/BonusCard/ModuleCore_2.asset": "85d839dffdad0c7b486fac996ea037f8505e87932b032cf44ca26881a6d5cc53",
+    "Assets/GearCraft/ScriptableObject/BonusCard/ModuleCore_3.asset": "ed2bc0e1498d6b2dba01eabc05104fee59e24e5d564feb6e5e543893ce4be312",
+    "Assets/GearCraft/ScriptableObject/BonusCard/AR.asset": "906d35156eeff3b0c83427faf6ed2dc4c1cd8b9ce8d029031c902bdf8bab9bcf",
+    "Assets/GearCraft/ScriptableObject/BonusCard/ACC_to_STR.asset": "87e4bfad2593b4dd96df92a06ecc364a822d9c619aec8d697868793c1e63486d",
+    "Assets/GearCraft/ScriptableObject/BonusCard/STR_to_ACC.asset": "5db0159e685a7bb1281d6f5892850251e404573d69bc3db1345b67e742063a3d",
+    "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_GearCraft_AxeSize.asset": "8442c96c09060a2adff56f0960be130c5d387dfdef04d4369ae086d87555f9fc",
+    "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_GearCraft_SwordMove.asset": "b999d0714c7bb58c079ef7303a38fe16037e68fa5c3ae6113f65202d902c01a8",
+    "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_GearCraft_TransformGear.asset": "3cc549c0b4123916307430310e65abc2d4339f642b26485e47e7bf6c6b8e3329",
+    "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_SteamCannon_SlowBigExplosion.asset": "a3a808dd192e1ad999b62188bf50d5cf607c8968a087fc5372dced1d9de5c582",
+    "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_SteamCannon_GiantShot.asset": "8b7c1b726d461f9a8aee2da01fdac682ec5e119f277f2cd0c7312766fe991487",
+    "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_SteamCannon_Knockback.asset": "a2db466610a67a346e9db8343847c8e947a753cf00f4c6ac5782e588bddfa088",
+    "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_SteamThrower_SlipOverheat.asset": "46166d35f589e4ce612b479017e8193647a443357956723aaddc59d38e57b5dc",
+    "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_SteamThrower_NoFall.asset": "d1d7e1f723ef67c122317e3bc38ecdf1afc950a377ec8e0aaf1cb01a6ecf1cb6",
+    "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_SteamThrower_BoostBurn.asset": "03025089268e7640adbb30751079d9f8f42cd41eac2f656f5493243f3a63dbb0",
+    "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_RailCraft_BulletSize.asset": "c664aafc05f06f84d250efdce029d50cb532705f24c09b49a286eccc14e76a34",
+    "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_RailCraft_Overheat.asset": "bb5c9bb1e278e57e4c3af44a7ba827052c8a63b064ce9cd494805ba367581de0",
+    "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_RailCraft_Ricochet.asset": "44f29cfb37e73cc3b6d5007881333cb3583811e8a7f7a06022747be9c10752ba",
+    "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_SteamGatling_BulletSpeed.asset": "4095d460bef93b8173f32a3ee8467353fb48a480fceba7a034109caced4bc448",
+    "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_SteamGatling_TargetDamage.asset": "0cc58281d95ebda27f2c97c8cbfc3ce794d8bf638a83bd2ccd2e6c0055ecb25e",
+    "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_SteamGatling_RecoilJump.asset": "0d0f560d38e4823639c7e656e14e4b07d9e734ac425876a4d3155a4b7b6c9810",
+    "Assets/GearCraft/ScriptableObject/CraftRecipe/BarrierModule.asset": "e4ed5f0223a1e5b4d45f8e9f0eecc025f03a41814400ce79996178aefb38b94c",
+    "Assets/GearCraft/ScriptableObject/CraftRecipe/GearCraft.asset": "546a352ee8c333b593bbace1ea61394a55e1e548bf8f3393f6c04cdc7782ce5b",
+    "Assets/GearCraft/ScriptableObject/CraftRecipe/PunkDrive.asset": "ab8b9e613bf4a65a853c6026d3dcac96e8b49d5eb087103bb981af644a480071",
+    "Assets/GearCraft/ScriptableObject/CraftRecipe/RailCraft.asset": "fad62b94c55f2eaddcd792aa12cc1f58dd96181ffa06f77c50ba9d3a3341380e",
+    "Assets/GearCraft/ScriptableObject/CraftRecipe/RepairModule.asset": "aec507924d9f834e56fe7fdb38d049cc51ba152472acf34ebff3f34eebc3b013",
+    "Assets/GearCraft/ScriptableObject/CraftRecipe/ScrapModule.asset": "103b6b8e5456ab830f327b2ab4f731ee86d08335b689d2a4dc424e7812a75a80",
+    "Assets/GearCraft/ScriptableObject/CraftRecipe/SteamCannon.asset": "5ff30bdfe5485a5412e22e502f84d38880054a48802f12e90f82fd1abbf2621b",
+    "Assets/GearCraft/ScriptableObject/CraftRecipe/SteamGatling.asset": "9b6155ad4ff232cec66f15895e741d6ed0f0c567fcd60e9e4e2dbc6c10a254d0",
+    "Assets/GearCraft/ScriptableObject/CraftRecipe/SteamThrower.asset": "405eaa23ec51dd53263f2aa36a30a3d6ad014c47318b65d2e7b2794194f322bf",
+    "Assets/GearCraft/ScriptableObject/CraftRecipe/UpgradeModule.asset": "dec21c41b3fc83e35c4eb9c2b179932918a464d1bbb2a39c05f41eaa89c072ca"
+  }
+}

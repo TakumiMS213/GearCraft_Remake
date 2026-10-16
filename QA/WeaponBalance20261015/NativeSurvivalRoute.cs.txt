@@ -1,0 +1,184 @@
+// C#6 execute_code method body. One native day (three consecutive waves) with ordinary durability.
+// Run only after the caller prepares an owned target weapon/build and loads Main through the normal scene path.
+// This does not reset/stop/replace StageFlowManager or EnemySpawner, heal HP/GATE, or delete enemies/drops.
+// Reward cards and the day-end report are confirmed through their actual scene Buttons.
+const string folder="QA/WeaponBalance20261015/";
+if(!Application.isPlaying||UnityEngine.SceneManagement.SceneManager.GetActiveScene().name!="Main")throw new System.Exception("Main Play required");
+if(System.IO.File.Exists(folder+"benchmark-progress.txt")&&System.IO.File.ReadAllText(folder+"benchmark-progress.txt").StartsWith("RUNNING"))throw new System.Exception("CombatBenchmark is still running; do not run concurrently");
+string progress=folder+"native-survival-progress.txt";
+if(System.IO.File.Exists(progress)&&System.IO.File.ReadAllText(progress).StartsWith("RUNNING"))throw new System.Exception("Native survival runner already active");
+var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Public;
+var flow=StageFlowManager.Instance;var status=StatusManager.Instance;var player=UnityEngine.Object.FindFirstObjectByType<PlayerController>();
+if(flow==null||status==null||player==null||player.runtimeStatus!=status||status.currentWeapon==null)throw new System.Exception("Wait for native Main/Player.Start initialization before launching");
+if(MainDebugEnemySpawnWindow.IsDebugModeActive)throw new System.Exception("Debug invulnerability must be off");
+var mainWeapon=status.currentWeapon;string weaponName=mainWeapon.weaponName.StartsWith("GearCraft")?"GearCraft":mainWeapon.weaponName;
+if(!status.ownedWeapons.Contains(mainWeapon))throw new System.Exception("The caller must own the initial target weapon, not only assign currentWeapon");
+var sword=status.FindOwnedWeaponByName("GearCraft_Sword");var axe=status.FindOwnedWeaponByName("GearCraft_Axe");
+if(weaponName=="GearCraft"&&(sword==null||axe==null))throw new System.Exception("Both GearCraft forms must be owned");
+var arm=player.armRotation;var body=player.GetComponent<Rigidbody2D>();var playerCollider=player.GetComponent<Collider2D>();
+if(arm==null||body==null||playerCollider==null)throw new System.Exception("Player native combat components missing");
+string[] prefRows=System.IO.File.ReadAllLines(folder+"playerprefs-before.txt");
+foreach(string line in prefRows){if(string.IsNullOrWhiteSpace(line))continue;var columns=line.Split('|');if(columns.Length!=3)throw new System.Exception("Invalid PlayerPrefs backup row");bool.Parse(columns[1]);if(columns[1]=="True"){if(columns[0].Contains(".Metrics.")||columns[0].Contains("Gallery.Progress"))System.Convert.FromBase64String(columns[2]);else int.Parse(columns[2]);}}
+int firstStage=StageCounter.Instance!=null?StageCounter.Instance.StageCount:1;
+string label=System.IO.File.Exists(folder+"native-survival-name.txt")?System.IO.File.ReadAllText(folder+"native-survival-name.txt").Trim():"native-survival-"+weaponName+"-w"+firstStage+"-"+System.DateTime.UtcNow.ToString("yyyyMMdd-HHmmss");
+if(string.IsNullOrWhiteSpace(label)||label.IndexOfAny(System.IO.Path.GetInvalidFileNameChars())>=0||label.Contains("/")||label.Contains("\\"))throw new System.Exception("Invalid survival label");
+string eventsPath=folder+label+"-events.csv";
+var invariant=System.Globalization.CultureInfo.InvariantCulture;
+System.Func<string,string> csv=value=>"\""+(value??"").Replace("\"","\"\"").Replace("\r","").Replace("\n"," | ")+"\"";
+float started=Time.time,nextShot=Time.time,nextJump=Time.time,lastSample=-1f,lastHP=status.HP,lastGate=status.GATE;
+float initialGate=status.GATE,playerDamage=0f,gateDamage=0f,playerHealed=0f,gateHealed=0f;
+double wallStarted=UnityEditor.EditorApplication.timeSinceStartup,lastFrameAt=wallStarted;
+int lastFrame=-1,shots=0,rewards=0,completedWaves=0,lastStage=firstStage,frames=0,spawned=0,killed=0,escaped=0;
+bool done=false,wasActive=flow.IsStageActive,reportConfirmed=false,openingConfirmed=false;
+bool oldPlayerEnabled=player.enabled,oldArmEnabled=arm.enabled;
+float oldCapture=Time.captureDeltaTime,oldScale=Time.timeScale;int oldVSync=QualitySettings.vSyncCount,oldTarget=Application.targetFrameRate;bool oldBackground=Application.runInBackground;
+// Bootstrap pauses before Main.Start. Restore the pre-bootstrap settings, not that temporary pause.
+string timeHandoffPath=folder+"native-survival-bootstrap-time-before.txt";
+if(System.IO.File.Exists(timeHandoffPath)){
+ var handoff=System.IO.File.ReadAllText(timeHandoffPath).Trim().Split('|');
+ if(handoff.Length!=6)throw new System.Exception("Invalid bootstrap time handoff");
+ if(int.Parse(handoff[0])==status.GetInstanceID()){
+  oldScale=float.Parse(handoff[1],invariant);oldCapture=float.Parse(handoff[2],invariant);oldVSync=int.Parse(handoff[3]);oldTarget=int.Parse(handoff[4]);oldBackground=bool.Parse(handoff[5]);
+ }
+}
+var configure=typeof(PlayerController).GetMethod("ConfigureSpawnedProjectile",flags);var sync=typeof(PlayerController).GetMethod("SyncWeaponFromStatus",flags);
+var meleeAttack=typeof(PlayerController).GetMethod("PerformMeleeAttack",flags);var updateAnim=typeof(PlayerController).GetMethod("UpdateArmAnimation",flags);
+var barrierUpdate=typeof(PlayerController).GetMethod("UpdateAutoBarrier",flags);var bulletSpeedMethod=typeof(PlayerController).GetMethod("GetCurrentBulletSpeed",flags);
+var damageField=typeof(PlayerController).GetField("currentDamage",flags);var poseMethod=typeof(ArmRotation).GetMethod("GetPoseIndex",flags);var offsetMethod=typeof(ArmRotation).GetMethod("GetOffset",flags);var scaleMethod=typeof(ArmRotation).GetMethod("GetScale",flags);
+var tooltipDataField=typeof(BonusCardTooltipTrigger).GetField("cardData",flags);
+var tracked=new System.Collections.Generic.Dictionary<int,EnemyController>();var names=new System.Collections.Generic.Dictionary<int,string>();var countedGone=new System.Collections.Generic.HashSet<int>();
+UnityEngine.Random.State aimRandom=UnityEngine.Random.state;
+System.IO.File.WriteAllText(eventsPath,"game_seconds,wall_seconds,event,scene,stage,hp,gate,str,acc,flat_damage,module_damage,weapon,shots,spawned,killed,escaped,player_damage,gate_damage,details\n");
+System.IO.File.WriteAllText(folder+label+"-initial-status.json",JsonUtility.ToJson(status,true));
+if(MaterialManager.Instance!=null)System.IO.File.WriteAllText(folder+label+"-initial-materials.json",JsonUtility.ToJson(MaterialManager.Instance,true));
+System.IO.File.WriteAllText(folder+label+"-meta.txt","One native day from caller-provided start/build. Native StageFlowManager/EnemySpawner remain enabled and unchanged. Native HP/GATE persist; no invulnerability, healing injection, enemy cleanup, artificial spawn replay, or wave resets. Native reward Buttons are selected by fixed policy: HP healing while HP <= 60; gate repair while GATE <= min(100, half initial GATE); then matching attack stat/conversion and target-weapon combat effects; otherwise first offered button. Crafted/upgraded initial build is not augmented through later craft/shop actions. Native rewards may add stats/effects/materials. The target weapon is re-equipped through EquipWeapon after weapon-grant rewards. Bot aim/movement and attacks derive from CombatBenchmark.cs.txt including atan2-asin(muzzleOffset.y/distance) correction; native projectile/AI/physics are used. No dash or BOOST. Native auto-barrier maintenance is invoked because PlayerController.Update input handling is disabled. Stop after native day-end Continue reaches CraftSpace, HP/GATE depletion, Ending scene, 900 game seconds or 300 wall seconds. This is one-day survival evidence, not a full acquisition-to-ED playthrough or human playability proof.\n");
+System.Action<string,string> record=(eventName,details)=>{
+ int stageNow=StageCounter.Instance!=null?StageCounter.Instance.StageCount:lastStage;
+ string currentName=status!=null&&status.currentWeapon!=null?status.currentWeapon.weaponName:"";
+ var values=new[]{(Time.time-started).ToString("F3",invariant),(UnityEditor.EditorApplication.timeSinceStartup-wallStarted).ToString("F3",invariant),eventName,UnityEngine.SceneManagement.SceneManager.GetActiveScene().name,stageNow.ToString(),status!=null?status.HP.ToString():"",status!=null?status.GATE.ToString("F2",invariant):"",status!=null?status.STR.ToString():"",status!=null?status.ACC.ToString():"",status!=null?status.bonusDamage.ToString("F3",invariant):"",status!=null?status.craftWeaponDamagebuff.ToString():"",currentName,shots.ToString(),spawned.ToString(),killed.ToString(),escaped.ToString(),playerDamage.ToString("F2",invariant),gateDamage.ToString("F2",invariant),details};
+ System.IO.File.AppendAllText(eventsPath,string.Join(",",values.Select(csv).ToArray())+"\n");
+};
+System.Action restorePrefs=()=>{
+ int restored=0;
+ foreach(string line in prefRows){if(string.IsNullOrWhiteSpace(line))continue;var c=line.Split('|');bool exists=bool.Parse(c[1]);bool stringValue=c[0].Contains(".Metrics.")||c[0].Contains("Gallery.Progress");if(!exists)PlayerPrefs.DeleteKey(c[0]);else if(stringValue)PlayerPrefs.SetString(c[0],System.Text.Encoding.UTF8.GetString(System.Convert.FromBase64String(c[2])));else PlayerPrefs.SetInt(c[0],int.Parse(c[2]));restored++;}
+ PlayerPrefs.Save();
+ foreach(string line in prefRows){if(string.IsNullOrWhiteSpace(line))continue;var c=line.Split('|');bool exists=bool.Parse(c[1]);if(PlayerPrefs.HasKey(c[0])!=exists)throw new System.Exception("Restore existence mismatch: "+c[0]);if(!exists)continue;bool stringValue=c[0].Contains(".Metrics.")||c[0].Contains("Gallery.Progress");string actual=stringValue?System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(PlayerPrefs.GetString(c[0]))):PlayerPrefs.GetInt(c[0]).ToString();if(actual!=c[2])throw new System.Exception("Restore value mismatch: "+c[0]);}
+ System.IO.File.WriteAllText(folder+label+"-restore-verified.txt","Verified "+restored+" backup keys. EditorPlaying="+UnityEditor.EditorApplication.isPlaying+" UTC="+System.DateTime.UtcNow.ToString("O")+"\n");
+};
+UnityEditor.EditorApplication.CallbackFunction tick=null;
+System.Action<UnityEditor.PlayModeStateChange> playStateChanged=null;
+System.Action<string> finish=reason=>{
+ if(done)return;done=true;UnityEditor.EditorApplication.update-=tick;
+ try{
+  record("finished",reason);
+  if(status!=null)System.IO.File.WriteAllText(folder+label+"-final-status.json",JsonUtility.ToJson(status,true));
+  if(MaterialManager.Instance!=null)System.IO.File.WriteAllText(folder+label+"-final-materials.json",JsonUtility.ToJson(MaterialManager.Instance,true));
+  System.IO.File.WriteAllText(folder+label+"-result.txt","result="+reason+"\nstart_stage="+firstStage+"\nlast_stage="+lastStage+"\ncompleted_native_waves="+completedWaves+"\nrewards_selected="+rewards+"\ngame_seconds="+(Time.time-started).ToString("F3",invariant)+"\nwall_seconds="+(UnityEditor.EditorApplication.timeSinceStartup-wallStarted).ToString("F3",invariant)+"\nshots="+shots+"\nplayer_damage="+playerDamage.ToString("F2",invariant)+"\ngate_damage="+gateDamage.ToString("F2",invariant)+"\nplayer_healed="+playerHealed.ToString("F2",invariant)+"\ngate_healed="+gateHealed.ToString("F2",invariant)+"\n");
+  restorePrefs();
+ }catch(System.Exception ex){System.IO.File.AppendAllText(folder+label+"-errors.txt",ex+"\n");}
+ finally{
+  if(player!=null)player.enabled=oldPlayerEnabled;if(arm!=null)arm.enabled=oldArmEnabled;
+  Time.captureDeltaTime=oldCapture;Time.timeScale=oldScale;QualitySettings.vSyncCount=oldVSync;Application.targetFrameRate=oldTarget;Application.runInBackground=oldBackground;
+  System.IO.File.WriteAllText(progress,"COMPLETE "+label+" "+reason+"\n");
+  // Reapply the original backup after scene teardown too; parent should independently verify after stop.
+  playStateChanged=state=>{if(state!=UnityEditor.PlayModeStateChange.EnteredEditMode)return;UnityEditor.EditorApplication.playModeStateChanged-=playStateChanged;try{restorePrefs();}catch(System.Exception ex){System.IO.File.AppendAllText(folder+label+"-errors.txt",ex+"\n");}};
+  UnityEditor.EditorApplication.playModeStateChanged+=playStateChanged;
+  UnityEditor.EditorApplication.isPlaying=false;
+ }
+};
+System.Func<BonusCardDataSO,float> cardScore=data=>{
+ if(data==null||data.effects==null)return 0f;float score=0f;bool meleeTarget=mainWeapon.weaponType==WeaponType.Melee;
+ foreach(var effect in data.effects){if(effect==null)continue;float value=effect.value;
+  if(effect.type==CardEffectType.AddHP&&status.HP<=60&&value>0)score+=10000f+Mathf.Min(value,100-status.HP);
+  else if(effect.type==CardEffectType.AddGateHP&&status.GATE<=Mathf.Min(100f,initialGate*.5f)&&value>0)score+=9000f+value;
+  else if((meleeTarget&&effect.type==CardEffectType.AddSTR)||(!meleeTarget&&effect.type==CardEffectType.AddACC))score+=100f+value;
+  else if(meleeTarget&&effect.type==CardEffectType.ConvertACCtoSTR&&status.ACC>=(int)value)score+=100f+value;
+  else if(!meleeTarget&&effect.type==CardEffectType.ConvertSTRtoACC&&status.STR>=(int)value)score+=100f+value;
+  else if(weaponName=="GearCraft"&&effect.type==CardEffectType.GearCraftAxeSizeMultiplier)score+=60f+10f*Mathf.Max(0f,value-1f);
+  else if(weaponName=="SteamCannon"&&(effect.type==CardEffectType.SteamCannonGiantBulletChance||effect.type==CardEffectType.SteamCannonExplosionRadiusMultiplier||effect.type==CardEffectType.SteamCannonDirectHitKnockback))score+=60f+value;
+  else if(weaponName=="SteamThrower"&&effect.type==CardEffectType.SteamThrowerOverheatSlipDamage)score+=60f+value;
+  else if(weaponName=="RailCraft"&&(effect.type==CardEffectType.RailCraftBulletSizeMultiplier||effect.type==CardEffectType.RailCraftApplyOverheat))score+=60f+value;
+  else if(weaponName=="SteamGatling"&&(effect.type==CardEffectType.SteamGatlingBossDamageMultiplier||effect.type==CardEffectType.SteamGatlingNormalDamageMultiplier))score+=10f*(value-1f);
+ }
+ return score;
+};
+player.enabled=false;arm.enabled=false;
+Time.timeScale=1f;Time.captureDeltaTime=1f/60f;QualitySettings.vSyncCount=0;Application.targetFrameRate=-1;Application.runInBackground=true;
+record("started","Initial build is supplied by caller; native flow and spawn state preserved");System.IO.File.WriteAllText(progress,"RUNNING "+label+"\n");
+tick=()=>{try{
+ double now=UnityEditor.EditorApplication.timeSinceStartup;
+ if(!Application.isPlaying){finish("stopped_by_caller");return;}
+ if(System.IO.File.Exists(folder+"cancel-native-survival.txt")){finish("cancelled_by_sentinel");return;}
+ if(now-wallStarted>=300){finish("wall_timeout_300s");return;}
+ if(Time.time-started>=900){finish("game_timeout_900s");return;}
+ if(Time.frameCount==lastFrame){if(now-lastFrameAt>30)finish("no_game_frames_30s");return;}lastFrame=Time.frameCount;lastFrameAt=now;frames++;
+ string scene=UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+ if(status!=null){playerDamage+=Mathf.Max(0f,lastHP-status.HP);gateDamage+=Mathf.Max(0f,lastGate-status.GATE);playerHealed+=Mathf.Max(0f,status.HP-lastHP);gateHealed+=Mathf.Max(0f,status.GATE-lastGate);lastHP=status.HP;lastGate=status.GATE;if(status.HP<=0){finish("player_dead");return;}if(status.GATE<=0){finish("gate_destroyed");return;}}
+ if(scene=="Ending"){finish("ending_reached_"+EndingManager.PendingEndingNum);return;}
+ if(scene=="CraftSpace"){finish(reportConfirmed?"native_day_cleared_and_dorm_reached":"dorm_reached_without_report_confirmation");return;}
+ if(scene!="Main"){finish("unexpected_scene_"+scene);return;}
+ if(flow==null||player==null||status==null)throw new System.Exception("Native managers disappeared before scene transition");
+ int stage=StageCounter.Instance!=null?StageCounter.Instance.StageCount:lastStage;
+ if(stage!=lastStage){record("stage_counter_advanced",lastStage+" -> "+stage);lastStage=stage;}
+ if(wasActive&&!flow.IsStageActive){completedWaves++;record("native_wave_completed","native flow marked stage inactive");}
+ if(!wasActive&&flow.IsStageActive)record("native_wave_started","native EnemySpawner advanced without runner intervention");wasActive=flow.IsStageActive;
+ var all=UnityEngine.Object.FindObjectsByType<EnemyController>(FindObjectsSortMode.None);
+ foreach(var e in all){int id=e.GetInstanceID();if(!tracked.ContainsKey(id)&&e.HP>0){tracked[id]=e;names[id]=e.enemyData!=null?e.enemyData.enemyName:e.name;spawned++;record("enemy_spawned",names[id]+" hp="+e.HP+" last="+e.isLastEnemy);}}
+ foreach(var pair in tracked){if(countedGone.Contains(pair.Key))continue;var e=pair.Value;if(e.HP<=0){killed++;countedGone.Add(pair.Key);record("enemy_killed",names[pair.Key]);}else if(e==null||!e.gameObject.activeInHierarchy||!e.GetComponentInChildren<SpriteRenderer>().enabled){escaped++;countedGone.Add(pair.Key);record("enemy_escaped_or_suicided",names[pair.Key]+" remaining_hp="+e.HP);}}
+ if(Time.time-lastSample>=5f){lastSample=Time.time;record("sample","live="+all.Count(e=>e.HP>0)+" reward="+(flow.bonusCardsManager!=null&&flow.bonusCardsManager.IsChoosingReward));System.IO.File.WriteAllText(progress,"RUNNING "+label+" stage="+stage+" game="+(Time.time-started).ToString("F1",invariant)+" HP="+status.HP+" GATE="+status.GATE+"\n");}
+ var openingButton=(UnityEngine.UI.Button)typeof(StageFlowManager).GetField("openingNoticeButton",flags).GetValue(flow);
+ if(!openingConfirmed&&openingButton!=null&&openingButton.IsActive()&&openingButton.IsInteractable()&&(bool)typeof(StageFlowManager).GetField("isOpeningNoticeShowing",flags).GetValue(flow)){openingConfirmed=true;record("opening_notice_confirmed",openingButton.name);openingButton.onClick.Invoke();return;}
+ var report=flow.restResultReportUI;
+ if(report!=null&&report.IsShowing){body.linearVelocity=new Vector2(0f,body.linearVelocity.y);if(!reportConfirmed&&report.continueButton!=null&&report.continueButton.IsActive()&&report.continueButton.IsInteractable()){reportConfirmed=true;record("native_day_report_confirmed","All remaining drops collected by native day-end flow");report.continueButton.onClick.Invoke();}return;}
+ var rewardsManager=flow.bonusCardsManager;
+ if(rewardsManager!=null&&rewardsManager.IsChoosingReward){
+  body.linearVelocity=new Vector2(0f,body.linearVelocity.y);
+  var buttons=rewardsManager.cardParent.GetComponentsInChildren<UnityEngine.UI.Button>().Where(button=>button.IsActive()&&button.IsInteractable()).ToArray();
+  UnityEngine.UI.Button selected=null;BonusCardDataSO selectedData=null;float best=float.MinValue;var offerText=new System.Text.StringBuilder();
+  foreach(var button in buttons){var trigger=button.GetComponent<BonusCardTooltipTrigger>();if(trigger==null)continue;var data=(BonusCardDataSO)tooltipDataField.GetValue(trigger);float value=cardScore(data);offerText.Append((data!=null?data.name:button.name)+"="+value.ToString("F2",invariant)+"; ");if(selected==null||value>best){selected=button;selectedData=data;best=value;}}
+  if(selected!=null){record("reward_selected",(selectedData!=null?selectedData.name:selected.name)+" | offers: "+offerText);rewards++;selected.onClick.Invoke();if(status.currentWeapon!=mainWeapon&&!(weaponName=="GearCraft"&&(status.currentWeapon==sword||status.currentWeapon==axe))){status.EquipWeapon(mainWeapon);record("target_reequipped_after_reward",mainWeapon.weaponName);}sync.Invoke(player,null);updateAnim.Invoke(player,null);}
+  return;
+ }
+ // Mirror the native maintenance skipped with PlayerController.Update disabled; no stat is replenished here.
+ player.STR=status.STR;player.ACC=status.ACC;player.HP=status.HP;player.SAN=status.SAN;sync.Invoke(player,null);updateAnim.Invoke(player,null);barrierUpdate.Invoke(player,null);
+ if(player.punkdrive!=null)player.punkdrive.SetActive(status.punkDrive);
+ if(StageFlowManager.IsPlayerInputBlocked||!flow.IsStageActive||EndingManager.IsLoadingEnding){body.linearVelocity=new Vector2(0f,body.linearVelocity.y);return;}
+ var alive=all.Where(e=>e.HP>0f&&e.GetComponent<Collider2D>()!=null&&e.GetComponent<Collider2D>().enabled).ToArray();
+ // BOT_SHARED_BLOCK_BEGIN: copied from the root benchmark, including muzzle-offset correction.
+ // Choose nearest threat to gate, but ignore enemies until their body enters the visible area.
+ EnemyController target=null;float priority=float.MaxValue;
+ foreach(var e in alive){var cb=e.GetComponent<Collider2D>().bounds;if(cb.min.x>8.6f||cb.max.x<-7.2f)continue;float key=cb.min.x+(e.enemyData.IsBossType?1f:0f);if(key<priority){priority=key;target=e;}}
+ bool melee=mainWeapon.weaponType==WeaponType.Melee;
+ if(weaponName=="GearCraft"){
+   // Match normal 5s axe / 5s sword transform cadence; no permanent axe equip.
+   var desired=((Time.time-started)%10f<5f)?sword:axe;if(status.currentWeapon!=desired){status.currentWeapon=desired;player.currentWeapon=desired;sync.Invoke(player,null);updateAnim.Invoke(player,null);}
+ }
+ var weapon=status.currentWeapon;
+ int pose=(int)poseMethod.Invoke(arm,new object[]{weapon});Vector3 offset=(Vector3)offsetMethod.Invoke(arm,new object[]{pose});Vector3 scale=(Vector3)scaleMethod.Invoke(arm,new object[]{pose});
+ arm.arm.localScale=scale;
+ if(melee)arm.arm.position=player.transform.position+offset;
+ if(target==null){body.linearVelocity=new Vector2(0f,body.linearVelocity.y);return;}
+ var bounds=target.GetComponent<Collider2D>().bounds;
+ float desiredDistance=melee?1.1f:weaponName=="SteamThrower"?3.2f:weaponName=="SteamGatling"?5f:7f;
+ float desiredX=Mathf.Clamp(bounds.min.x-desiredDistance,-6.15f,6.4f);float dx=desiredX-player.transform.position.x;
+ float vx=Mathf.Abs(dx)<.15f?0f:Mathf.Sign(dx)*player.moveSpeed;
+ float vy=body.linearVelocity.y;bool grounded=playerCollider.bounds.min.y<=-4.38f&&Mathf.Abs(vy)<.35f;
+ if(melee&&grounded&&Time.time>=nextJump&&bounds.center.y-player.transform.position.y>2.7f&&Mathf.Abs(dx)<2.5f){vy=player.jumpForce;nextJump=Time.time+.8f;}
+ body.linearVelocity=new Vector2(vx,vy);
+ if(Time.time<nextShot)return;
+ if(melee){if(Vector2.Distance(player.transform.position,bounds.ClosestPoint(player.transform.position))>3.8f)return;meleeAttack.Invoke(player,null);shots++;nextShot=Time.time+weapon.coolTime*status.attackSpeedMult;return;}
+ // Use native shoulder pose/muzzle offsets; aim at closest visible body point, with gravity correction and small velocity lead.
+ Vector3 aim=bounds.center;aim.y=Mathf.Clamp(player.transform.position.y+1.4f,bounds.min.y+.1f,bounds.max.y-.1f);
+ Vector3 shoulder=arm.sholder.position;float speed=(float)bulletSpeedMethod.Invoke(player,null);float travel=Mathf.Clamp((aim.x-shoulder.x-weapon.muzzleOffset.x)/Mathf.Max(1f,speed),0f,1.5f);
+ var projectileBody=weapon.bulletPrefab.GetComponent<Rigidbody2D>();float gravity=projectileBody!=null?projectileBody.gravityScale:0f;
+ aim.y-=.5f*Physics2D.gravity.y*gravity*travel*travel;
+ Vector2 dir=((Vector2)aim-(Vector2)shoulder).normalized;float angle=Mathf.Clamp(Mathf.Atan2(dir.y,dir.x)*Mathf.Rad2Deg,-85f,85f);
+ arm.sholder.rotation=Quaternion.Euler(0f,0f,angle);arm.arm.position=arm.sholder.position+arm.sholder.rotation*offset;arm.arm.rotation=arm.sholder.rotation;
+ Vector3 origin=player.FirePoint.position;Vector2 aimOffset=(Vector2)aim-(Vector2)origin;dir=aimOffset.normalized;float muzzleCorrection=Mathf.Asin(Mathf.Clamp(weapon.muzzleOffset.y/Mathf.Max(.01f,aimOffset.magnitude),-.99f,.99f))*Mathf.Rad2Deg;angle=Mathf.Clamp(Mathf.Atan2(dir.y,dir.x)*Mathf.Rad2Deg-muzzleCorrection,-90f,90f);
+ var savedRandom=UnityEngine.Random.state;UnityEngine.Random.state=aimRandom;float finalAngle=angle+UnityEngine.Random.Range(-weapon.spreadAngle,weapon.spreadAngle);aimRandom=UnityEngine.Random.state;UnityEngine.Random.state=savedRandom;
+ dir=new Vector2(Mathf.Cos(finalAngle*Mathf.Deg2Rad),Mathf.Sin(finalAngle*Mathf.Deg2Rad));var perpendicular=new Vector2(-dir.y,dir.x);Vector3 muzzle=origin+(Vector3)(dir*weapon.muzzleOffset.x+perpendicular*weapon.muzzleOffset.y);
+ damageField.SetValue(player,weapon.baseDamage);var bullet=UnityEngine.Object.Instantiate(weapon.bulletPrefab,muzzle,Quaternion.Euler(0,0,finalAngle));var rb=bullet.GetComponent<Rigidbody2D>();if(rb!=null)rb.linearVelocity=dir*speed;configure.Invoke(player,new object[]{bullet});shots++;nextShot=Time.time+weapon.coolTime*status.attackSpeedMult;
+ // BOT_SHARED_BLOCK_END
+ }catch(System.Exception ex){System.IO.File.AppendAllText(folder+label+"-errors.txt",ex+"\n");finish("failed_"+ex.Message);}};
+UnityEditor.EditorApplication.update+=tick;
+return "Scheduled one native survival day: "+label+"; progress="+progress;

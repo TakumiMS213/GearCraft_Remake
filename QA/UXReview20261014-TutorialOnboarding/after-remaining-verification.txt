@@ -1,0 +1,12 @@
+playing=False
+scene=Assets/GearCraft/Scenes/Title.unity
+prefs=GearCraft.Gallery.Progress.v1=True
+GearCraft.CraftTutorial.Metrics.Craft.v5=True
+GearCraft.CraftTutorial.Metrics.WeaponCustom.v5=True
+GearCraft.Main.OpeningNotice.Seen.v1=True
+GearCraft.CraftTutorial.Mastery.Craft.v5=True
+GearCraft.CraftTutorial.Mastery.WeaponCustom.v5=True
+GearCraft.CraftTutorial.AutoPlayed.Craft.v4=True
+GearCraft.CraftTutorial.AutoPlayed.WeaponCustom.v3=True
+sizeIndex=3
+sizes=Free Aspect|16:9 Aspect|16:10 Aspect|Full HD (1920x1080)|WXGA (1366x768)|QHD (2560x1440)|4K UHD (3840x2160)

@@ -1,0 +1,60 @@
+BB-413 の迎撃負担：SteamThrower 弱体化後の独立監査（2026-10-16）
+
+結論
+中盤Throwerの強弾へのダメージは実ログと実装が一致し、1回.756。HP20の強弾を壊すには27回のダメージ適用が必要。ただし同じ蒸気弾が敵弾へ接触中に繰り返しダメージを与える実装のため、これは「27発の蒸気を発射する必要がある」という意味ではない。低火力化は迎撃にも反映されるが、この数値だけで迎撃不可能・必要秒数を断定しない。
+今回の主試験では、Throwerの過熱による前進抑制は実際に働いて門100を維持した一方、本人が強弾2発分の120を受けて死亡した。Gear/Cannonの生成時の門重なり問題とは区別する。
+
+強弾の仕様
+BB-413_HeavyShot.prefab：EnemyProjectileDamageable maxHP20、contactDamage60、BoxCollider幅1×scale1.5、Trigger、重力0。敵ステージHP倍率はEnemyController経路のためこの弾のHP20には掛からない。BB AIは速度5で発射し、2秒間隔＋予告.6秒（初期phase）を挟む。
+EnemyProjectileDamageableはPlayer/Gateに接触すると60を与え、直ちにcolliderを無効化してDestroyする。HPを0にした迎撃時も同様に無効化するため、破壊予約後の同フレームの追加接触はdestroyedガードで止まる。
+
+主試験での各武器の値
+対象は gate_BB413_{GearCraft,SteamCannon,SteamThrower}_seed77。旧reactive_ログとは報酬/初期到達状態が異なる。
+全ケース初期profileはmid_day4_common、flat9、Module0、double_shot=False。
+
+武器          初期の1回ダメージ     ボス戦時の1回ダメージ       HP20への必要適用回数
+Gear剣        40+STR10+flat9=59     59（STR10のまま）          1
+Gear斧        60+STR10+flat9=79     79                        1
+Cannon        57+.8×(10+9)=72.2    57+.8×(11+9)=73           1
+Thrower       .3+.024×(10+9)=.756 .756（ACC10のまま）        27
+
+Throwerの一般式は .3 + .024×ACC + .024×flat + .17×Module額面。
+BB前の攻撃Moduleは未解禁で今回Module0なので、.17項は0。初期STR10→最終STR12だが遠距離攻撃の計算はACCであり、STR2報酬はThrowerの直接/迎撃ダメージを増やさない。
+選択されたSteamThrower_SlipOverheatは.35/秒の過熱継続ダメージ。これはEnemyControllerへだけ適用され、敵弾へは加算されない。NoFallは未取得、BOOST中ダメージ倍率も1のまま。BOOSTは攻撃間隔を半減するが、今回の.756を倍にしない。
+直接ダメージを.3倍にする前の同等計算を仮定すれば2.52/回で必要8回だったのに対し、現行は27回。必要適用回数は増えているが、実際の迎撃所要時間が27/8倍という証拠にはならない。
+
+蒸気1発による再命中
+SteamThrowerBulletController.OnTriggerEnter2D / OnTriggerStay2D はどちらもTryHitを呼ぶ。
+EnemyControllerの場合はlastHitTimesとhitInterval .18秒で抑制する。
+EnemyProjectileDamageableの場合はそれより前の分岐で毎回projectile.TakeDamage(damage)を呼びreturnするため、hitInterval・lastHitTimes・hit済み集合のいずれも適用しない。蒸気もその場で消費されない。同一の蒸気と同一の敵弾が接触していれば、複数のphysics callbackで再命中できる。
+従って27はダメージ関数への有効な適用回数で、必要な蒸気の個数ではない。実際の必要発数・秒数は、同時に重なる蒸気数、相対速度、進行方向、重力、collider寸法、physics step、接触開始/終了順序で変わる。生涯2.4秒すべてが同じ敵弾への接触になるわけでもない。
+現蒸気prefabは重力1.15、速度13、幅1.35/高さ.72、lifeTime2.4、過熱2.8秒/速度倍率.55。近距離を反対方向へすれ違う強弾との接触は有限であり、2.4/.02回の全寿命連続ヒットを仮定するDPS計算は過大。同様に、敵本体用hitInterval .18をそのまま敵弾へ適用する計算も誤り。
+この監査では敵弾ごとのHP推移・接触回数を実測していないため、確定した迎撃所要秒は報告しない。
+
+他武器の迎撃入口
+GearCraft：MeleeWeaponは攻撃中のEnemyタグ接触に対し、EnemyControllerがなければEnemyProjectileDamageableへGetWeaponDamageを与える。強弾はEnemyタグなのでこの分岐に入る。59/79なら1適用で撃墜する。ただし武器colliderが届くことと旋回中であることが前提。
+Cannon：BulletController.TryDamageEnemyProjectileが先に評価され、bulletDamageを与える。直撃した場合、EnemyController分岐のBombDamageは呼ばれず直撃値だけでも十分。別の敵本体へ命中して起きた爆発の範囲に強弾があれば、BombDamageも敵弾へ同じ値を与えるので巻き込み迎撃が可能。今回の爆発拡大/弾速低下カードはこの機会と弾着時間に影響するが、1適用の値73は変えない。
+Rail/Gatling：同じBulletControllerの敵弾分岐。敵本体用damagedEnemies集合やbossDamageMultiplier/normalDamageMultiplierはこの分岐に掛からず、raw bulletDamageを渡す。Railの貫通/swept判定は複数callbackを生じ得るが、ここも1回の発射＝必ず1回のダメージという保証ではない。両武器はBB到達前未解禁なので、この中盤試験の取得済み武器として性能比較には入れない。
+PunkDrive：EnemyControllerを持つ相手にのみDamageLoopを開始する。HeavyShotはEnemyControllerを持たないため、Punkは強弾を迎撃しない。
+
+主ログが示すこと
+Gear：ボス戦開始HP100/門120（前座GateRepair+20）、10.4667秒後HP25/門0、BB残8803、52攻撃。BOOSTは2回。門120被害は強弾60×2に一致。
+Cannon：ボス戦開始HP97/門100、10.46666秒後HP97/門-20、BB残9317、26攻撃。Gear不足でBOOST1回。最初の強弾へのintercept対象選択はあるが、選択ログは撃墜成功の直接証拠ではない。
+Thrower：ボス戦開始HP94/門100、14.01669秒後HP-26/門100、BB残11789.8086、382攻撃。BOOST2回（Gear16→15→14）。本人のHPは118.01666秒まで94、119.01666秒に34、121.48334秒に-26で、ボス戦の被害120は強弾2回の60に整合する。
+Throwerは最初の3射付近（ボス出現+2.68/+5.38/+7.88秒）にintercept対象選択を記録し、その後も本人HP94を維持した。これは初期3射を生き延びた証拠であって、各弾を必ず27回削り切ったという証明ではない。最後の2回はdashを試みたが被害を防げなかった。
+BBのx移動はThrower試験の毎秒sampleで約.33（本来.6×過熱.55）。死亡直前の観測でも本体左端-5.3965で、門重なり閾値-5.59736にまだ達していない。このため14秒間門100という結果は、デバフが無効だったことを示さず、むしろ本体前進抑制が機能したことと整合する。過熱は敵弾の速度5を下げない。
+
+botとログの限界
+gate-aware botは.2秒間隔で可視の脅威を予測し、敵弾中心がFirePoint.x+.15より右にある場合だけ迎撃対象にする。近すぎる/通り過ぎた強弾は迎撃対象にならず、dash側へ回ることがある。さらにnative muzzleOffset.x=1.45の位置から蒸気を生成するため、標的との距離だけで新たな蒸気が必ず当たるとはいえない。
+最後2射にintercept選択がない理由を射程/後方判定に断定するための敵弾位置ログは未記録。『ダメージが低いから最後2射は必ず迎撃不能』という断定も避ける。今回確認できたのは、迎撃にも直接弱体化が掛かること、同一蒸気の敵弾再命中が可能なこと、前進抑制は働く一方で有限反応botが120被害を受けたこと。
+追加で迎撃性能だけを切り分けるなら、敵弾IDごとの生成位置/HP/TakeDamage回数/破壊理由と、蒸気ID・Enter/Stayを記録する試験が必要。この監査ではコード変更・追加実行は行っていない。
+
+根拠
+gate_BB413_{GearCraft,SteamCannon,SteamThrower}_seed77-{bootstrap-config,initial-status,final-status,result,events,bosses,samples}
+Assets/GearCraft/ScriptableObject/Prehubs/Enemy/BB-413_HeavyShot.prefab
+Assets/GearCraft/ScriptableObject/Prehubs/Bullet/{SteamThrowerBullet,CannonBullet,RailCraftBullet,GatlingBullet}.prefab
+Assets/GearCraft/ScriptableObject/WeaponData/{GearCraft_Sword,GearCraft_Axe,SteamCannon,SteamThrower,RailCraft,SteamGatling}.asset
+Assets/GearCraft/Scripts/Main/{SteamThrowerBulletController,EnemyProjectileDamageable,BulletController,MeleeWeapon,PunkDriveManager,PlayerController}.cs
+Assets/GearCraft/Scripts/{StatusManager.cs,Data/WeaponDataSO.cs}
+Assets/GearCraft/Scripts/EnemyAI/EnemyAI_BossArtillery.cs
+QA/DefenseBalance20261016/{ReactiveGateSurvivalRoute.cs.txt,analysis-BB.txt}

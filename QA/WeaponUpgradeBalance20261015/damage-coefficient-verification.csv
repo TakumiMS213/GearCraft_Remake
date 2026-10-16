@@ -1,0 +1,9 @@
+weapon,acc_multiplier,flat_override,damage_acc0_flat0,acc_plus1_delta,flat_plus1_delta,module_plus5_delta
+GearCraft_Sword,1,-1,40,0,1,5
+GearCraft_Axe,1,-1,60,0,1,5
+SteamCannon,0.8,-1,50,0.7999992,0.7999992,5
+SteamThrower,0.08,-1,1,0.08000004,0.08000004,5
+RailCraft,10,1,150,10,1,5
+SteamGatling,0.05,-1,1,0.04999995,0.04999995,5
+AR,0.3,-1,3,0.3,0.3,0
+Katana,1,-1,15,0,1,0

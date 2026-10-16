@@ -1,0 +1,7 @@
+{
+  "checked_at_utc": "2026-10-15T02:36:33.271973+00:00",
+  "basis": "Snapshot after requested RailCraft change, before measurements",
+  "checked_files": 270,
+  "changed_since_snapshot": [],
+  "restoration_status": "PlayerPrefs verified=8; Play=false; scene=Assets/GearCraft/Scenes/Title.unity; dirty=false; GameView=Full HD index3; size list restored; vSync=1; captureDeltaTime=0; UTC=2026-10-15T02:35:57.1989570Z"
+}

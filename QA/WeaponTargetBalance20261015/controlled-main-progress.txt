@@ -1,0 +1,1 @@
+READY Fresh Main initial spawn handoff completed; controlled benchmark may start; removed=1; elapsed_wall=0.142; timeScale=0; player/arm/capture/frame settings restored

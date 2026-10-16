@@ -1,0 +1,31 @@
+BB-413 門被害の独立診断（2026-10-16、読取監査）
+
+GearCraft reactive の実測
+HP13000のBB出現95.8333秒→106.3秒で門100→-20、ボス戦10.4667秒、残HP8702、HP100→80、52攻撃。BOOSTは2個実消費。門は103.05秒の100から104.05秒の40へ、106.3秒に-20となる。
+
+被害源の切り分け
+本体はGateManager.IsGateCollisionImmuneBossで門接触無効。BB AIにも直接門ダメージ処理はない。B-1召喚は爆発10、今回2体は生成直後に撃破される。残るEG-33も最初の門被害時は遠く、通常門接触は10。HeavyShotのEnemyProjectileDamageable.contactDamage=60が2回の減少量と一致し、射撃間隔（攻撃2秒+予告.6秒）とも一致する。したがって強弾2発が原因と判断できるが、現ログはdamage-sourceイベントを記録していないため、呼出元そのものの実測トレースではない。
+
+門へ近すぎる発射位置（静的幾何と観測の一致）
+Main.unity の門は position.x=-7.438、scale.x=3、Collider offset.x=-.21822691 / size.x=.5635462。右端は -7.24736143。
+HeavyShotは幅1×scale1.5、半幅.75。BossArena.GetLeftMuzzlePosition は本体左端-.75-.15に中心を置くため、弾左端は本体左端-1.65。
+本体左端<=-5.59736143で、強弾が生成された瞬間に門のX範囲へ重なる。門のY範囲は約-5.0196～7.0711で、このBBの発射高度も範囲内。
+実測103.05秒の本体左端-5.2460→104.05秒-5.8460の間にこの閾値を越え、同区間で最初の門60被害。停止後の左端は-6.000883で、弾中心約-6.900883/左端約-7.650883となり門の当たり判定内に発射される。第3射（出現+約7.85秒）・第4射（+10.4667秒）の被害と整合する。
+この状態では発射後に反応して迎撃する時間がほぼなく、プレイヤーがカウンターを怠っただけとは断定できない。攻撃可能時間の短さを純DPS基準として武器を強化すると、幾何上の問題を隠す恐れがある。
+
+bot側の制限
+今回の脅威検出はプレイヤーとの衝突予測を基準としており、門だけへ抜ける強弾を守らない。BB戦中reactive_intercept_target/reactive_dashイベントは0。通常の近接回転で一部の弾を偶然撃破できても、これを意図した門防衛カウンター成功とみなせない。
+門までの予測経路も迎撃対象に加える改善は有効だが、生成時の門重なりには間に合わない。本体の前進限界または砲口の安全距離を確保する設計課題と、botの門防衛反応不足を分けて扱う。
+
+Cannon 比較
+reactive_BB413_SteamCannon_seed77 はボス出現94.96667→105.433334、同じ10.4666672秒で門100→40→-20。残HP9317/13000、HP100維持、26攻撃。前座でHP3被害、Repairで3回復しボス開始HP100。ボス第1射の+2.600秒にintercept対象選択があり、その.2秒後に通常目標へ戻るが、これは選択記録で迎撃成功の直接証拠ではない。
+BBは停止時左端-6.000883まで進出。+約8秒時点で門40、+10.4667秒で破壊となり、Gearと同じ第3/4射時刻に一致する。Cannonのノックバックカードは今回選択されず、ACC+1と大爆発/低弾速カードを選択。BOOSTはGear1→0の1回だけであり、GearCraftの2回と同一条件の純火力比較ではない。
+Thrower は追加ログ到着後に追記。オーバーヒートで本体進行が遅くなるなら、強弾生成時の門重なりへ到達する時刻にも影響するため、単純な火力差と分離する。
+
+根拠
+reactive_BB413_GearCraft_seed77-{bosses,samples,events}.csv
+Assets/GearCraft/Scripts/EnemyAI/{EnemyAI_BossArtillery,BossArena,EnemyAI_Bomber}.cs
+Assets/GearCraft/Scripts/Main/{GateManager,EnemyProjectileDamageable}.cs
+Assets/GearCraft/ScriptableObject/Prehubs/Enemy/BB-413_HeavyShot.prefab
+Assets/GearCraft/ScriptableObject/EnemyData/{lv3_BB-413,lv1_B-1}.asset
+Assets/GearCraft/Scenes/Main.unity（gate object / BoxCollider2D / Transform）

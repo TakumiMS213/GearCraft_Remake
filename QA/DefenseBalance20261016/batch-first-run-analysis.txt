@@ -1,0 +1,33 @@
+Play継続バッチ初回の無効試験切り分け（2026-10-16）
+
+対象batch-events-20261016-030746-089.csv。ICは有効な防衛観測、続くBB2件は初期化/継続処理の問題を含むため無効。
+
+gate_IC408_GearCraft_seed77
+native wave7/8を終え、IC出現から31.2166672秒で門0。IC HP13600→7652.167、本人HP87。
+合計118攻撃、ボスが生存するsamplesの攻撃不増1秒以上は0区間。門破壊の記録として有効。
+
+gate_BB413_GearCraft_seed77
+wave16で78.01666秒後に本人死亡、攻撃0、ボス未到達。
+終了時sampleを除く78時刻すべてattack_suppression=ending_loading。開始直後からED遷移フラグにより操作が抑止されていた。
+これはBB/Gearの処理能力や防衛力を測定した失敗ではない。
+
+gate_BB413_SteamCannon_seed77
+開始1秒でfailed_Native managers disappeared before scene transition、攻撃0、本人/門100、ボス未到達。
+最初のsampleもending_loading。runnerの実行エラーとして除外する。
+
+読取コードから分かる連続Play固有の問題
+1. EndingManager.IsLoadingEndingはLoadEndingSceneでtrueとなる。false化はSubsystemRegistrationのResetRuntimeStateまたはEnding.Awake。
+   門破壊→route終了→直接Title→次のMainでは、Playを切らずEndingも経ないため、trueが残る。
+   この初期化が生成バッチで欠けていた。BB Gearの全期間ending_loadingと整合する。
+2. PlayerController.TakeDamageByBulletは死亡時、destroy tokenなしでUniTask.Delay(1000)後にStageFlowManager.Instance?.RetryDayAfterPlayerDeathを実行する。
+   Titleの時間を止めて直ちに次のMainへ入ると、旧プレイヤーの遅延処理が新しいStageFlowManagerへ届きうる。
+   Cannonの開始1秒後manager消失と時間が一致するが、例外スタック自体はこの呼出元まで記録していないため因果の直接証明とは区別する。
+3. PlayerController.BoostActiveもdestroyに接続しない独自CTSで最長約5秒待ち、旧savedSpeedMultを永続StatusManagerへ書き戻す。
+   速いcase終了直後に次のbuildを設定すると、旧BOOST完了が新caseの攻撃速度を変える可能性がある。
+
+最小のQA対策案（本ファイルは実装しない）
+通常case終了後Titleへ戻し、TitleでtimeScale=1の6ゲーム秒を消化して旧死亡/BOOST継続を終わらせる。
+StageFlowManager不在なので旧死亡Retryは何もしない。その後EndingManager.ResetRuntimeStateを呼び、bootstrapで次の初期buildを設定する。
+旧不具合2件は元ログを保持し、新labelで再試験する。ゲーム本体は変更しない。
+
+analyze_defense.pyはmeasurement_valid/invalid_reason列で無効2件を分離済み。初回バッチの失敗を通常プレイヤーの防衛失敗へ算入しない。

@@ -1,0 +1,79 @@
+{
+  "profile": "ic_speed_budget",
+  "validation": "Offline mirror of UpgradePartSO.GetRotatedShape/Rotate90 and UpgradeGridManager.GetPlacementFailure; not an executed Unity probe",
+  "grid_size": 3,
+  "cell_count": 9,
+  "placements": [
+    {
+      "profile": "ic_speed_budget",
+      "asset": "SpeedGear+",
+      "x": "0",
+      "y": "0",
+      "rotation": "0"
+    },
+    {
+      "profile": "ic_speed_budget",
+      "asset": "SpeedGear+",
+      "x": "1",
+      "y": "0",
+      "rotation": "0"
+    },
+    {
+      "profile": "ic_speed_budget",
+      "asset": "SpeedGear+",
+      "x": "2",
+      "y": "0",
+      "rotation": "0"
+    },
+    {
+      "profile": "ic_speed_budget",
+      "asset": "SpeedGear",
+      "x": "0",
+      "y": "2",
+      "rotation": "1"
+    },
+    {
+      "profile": "ic_speed_budget",
+      "asset": "Damage+1",
+      "x": "2",
+      "y": "2",
+      "rotation": "0"
+    }
+  ],
+  "grid_rows_y_0_to_2": [
+    [
+      0,
+      1,
+      2
+    ],
+    [
+      0,
+      1,
+      2
+    ],
+    [
+      3,
+      3,
+      4
+    ]
+  ],
+  "parts": [
+    "SpeedGear+",
+    "SpeedGear+",
+    "SpeedGear+",
+    "SpeedGear",
+    "Damage+1"
+  ],
+  "flat_damage": "1",
+  "attack_speed": "0.5527125",
+  "boost_attack_speed": "0.27635625",
+  "costs": {
+    "Scrap": 25,
+    "Gear": 3,
+    "UpgradeCore": 0
+  },
+  "source_refs": [
+    "Assets/GearCraft/Scripts/Data/UpgradePartSO.cs:GetRotatedShape/Rotate90",
+    "Assets/GearCraft/Scripts/Upgrade/UpgradeGridManager.cs:GetPlacementFailure"
+  ]
+}

@@ -1,0 +1,148 @@
+アップグレード比較・途中集計 2026-10-15T02:18:24.695835+00:00
+主比較Module0。Module20は追加素材を使う別比較。実パーツから計算。HP/GATE補充・wave毎リセットで、通常の生存クリア時間ではない。
+取得後～31は代表構成の測定。候補選定より先に実施しており、最適構成とは主張しない。
+収集済 route=98/98、probes=77/77、fitted-final=6/6。未完全集計の全区間合計は出さない。
+
+19～29：共通の11通常wave（代表構成。武器別profileは異なる）
+武器             完了/予定  秒合計     予定敵撃破/数  門逸走等  HP被害  門被害
+GearCraft        11/11     375.00  263/263      0    60.0     0.0
+SteamCannon      11/11     371.83  263/263      0     9.0     0.0
+SteamThrower     11/11     373.06  263/263      0    33.0     0.0
+RailCraft        11/11     367.55  263/263      0    18.0     0.0
+SteamGatling     11/11     384.17  263/263      0    42.0     0.0
+
+取得段階～31：代表構成ルート（取得時刻、工房/UI/ED時間を含まない）
+GearCraft        28/28、全区間秒=1114.52、未測定wave=なし
+SteamCannon      22/22、全区間秒=791.44、未測定wave=なし
+SteamThrower     22/22、全区間秒=802.88、未測定wave=なし
+RailCraft        13/13、全区間秒=447.37、未測定wave=なし
+SteamGatling     13/13、全区間秒=640.53、未測定wave=なし
+
+ルートのボス：出現～撃破秒／wave秒／最終残HP／HP・門被害
+GearCraft    w09 early_day3_common        boss=111.12 wave=142.37 残HP=0.0 HP/GATE=10.0/410.0 [cleared]
+GearCraft    w18 mid_day4_common          boss=44.02 wave=74.95 残HP=0.0 HP/GATE=180.0/900.0 [cleared]
+SteamCannon  w18 mid_day4_common          boss=59.43 wave=90.37 残HP=0.0 HP/GATE=63.0/1290.0 [cleared]
+SteamThrower w18 mid_day4_common          boss=64.87 wave=95.80 残HP=0.0 HP/GATE=312.0/1440.0 [cleared]
+GearCraft    w30 late_day7_melee          boss=40.40 wave=63.77 残HP=0.0 HP/GATE=83.0/0.0 [cleared]
+SteamCannon  w30 late_day7_ranged         boss=24.23 wave=47.60 残HP=0.0 HP/GATE=34.0/0.0 [cleared]
+SteamThrower w30 late_day7_ranged         boss=30.80 wave=54.17 残HP=0.0 HP/GATE=28.0/0.0 [cleared]
+RailCraft    w30 late_day7_ranged         boss=18.45 wave=41.82 残HP=0.0 HP/GATE=18.0/0.0 [cleared]
+SteamGatling w30 late_day7_ranged         boss=61.52 wave=84.88 残HP=0.0 HP/GATE=60.0/0.0 [cleared]
+GearCraft    w31 final_day11_melee        boss=59.47 wave=73.98 残HP=0.0 HP/GATE=95.0/0.0 [cleared]
+SteamCannon  w31 final_day11_ranged       boss=29.75 wave=44.27 残HP=0.0 HP/GATE=41.0/0.0 [cleared]
+SteamThrower w31 final_day11_ranged       boss=23.52 wave=38.03 残HP=0.0 HP/GATE=8.0/0.0 [cleared]
+RailCraft    w31 final_day11_ranged       boss=23.48 wave=38.00 残HP=0.0 HP/GATE=8.0/0.0 [cleared]
+SteamGatling w31 final_day11_ranged       boss=157.60 wave=171.48 残HP=0.0 HP/GATE=738.0/2040.0 [cleared]
+
+同wave・同seed・同profileの武器比較（代表wave抜粋。全群はJSON。秒、HP/門被害）
+w10 seed77 mid_day4_common plan一致=True: GearCraft 30.33s (0/0) / SteamCannon 30.47s (0/0) / SteamThrower 33.93s (6/0)
+w10 seed77 mid_day4_speed plan一致=True: GearCraft 30.40s (0/0) / SteamCannon 30.22s (0/0) / SteamThrower 33.93s (6/0)
+w10 seed77 mid_day4_precision plan一致=True: SteamCannon 30.48s (0/0) / SteamThrower 33.85s (6/0)
+w10 seed77 mid_day4_size plan一致=True: SteamCannon 30.45s (0/0) / SteamThrower 33.97s (6/0)
+w18 seed77 mid_day4_common plan一致=True: GearCraft 74.95s (180/900) / SteamCannon 90.37s (63/1290) / SteamThrower 95.80s (312/1440)
+w18 seed77 mid_day4_speed plan一致=True: GearCraft 78.70s (135/1140) / SteamCannon 70.18s (6/900) / SteamThrower 90.88s (312/1260)
+w18 seed77 mid_day4_precision plan一致=True: SteamCannon 89.20s (63/1290) / SteamThrower 95.18s (312/1380)
+w18 seed77 mid_day4_size plan一致=True: SteamCannon 91.62s (3/1350) / SteamThrower 97.22s (312/1440)
+w19 seed77 late_day7_common plan一致=True: GearCraft 29.95s (0/0) / SteamCannon 29.72s (3/0) / SteamThrower 31.00s (3/0) / RailCraft 29.93s (6/0) / SteamGatling 34.30s (18/0)
+w19 seed77 late_day7_melee plan一致=True: GearCraft 29.78s (0/0) / SteamCannon 29.93s (3/0) / SteamThrower 31.08s (3/0) / RailCraft 29.13s (0/0) / SteamGatling 34.38s (18/0)
+w19 seed77 plate_only plan一致=True: GearCraft 30.42s (0/0) / SteamCannon 30.33s (3/0) / SteamThrower 33.37s (3/0) / RailCraft 36.17s (12/0) / SteamGatling 52.07s (66/0)
+w19 seed77 late_day7_precision plan一致=True: SteamCannon 29.72s (3/0) / SteamThrower 30.35s (3/0) / RailCraft 29.17s (6/0) / SteamGatling 30.05s (6/0)
+w19 seed77 late_day7_ranged plan一致=True: SteamCannon 29.37s (3/0) / SteamThrower 30.03s (3/0) / RailCraft 29.17s (6/0) / SteamGatling 30.28s (6/0)
+w19 seed77 late_day7_reflect plan一致=True: SteamCannon 29.73s (3/0) / RailCraft 29.17s (3/0) / SteamGatling 30.23s (6/0)
+w28 seed77 late_day7_ranged plan一致=True: SteamCannon 31.67s (0/0) / SteamThrower 32.20s (0/0) / RailCraft 31.53s (3/0) / SteamGatling 33.43s (3/0)
+w28 seed78 late_day7_ranged plan一致=True: SteamCannon 33.07s (0/0) / SteamThrower 34.68s (3/0) / RailCraft 31.23s (0/0) / SteamGatling 34.22s (3/0)
+w28 seed79 late_day7_ranged plan一致=True: SteamCannon 34.33s (0/0) / SteamThrower 34.97s (0/0) / RailCraft 32.42s (0/0) / SteamGatling 35.50s (0/0)
+w28 seed77 late_day7_common plan一致=True: RailCraft 31.52s (3/0) / SteamGatling 36.37s (24/0)
+w31 seed77 final_day11_ranged plan一致=True: SteamCannon 44.27s (41/0) / SteamThrower 38.03s (8/0) / RailCraft 38.00s (8/0) / SteamGatling 171.48s (738/2040)
+
+候補比較：同武器・wave・seed、%は代表ルート秒との差（負値が短縮）
+GearCraft w9 seed77: early_day3_common 142.37s Δ0.0% HP/GATE=10/410 [cleared] / early_day3_speed 122.63s Δ-13.9% HP/GATE=10/330 [cleared] / plate_only 185.55s Δ30.3% HP/GATE=10/580 [cleared]
+GearCraft w10 seed77: mid_day4_common 30.33s Δ0.0% HP/GATE=0/0 [cleared] / mid_day4_speed 30.40s Δ0.2% HP/GATE=0/0 [cleared]
+SteamCannon w10 seed77: mid_day4_common 30.47s Δ0.0% HP/GATE=0/0 [cleared] / mid_day4_precision 30.48s Δ0.1% HP/GATE=0/0 [cleared] / mid_day4_size 30.45s Δ-0.1% HP/GATE=0/0 [cleared] / mid_day4_speed 30.22s Δ-0.8% HP/GATE=0/0 [cleared]
+SteamThrower w10 seed77: mid_day4_common 33.93s Δ0.0% HP/GATE=6/0 [cleared] / mid_day4_precision 33.85s Δ-0.2% HP/GATE=6/0 [cleared] / mid_day4_size 33.97s Δ0.1% HP/GATE=6/0 [cleared] / mid_day4_speed 33.93s Δ0.0% HP/GATE=6/0 [cleared]
+GearCraft w18 seed77: mid_day4_common 74.95s Δ0.0% HP/GATE=180/900 [cleared] / mid_day4_speed 78.70s Δ5.0% HP/GATE=135/1140 [cleared]
+SteamCannon w18 seed77: mid_day4_common 90.37s Δ0.0% HP/GATE=63/1290 [cleared] / mid_day4_precision 89.20s Δ-1.3% HP/GATE=63/1290 [cleared] / mid_day4_size 91.62s Δ1.4% HP/GATE=3/1350 [cleared] / mid_day4_speed 70.18s Δ-22.3% HP/GATE=6/900 [cleared]
+SteamThrower w18 seed77: mid_day4_common 95.80s Δ0.0% HP/GATE=312/1440 [cleared] / mid_day4_precision 95.18s Δ-0.6% HP/GATE=312/1380 [cleared] / mid_day4_size 97.22s Δ1.5% HP/GATE=312/1440 [cleared] / mid_day4_speed 90.88s Δ-5.1% HP/GATE=312/1260 [cleared]
+GearCraft w19 seed77: late_day7_common 29.95s Δ0.6% HP/GATE=0/0 [cleared] / late_day7_melee 29.78s Δ0.0% HP/GATE=0/0 [cleared] / plate_only 30.42s Δ2.1% HP/GATE=0/0 [cleared]
+SteamCannon w19 seed77: late_day7_common 29.72s Δ1.2% HP/GATE=3/0 [cleared] / late_day7_melee 29.93s Δ1.9% HP/GATE=3/0 [cleared] / late_day7_precision 29.72s Δ1.2% HP/GATE=3/0 [cleared] / late_day7_ranged 29.37s Δ0.0% HP/GATE=3/0 [cleared] / late_day7_reflect 29.73s Δ1.2% HP/GATE=3/0 [cleared] / plate_only 30.33s Δ3.3% HP/GATE=3/0 [cleared]
+SteamThrower w19 seed77: late_day7_common 31.00s Δ3.2% HP/GATE=3/0 [cleared] / late_day7_melee 31.08s Δ3.5% HP/GATE=3/0 [cleared] / late_day7_precision 30.35s Δ1.1% HP/GATE=3/0 [cleared] / late_day7_ranged 30.03s Δ0.0% HP/GATE=3/0 [cleared] / plate_only 33.37s Δ11.1% HP/GATE=3/0 [cleared]
+RailCraft w19 seed77: late_day7_common 29.93s Δ2.6% HP/GATE=6/0 [cleared] / late_day7_melee 29.13s Δ-0.1% HP/GATE=0/0 [cleared] / late_day7_precision 29.17s Δ0.0% HP/GATE=6/0 [cleared] / late_day7_ranged 29.17s Δ0.0% HP/GATE=6/0 [cleared] / late_day7_reflect 29.17s Δ0.0% HP/GATE=3/0 [cleared] / plate_only 36.17s Δ24.0% HP/GATE=12/0 [cleared]
+SteamGatling w19 seed77: late_day7_common 34.30s Δ13.3% HP/GATE=18/0 [cleared] / late_day7_melee 34.38s Δ13.5% HP/GATE=18/0 [cleared] / late_day7_precision 30.05s Δ-0.8% HP/GATE=6/0 [cleared] / late_day7_ranged 30.28s Δ0.0% HP/GATE=6/0 [cleared] / late_day7_reflect 30.23s Δ-0.2% HP/GATE=6/0 [cleared] / plate_only 52.07s Δ71.9% HP/GATE=66/0 [cleared]
+RailCraft w28 seed77: late_day7_common 31.52s Δ-0.1% HP/GATE=3/0 [cleared] / late_day7_ranged 31.53s Δ0.0% HP/GATE=3/0 [cleared]
+SteamGatling w28 seed77: late_day7_common 36.37s Δ8.8% HP/GATE=24/0 [cleared] / late_day7_ranged 33.43s Δ0.0% HP/GATE=3/0 [cleared]
+
+EK単体60秒観測：ボスHP減少量÷実観測秒。未撃破は窓打切で、クリア失敗とは数えない。
+早期撃破時は撃破までの平均DPS。秒間総ダメージに召喚敵ダメージを混ぜない。
+GearCraft    final_day11_melee         DPS=827.13 damage=49200.0 観測=59.483s 残HP=0.0 撃破
+GearCraft    late_day7_common          DPS=326.09 damage=19560.0 観測=59.983s 残HP=29640.0 60秒窓打切
+GearCraft    plate_only                DPS=115.60 damage=6934.0 観測=59.983s 残HP=42266.0 60秒窓打切
+SteamCannon  final_day11_ranged        DPS=1654.73 damage=49200.0 観測=29.733s 残HP=0.0 撃破
+SteamCannon  late_day7_common          DPS=378.11 damage=22680.3 観測=59.983s 残HP=26519.7 60秒窓打切
+SteamCannon  late_day7_ranged          DPS=764.21 damage=45839.8 観測=59.983s 残HP=3360.2 60秒窓打切
+SteamCannon  late_day7_reflect         DPS=725.97 damage=43545.8 観測=59.983s 残HP=5654.2 60秒窓打切
+SteamCannon  plate_only                DPS=134.56 damage=8071.0 観測=59.983s 残HP=41129.0 60秒窓打切
+SteamThrower final_day11_ranged        DPS=2099.51 damage=49200.0 観測=23.434s 残HP=0.0 撃破
+SteamThrower late_day7_common          DPS=530.82 damage=31840.1 観測=59.983s 残HP=17359.9 60秒窓打切
+SteamThrower late_day7_ranged          DPS=1083.29 damage=49200.0 観測=45.417s 残HP=0.0 撃破
+SteamThrower plate_only                DPS=149.94 damage=8993.8 観測=59.983s 残HP=40206.2 60秒窓打切
+RailCraft    final_day11_ranged        DPS=2096.56 damage=49200.0 観測=23.467s 残HP=0.0 撃破
+RailCraft    late_day7_common          DPS=452.63 damage=27150.0 観測=59.983s 残HP=22050.0 60秒窓打切
+RailCraft    late_day7_precision       DPS=917.35 damage=49200.0 観測=53.633s 残HP=0.0 撃破
+RailCraft    late_day7_ranged          DPS=917.62 damage=49200.0 観測=53.617s 残HP=0.0 撃破
+RailCraft    late_day7_reflect         DPS=880.93 damage=49200.0 観測=55.850s 残HP=0.0 撃破
+RailCraft    plate_only                DPS=176.55 damage=10590.0 観測=59.983s 残HP=38610.0 60秒窓打切
+SteamGatling final_day11_ranged        DPS=312.16 damage=18724.3 観測=59.983s 残HP=30475.7 60秒窓打切
+SteamGatling late_day7_common          DPS=156.09 damage=9363.0 観測=59.983s 残HP=39837.0 60秒窓打切
+SteamGatling late_day7_precision       DPS=312.16 damage=18724.3 観測=59.983s 残HP=30475.7 60秒窓打切
+SteamGatling late_day7_ranged          DPS=317.85 damage=19065.4 観測=59.983s 残HP=30134.6 60秒窓打切
+SteamGatling plate_only                DPS=64.47 damage=3867.2 観測=59.983s 残HP=45332.8 60秒窓打切
+
+Module20接続確認（追加U12＋中級ModuleCore4、解放はボス2体。パーツ予算とは別支出）
+GearCraft    partsのみDPS=827.13 → Module20=1036.16 比=1.25 観測=47.483s 残HP=0.0 撃破（総費用は同等ではない）
+SteamCannon  partsのみDPS=1654.73 → Module20=2090.59 比=1.26 観測=23.534s 残HP=0.0 撃破（総費用は同等ではない）
+SteamThrower partsのみDPS=2099.51 → Module20=12723.04 比=6.06 観測=3.867s 残HP=0.0 撃破（総費用は同等ではない）
+RailCraft    partsのみDPS=2096.56 → Module20=2194.76 比=1.05 観測=22.417s 残HP=0.0 撃破（総費用は同等ではない）
+SteamGatling partsのみDPS=312.16 → Module20=2705.68 比=8.67 観測=18.184s 残HP=0.0 撃破（総費用は同等ではない）
+
+既知の無効枠交換・最終wave追加比較（元routeは維持。最適解の主張なし）
+SteamCannon  final_day11_ranged_fitted_speed wave=38.88s boss=24.37 残HP=0.0 HP/GATE=5/0 元route比 -12.2% [cleared]
+SteamCannon  final_day11_ranged_fitted_speed_module20 wave=33.80s boss=19.28 残HP=0.0 HP/GATE=5/0 Module20追加支出、元routeと同予算比較不可 [cleared]
+SteamThrower final_day11_thrower_fitted_damage wave=36.08s boss=21.57 残HP=0.0 HP/GATE=8/0 元route比 -5.1% [cleared]
+SteamThrower final_day11_thrower_fitted_damage_module20 wave=18.38s boss=3.87 残HP=0.0 HP/GATE=8/0 Module20追加支出、元routeと同予算比較不可 [cleared]
+RailCraft    final_day11_ranged_fitted_speed wave=33.53s boss=19.02 残HP=0.0 HP/GATE=8/0 元route比 -11.8% [cleared]
+RailCraft    final_day11_ranged_fitted_speed_module20 wave=32.68s boss=18.17 残HP=0.0 HP/GATE=8/0 Module20追加支出、元routeと同予算比較不可 [cleared]
+
+wave28 代表構成・3seed（77/78/79、平均±標本SD、範囲）
+GearCraft        n=3/3 mean=33.52 sd=1.65 [31.77,35.03] (77:31.77s, 78:33.77s, 79:35.03s)
+SteamCannon      n=3/3 mean=33.02 sd=1.33 [31.67,34.33] (77:31.67s, 78:33.07s, 79:34.33s)
+SteamThrower     n=3/3 mean=33.95 sd=1.52 [32.20,34.97] (77:32.20s, 78:34.68s, 79:34.97s)
+RailCraft        n=3/3 mean=31.73 sd=0.62 [31.23,32.42] (77:31.53s, 78:31.23s, 79:32.42s)
+SteamGatling     n=3/3 mean=34.38 sd=1.04 [33.43,35.50] (77:33.43s, 78:34.22s, 79:35.50s)
+
+パーツ購入費：原価 S/G/U（再抽選を除く）／上限 S/G/U／取得抽選例の総費用
+none                           0/0/0 /      0/0/0 /          - 購入配置=True 費用根拠=native_purchase 当日収集推定=-
+plate_only                     6/0/0 /      6/0/0 /          - 購入配置=True 費用根拠=native_purchase 当日収集推定=-
+tutorial_day2                  9/0/0 /      9/0/0 /          - 購入配置=True 費用根拠=native_purchase 当日収集推定=-
+early_day3_common             22/1/0 /     24/6/0 /     22/4/0 購入配置=True 費用根拠=native_purchase 当日収集推定=59.2%
+mid_day4_common               38/2/0 /    48/12/0 /    38/12/0 購入配置=True 費用根拠=native_purchase 当日収集推定=72.0%
+mid_day4_precision            42/3/0 /    48/12/0 /    42/10/0 購入配置=True 費用根拠=native_purchase 当日収集推定=61.9%
+mid_day4_size                 32/6/0 /    48/12/0 /    32/12/0 購入配置=True 費用根拠=native_purchase 当日収集推定=43.5%
+late_day7_common              58/7/3 /    72/24/4 /    58/18/3 購入配置=True 費用根拠=native_purchase 当日収集推定=92.5%
+late_day7_ranged             58/13/4 /    72/24/4 /    58/24/4 購入配置=True 費用根拠=native_purchase 当日収集推定=63.3%
+early_day3_speed              22/3/0 /     24/6/0 /     22/6/0 購入配置=True 費用根拠=native_purchase 当日収集推定=11.0%
+mid_day4_speed                40/4/0 /    48/12/0 /    40/10/0 購入配置=True 費用根拠=native_purchase 当日収集推定=14.3%
+late_day7_melee               70/7/3 /    72/24/4 /    70/18/3 購入配置=True 費用根拠=native_purchase 当日収集推定=85.7%
+late_day7_precision          66/11/4 /    72/24/4 /    66/22/4 購入配置=True 費用根拠=native_purchase 当日収集推定=76.8%
+late_day7_reflect            60/12/4 /    72/24/4 /    60/23/4 購入配置=True 費用根拠=native_purchase 当日収集推定=71.5%
+final_day11_melee            96/14/6 /    96/30/8 /    96/25/6 購入配置=True 費用根拠=native_purchase 当日収集推定=73.4%
+final_day11_ranged           96/16/6 /    96/30/8 /    96/27/6 購入配置=True 費用根拠=native_purchase 当日収集推定=67.0%
+final_day11_melee_module20    96/14/6 /    96/30/8 /    96/25/6 購入配置=True 費用根拠=native_purchase 当日収集推定=73.4% ＋別支出U12/中級Core4
+final_day11_ranged_module20    96/16/6 /    96/30/8 /    96/27/6 購入配置=True 費用根拠=native_purchase 当日収集推定=67.0% ＋別支出U12/中級Core4
+final_day11_ranged_fitted_speed    96/14/6 /    96/30/8 /          - 購入配置=True 費用根拠=native_purchase 当日収集推定=-
+final_day11_ranged_fitted_speed_module20    96/14/6 /    96/30/8 /          - 購入配置=True 費用根拠=native_purchase 当日収集推定=- ＋別支出U12/中級Core4
+final_day11_thrower_fitted_damage    95/13/6 /    96/30/8 /          - 購入配置=True 費用根拠=native_purchase 当日収集推定=-
+final_day11_thrower_fitted_damage_module20    95/13/6 /    96/30/8 /          - 購入配置=True 費用根拠=native_purchase 当日収集推定=- ＋別支出U12/中級Core4
+
+データ採用履歴（詳細な行番号・入力SHA256は upgrade-analysis.json）
+除外 route-results.csv:2 route_GearCraft_4: Known duplicate native initial spawns. Never use this initial result; prefer route-fix.
+route_GearCraft_4 の採用元: route-fix-results.csv

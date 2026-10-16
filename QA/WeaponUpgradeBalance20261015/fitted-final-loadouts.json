@@ -1,0 +1,625 @@
+{
+  "kind": "QA profiles replacing known ineffective zero-spread Nozzles",
+  "profiles": [
+    {
+      "name": "final_day11_ranged_fitted_speed",
+      "source_profile": "final_day11_ranged",
+      "weapons": [
+        "SteamCannon",
+        "RailCraft"
+      ],
+      "grid_size": 6,
+      "occupied_cells": 34,
+      "parts": [
+        "Damage+2",
+        "Damage+2",
+        "Damage+2",
+        "Damage+2",
+        "SpeedGear++",
+        "SpeedGear++",
+        "SpeedGear++",
+        "SpeedGear++",
+        "SpeedGear++",
+        "SpeedGear+",
+        "SpeedGear+",
+        "SpeedGear",
+        "SpeedGear",
+        "SpeedGear",
+        "TwinBarrel",
+        "SpeedGear",
+        "SpeedGear"
+      ],
+      "placements": [
+        {
+          "asset": "Damage+2",
+          "gridX": 0,
+          "gridY": 0,
+          "rotation": 0
+        },
+        {
+          "asset": "Damage+2",
+          "gridX": 2,
+          "gridY": 0,
+          "rotation": 0
+        },
+        {
+          "asset": "Damage+2",
+          "gridX": 4,
+          "gridY": 0,
+          "rotation": 0
+        },
+        {
+          "asset": "Damage+2",
+          "gridX": 0,
+          "gridY": 1,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear++",
+          "gridX": 2,
+          "gridY": 1,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear++",
+          "gridX": 3,
+          "gridY": 1,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear++",
+          "gridX": 4,
+          "gridY": 1,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear++",
+          "gridX": 5,
+          "gridY": 1,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear++",
+          "gridX": 0,
+          "gridY": 2,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear+",
+          "gridX": 1,
+          "gridY": 2,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear+",
+          "gridX": 2,
+          "gridY": 3,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear",
+          "gridX": 3,
+          "gridY": 3,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear",
+          "gridX": 4,
+          "gridY": 3,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear",
+          "gridX": 5,
+          "gridY": 3,
+          "rotation": 0
+        },
+        {
+          "asset": "TwinBarrel",
+          "gridX": 0,
+          "gridY": 4,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear",
+          "gridX": 0,
+          "gridY": 5,
+          "rotation": 1
+        },
+        {
+          "asset": "SpeedGear",
+          "gridX": 2,
+          "gridY": 5,
+          "rotation": 1
+        }
+      ],
+      "part_costs": {
+        "Scrap": 96,
+        "Gear": 14,
+        "UpgradeCore": 6
+      },
+      "parts_budget": {
+        "Scrap": 96,
+        "Gear": 30,
+        "UpgradeCore": 8
+      },
+      "effects": {
+        "flat_damage": 12.0,
+        "attack_interval_multiplier": 0.1397977989120001,
+        "bullet_double": true,
+        "spread_modifier": 0.0
+      },
+      "module_damage": 0,
+      "additional_module_costs": {},
+      "module_unlock_boss_kills": null,
+      "change": "Nozzle x2 -> SpeedGear x2",
+      "verification": "Static occupancy/shape/cost check only. Existing final placements retained; native purchase and combat are parent-run. No claim of globally optimal build. Module costs are separate from parts budget."
+    },
+    {
+      "name": "final_day11_ranged_fitted_speed_module20",
+      "source_profile": "final_day11_ranged",
+      "weapons": [
+        "SteamCannon",
+        "RailCraft"
+      ],
+      "grid_size": 6,
+      "occupied_cells": 34,
+      "parts": [
+        "Damage+2",
+        "Damage+2",
+        "Damage+2",
+        "Damage+2",
+        "SpeedGear++",
+        "SpeedGear++",
+        "SpeedGear++",
+        "SpeedGear++",
+        "SpeedGear++",
+        "SpeedGear+",
+        "SpeedGear+",
+        "SpeedGear",
+        "SpeedGear",
+        "SpeedGear",
+        "TwinBarrel",
+        "SpeedGear",
+        "SpeedGear"
+      ],
+      "placements": [
+        {
+          "asset": "Damage+2",
+          "gridX": 0,
+          "gridY": 0,
+          "rotation": 0
+        },
+        {
+          "asset": "Damage+2",
+          "gridX": 2,
+          "gridY": 0,
+          "rotation": 0
+        },
+        {
+          "asset": "Damage+2",
+          "gridX": 4,
+          "gridY": 0,
+          "rotation": 0
+        },
+        {
+          "asset": "Damage+2",
+          "gridX": 0,
+          "gridY": 1,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear++",
+          "gridX": 2,
+          "gridY": 1,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear++",
+          "gridX": 3,
+          "gridY": 1,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear++",
+          "gridX": 4,
+          "gridY": 1,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear++",
+          "gridX": 5,
+          "gridY": 1,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear++",
+          "gridX": 0,
+          "gridY": 2,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear+",
+          "gridX": 1,
+          "gridY": 2,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear+",
+          "gridX": 2,
+          "gridY": 3,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear",
+          "gridX": 3,
+          "gridY": 3,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear",
+          "gridX": 4,
+          "gridY": 3,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear",
+          "gridX": 5,
+          "gridY": 3,
+          "rotation": 0
+        },
+        {
+          "asset": "TwinBarrel",
+          "gridX": 0,
+          "gridY": 4,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear",
+          "gridX": 0,
+          "gridY": 5,
+          "rotation": 1
+        },
+        {
+          "asset": "SpeedGear",
+          "gridX": 2,
+          "gridY": 5,
+          "rotation": 1
+        }
+      ],
+      "part_costs": {
+        "Scrap": 96,
+        "Gear": 14,
+        "UpgradeCore": 6
+      },
+      "parts_budget": {
+        "Scrap": 96,
+        "Gear": 30,
+        "UpgradeCore": 8
+      },
+      "effects": {
+        "flat_damage": 12.0,
+        "attack_interval_multiplier": 0.1397977989120001,
+        "bullet_double": true,
+        "spread_modifier": 0.0
+      },
+      "module_damage": 20,
+      "additional_module_costs": {
+        "UpgradeCore": 12,
+        "ModuleCore_lv2": 4
+      },
+      "module_unlock_boss_kills": 2,
+      "change": "Nozzle x2 -> SpeedGear x2",
+      "verification": "Static occupancy/shape/cost check only. Existing final placements retained; native purchase and combat are parent-run. No claim of globally optimal build. Module costs are separate from parts budget."
+    },
+    {
+      "name": "final_day11_thrower_fitted_damage",
+      "source_profile": "final_day11_ranged",
+      "weapons": [
+        "SteamThrower"
+      ],
+      "grid_size": 6,
+      "occupied_cells": 33,
+      "parts": [
+        "Damage+2",
+        "Damage+2",
+        "Damage+2",
+        "Damage+2",
+        "SpeedGear++",
+        "SpeedGear++",
+        "SpeedGear++",
+        "SpeedGear++",
+        "SpeedGear++",
+        "SpeedGear",
+        "SpeedGear+",
+        "SpeedGear",
+        "SpeedGear",
+        "SpeedGear",
+        "TwinBarrel",
+        "Damage+2",
+        "Damage+1"
+      ],
+      "placements": [
+        {
+          "asset": "Damage+2",
+          "gridX": 0,
+          "gridY": 0,
+          "rotation": 0
+        },
+        {
+          "asset": "Damage+2",
+          "gridX": 2,
+          "gridY": 0,
+          "rotation": 0
+        },
+        {
+          "asset": "Damage+2",
+          "gridX": 4,
+          "gridY": 0,
+          "rotation": 0
+        },
+        {
+          "asset": "Damage+2",
+          "gridX": 0,
+          "gridY": 1,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear++",
+          "gridX": 2,
+          "gridY": 1,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear++",
+          "gridX": 3,
+          "gridY": 1,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear++",
+          "gridX": 4,
+          "gridY": 1,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear++",
+          "gridX": 5,
+          "gridY": 1,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear++",
+          "gridX": 0,
+          "gridY": 2,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear",
+          "gridX": 1,
+          "gridY": 2,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear+",
+          "gridX": 2,
+          "gridY": 3,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear",
+          "gridX": 3,
+          "gridY": 3,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear",
+          "gridX": 4,
+          "gridY": 3,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear",
+          "gridX": 5,
+          "gridY": 3,
+          "rotation": 0
+        },
+        {
+          "asset": "TwinBarrel",
+          "gridX": 0,
+          "gridY": 4,
+          "rotation": 0
+        },
+        {
+          "asset": "Damage+2",
+          "gridX": 0,
+          "gridY": 5,
+          "rotation": 0
+        },
+        {
+          "asset": "Damage+1",
+          "gridX": 2,
+          "gridY": 5,
+          "rotation": 0
+        }
+      ],
+      "part_costs": {
+        "Scrap": 95,
+        "Gear": 13,
+        "UpgradeCore": 6
+      },
+      "parts_budget": {
+        "Scrap": 96,
+        "Gear": 30,
+        "UpgradeCore": 8
+      },
+      "effects": {
+        "flat_damage": 16.0,
+        "attack_interval_multiplier": 0.18274222080000008,
+        "bullet_double": true,
+        "spread_modifier": 0.0
+      },
+      "module_damage": 0,
+      "additional_module_costs": {},
+      "module_unlock_boss_kills": null,
+      "change": "Nozzle x2 -> Damage+2 + Damage+1; one SpeedGear+ -> SpeedGear",
+      "verification": "Static occupancy/shape/cost check only. Existing final placements retained; native purchase and combat are parent-run. No claim of globally optimal build. Module costs are separate from parts budget."
+    },
+    {
+      "name": "final_day11_thrower_fitted_damage_module20",
+      "source_profile": "final_day11_ranged",
+      "weapons": [
+        "SteamThrower"
+      ],
+      "grid_size": 6,
+      "occupied_cells": 33,
+      "parts": [
+        "Damage+2",
+        "Damage+2",
+        "Damage+2",
+        "Damage+2",
+        "SpeedGear++",
+        "SpeedGear++",
+        "SpeedGear++",
+        "SpeedGear++",
+        "SpeedGear++",
+        "SpeedGear",
+        "SpeedGear+",
+        "SpeedGear",
+        "SpeedGear",
+        "SpeedGear",
+        "TwinBarrel",
+        "Damage+2",
+        "Damage+1"
+      ],
+      "placements": [
+        {
+          "asset": "Damage+2",
+          "gridX": 0,
+          "gridY": 0,
+          "rotation": 0
+        },
+        {
+          "asset": "Damage+2",
+          "gridX": 2,
+          "gridY": 0,
+          "rotation": 0
+        },
+        {
+          "asset": "Damage+2",
+          "gridX": 4,
+          "gridY": 0,
+          "rotation": 0
+        },
+        {
+          "asset": "Damage+2",
+          "gridX": 0,
+          "gridY": 1,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear++",
+          "gridX": 2,
+          "gridY": 1,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear++",
+          "gridX": 3,
+          "gridY": 1,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear++",
+          "gridX": 4,
+          "gridY": 1,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear++",
+          "gridX": 5,
+          "gridY": 1,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear++",
+          "gridX": 0,
+          "gridY": 2,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear",
+          "gridX": 1,
+          "gridY": 2,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear+",
+          "gridX": 2,
+          "gridY": 3,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear",
+          "gridX": 3,
+          "gridY": 3,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear",
+          "gridX": 4,
+          "gridY": 3,
+          "rotation": 0
+        },
+        {
+          "asset": "SpeedGear",
+          "gridX": 5,
+          "gridY": 3,
+          "rotation": 0
+        },
+        {
+          "asset": "TwinBarrel",
+          "gridX": 0,
+          "gridY": 4,
+          "rotation": 0
+        },
+        {
+          "asset": "Damage+2",
+          "gridX": 0,
+          "gridY": 5,
+          "rotation": 0
+        },
+        {
+          "asset": "Damage+1",
+          "gridX": 2,
+          "gridY": 5,
+          "rotation": 0
+        }
+      ],
+      "part_costs": {
+        "Scrap": 95,
+        "Gear": 13,
+        "UpgradeCore": 6
+      },
+      "parts_budget": {
+        "Scrap": 96,
+        "Gear": 30,
+        "UpgradeCore": 8
+      },
+      "effects": {
+        "flat_damage": 16.0,
+        "attack_interval_multiplier": 0.18274222080000008,
+        "bullet_double": true,
+        "spread_modifier": 0.0
+      },
+      "module_damage": 20,
+      "additional_module_costs": {
+        "UpgradeCore": 12,
+        "ModuleCore_lv2": 4
+      },
+      "module_unlock_boss_kills": 2,
+      "change": "Nozzle x2 -> Damage+2 + Damage+1; one SpeedGear+ -> SpeedGear",
+      "verification": "Static occupancy/shape/cost check only. Existing final placements retained; native purchase and combat are parent-run. No claim of globally optimal build. Module costs are separate from parts budget."
+    }
+  ]
+}

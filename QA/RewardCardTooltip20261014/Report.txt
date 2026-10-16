@@ -1,0 +1,36 @@
+2026-10-14 Main 強化カードの説明ウィンドウ
+
+Main/BonusCardsCanvasの子としてRewardCardTooltip/RewardCardDescriptionWindowと文字を配置。
+既存TooltipSystemの表示・画面内補正を使用し、カード数や横並びを変更しない。
+説明はBonusCardDataSOの効果データを参照し、名前・効果値・発動条件・対象武器・一度のみの制約を表示。
+倍率低下や素材の焼却は赤で表示。文章量に合わせて高さを調整する。
+全ての説明パネル/文字はポインター入力を遮らない。
+
+生成する各報酬カードへBonusCardTooltipTriggerを接続。
+PointerEnterでカードへフォーカスを合わせて説明を開き、Selectでも同じ説明を表示。
+カーソルが離れても選択中なら維持し、別カードへの選択で切り替える。
+Deselect/Disableは自分の説明だけを閉じる。決定・選択中断・カード破棄ではウィンドウも閉じる。
+説明を読むだけでは効果を適用しない。
+
+Unityでコンパイル完了。実Mainシーンで変換・全回復・武器固有の3種類を提示し、
+初期選択、実RaycastとPointerEnter、PointerExit時の選択維持、Moveイベントで次のカードへの移動、
+背景によるフォーカス解除からの復帰、SubmitでHP41→100、決定後の閉鎖を確認。
+文字overflow/truncatedなし、表示枠はCanvas内、説明に対する入力の透過も確認。
+initial-selection.png / pointer-hover.png / keyboard-move.png / after-decision.pngを目視。
+全36カード資産で説明を生成し、効果enumとフォント内の表示文字を検査。
+runtime-result.txtの1465合格には文字単位の検査が含まれる。1465個の独立シナリオではない。
+物理キーボード/マウス入力と初見プレイヤー本人の理解度評価は未実施。
+
+既存画像の不一致: STR_to_ACCのカード面はSTR-2 / ACC+2だが、効果データと実処理は±1。
+今回の説明は実処理の数値を表示する。既存の画像・能力値・カード出現条件は変更していない。
+既存のURP互換モード通知とmemoryless depthの描画メッセージはConsoleに残っている。
+
+Editor保存による既存シーン書式の変更を除去し、BonusCardsCanvasの子参照、
+BonusCardsManagerの説明システム参照と新しいオブジェクトだけを追加。既存MainオブジェクトIDを維持。
+検証のギャラリー進捗/開始通知は退避後に復元し、Play停止後に別の読取りで保存有無/値の一致を確認。
+元のTitleに戻して終了。restore-verified.txt。git diff --check 合格。
+
+追記：ユーザーの「画像に合わせて」の指定により、両変換カードの効果値を1から2へ変更。
+両方のカード画像を目視し、STR-2/ACC+2とACC-2/STR+2を確認。上記の数値不一致は解消。
+実ApplyCardEffect経路でSTR5/ACC7→STR3/ACC9と逆変換を確認。元の能力が2未満なら変化なし。
+説明も「元の能力が2以上なら、-2/+2」に更新されることを確認。検証後に元のランタイム能力値を戻し、Play停止。

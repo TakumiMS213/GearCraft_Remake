@@ -1,0 +1,83 @@
+パーツ装着版・非補充native生存ログの独立検証
+生成UTC: 2026-10-15T02:33:49.918488+00:00
+
+予定16件。復元まで確認済み16件、状態内訳: {'verified_complete': 16}。
+初期武器・パーツ・モジュールは指定ビルドを付与した状態です。購入可能性の別検証があっても、通常入手からEDまで一つのセーブを通した実走ではありません。
+game_secondsには開始演出、報酬、日末回収、画面遷移の実時間待ち換算が混じるため通常クリアタイムにはしません。ボス出現→撃破/終了のイベント差と到達可否を使います。
+botは回避・ダッシュ・BOOST・敵弾の意図的迎撃を行わず、報酬選択も最適化されていません。武器単体の人間の生存可否・総合順位とは区別します。
+JsonUtilityのpartDataはinstanceIDです。bootstrapのasset名/配置とケース内参照対応を照合し、instanceIDそのものをasset GUIDとはみなしません。
+restore-verifiedはrunnerが8キーを読み戻して確認しEditorPlaying=Falseで保存した記録です。現在のEditor/PrefsをこのPythonで直接確認したものではありません。
+
+native_GearCraft_day2: verified_complete
+  native_day_cleared_and_dorm_reached、完了wave=[4, 5, 6]、HP/門=100/100.0、被害=0.0/0.0、回復=0.0/0.0。
+  shots/attack_events=31/31、観測敵=60、撃破=60、逃走等=0。
+native_GearCraft_day3: verified_complete
+  gate_destroyed、完了wave=[7, 8]、HP/門=90/0.0、被害=10.0/100.0、回復=0.0/0.0。
+  shots/attack_events=99/99、観測敵=60、撃破=59、逃走等=0。
+  IC-408: 未討伐で終了、出現から31.217秒。
+native_SteamCannon_day4: verified_complete
+  native_day_cleared_and_dorm_reached、完了wave=[10, 11, 12]、HP/門=94/100.0、被害=6.0/0.0、回復=0.0/0.0。
+  shots/attack_events=43/43、観測敵=59、撃破=59、逃走等=0。
+native_SteamThrower_day4: verified_complete
+  native_day_cleared_and_dorm_reached、完了wave=[10, 11, 12]、HP/門=76/100.0、被害=24.0/0.0、回復=0.0/0.0。
+  shots/attack_events=446/446、観測敵=51、撃破=51、逃走等=0。
+native_RailCraft_day7: verified_complete
+  native_day_cleared_and_dorm_reached、完了wave=[19, 20, 21]、HP/門=100/100.0、被害=0.0/0.0、回復=0.0/0.0。
+  shots/attack_events=104/52、観測敵=67、撃破=67、逃走等=0。
+native_SteamGatling_day7: verified_complete
+  native_day_cleared_and_dorm_reached、完了wave=[19, 20, 21]、HP/門=85/100.0、被害=15.0/0.0、回復=0.0/0.0。
+  shots/attack_events=3046/1523、観測敵=62、撃破=62、逃走等=0。
+native_GearCraft_final_module0: verified_complete
+  gate_destroyed、完了wave=[]、HP/門=95/-20.0、被害=5.0/120.0、回復=0.0/0.0。
+  shots/attack_events=47/47、観測敵=23、撃破=22、逃走等=0。
+  EK-9: 未討伐で終了、出現から11.316秒。
+  wave31開始時killAllEnemies=True、既撃破ボス=3。ED到達時も最終wave→ED接続の証拠であり、全行程の真ED条件獲得ではありません。
+native_SteamCannon_final_module0: verified_complete
+  ending_reached_3、完了wave=[31]、HP/門=95/100.0、被害=5.0/0.0、回復=0.0/0.0。
+  shots/attack_events=362/181、観測敵=22、撃破=22、逃走等=0。
+  EK-9: 撃破、出現から24.350秒。
+  wave31開始時killAllEnemies=True、既撃破ボス=3。ED到達時も最終wave→ED接続の証拠であり、全行程の真ED条件獲得ではありません。
+native_SteamThrower_final_module0: verified_complete
+  ending_reached_3、完了wave=[31]、HP/門=89/100.0、被害=11.0/0.0、回復=0.0/0.0。
+  shots/attack_events=2864/1432、観測敵=23、撃破=23、逃走等=0。
+  EK-9: 撃破、出現から21.683秒。
+  wave31開始時killAllEnemies=True、既撃破ボス=3。ED到達時も最終wave→ED接続の証拠であり、全行程の真ED条件獲得ではありません。
+native_RailCraft_final_module0: verified_complete
+  ending_reached_3、完了wave=[31]、HP/門=95/100.0、被害=5.0/0.0、回復=0.0/0.0。
+  shots/attack_events=158/79、観測敵=21、撃破=21、逃走等=0。
+  EK-9: 撃破、出現から19.017秒。
+  wave31開始時killAllEnemies=True、既撃破ボス=3。ED到達時も最終wave→ED接続の証拠であり、全行程の真ED条件獲得ではありません。
+native_SteamGatling_final_module0: verified_complete
+  player_dead、完了wave=[]、HP/門=-7/40.0、被害=107.0/60.0、回復=0.0/0.0。
+  shots/attack_events=2176/1088、観測敵=23、撃破=21、逃走等=0。
+  EK-9: 未討伐で終了、出現から10.100秒。
+  wave31開始時killAllEnemies=True、既撃破ボス=3。ED到達時も最終wave→ED接続の証拠であり、全行程の真ED条件獲得ではありません。
+native_GearCraft_final_module20: verified_complete
+  ending_reached_3、完了wave=[31]、HP/門=5/100.0、被害=95.0/0.0、回復=0.0/0.0。
+  shots/attack_events=522/522、観測敵=22、撃破=22、逃走等=0。
+  EK-9: 撃破、出現から47.766秒。
+  wave31開始時killAllEnemies=True、既撃破ボス=3。ED到達時も最終wave→ED接続の証拠であり、全行程の真ED条件獲得ではありません。
+native_SteamCannon_final_module20: verified_complete
+  ending_reached_3、完了wave=[31]、HP/門=95/100.0、被害=5.0/0.0、回復=0.0/0.0。
+  shots/attack_events=292/146、観測敵=21、撃破=21、逃走等=0。
+  EK-9: 撃破、出現から19.284秒。
+  wave31開始時killAllEnemies=True、既撃破ボス=3。ED到達時も最終wave→ED接続の証拠であり、全行程の真ED条件獲得ではありません。
+native_SteamThrower_final_module20: verified_complete
+  ending_reached_3、完了wave=[31]、HP/門=92/100.0、被害=8.0/0.0、回復=0.0/0.0。
+  shots/attack_events=658/329、観測敵=25、撃破=25、逃走等=0。
+  EK-9: 撃破、出現から3.900秒。
+  wave31開始時killAllEnemies=True、既撃破ボス=3。ED到達時も最終wave→ED接続の証拠であり、全行程の真ED条件獲得ではありません。
+native_RailCraft_final_module20: verified_complete
+  ending_reached_3、完了wave=[31]、HP/門=95/100.0、被害=5.0/0.0、回復=0.0/0.0。
+  shots/attack_events=152/76、観測敵=21、撃破=21、逃走等=0。
+  EK-9: 撃破、出現から18.167秒。
+  wave31開始時killAllEnemies=True、既撃破ボス=3。ED到達時も最終wave→ED接続の証拠であり、全行程の真ED条件獲得ではありません。
+native_SteamGatling_final_module20: verified_complete
+  ending_reached_3、完了wave=[31]、HP/門=89/100.0、被害=11.0/0.0、回復=0.0/0.0。
+  shots/attack_events=2542/1271、観測敵=20、撃破=20、逃走等=0。
+  EK-9: 撃破、出現から18.200秒。
+  wave31開始時killAllEnemies=True、既撃破ボス=3。ED到達時も最終wave→ED接続の証拠であり、全行程の真ED条件獲得ではありません。
+
+Gearのbot変形は通常ChangeGearCraftを通らず変形時歯車報酬を再現しません。BOOST/後続購入なしの直接火力試験と素材収支を分けます。
+観測敵ログは初回観測前の瞬殺を取りこぼす余地があり、全敵撃破保証には使いません。native非補充は同編成固定のroute/probesとは役割が異なります。
+再実行: python3 -B QA/WeaponUpgradeBalance20261015/verify_native_survival.py

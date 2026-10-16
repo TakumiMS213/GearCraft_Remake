@@ -1,0 +1,13 @@
+diff --git a/Assets/GearCraft/Scripts/Upgrade/UpgradeGridUI.cs b/Assets/GearCraft/Scripts/Upgrade/UpgradeGridUI.cs
+index 76c5fcf..fbb2957 100644
+--- a/Assets/GearCraft/Scripts/Upgrade/UpgradeGridUI.cs
++++ b/Assets/GearCraft/Scripts/Upgrade/UpgradeGridUI.cs
+@@ -57,6 +57,8 @@ public class UpgradeGridUI : MonoBehaviour
+     private int draggingRotation;
+     private Vector2 lastDragScreenPosition;
+ 
++    public bool IsShopDragging => draggingPart != null;
++
+     private struct ShapeBounds
+     {
+         public int minX;

@@ -1,0 +1,82 @@
+{
+  "result": "15.61s phase=25 COMPLETE Craft and upgrade flow passed checks=289 errors=0",
+  "screenshots": [
+    {
+      "file": "runtime-01-craft-start.png",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "file": "runtime-02-material-assessment.png",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "file": "runtime-03-hint-three.png",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "file": "runtime-04-materials-supplied.png",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "file": "runtime-05-craft-action.png",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "file": "runtime-06-craft-animation.png",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "file": "runtime-07-craft-complete.png",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "file": "runtime-08-independent-craft.png",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "file": "runtime-09-independent-craft-complete.png",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "file": "runtime-10-upgrade-start.png",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "file": "runtime-11-part-tooltip.png",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "file": "runtime-12-upgrade-drag.png",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "file": "runtime-13-upgrade-result.png",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "file": "runtime-14-independent-upgrade.png",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "file": "runtime-15-independent-upgrade-result.png",
+      "width": 1920,
+      "height": 1080
+    }
+  ],
+  "screenshotFirstPassLabelsMayReflectFollowingAction": true,
+  "pending": "MCP reconnect for screenshot replay/aspect and dorm checks, then preference restoration"
+}

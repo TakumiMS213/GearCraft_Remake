@@ -1,0 +1,45 @@
+IC / BB 防衛失敗の独立診断（2026-10-16、読取監査）
+
+前提
+通常の一日を native progression で実行したログ。ただし初期装備・HP100・門100は設定済みで、取得過程からの通しプレイでも人間の平均行動でもない。攻撃イベント数は命中数ではない。sample は約1秒間隔の観測で、全フレームの接触を証明しない。production / MCP の操作なし。
+
+IC の比較
+条件                    baseline                reactive
+初期構成                early_day3_common       同左
+ボスHP                  13600                   13600
+出現→門破壊             31.2166672秒            31.2166672秒
+ボス残HP                8799.068                7970.11963
+与ダメージ              4800.932 (35.30%)       5629.88037 (41.40%)
+出現→終了の平均DPS      153.79                  180.35
+ボス中攻撃イベント      67                      84
+ボス開始→終了HP         100→90                  97→87
+BOOST                   なし                    実消費2個
+ボス時STR               7                       4
+選択した固有カード      変形時歯車              斧サイズ
+
+同 seed でも戦闘中の乱数消費で報酬候補と前座が異なる。攻撃増加25.4%、与ダメージ増加17.3%をBOOST単独の因果効果とは呼べない。reactive は出現+0.033秒と+5.633秒に Gear 4→3→2 を消費、attackSpeed .765→.3825 を確認。ボス戦に dash/intercept イベントなし（IC に迎撃対象なし）。最後は元の.765へ復帰。
+
+攻撃停止・射程・床・背面
+両版とも最初の約1秒は巨大な本体とプレイヤーが重なり、観測1点でplayer.y=-4.42788、以後-3.82227へ復帰。これは初動の押し出し・姿勢の問題として残すが、持続する床埋まりや長時間攻撃停止の証拠はない。
+baseline は出現約2秒後、reactive は約1.5秒後から本体左側におり、通常追従時の closest_distance は約0.94～1.04。門前では両版とも player.x=-6.310108、距離.6627464で固定される。右へ速度7.5を指示しても物理衝突で進めないが、攻撃イベントは各秒で増え、ボスHPも各秒減る。『動けない＝攻撃が届かない』とは解釈できない。
+全IC sampleの通常 suppression は cooldown、flow_active=True/input_blocked=False。約1秒ごとの観測でも長い無攻撃区間はなく、melee_out_of_range の記録なし。baseline の終盤23秒も約3500ダメージを与えている。範囲不足よりも、この構成で門の猶予内に出せる攻撃量が不足している。
+
+IC の締切
+EnemyAI_BossTank は speed2×.3=.6で前進、出現x2.1594→停止x-2.4931。門到達は約7.7秒後、そこから予告.85秒、門へ10ダメージ/2.5秒を繰り返す。観測通り門100はボス出現31.2167秒で尽きる。同じ締切に13600を削る平均DPSは435.66で、baselineの2.83倍、reactiveの2.42倍が必要。一定速度の外挿はクリア時間の実測ではないので、討伐可能/不可能の普遍的断定はしない。
+
+production変更前に試す改善余地（取得・操作条件を明記する感度試験）
+1. 3×3盤面の未使用1セルへ Damage Plate（Damage+1 asset、+1、Scrap3）を追加する。現行構成は8セル。小さな確実な改善で、2倍超の不足を埋める根拠にはならない。
+2. Speed Gear+×3 + Damage Plate+×1 + 1セル Damage Plate（計9セル）、または Speed Gear+×4 + 1セルDamage Plate。前者の速度係数.614125、後者.522006。Scrap/Gearの費用自体は早期資源モデル内でも、同一レアリティの速度パーツを3～4個引ける確率は未検証。通常確定・平均装備とは呼ばない。速度パーツは攻撃旋回中の再始動と物理ヒット数に影響するため、係数の逆数をそのままDPS倍率としない。
+3. 過去日の残りGearを持ち込み、ボス中のBOOSTを2回上限から約6～7回へ拡大する比較。native BOOSTはGear1で約5秒、追加使用で残時間を5秒へ戻す。31秒を全時間カバーするにはタイミング込みで7個程度。資源中央値モデルは朝G39からGearCraft10/初期部品G1/リロール上限G5を差し引いてG23程度が残るため、Gear6～7の消費自体は範囲内。現試験は朝Gear0で過去資源を持ち込んでいないので別条件として扱う。実消費を記録し、仮想無限BOOSTにはしない。
+4. 食事はSTR/ACCを選べず50%で各+3。2夜ともSTRならSTR6/ACC0（確率25%）は可能だが平均ではない。過去報酬をSTR優先にする条件も別枠。STRはGearCraftの1hitを+1、PunkDriveにも影響する。現PunkDriveはStart時STRをキャッシュするため、日中報酬STRと朝STRを同一視しない。
+5. 変形時歯車カードを得た場合、通常ChangeGearCraftで得るGearを現runnerのEquipWeapon直接切替は再現しない。継続BOOST評価では通常変形経路を使うか、この素材収支の欠落を明記する。
+6. 宿舎の門修理+50は別の猶予改善。ただし食事と同じ夜の設備行動を占めるため、STR上振れと無条件併用しない。
+
+根拠ファイル
+baseline_IC_GearCraft_seed77-{bosses,samples,events}.csv / {initial,final}-{status,materials}.json
+reactive_IC408_GearCraft_seed77 の同名ログ
+Assets/GearCraft/Scripts/EnemyAI/EnemyAI_BossTank.cs
+Assets/GearCraft/Scripts/Main/{PlayerController,MeleeWeapon,ArmRotation,PunkDriveManager}.cs
+Assets/GearCraft/Scripts/CraftSpace/UIRangeDisplay.cs
+Assets/GearCraft/ScriptableObject/UpgradeParts/{Damage+1,Damage+2,SpeedGear,SpeedGear+}.asset
+本フォルダ progression.txt / ReactiveSurvivalRoute.cs.txt

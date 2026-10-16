@@ -27,6 +27,13 @@ namespace GearCraft.Scripts.Items
         private bool isMagneting;
         private float elapsedTime;
         private float blinkTimer;
+        private bool pickedUp;
+        private bool isEndOfDayPickup;
+        private Vector3 endOfDayStartPosition;
+        private float endOfDayElapsed;
+        private float endOfDayDuration;
+
+        public bool IsPickupComplete => pickedUp;
 
         public void Configure(MaterialManager.MaterialType type, int value)
         {
@@ -36,13 +43,35 @@ namespace GearCraft.Scripts.Items
 
         public void Burn()
         {
+            if (isEndOfDayPickup) return;
             Destroy(gameObject);
+        }
+
+        public void CollectAtDayEnd(Transform target, float duration)
+        {
+            if (target == null || pickedUp || isEndOfDayPickup) return;
+            player = target;
+            isEndOfDayPickup = true;
+            endOfDayStartPosition = transform.position;
+            endOfDayElapsed = 0f;
+            endOfDayDuration = Mathf.Max(0.1f, duration);
+            if (rb == null) rb = GetComponent<Rigidbody2D>();
+            if (rb != null)
+            {
+                rb.linearVelocity = Vector2.zero;
+                rb.angularVelocity = 0f;
+                rb.simulated = false;
+            }
+            if (spriteRenderer == null) spriteRenderer = GetComponent<SpriteRenderer>();
+            if (spriteRenderer != null) spriteRenderer.enabled = true;
         }
 
         private void Start()
         {
             rb = GetComponent<Rigidbody2D>();
             spriteRenderer = GetComponent<SpriteRenderer>();
+            // The final enemy can drop items and finish the day before their Start runs.
+            if (isEndOfDayPickup) return;
             IgnoreEnemyCollisions();
 
             GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
@@ -107,6 +136,20 @@ namespace GearCraft.Scripts.Items
 
         private void Update()
         {
+            if (pickedUp) return;
+            if (isEndOfDayPickup)
+            {
+                if (player == null)
+                {
+                    Destroy(gameObject);
+                    return;
+                }
+                endOfDayElapsed += Time.deltaTime;
+                float progress = Mathf.Clamp01(endOfDayElapsed / endOfDayDuration);
+                transform.position = Vector3.Lerp(endOfDayStartPosition, player.position, progress * progress);
+                if (progress >= 1f) Pickup();
+                return;
+            }
             elapsedTime += Time.deltaTime;
             if (elapsedTime >= lifeTime)
             {
@@ -194,6 +237,10 @@ namespace GearCraft.Scripts.Items
 
         private void Pickup()
         {
+            if (pickedUp) return;
+            pickedUp = true;
+
+            if (spriteRenderer == null) spriteRenderer = GetComponent<SpriteRenderer>();
             if (spriteRenderer != null)
             {
                 spriteRenderer.enabled = true;
@@ -202,6 +249,12 @@ namespace GearCraft.Scripts.Items
             if (MaterialManager.Instance != null)
             {
                 MaterialManager.Instance.AddMaterial(materialType, amount);
+                if (player == null)
+                {
+                    GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
+                    if (playerObject != null) player = playerObject.transform;
+                }
+                MaterialPickupFeedback.Instance?.Show(player, spriteRenderer != null ? spriteRenderer.sprite : null, amount);
             }
 
             Destroy(gameObject);

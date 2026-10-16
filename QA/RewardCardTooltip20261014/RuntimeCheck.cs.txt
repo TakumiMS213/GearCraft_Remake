@@ -1,0 +1,54 @@
+const string folder="QA/RewardCardTooltip20261014/";
+if(!UnityEditor.EditorApplication.isPlaying)throw new System.Exception("Main Play required");
+var manager=UnityEngine.Object.FindFirstObjectByType<BonusCardsManager>();
+if(manager==null||!manager.IsChoosingReward)throw new System.Exception("Active reward choice required");
+var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Public;
+var tooltip=(TooltipSystem)manager.GetType().GetField("cardTooltip",flags).GetValue(manager);
+var cards=(System.Collections.Generic.List<GameObject>)manager.GetType().GetField("spawnedCards",flags).GetValue(manager);
+var buttons=cards.Select(card=>card.GetComponent<UnityEngine.UI.Button>()).ToArray();
+var events=UnityEngine.EventSystems.EventSystem.current;
+var hpCard=cards.First(card=>((BonusCardDataSO)card.GetComponent<BonusCardTooltipTrigger>().GetType().GetField("cardData",flags).GetValue(card.GetComponent<BonusCardTooltipTrigger>())).effects.Any(effect=>effect.type==CardEffectType.AddHP));
+int phase=0,checks=0;bool done=false;double started=UnityEditor.EditorApplication.timeSinceStartup,next=started;int hpBefore=StatusManager.Instance.HP;int strBefore=StatusManager.Instance.STR;
+UnityEditor.EditorApplication.CallbackFunction tick=null;
+System.IO.File.WriteAllText(folder+"runtime-result.txt","Native reward pointer/select/move/submit handlers, actual raycasts, presentation and closure. Not physical key input or human comprehension E2E.\n");
+System.Action<string> log=s=>System.IO.File.AppendAllText(folder+"runtime-result.txt",(UnityEditor.EditorApplication.timeSinceStartup-started).ToString("F2")+"s "+s+"\n");
+System.Action<bool,string> check=(ok,s)=>{if(!ok)throw new System.Exception(s);checks++;log("PASS "+s);};
+System.Action<UnityEngine.UI.Button> inspect=button=>{
+ Canvas.ForceUpdateCanvases();check(events.currentSelectedGameObject==button.gameObject,"correct selected card");check(tooltip.IsShowingFor((RectTransform)button.transform),"window belongs to selected card");
+ var trigger=button.GetComponent<BonusCardTooltipTrigger>();var data=(BonusCardDataSO)trigger.GetType().GetField("cardData",flags).GetValue(trigger);check(tooltip.tooltipText.text==data.BuildTooltipText(),"actual effect data shown "+data.cardName);
+ tooltip.tooltipText.ForceMeshUpdate();check(!tooltip.tooltipText.isTextOverflowing&&!tooltip.tooltipText.isTextTruncated,"description text fits");
+ var canvas=tooltip.GetComponentInParent<Canvas>();var root=(RectTransform)canvas.transform;var bounds=RectTransformUtility.CalculateRelativeRectTransformBounds(root,tooltip.tooltipPanel);check(bounds.min.x>=root.rect.xMin-.5f&&bounds.max.x<=root.rect.xMax+.5f&&bounds.min.y>=root.rect.yMin-.5f&&bounds.max.y<=root.rect.yMax+.5f,"window stays within screen");
+ check(!tooltip.tooltipPanel.GetComponent<CanvasGroup>().blocksRaycasts&&!tooltip.tooltipText.raycastTarget,"window does not block pointer input");
+};
+System.Action<string> capture=name=>ScreenCapture.CaptureScreenshot(folder+name+".png");
+System.Action<bool,string> finish=(passed,message)=>{
+ if(done)return;done=true;UnityEditor.EditorApplication.update-=tick;log((passed?"COMPLETE ":"FAILED ")+message+" checks="+checks);
+ manager.enabled=false;
+ foreach(var row in System.IO.File.ReadAllLines(folder+"playerprefs-before.txt")){var p=row.Split('|');if(!bool.Parse(p[1]))PlayerPrefs.DeleteKey(p[0]);else if(p[0].Contains("Progress"))PlayerPrefs.SetString(p[0],System.Text.Encoding.UTF8.GetString(System.Convert.FromBase64String(p[2])));else PlayerPrefs.SetInt(p[0],int.Parse(p[2]));}PlayerPrefs.Save();typeof(GearCraft.Gallery.GalleryProgress).GetField("data",flags).SetValue(null,null);UnityEditor.EditorApplication.isPlaying=false;
+};
+tick=()=>{try{
+ double now=UnityEditor.EditorApplication.timeSinceStartup;if(now-started>12)throw new System.Exception("Watchdog");if(now<next)return;next=now+.2;
+ foreach(var spawner in UnityEngine.Object.FindObjectsByType<EnemySpawner>(FindObjectsSortMode.None))spawner.StopSpawning();
+ switch(phase){
+ case 0:
+  check(buttons.Length==3,"three actual reward cards");buttons[0].Select();phase=1;break;
+ case 1:
+  inspect(buttons[0]);check(StatusManager.Instance.HP==hpBefore&&StatusManager.Instance.STR==strBefore,"preview does not apply effects");capture("initial-selection");phase=2;break;
+ case 2:
+  var target=buttons[2];var rect=(RectTransform)target.transform;var canvas=target.GetComponentInParent<Canvas>();var pointer=new UnityEngine.EventSystems.PointerEventData(events){position=RectTransformUtility.WorldToScreenPoint(canvas.worldCamera,rect.TransformPoint(rect.rect.center))};var hits=new System.Collections.Generic.List<UnityEngine.EventSystems.RaycastResult>();events.RaycastAll(pointer,hits);check(hits.Count>0&&UnityEngine.EventSystems.ExecuteEvents.GetEventHandler<UnityEngine.EventSystems.IPointerEnterHandler>(hits[0].gameObject)==target.gameObject,"real raycast reaches hovered card");UnityEngine.EventSystems.ExecuteEvents.Execute(target.gameObject,pointer,UnityEngine.EventSystems.ExecuteEvents.pointerEnterHandler);phase=3;break;
+ case 3:inspect(buttons[2]);capture("pointer-hover");phase=4;break;
+ case 4:UnityEngine.EventSystems.ExecuteEvents.Execute(buttons[2].gameObject,new UnityEngine.EventSystems.PointerEventData(events),UnityEngine.EventSystems.ExecuteEvents.pointerExitHandler);phase=5;break;
+ case 5:inspect(buttons[2]);check(manager.IsChoosingReward,"hover exit keeps selected description");buttons[0].Select();phase=6;break;
+ case 6:UnityEngine.EventSystems.ExecuteEvents.Execute(buttons[0].gameObject,new UnityEngine.EventSystems.AxisEventData(events){moveDir=UnityEngine.EventSystems.MoveDirection.Right},UnityEngine.EventSystems.ExecuteEvents.moveHandler);phase=7;break;
+ case 7:inspect(buttons[1]);capture("keyboard-move");phase=8;break;
+ case 8:events.SetSelectedGameObject(null);phase=9;break;
+ case 9:inspect(buttons[1]);check(manager.IsChoosingReward,"background deselection restores choice and description");hpCard.GetComponent<UnityEngine.UI.Button>().Select();phase=10;break;
+ case 10:
+  inspect(hpCard.GetComponent<UnityEngine.UI.Button>());StatusManager.Instance.HP=41;UnityEngine.EventSystems.ExecuteEvents.Execute(hpCard,new UnityEngine.EventSystems.BaseEventData(events),UnityEngine.EventSystems.ExecuteEvents.submitHandler);phase=11;break;
+ case 11:
+  check(StatusManager.Instance.HP==100,"native submit applies chosen HP effect");check(!manager.IsChoosingReward&&!tooltip.tooltipPanel.gameObject.activeSelf,"decision closes reward description");capture("after-decision");phase=12;break;
+ case 12:
+  int cardCount=0;foreach(var guid in UnityEditor.AssetDatabase.FindAssets("t:BonusCardDataSO")){var data=UnityEditor.AssetDatabase.LoadAssetAtPath<BonusCardDataSO>(UnityEditor.AssetDatabase.GUIDToAssetPath(guid));if(data==null)continue;string body=data.BuildTooltipText();check(!string.IsNullOrEmpty(body),"description exists "+data.name);string plain=System.Text.RegularExpressions.Regex.Replace(body,"<[^>]+>","");foreach(char c in plain)if(!char.IsWhiteSpace(c))check(tooltip.tooltipText.font.HasCharacter(c),"font contains "+c);if(data.effects!=null)foreach(var effect in data.effects)if(effect!=null)check(System.Enum.IsDefined(typeof(CardEffectType),effect.type),"effect type supported "+data.name);cardCount++;}log("Audited all "+cardCount+" bonus-card assets");finish(true,"Reward descriptions and native interactions passed; original preferences restored before Play exit");break;
+ }
+ }catch(System.Exception ex){finish(false,ex.ToString());}};
+UnityEditor.EditorApplication.update+=tick;return "Scheduled reward-window check and automatic restoration/Play exit";

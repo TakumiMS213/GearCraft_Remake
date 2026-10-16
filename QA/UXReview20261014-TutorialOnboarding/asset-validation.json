@@ -1,0 +1,10 @@
+{
+  "resourceMatchesFallback": true,
+  "taskCount": 5,
+  "taskOrderAndIndependencePreserved": true,
+  "dormSceneObjectIdsUnchanged": true,
+  "arrivalPageCount": 2,
+  "fontCharacterCount": 7130,
+  "missingFontCharacters": "",
+  "doesNotValidateRuntimeOrHumanUsability": true
+}

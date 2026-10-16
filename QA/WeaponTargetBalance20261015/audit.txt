@@ -1,0 +1,19 @@
+最大強化ビルドのEK目標時間調整：ランナー独立レビュー（2026-10-15）
+
+結論：今回の同一ビルド・同一bot・同一EK条件で、武器assetのダメージ調整による討伐時間変化を比較する用途に使える。本編と異なるダメージ式や旧係数の固定値は見つからない。人間の通常プレイで必ず同じ45/60秒になるという試験ではない。
+
+対象：QA/BossBalance20261015/UpgradeCombatBenchmark.cs.txtを現行productionと照合。今回のQA/WeaponTargetBalance20261015版はfolder定数を正規化すると全文一致。
+・runner:142,151–162 は実WeaponDataSO/UpgradePartSOを読み、STR=ACC20、module20、RecalculateUpgradeEffects(parts)を使用。初期damage_per_hitも現行StatusManager.GetWeaponDamageで記録する。SteamのcraftModuleDamageMultiplierを含む新係数は通常経路へ反映される。
+・runner:219–220,231,238–254 は通常HandleAttackと同じbaseDamageとcoolTime×attackSpeedMultを使う。近接は本編PerformMeleeAttack→MeleeWeaponの実コライダー、射撃は実Prefab＋本編ConfigureSpawnedProjectileを呼ぶ。命中ダメージを直接Enemyへ注入しない。
+・本編PlayerController:444–480 のConfigureでStatusManager.GetWeaponDamageBonus（STR/ACC、flat、module倍率）を加える。BulletController/SteamThrowerBulletControllerの接触・爆発・貫通・反復hit、EnemyController:230–255のEK装甲/段階境界フィルタをそのまま通る。
+・spread/muzzle/弾速/line-hit/弾サイズ/跳弾/武器専用効果は通常メソッドを呼び、Twinも独立spread→Instantiate→Configureの通常順序を保持。射撃RNGは敵側と分離されているので、人間の共有乱数列との一致を主張しない。
+・runner:135–136,262 はframeCountで重複callbackを除き、各ゲームフレーム末尾に本編CoolTimeUpdateを1回呼ぶ。旧絶対nextShot方式の丸め差は残っていない。60gamefpsの1フレーム1攻撃上限も通常と同じ。
+
+目標時間の解釈
+・cases.csvはstage31、各武器の終盤専用parts＋module20、seed77、EK単体。武器専用カード/Punk/BOOSTなし。ここでいう最大強化はこの指定構成であり、全報酬カードやBOOST込みの理論最大ではない。
+・比較指標はboss_seconds。これはボス初回観測からHP0までで、接近・追従・装甲無敵時間も含む。死亡演出が終わるまでのresults.secondsを目標値にしない。
+・HP/門は毎フレーム補充され、回避や意図的迎撃をしないbotが照準/移動する。通常耐久の生存証明・人間のクリア時間とは区別する。
+・新EKには3秒×2回の装甲無敵と段階境界での余剰ダメージ切捨てがあり、damage倍率と討伐時間は単純な逆比例にならない。各asset変更後の再測定が必要。
+・Gearは5秒ごとの剣/斧切替で、可能なフレームに近接攻撃を再入力する。人間のクリック頻度とは異なる。重複swingやOnTriggerEnterの再接触も本編処理なので、攻撃回数＝命中数ではない。boss-statesの位置/attack_eventsを確認し、長い攻撃停止を含む値を純DPSの目標達成と誤認しない。
+
+このレビューではproduction編集・Unity MCP操作・追加実測を行っていない。

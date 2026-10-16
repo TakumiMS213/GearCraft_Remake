@@ -1,0 +1,2 @@
+PASS checks=16 failures=0
+Inactive isolated EK, real EnemyController.TakeDamage entry. Armor expiry is forced only to reach the next boundary; timing/attacks/death were checked separately by combat pass1.

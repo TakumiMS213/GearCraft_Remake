@@ -1,0 +1,8 @@
+status=PASS
+UTC=2026-10-15T03:13:43.6548380Z
+weapon_assets=9
+matrix_cases=120
+native_projectile_cases=48
+failures=0
+output_prefix=QA/BossBalance20261015/weapon-scaling-20261015T031343579Z-9ae361
+Existing singleton and 8 PlayerPrefs keys were compared before/after; temporary inactive objects and preview scene removed. No frame, collision, enemy hit, save, scene transition or balance-duration test was run.

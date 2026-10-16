@@ -1,0 +1,71 @@
+EK-9調整後 M20 pass1：結果・状態ログの照合（2026-10-15）
+
+5件すべて240秒以内に撃破。Cannon/Rail/Gatlingは60.483～63.950秒、Throwerは40.783秒、GearCraftは148.750秒だった。全武器を一律60秒と評価せず、終盤M20のCannon/Rail/Gatlingが約1分となる条件として記録する。
+この試験はstage31・seed77・EK単体・STR/ACC20・最終パーツ＋Module20。HP/門耐久を毎フレーム補充する処理能力測定で、通常耐久での生存証明ではない。production編集、MCP操作は行っていない。
+
+完了結果
+武器             EK撃破秒   全case秒   本人被害   門被害  結果
+GearCraft         148.750    149.767      324       0    cleared
+SteamCannon        63.950     64.967      162       0    cleared
+SteamThrower       40.783     41.800      210       0    cleared
+RailCraft          60.667     61.683      606       0    cleared
+SteamGatling       60.483     61.500      642       0    cleared
+
+全件：EK初期HP147,600、撃破1/出現1、残HP0、残敵0、逃走0、timeout0。damage列も147,600で一致した。
+boss_secondsは最初のEK観測からDead状態までの差と0.001秒以内で一致。全case秒には撃破後約1秒の処理が含まれるため、討伐時間に使用しない。
+本人被害は100を超えても補充される。回避・意図的迎撃・BOOSTなしのボット条件なので、これを通常プレイの必要HPや死亡回数へ読み替えない。
+
+装甲2回の実観測
+状態CSVのphaseは0始まり。phase=1のArmorTransitionが第2段階への切替、phase=2が第3段階への切替を指す。
+
+武器              装甲1：開始→解除秒          装甲2：開始→解除秒
+GearCraft          47.483330→50.483330          98.066666→101.066666
+SteamCannon        19.266663→22.266663          41.633330→44.633330
+SteamThrower       11.883331→14.883331          26.333328→29.333328
+RailCraft          18.183320→21.183320          39.433320→42.433320
+SteamGatling       18.199982→21.199982          39.366670→42.366670
+
+全10回が3.000秒（CSV丸め差は最大0.000001秒未満）。装甲1の全サンプルHPは98,400、装甲2は49,200で一定だった。装甲中のboss_xも各区間内で一定。HP境界越え・装甲中のHP減少・前進は、記録されたサンプルでは見られなかった。
+全件phase0→1→2で、各切替のArmorTransitionを1回ずつ記録。HPは全状態行を通して単調減少、門被害は全行0、プレイヤー攻撃回数は単調増加だった。状態変化時＋少なくとも1秒ごとの記録であり、全フレームを保存した証拠ではない。
+
+新しい攻撃状態の出現回数（同じ状態の連続サンプルを一回にまとめた遷移回数）
+武器              第2段階CrossfireBurst   第3段階CombinedVolley
+GearCraft                   3                        4
+SteamCannon                 2                        2
+SteamThrower                1                        1
+RailCraft                   1                        2
+SteamGatling                2                        2
+
+全5武器で両方の発射状態へ実際に移行した。さらに第3段階のCrossfireBurstも全件で出現したため、今回の強火力条件で全ての新パターンが潰れる状況は起きていない。
+予告に入った全攻撃の完遂を保証したわけではない。例としてRailの第2段階CrossfireWindupは2回に対しBurstは1回、Throwerの第1段階CrusherWindupは1回に対しSurgeは0回だった。フェーズ切替・後退等で一部の予告/連射は中断する。
+このCSVは敵弾数・各発射口・命中数を保存していないため、各状態で何発実際に射出されたかまでは直接照合できない。装甲4発×2回や発射口の実位置は静的レビューと別の目視/実行確認の対象。
+
+旧EK単体probeとの比較
+旧probeは敵HP49,200、今回147,600（3倍）で、今回は装甲待ち合計6秒と段階別反撃を追加した。従って以下は調整前後の観測値であり、時間差を武器の火力だけに帰さない。
+
+同じパーツ構成・同じEK単体モードで比較できる組
+GearCraft：旧47.483秒 → 今回148.750秒（final_day11_melee_module20）
+SteamGatling：旧18.184秒 → 今回60.483秒（final_day11_ranged_module20）
+
+旧単体probeとパーツ構成が異なる3武器（厳密な同構成比較から分離）
+武器             旧単体・元ranged構成     今回単体・fitted構成
+SteamCannon              23.534秒                 63.950秒
+RailCraft                22.417秒                 60.667秒
+SteamThrower              3.867秒                 40.783秒
+
+Cannon/Railは元rangedの無効なNozzle2個を速度へ交換。Throwerも旧単体probeは元rangedであり、今回はNozzleをダメージへ交換したfitted_damageのため同構成ではない。
+参考として旧fittedの前座付きwave31では、Cannon19.283秒、Rail18.167秒、Thrower3.867秒だった。これらはパーツ構成は対応するが、前座を含む開始状況が違うため、今回のEK単体とは別条件の参考値に留める。
+Throwerは今回さらに基礎/ACC/パーツ/Module係数が調整され、同じfitted M20の初期1ヒットは旧23.88→今回7.16400051（約0.3倍）。旧単体3.867秒との差をボスHP増加だけで説明しない。他4武器の記録された初期ヒット値はGear剣92、Cannon95.6、Rail382、Gatling22.6。
+
+照合範囲と根拠
+・case5行と結果5行のweapon/stage/profile/seed一致、全件cleared、EK初期HP、敵収支、HP推移、装甲10区間、状態遷移、討伐秒、門被害を照合。
+・shots/attack_eventsはGear1532/1532、Cannon854/427、Thrower4892/2446、Rail430/215、Gatling7258/3629。二重射撃の遠距離4武器は弾数が攻撃回数の2倍で整合する。
+・元CSVは変更していない。根拠はboss-m20-pass1-results.csv、-boss-states.csv、-spawns.csv、-loadout-stats.csv、cases.csv。旧比較はQA/WeaponUpgradeBalance20261015/probes-results.csvとfitted-final-results.csv。
+・このpass1は単一seed・単回。新条件での通常耐久、複数seed、最終復元の実施状況はこの分析の対象外。
+
+照合入力SHA256
+99f0e60d4e9537e6f876a4ad7d0859b6d2853e0391c5dbb27c41dda23e3dd177  first-pass-cases.csv
+a216ee072bdc6a3a3ed9dbe7f992f6c77fd7d20c231bf760e073a3f68f6d11d8  boss-m20-pass1-results.csv
+7e5991c1790065a005833cde89df22e95032bc2633aca7bb7277fbbcaeb08121  boss-m20-pass1-boss-states.csv
+27b19ef392f270e57f312ac5f47cd9b2d4d34c58c7bcedf43ce504bfb789dfaa  boss-m20-pass1-spawns.csv
+40d7f2ccfc8c8da4ed57e4c41c07f22d7775e49ed3b6082d1c555e53056e5892  boss-m20-pass1-loadout-stats.csv

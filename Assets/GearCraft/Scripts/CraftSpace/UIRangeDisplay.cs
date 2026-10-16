@@ -34,6 +34,7 @@ public class UIRangeDisplay : MonoBehaviour
     private bool menuWasOpen;
     private float feedbackUntil;
     private float feedbackPlayerX;
+    private bool showingEquipmentGuide;
 
     private void Start()
     {
@@ -63,10 +64,12 @@ public class UIRangeDisplay : MonoBehaviour
             return;
         }
 
-        if (feedbackRoot != null && feedbackRoot.activeSelf &&
+        if (feedbackRoot != null && feedbackRoot.activeSelf && !showingEquipmentGuide &&
             (Time.unscaledTime >= feedbackUntil || Mathf.Abs(Input.GetAxisRaw("Horizontal")) > 0.01f ||
              player != null && Mathf.Abs(player.position.x - feedbackPlayerX) > 0.02f))
             HideFeedback();
+
+        ShowEquipmentGuideIfNeeded();
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
@@ -175,6 +178,7 @@ public class UIRangeDisplay : MonoBehaviour
     private void ShowFeedback(string message)
     {
         if (feedbackRoot == null || feedbackText == null) return;
+        showingEquipmentGuide = false;
         feedbackText.text = message;
         feedbackText.raycastTarget = false;
         feedbackUntil = Time.unscaledTime + feedbackSeconds;
@@ -184,7 +188,34 @@ public class UIRangeDisplay : MonoBehaviour
 
     private void HideFeedback()
     {
+        showingEquipmentGuide = false;
         if (feedbackRoot != null) feedbackRoot.SetActive(false);
+    }
+
+    private void ShowEquipmentGuideIfNeeded()
+    {
+        if (activeZone == null || feedbackRoot == null || feedbackRoot.activeSelf ||
+            feedbackText == null || !CanUseOneTimeBuff()) return;
+
+        string guide;
+        switch (activeZone.ActionType)
+        {
+            case CraftSpaceInteractionAction.GateRepair:
+                guide = "門の耐久力を50増やせます。\n設備は一晩に一つです。修理するなら Space を押してください。";
+                break;
+            case CraftSpaceInteractionAction.Freeze:
+                guide = "食事で近接か遠距離の攻撃力が上がります。\n設備は一晩に一つです。食事を取るなら Space を押してください。";
+                break;
+            case CraftSpaceInteractionAction.Medical:
+                guide = status.HP >= 100
+                    ? "体力は十分に回復しています。\n今夜は、食事か門の修理を選べます。"
+                    : "体力を全回復できます。\n設備は一晩に一つです。手当てを受けるなら Space を押してください。";
+                break;
+            default: return;
+        }
+        ShowFeedback(guide);
+        // Keep decision support visible until leaving the equipment or acting.
+        showingEquipmentGuide = true;
     }
 
     private void ConsumeOneTimeBuff()

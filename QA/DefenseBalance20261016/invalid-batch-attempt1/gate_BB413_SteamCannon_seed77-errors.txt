@@ -1,0 +1,2 @@
+System.Exception: Native managers disappeared before scene transition
+  at MCPDynamicCode+<Execute>c__AnonStorey1+<Execute>c__AnonStorey2.<>m__A () [0x00354] in <563b6a539763464d9422f30afa402439>:0 

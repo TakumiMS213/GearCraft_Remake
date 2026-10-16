@@ -1,0 +1,8 @@
+{
+  "compiler": "Unity bundled Roslyn",
+  "outputIsolatedInQA": true,
+  "exitCode": 0,
+  "errors": [],
+  "warningCount": 7,
+  "runtimeTested": false
+}

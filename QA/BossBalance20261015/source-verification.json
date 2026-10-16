@@ -1,0 +1,16 @@
+{
+  "checked_at_utc": "2026-10-15T03:27:01.770975+00:00",
+  "checked_files": 406,
+  "changed": [
+    "Assets/GearCraft/ScriptableObject/CraftResultDescription/SteamThrower.asset",
+    "Assets/GearCraft/Scripts/StatusManager.cs",
+    "Assets/GearCraft/Scripts/EnemyAI/EnemyAI_BossFinal.cs",
+    "Assets/GearCraft/Scripts/Data/WeaponDataSO.cs",
+    "Assets/GearCraft/ScriptableObject/EnemyData/lv3_FinalBoss.asset",
+    "Assets/GearCraft/ScriptableObject/Gallery/GalleryCatalog.asset",
+    "Assets/GearCraft/ScriptableObject/WeaponData/SteamThrower.asset",
+    "Assets/GearCraft/Scripts/Main/EnemyController.cs"
+  ],
+  "unexpected_changes": [],
+  "restoration": "PlayerPrefs verified=8; Play=false; scene=Assets/GearCraft/Scenes/Title.unity; dirty=false; GameView=Full HD index3; size list restored; vSync=1; captureDeltaTime=0; UTC=2026-10-15T03:26:05.7036680Z"
+}

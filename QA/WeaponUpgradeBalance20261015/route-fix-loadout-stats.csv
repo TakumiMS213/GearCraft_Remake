@@ -1,0 +1,2 @@
+case,weapon,profile,STR,ACC,base_damage,damage_per_hit,flat_damage,module_damage,cooldown_multiplier,double_shot,spread_modifier,ricochet,bullet_size,junk_collector,magnet_range,base_spread,effective_spread,bullet_speed
+route_GearCraft_4,GearCraft,tutorial_day2,2,2,40,46,4,0,1,False,0,0,1,1,3,0,0,25

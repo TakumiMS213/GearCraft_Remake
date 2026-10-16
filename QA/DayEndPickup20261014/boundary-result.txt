@@ -1,0 +1,11 @@
+Normal wave completion and final-stage completion branch. Final defeat flag is a fixture; stopping before ED loading.
+0.81s PASS normal-wave drop stays uncollected
+0.82s PASS normal wave does not enable forced collection
+0.82s PASS normal wave does not add remote material
+2.04s PASS remote material remains during normal reward choice
+2.04s PASS normal wave opens reward rather than day report
+2.04s PASS final-stage branch starts collection even before rest interval
+2.94s PASS final-stage branch collects remaining drop
+2.94s PASS final collection completes
+2.94s PASS verified before ED loads
+2.94s COMPLETE Normal-wave and final-stage boundaries passed; preferences restored and Play stopped checks=9

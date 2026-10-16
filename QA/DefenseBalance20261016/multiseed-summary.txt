@@ -1,0 +1,70 @@
+防衛試験・seed反復集計
+生成UTC: 2026-10-16T03:33:24.765524+00:00
+標準AR/EKはseed77/101/202の3件。取得済み代表装備・有限bot条件の少数反復であり、人間の成功率や平均装備の推定ではない。
+撃破時間は撃破例だけの中央値/範囲を明示し、失敗の秒数・本人/門/ボス残HPもseed別に併記。未完了・無効を成功/失敗へ算入しない。
+player_y < -20の異常落下は記録として保持し、通常失敗とは別計数。全ての時間/耐久の中央値・範囲から除外し、seed別の生値を表示する。原因は別途調査し、通常DPS不足とは判断しない。
+grounded姿勢とIC速度/持込Gear8/BOOST6は別枠。標準3seedへ混ぜない。
+
+IC/BB 主seed77のみ
+ボス | 武器 | 結果/予定 | 通常成功/通常失敗/異常落下失敗/打切 | 無効/未完了 | 通常撃破秒 中央値[最小–最大] | 通常失敗まで秒 中央値[最小–最大]
+IC-408 | GearCraft | 1/1 | 0/1/0/0 | 0/0 | — n=0 | 31.217[31.217–31.217] n=1
+  77:防衛失敗・ボス未撃破:gate_destroyed:boss=31.217s:remaining=7652.167:HP=87:GATE=0:minY=-4.428
+  profile=early_day3_common、初期Gear実測=0、BOOST実使用=2、戦闘wave合計秒=117.033[117.033–117.033] n=1、ボス中攻撃不増最大=0秒
+BB-413 | GearCraft | 1/1 | 0/1/0/0 | 0/0 | — n=0 | 10.467[10.467–10.467] n=1
+  77:防衛失敗・ボス未撃破:gate_destroyed:boss=10.467s:remaining=8803:HP=25:GATE=0:minY=-3.828
+  profile=mid_day4_common、初期Gear実測=0、BOOST実使用=2、戦闘wave合計秒=96.3[96.3–96.3] n=1、ボス中攻撃不増最大=0秒
+BB-413 | SteamCannon | 1/1 | 0/1/0/0 | 0/0 | — n=0 | 10.467[10.467–10.467] n=1
+  77:防衛失敗・ボス未撃破:gate_destroyed:boss=10.467s:remaining=9317:HP=97:GATE=-20:minY=-3.822
+  profile=mid_day4_common、初期Gear実測=0、BOOST実使用=1、戦闘wave合計秒=98.133[98.133–98.133] n=1、ボス中攻撃不増最大=0秒
+BB-413 | SteamThrower | 1/1 | 0/1/0/0 | 0/0 | — n=0 | 14.017[14.017–14.017] n=1
+  77:防衛失敗・ボス未撃破:player_dead:boss=14.017s:remaining=11789.809:HP=-26:GATE=100:minY=-3.828
+  profile=mid_day4_common、初期Gear実測=0、BOOST実使用=2、戦闘wave合計秒=114.2[114.2–114.2] n=1、ボス中攻撃不増最大=0秒
+
+標準AR/EK 3seed
+ボス | 武器 | 結果/予定 | 通常成功/通常失敗/異常落下失敗/打切 | 無効/未完了 | 通常撃破秒 中央値[最小–最大] | 通常失敗まで秒 中央値[最小–最大]
+AR-227 | GearCraft | 3/3 | 3/0/0/0 | 0/0 | 23.317[22.933–25.8] n=3 | — n=0
+  77:防衛成功:native_day_cleared_and_dorm_reached:boss=23.317s:remaining=-1.702:HP=90:GATE=100:minY=-3.827 | 101:防衛成功:native_day_cleared_and_dorm_reached:boss=22.933s:remaining=-13.313:HP=69:GATE=100:minY=-3.932 | 202:防衛成功:native_day_cleared_and_dorm_reached:boss=25.8s:remaining=-71.708:HP=72:GATE=100:minY=-3.964
+  profile=late_day7_melee_defense_module20、初期Gear実測=0、BOOST実使用=2、戦闘wave合計秒=121.133[117.633–121.933] n=3、ボス中攻撃不増最大=0秒
+AR-227 | SteamCannon | 3/3 | 3/0/0/0 | 0/0 | 16.567[8.767–17.633] n=3 | — n=0
+  77:防衛成功:native_day_cleared_and_dorm_reached:boss=17.633s:remaining=-172.579:HP=94:GATE=100:minY=-3.822 | 101:防衛成功:native_day_cleared_and_dorm_reached:boss=16.567s:remaining=-6.774:HP=95:GATE=100:minY=-3.918 | 202:防衛成功:native_day_cleared_and_dorm_reached:boss=8.767s:remaining=-21.418:HP=97:GATE=100:minY=-3.822
+  profile=late_day7_ranged_defense_module20、初期Gear実測=0、BOOST実使用=0;2、戦闘wave合計秒=108.683[106.317–109.45] n=3、ボス中攻撃不増最大=0秒
+AR-227 | SteamThrower | 2/3 | 2/0/0/0 | 0/1 | 12.492[11.867–13.117] n=2 | — n=0
+  77:防衛成功:native_day_cleared_and_dorm_reached:boss=11.867s:remaining=-15.977:HP=96:GATE=100:minY=-3.833 | 101:防衛成功:native_day_cleared_and_dorm_reached:boss=13.117s:remaining=-10.717:HP=90:GATE=100:minY=-3.838 | 202:未完了
+  profile=late_day7_ranged_defense_module20、初期Gear実測=0、BOOST実使用=2、戦闘wave合計秒=109.817[108.95–110.683] n=2、ボス中攻撃不増最大=0秒
+AR-227 | RailCraft | 2/3 | 2/0/0/0 | 0/1 | 6.05[5.633–6.467] n=2 | — n=0
+  77:防衛成功:native_day_cleared_and_dorm_reached:boss=5.633s:remaining=-22:HP=98:GATE=100:minY=-3.822 | 101:防衛成功:native_day_cleared_and_dorm_reached:boss=6.467s:remaining=-190:HP=98:GATE=100:minY=-3.822 | 202:未完了
+  profile=late_day7_ranged_defense_module20、初期Gear実測=0、BOOST実使用=1;2、戦闘wave合計秒=99.825[97.45–102.2] n=2、ボス中攻撃不増最大=0秒
+AR-227 | SteamGatling | 2/3 | 2/0/0/0 | 0/1 | 4.508[4.433–4.583] n=2 | — n=0
+  77:防衛成功:native_day_cleared_and_dorm_reached:boss=4.433s:remaining=-23.719:HP=99:GATE=100:minY=-3.827 | 101:防衛成功:native_day_cleared_and_dorm_reached:boss=4.583s:remaining=-56.764:HP=99:GATE=100:minY=-3.822 | 202:未完了
+  profile=late_day7_ranged_defense_module20、初期Gear実測=0、BOOST実使用=1、戦闘wave合計秒=94.75[91.833–97.667] n=2、ボス中攻撃不増最大=0秒
+EK-9 | GearCraft | 2/3 | 0/1/1/0 | 0/1 | — n=0 | 106.05[106.05–106.05] n=1
+  77:防衛失敗・ボス未撃破:player_dead:boss=106.05s:remaining=25852:HP=-8:GATE=100:minY=-4.428 | 101:異常落下を伴う防衛失敗:gate_destroyed:boss=11.3s:remaining=146654:HP=100:GATE=-20:minY=-1815.992 | 202:未完了
+  profile=final_day11_melee_defense_module20、初期Gear実測=0、BOOST実使用=2、戦闘wave合計秒=119.4[119.4–119.4] n=1、ボス中攻撃不増最大=10.283秒
+EK-9 | SteamCannon | 2/3 | 2/0/0/0 | 0/1 | 59.883[59.883–59.883] n=2 | — n=0
+  77:防衛成功:ending_reached_3:boss=59.883s:remaining=-66.162:HP=10:GATE=100:minY=-4.428 | 101:防衛成功:ending_reached_3:boss=59.883s:remaining=-66.162:HP=10:GATE=100:minY=-3.822 | 202:未完了
+  profile=final_day11_ranged_fitted_speed_defense_module20、初期Gear実測=0、BOOST実使用=0、戦闘wave合計秒=74.65[74.5–74.8] n=2、ボス中攻撃不増最大=0秒
+EK-9 | SteamThrower | 2/3 | 2/0/0/0 | 0/1 | 59.775[59.65–59.9] n=2 | — n=0
+  77:防衛成功:ending_reached_3:boss=59.65s:remaining=-2.247:HP=97:GATE=100:minY=-4.338 | 101:防衛成功:ending_reached_3:boss=59.9s:remaining=-2.247:HP=100:GATE=100:minY=-4.428 | 202:未完了
+  profile=final_day11_thrower_fitted_damage_defense_module20、初期Gear実測=0、BOOST実使用=0、戦闘wave合計秒=74.992[74.55–75.433] n=2、ボス中攻撃不増最大=0秒
+EK-9 | RailCraft | 2/3 | 2/0/0/0 | 0/1 | 45.383[45.383–45.383] n=2 | — n=0
+  77:防衛成功:ending_reached_3:boss=45.383s:remaining=-286:HP=28:GATE=100:minY=-3.824 | 101:防衛成功:ending_reached_3:boss=45.383s:remaining=-282:HP=28:GATE=100:minY=-3.822 | 202:未完了
+  profile=final_day11_ranged_fitted_speed_defense_module20、初期Gear実測=0、BOOST実使用=0、戦闘wave合計秒=60.525[60.25–60.8] n=2、ボス中攻撃不増最大=0秒
+EK-9 | SteamGatling | 2/3 | 2/0/0/0 | 0/1 | 44.975[44.967–44.983] n=2 | — n=0
+  77:防衛成功:ending_reached_3:boss=44.967s:remaining=-11.725:HP=64:GATE=100:minY=-4.428 | 101:防衛成功:ending_reached_3:boss=44.983s:remaining=-11.725:HP=64:GATE=100:minY=-4.428 | 202:未完了
+  profile=final_day11_ranged_defense_module20、初期Gear実測=0、BOOST実使用=0;2、戦闘wave合計秒=59.875[59.45–60.3] n=2、ボス中攻撃不増最大=0秒
+
+EK Gear 自発jump抑止の姿勢比較
+ボス | 武器 | 結果/予定 | 通常成功/通常失敗/異常落下失敗/打切 | 無効/未完了 | 通常撃破秒 中央値[最小–最大] | 通常失敗まで秒 中央値[最小–最大]
+EK-9 | GearCraft | 0/1 | 0/0/0/0 | 0/1 | — n=0 | — n=0
+  77:未完了
+  profile=final_day11_melee_defense_module20、初期Gear実測=未記録、BOOST実使用=未記録、戦闘wave合計秒=— n=0、ボス中攻撃不増最大=0秒
+
+IC速度・持込資源の感度試験
+ボス | 武器 | 結果/予定 | 通常成功/通常失敗/異常落下失敗/打切 | 無効/未完了 | 通常撃破秒 中央値[最小–最大] | 通常失敗まで秒 中央値[最小–最大]
+IC-408 | GearCraft | 0/3 | 0/0/0/0 | 0/3 | — n=0 | — n=0
+  77:未完了 | 101:未完了 | 202:未完了
+  profile=ic_speed_budget、初期Gear実測=未記録、BOOST実使用=未記録、戦闘wave合計秒=— n=0、ボス中攻撃不増最大=0秒
+
+observed_boss_end_secondsは撃破と失敗の終了時刻を含むため、全例撃破と確認できない限りTTKとは呼ばない。
+区間総game_secondsは日末回収/報告/遷移を含む。captureDeltaTime固定中のunscaled待機は端末速度に依存してゲーム秒換算が増えるため、通常プレイの実所要時間とは扱わない。
+反復間はseedでドロップ/報酬/敵挙動も変わり、武器間の完全な出現/報酬一致を保証しない。

@@ -1,0 +1,1 @@
+PlayerPrefs verified=8; Play=false; scene=Assets/GearCraft/Scenes/Title.unity; dirty=false; GameView=Full HD index3; size list restored; vSync=1; captureDeltaTime=0; UTC=2026-10-15T17:37:11.4780440Z

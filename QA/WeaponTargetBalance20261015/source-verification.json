@@ -1,0 +1,11 @@
+{
+  "count": 5,
+  "changed": [
+    "Assets/GearCraft/ScriptableObject/Gallery/GalleryCatalog.asset",
+    "Assets/GearCraft/ScriptableObject/WeaponData/SteamCannon.asset",
+    "Assets/GearCraft/ScriptableObject/WeaponData/SteamGatling.asset",
+    "Assets/GearCraft/ScriptableObject/WeaponData/RailCraft.asset",
+    "Assets/GearCraft/ScriptableObject/WeaponData/SteamThrower.asset"
+  ],
+  "expected_only": true
+}

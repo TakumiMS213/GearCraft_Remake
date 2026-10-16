@@ -1,0 +1,143 @@
+// C#6 integration SNIPPET, not a standalone execute_code body.
+// Insert block A AFTER the runner's record delegate and BEFORE tick is assigned.
+// Requires existing folder, label, flags, player, body, playerCollider, status, flow, record.
+// mode file must say reactive to enable. BOOST is separately opt-in and consumes actual stock.
+bool reactiveEnabled = System.IO.File.Exists(folder+"bot-mode.txt") && System.IO.File.ReadAllText(folder+"bot-mode.txt").Trim()=="reactive";
+bool reactiveBoostAllowed = System.IO.File.Exists(folder+"allow-boost.txt") && System.IO.File.ReadAllText(folder+"allow-boost.txt").Trim()=="true";
+int reactiveBoostBudget = 2, reactiveBoostUsed = 0;
+float reactiveNextDecision = Time.time + 0.2f, reactiveNextDash = Time.time, reactiveNextBoost = Time.time;
+Collider2D reactiveAimCollider = null;
+int reactivePreviousTarget = 0;
+var reactiveStartDash = typeof(PlayerController).GetMethod("StartDash",flags);
+var reactiveDashTimer = typeof(PlayerController).GetField("dashTimer",flags);
+var reactiveDashDirection = typeof(PlayerController).GetField("dashDirection",flags);
+var reactiveBlockedWall = typeof(PlayerController).GetMethod("IsBlockedByWall",flags);
+var reactiveBoost = typeof(PlayerController).GetMethod("BoostActive",flags);
+var reactiveBoostActive = typeof(PlayerController).GetField("isBoostActive",flags);
+var reactiveStopMovement = typeof(PlayerController).GetMethod("StopPlayerMovementInput",flags);
+if(reactiveEnabled && (reactiveStartDash==null||reactiveDashTimer==null||reactiveDashDirection==null||reactiveBlockedWall==null||reactiveBoost==null||reactiveBoostActive==null||reactiveStopMovement==null))throw new System.Exception("Reactive bot native members missing");
+record("bot_mode",reactiveEnabled?"reactive;decision=0.2s;dash_gap=1.2s;BOOST_allowed="+reactiveBoostAllowed+";BOOST_budget=2;actual_inventory_only":"baseline;no intentional interception/dodge/BOOST");
+System.Action<EnemyController> updateReactive = enemyTarget => {
+ if(!reactiveEnabled)return;
+ if(reactiveAimCollider!=null && (!reactiveAimCollider.enabled||!reactiveAimCollider.gameObject.activeInHierarchy))reactiveAimCollider=null;
+ if(Time.time<reactiveNextDecision)return;
+ reactiveNextDecision=Time.time+0.2f; // no catch-up loop: at most five decisions per game second
+ var camera=Camera.main;
+ var ownBounds=playerCollider.bounds;
+ Vector2 ownCenter=ownBounds.center;
+ Collider2D best=null;float bestTime=float.MaxValue;Vector2 bestVelocity=Vector2.zero;bool bestIsBomb=false;
+ var threatColliders=new System.Collections.Generic.HashSet<Collider2D>();
+ foreach(var projectile in UnityEngine.Object.FindObjectsByType<EnemyProjectileDamageable>(FindObjectsSortMode.None)){
+  var candidate=projectile.GetComponent<Collider2D>();if(candidate!=null)threatColliders.Add(candidate);
+ }
+ foreach(var projectile in UnityEngine.Object.FindObjectsByType<EnemyBulletController>(FindObjectsSortMode.None)){
+  var candidate=projectile.GetComponent<Collider2D>();if(candidate!=null)threatColliders.Add(candidate);
+ }
+ foreach(var collider in threatColliders){
+  var rb=collider.GetComponent<Rigidbody2D>();
+  if(!collider.enabled||rb==null||!collider.gameObject.activeInHierarchy)continue;
+  var enemyBullet=collider.GetComponent<EnemyBulletController>();bool bomb=enemyBullet!=null&&enemyBullet.bombBullet;
+  Vector2 center=collider.bounds.center, relative=center-ownCenter, velocity=rb.linearVelocity-body.linearVelocity;
+  if(relative.sqrMagnitude>64f||(!bomb&&velocity.sqrMagnitude<0.01f))continue;
+  Vector3 viewport=camera!=null?camera.WorldToViewportPoint(collider.bounds.center):new Vector3(-1f,-1f,-1f);
+  if(viewport.z<=0f||viewport.x<0f||viewport.x>1f||viewport.y<0f||viewport.y>1f)continue;
+  float closestTime=velocity.sqrMagnitude>0.01f?-Vector2.Dot(relative,velocity)/velocity.sqrMagnitude:float.MaxValue;
+  // A falling bomb threatens by its ground explosion, not only by direct body intersection.
+  // Use the visible ground below it; do not assume airborne player feet are the ground plane.
+  float explosionRadius=0f;
+  if(bomb){
+   float groundY=float.NaN;
+   foreach(var hit in Physics2D.RaycastAll(collider.bounds.center,Vector2.down,20f)){
+    if(hit.collider!=null&&!hit.collider.isTrigger&&hit.collider.CompareTag("Ground")){groundY=hit.point.y;break;}
+   }
+   if(!float.IsNaN(groundY)){
+    float a=0.5f*Physics2D.gravity.y*rb.gravityScale,b=rb.linearVelocity.y,c=collider.bounds.min.y-groundY;
+    float discriminant=b*b-4f*a*c;
+    if(a<-0.001f&&discriminant>=0f)closestTime=(-b-Mathf.Sqrt(discriminant))/(2f*a);
+    else if(b<-0.001f)closestTime=-c/b;
+   }
+   explosionRadius=Mathf.Max(0f,enemyBullet.bombRadius);
+  }
+  if(closestTime<0f||closestTime>1.2f)continue;
+  Vector2 separation=relative+velocity*closestTime;
+  if(bomb)separation.y+=0.5f*Physics2D.gravity.y*rb.gravityScale*closestTime*closestTime;
+  Vector2 extents=(Vector2)ownBounds.extents+(Vector2)collider.bounds.extents+new Vector2(0.25f+explosionRadius,0.25f+explosionRadius);
+  if(Mathf.Abs(separation.x)>extents.x||Mathf.Abs(separation.y)>extents.y)continue;
+  if(closestTime<bestTime){bestTime=closestTime;best=collider;bestVelocity=rb.linearVelocity;bestIsBomb=bomb;}
+ }
+ // Normal weapons aim to the right. A projectile that passed behind the player can prompt
+ // movement, but never forces an impossible backwards shot through the angle clamp.
+ reactiveAimCollider=best!=null && best.GetComponent<EnemyProjectileDamageable>()!=null && best.bounds.center.x>player.FirePoint.position.x+0.15f ? best : null;
+ int selected=reactiveAimCollider!=null?reactiveAimCollider.GetInstanceID():0;
+ if(selected!=reactivePreviousTarget){record("reactive_intercept_target",reactiveAimCollider!=null?reactiveAimCollider.name+" t_closest="+bestTime.ToString("F3",System.Globalization.CultureInfo.InvariantCulture):"return_to_enemy");reactivePreviousTarget=selected;}
+ if(best!=null && bestTime<(bestIsBomb?1f:0.45f) && Time.time>=reactiveNextDash && (float)reactiveDashTimer.GetValue(player)<=0f){
+  // Select a legal horizontal escape endpoint; no teleport or invincibility is applied.
+  int chosen=0;float bestClearance=float.MinValue;
+  foreach(int direction in new[]{-1,1}){
+   if((bool)reactiveBlockedWall.Invoke(player,new object[]{(float)direction}))continue;
+   Vector2 endpoint=ownCenter+Vector2.right*(direction*player.dashSpeed*player.dashDuration);
+   if(endpoint.x<-6.15f||endpoint.x>6.4f)continue;
+   bool bodyBlocked=false;
+   foreach(var hit in Physics2D.BoxCastAll(ownCenter,(Vector2)ownBounds.size*0.9f,0f,Vector2.right*direction,player.dashSpeed*player.dashDuration)){
+    var c=hit.collider;if(c==null||c==playerCollider||c.isTrigger)continue;
+    if(c.CompareTag("Wall")||c.GetComponent<EnemyController>()!=null){bodyBlocked=true;break;}
+   }
+   if(bodyBlocked)continue;
+   Vector2 projectileEnd=(Vector2)best.bounds.center+bestVelocity*player.dashDuration;
+   float clearance=(endpoint-projectileEnd).sqrMagnitude;
+   if(clearance>bestClearance){bestClearance=clearance;chosen=direction;}
+  }
+  reactiveNextDash=Time.time+1.2f;
+  if(chosen!=0){reactiveStartDash.Invoke(player,new object[]{chosen});record("reactive_dash",chosen+";native duration/speed;no invincibility");}
+  else record("reactive_dash_blocked","no clear horizontal path");
+ }
+ // Do not spend during EK armor. A new 5-second BOOST must fit the explicitly limited budget.
+ bool vulnerableBoss=enemyTarget!=null&&enemyTarget.enemyData!=null&&enemyTarget.enemyData.IsBossType;
+ if(vulnerableBoss){var finalAI=enemyTarget.GetComponent<EnemyAI_BossFinal>();if(finalAI!=null&&finalAI.IsArmored)vulnerableBoss=false;}
+ if(reactiveBoostAllowed&&reactiveBoostUsed<reactiveBoostBudget&&vulnerableBoss&&Time.time>=reactiveNextBoost&&!(bool)reactiveBoostActive.GetValue(player)&&MaterialManager.Instance!=null){
+  int before=MaterialManager.Instance.GetMaterial(MaterialManager.MaterialType.Gear);
+  if(before>0){
+   reactiveBoost.Invoke(player,null); // native async method executes UseMaterial before its first await
+   int after=MaterialManager.Instance.GetMaterial(MaterialManager.MaterialType.Gear);
+   if(after==before-1){reactiveBoostUsed++;record("reactive_boost","gear "+before+" -> "+after+";use="+reactiveBoostUsed+"/"+reactiveBoostBudget);}
+   else record("reactive_boost_not_started","stock unchanged");
+  }
+  reactiveNextBoost=Time.time+5.5f;
+ }
+};
+// Call exactly ONCE per eligible game frame, even if there is no enemy target.
+// StartDash alone only sets fields: normal HandleMovement consumes them, but runner disables Update.
+System.Func<float,float> applyReactiveDash = ordinaryVx => {
+ if(!reactiveEnabled)return ordinaryVx;
+ float timer=(float)reactiveDashTimer.GetValue(player);
+ if(timer<=0f)return ordinaryVx;
+ int direction=(int)reactiveDashDirection.GetValue(player);
+ reactiveDashTimer.SetValue(player,timer-Time.deltaTime);
+ if((bool)reactiveBlockedWall.Invoke(player,new object[]{(float)direction})){reactiveDashTimer.SetValue(player,0f);return ordinaryVx;}
+ return direction*player.dashSpeed;
+};
+// END block A.
+
+// Block B: integrate AFTER selecting EnemyController target and BEFORE target==null early return.
+// updateReactive(target);
+// Collider2D intercept = reactiveAimCollider!=null && reactiveAimCollider.enabled && reactiveAimCollider.gameObject.activeInHierarchy ? reactiveAimCollider : null;
+// if(target==null && intercept==null){body.linearVelocity=new Vector2(applyReactiveDash(0f),body.linearVelocity.y);attackSuppression="no_target";return;}
+// var bounds = target!=null ? target.GetComponent<Collider2D>().bounds : playerCollider.bounds;
+// var aimBounds = intercept!=null ? intercept.bounds : bounds;
+// Keep ordinary MOVEMENT based on enemy bounds; do not chase an approaching missile.
+// Compute normal vx as before, but set vx=0 when target==null, then call vx=applyReactiveDash(vx)
+// once immediately before body.linearVelocity=new Vector2(vx,vy).
+
+// Block C: use aimBounds for the melee distance check and ranged aim point only.
+// Melee: Vector2.Distance(player.transform.position,aimBounds.ClosestPoint(player.transform.position))
+// Ranged: Vector3 aim=aimBounds.center;
+//        if(intercept==null)aim.y=Mathf.Clamp(player.transform.position.y+1.4f,aimBounds.min.y+.1f,aimBounds.max.y-.1f);
+// Enemy projectiles use their exact center; do not inset the Y bounds of a very small bullet.
+// Keep the existing native cooldown, Instantiate, ConfigureSpawnedProjectile and actual collisions.
+// Never invoke EnemyProjectileDamageable.TakeDamage or DestroyProjectile directly.
+// The log is a targeting attempt, not proof of interception; instrument real projectile destruction
+// separately or report player/gate damage and attempts without claiming a successful counter count.
+
+// Block D: in the existing input-blocked/reward/report early returns, clear stale dash input:
+// if(reactiveEnabled){reactiveStopMovement.Invoke(player,null);reactiveAimCollider=null;}
+// Existing runner stops Play after each case; do not carry local cooldown/budget state into next case.

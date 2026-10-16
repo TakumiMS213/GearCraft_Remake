@@ -1,0 +1,39 @@
+Real drop prefab collection, icon/quantity, tracking, fade and bounded reuse. Runtime fixture, not physical input E2E.
+0.16s PASS actual collected Scrap exactly once
+0.16s PASS actual collected Gear exactly once
+0.16s PASS actual collected UpgradeCore exactly once
+0.16s PASS actual collected ModuleCore_lv1 exactly once
+0.16s PASS actual collected ModuleCore_lv2 exactly once
+0.16s PASS actual collected ModuleCore_lv3 exactly once
+0.16s PASS six simultaneous pickups are visible
+0.16s PASS authored template stays inactive
+0.16s PASS quantity +1 fits
+0.17s PASS quantity does not block input
+0.17s PASS quantity +1 fits
+0.17s PASS quantity does not block input
+0.17s PASS quantity +1 fits
+0.17s PASS quantity does not block input
+0.17s PASS quantity +1 fits
+0.17s PASS quantity does not block input
+0.17s PASS quantity +1 fits
+0.17s PASS quantity does not block input
+0.17s PASS quantity +1 fits
+0.17s PASS quantity does not block input
+0.17s PASS actual pickup icon Drop_Scrap
+0.17s PASS actual pickup icon Drop_Gear
+0.17s PASS actual pickup icon Drop_UpgradeCore
+0.17s PASS actual pickup icon Drop_ModuleCore_lv1
+0.17s PASS actual pickup icon Drop_ModuleCore_lv2
+0.17s PASS actual pickup icon Drop_ModuleCore_lv3
+0.17s PASS simultaneous rows separate
+0.17s PASS simultaneous rows separate
+0.17s PASS simultaneous rows separate
+0.17s PASS simultaneous rows separate
+0.17s PASS simultaneous rows separate
+0.36s PASS popup follows character motion
+0.46s PASS repeat pickup callback does not double award
+0.46s PASS burst uses bounded six-row pool
+1.19s PASS feedback fades before expiry
+1.74s PASS all feedback expires
+1.74s PASS next pickup reuses existing objects
+1.84s COMPLETE Pickup UI checks passed; original preferences restored before Play exit checks=37

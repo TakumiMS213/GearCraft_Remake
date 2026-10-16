@@ -1,0 +1,210 @@
+// C#6 execute_code METHOD BODY. Run in Edit mode after compilation, with QA callbacks stopped.
+// No scene asset, weapon asset, existing singleton, PlayerPrefs or runtime settings are edited.
+const string folder = "QA/BossBalance20261015/";
+if (UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode || UnityEngine.Application.isPlaying)
+    throw new System.Exception("Run this isolated coefficient probe in Edit mode.");
+if (UnityEditor.EditorApplication.isCompiling || UnityEditor.EditorApplication.isUpdating)
+    throw new System.Exception("Wait for compilation/import to finish.");
+foreach (string name in new[] { "benchmark-progress.txt", "native-survival-progress.txt" })
+    if (System.IO.File.Exists(folder + name) && System.IO.File.ReadAllText(folder + name).StartsWith("RUNNING"))
+        throw new System.Exception("Stop the QA callback before probing: " + name);
+System.IO.Directory.CreateDirectory(folder);
+var culture = System.Globalization.CultureInfo.InvariantCulture;
+string id = System.DateTime.UtcNow.ToString("yyyyMMddTHHmmssfffZ", culture) + "-" + System.Guid.NewGuid().ToString("N").Substring(0, 6);
+string prefix = folder + "weapon-scaling-" + id;
+var checks = new System.Collections.Generic.List<string>();
+var matrix = new System.Collections.Generic.List<string>();
+var projectiles = new System.Collections.Generic.List<string>();
+var failures = new System.Collections.Generic.List<string>();
+checks.Add("check,actual,expected,pass");
+matrix.Add("weapon,str,acc,flat,module,legacy_damage,expected_damage,actual_damage,pass");
+projectiles.Add("str,acc,flat,module,boost,expected_damage,configured_damage,slip,gravity,overheat_seconds,speed_multiplier,hit_interval,lifetime,pass");
+System.Func<float, string> number = value => value.ToString("R", culture);
+System.Func<float, float, bool> near = (actual, expected) => !float.IsNaN(actual) && !float.IsInfinity(actual) && System.Math.Abs(actual - expected) <= 0.00005f * System.Math.Max(1f, System.Math.Abs(expected));
+System.Action<string, float, float> checkNumber = (name, actual, expected) => {
+    bool pass = near(actual, expected);
+    checks.Add(name + "," + number(actual) + "," + number(expected) + "," + pass);
+    if (!pass) failures.Add(name + ": actual=" + number(actual) + " expected=" + number(expected));
+};
+System.Action<string, bool> check = (name, pass) => {
+    checks.Add(name + "," + pass + ",True," + pass);
+    if (!pass) failures.Add(name);
+};
+string[] prefKeys = { "GearCraft.Gallery.Progress.v1", "GearCraft.Main.OpeningNotice.Seen.v1", "CraftTutorial.Metrics.Craft.v5", "CraftTutorial.Metrics.WeaponCustom.v5", "CraftTutorial.Mastery.Craft.v5", "CraftTutorial.Mastery.WeaponCustom.v5", "CraftTutorial.AutoPlayed.Craft.v4", "CraftTutorial.AutoPlayed.WeaponCustom.v3" };
+System.Func<string> capturePrefs = () => {
+    var result = new System.Text.StringBuilder();
+    foreach (string key in prefKeys) {
+        bool exists = UnityEngine.PlayerPrefs.HasKey(key);
+        result.Append(key).Append('|').Append(exists).Append('|');
+        if (exists) {
+            bool textValue = key.Contains(".Metrics.") || key.Contains("Gallery.Progress");
+            if (textValue) result.Append(System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(UnityEngine.PlayerPrefs.GetString(key))));
+            else result.Append(UnityEngine.PlayerPrefs.GetInt(key).ToString(culture));
+        }
+        result.Append('\n');
+    }
+    return result.ToString();
+};
+var originalSingleton = StatusManager.Instance;
+string originalStatus = originalSingleton != null ? UnityEngine.JsonUtility.ToJson(originalSingleton) : null;
+string originalPrefs = capturePrefs();
+var originalScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+bool originalDirty = originalScene.isDirty;
+int originalSceneCount = UnityEngine.SceneManagement.SceneManager.sceneCount;
+float originalScale = UnityEngine.Time.timeScale, originalCapture = UnityEngine.Time.captureDeltaTime, originalFixed = UnityEngine.Time.fixedDeltaTime;
+var originalRandom = UnityEngine.Random.state;
+string originalRandomJson = UnityEngine.JsonUtility.ToJson(originalRandom);
+var assetSnapshots = new System.Collections.Generic.Dictionary<WeaponDataSO, string>();
+UnityEngine.GameObject root = null;
+UnityEngine.SceneManagement.Scene preview = default(UnityEngine.SceneManagement.Scene);
+int matrixCount = 0, projectileCount = 0;
+string exception = null;
+try {
+    preview = UnityEditor.SceneManagement.EditorSceneManager.NewPreviewScene();
+    root = UnityEditor.EditorUtility.CreateGameObjectWithHideFlags("QA_WeaponScaling_" + id, UnityEngine.HideFlags.HideAndDontSave);
+    root.SetActive(false); // Do this BEFORE adding StatusManager: its Awake must never run.
+    UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(root, preview);
+    var status = root.AddComponent<StatusManager>();
+    var player = root.AddComponent<PlayerController>();
+    status.enabled = false;
+    player.enabled = false;
+    player.runtimeStatus = status;
+    check("temporary_objects_inactive", !root.activeInHierarchy);
+    check("singleton_unchanged_after_add_component", object.ReferenceEquals(StatusManager.Instance, originalSingleton));
+    if (!object.ReferenceEquals(StatusManager.Instance, originalSingleton)) throw new System.Exception("Unexpected StatusManager.Awake; aborting.");
+
+    string[] weaponNames = { "GearCraft", "GearCraft_Sword", "GearCraft_Axe", "SteamCannon", "RailCraft", "SteamGatling", "AR", "Katana", "SteamThrower" };
+    float[] priorBase = { 40f, 40f, 60f, 50f, 150f, 1f, 3f, 15f, 1f };
+    float[] priorAcc = { 1f, 1f, 1f, 0.8f, 10f, 0.05f, 0.3f, 1f, 0.08f };
+    float[] priorFlat = { 1f, 1f, 1f, 0.8f, 1f, 0.05f, 0.3f, 1f, 0.08f };
+    bool[] melee = { true, true, true, false, false, false, false, true, false };
+    bool[] crafted = { true, true, true, true, true, true, false, false, true };
+    WeaponDataSO steam = null;
+    for (int w = 0; w < weaponNames.Length; w++) {
+        var weapon = UnityEditor.AssetDatabase.LoadAssetAtPath<WeaponDataSO>("Assets/GearCraft/ScriptableObject/WeaponData/" + weaponNames[w] + ".asset");
+        if (weapon == null) throw new System.Exception("Missing weapon " + weaponNames[w]);
+        assetSnapshots.Add(weapon, UnityEngine.JsonUtility.ToJson(weapon));
+        bool isSteam = weaponNames[w] == "SteamThrower";
+        float scale = isSteam ? 0.3f : 1f;
+        if (isSteam) steam = weapon;
+        check("weapon_name_" + weaponNames[w], weapon.weaponName == weaponNames[w]);
+        check("weapon_type_" + weaponNames[w], (weapon.weaponType == WeaponType.Melee) == melee[w]);
+        checkNumber("base_" + weaponNames[w], weapon.baseDamage, priorBase[w] * scale);
+        checkNumber("acc_coefficient_" + weaponNames[w], weapon.accDamageMultiplier, priorAcc[w] * scale);
+        checkNumber("flat_coefficient_" + weaponNames[w], weapon.GetScaledFlatDamageBonus(1f), priorFlat[w] * scale);
+        checkNumber("module_coefficient_" + weaponNames[w], weapon.craftModuleDamageMultiplier, scale);
+        checkNumber("flat_override_" + weaponNames[w], weapon.flatDamageMultiplier, isSteam ? 0.024f : weaponNames[w] == "RailCraft" ? 1f : -1f);
+        foreach (int acc in new[] { 0, 20 }) foreach (int flat in new[] { 0, 16 }) foreach (int module in new[] { 0, 20, 40 }) {
+            // Steam tests both STR values independently to prove that it still uses ACC.
+            foreach (int strength in isSteam ? new[] { 0, 20 } : new[] { acc }) {
+                status.STR = strength; status.ACC = acc; status.bonusDamage = flat; status.craftWeaponDamagebuff = module;
+                status.currentWeapon = weapon;
+                float legacy = priorBase[w] + (melee[w] ? strength : acc * priorAcc[w]) + flat * priorFlat[w] + (crafted[w] ? module : 0f);
+                float expected = legacy * scale;
+                float actual = status.GetWeaponDamage(weapon);
+                bool pass = near(actual, expected);
+                matrix.Add(weaponNames[w] + "," + strength + "," + acc + "," + flat + "," + module + "," + number(legacy) + "," + number(expected) + "," + number(actual) + "," + pass);
+                matrixCount++;
+                if (!pass) failures.Add("damage matrix " + weaponNames[w] + " STR=" + strength + " ACC=" + acc + " flat=" + flat + " module=" + module);
+            }
+        }
+    }
+    checkNumber("null_weapon_damage", status.GetWeaponDamage(null), 0f);
+    checkNumber("null_weapon_bonus", status.GetWeaponDamageBonus(null), 0f);
+    if (steam == null || steam.bulletPrefab == null) throw new System.Exception("Steam prefab unavailable");
+    var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic;
+    var configure = typeof(PlayerController).GetMethod("ConfigureSpawnedProjectile", flags);
+    var currentDamage = typeof(PlayerController).GetField("currentDamage", flags);
+    var boost = typeof(PlayerController).GetField("isBoostActive", flags);
+    var bulletType = typeof(GearCraft.Scripts.Main.SteamThrowerBulletController);
+    var damageField = bulletType.GetField("damage", flags);
+    var durationField = bulletType.GetField("overheatDuration", flags);
+    var speedField = bulletType.GetField("overheatSpeedMultiplier", flags);
+    var intervalField = bulletType.GetField("hitInterval", flags);
+    var lifeField = bulletType.GetField("lifeTime", flags);
+    var slipField = bulletType.GetField("overheatSlipDamage", flags);
+    var burnField = bulletType.GetField("burnDrops", flags);
+    if (configure == null || currentDamage == null || boost == null || damageField == null || durationField == null || speedField == null || intervalField == null || lifeField == null || slipField == null || burnField == null)
+        throw new System.Exception("Required native projectile member missing");
+    var prefabController = steam.bulletPrefab.GetComponent<GearCraft.Scripts.Main.SteamThrowerBulletController>();
+    if (prefabController == null) throw new System.Exception("Steam prefab lacks its native controller");
+    string prefabBefore = UnityEditor.EditorJsonUtility.ToJson(steam.bulletPrefab);
+    string prefabControllerBefore = UnityEngine.JsonUtility.ToJson(prefabController);
+    checkNumber("steam_cooldown_unchanged", steam.coolTime, 0.08f);
+    checkNumber("steam_speed_unchanged", steam.bulletSpeed, 13f);
+    checkNumber("steam_attackRange_lifetime_unchanged", steam.attackRange, 2.4f);
+    checkNumber("prefab_overheat_duration", (float)durationField.GetValue(prefabController), 2.8f);
+    checkNumber("prefab_speed_multiplier", (float)speedField.GetValue(prefabController), 0.55f);
+    checkNumber("prefab_hit_interval", (float)intervalField.GetValue(prefabController), 0.18f);
+    player.currentWeapon = steam;
+    currentDamage.SetValue(player, steam.baseDamage); // Normal HandleAttack supplies this base value.
+    status.currentWeapon = steam;
+    status.steamThrowerOverheatSlipDamage = 0.35f;
+    status.steamThrowerBoostDamageMultiplier = 1.2f;
+    status.steamThrowerBoostBurnDropsActive = true;
+    status.steamThrowerNoBulletGravity = false;
+    foreach (int acc in new[] { 0, 20 }) foreach (int flat in new[] { 0, 16 }) foreach (int module in new[] { 0, 20, 40 }) foreach (int strength in new[] { 0, 20 }) foreach (bool boosting in new[] { false, true }) {
+        status.STR = strength; status.ACC = acc; status.bonusDamage = flat; status.craftWeaponDamagebuff = module;
+        boost.SetValue(player, boosting);
+        var bullet = UnityEngine.Object.Instantiate(steam.bulletPrefab, root.transform, false);
+        try {
+            if (bullet.activeInHierarchy) throw new System.Exception("Test projectile unexpectedly active");
+            configure.Invoke(player, new object[] { bullet });
+            var native = bullet.GetComponent<GearCraft.Scripts.Main.SteamThrowerBulletController>();
+            var body = bullet.GetComponent<UnityEngine.Rigidbody2D>();
+            float actual = (float)damageField.GetValue(native);
+            float expected = (1f + acc * 0.08f + flat * 0.08f + module) * 0.3f * (boosting ? 1.2f : 1f);
+            float slip = (float)slipField.GetValue(native), gravity = body != null ? body.gravityScale : float.NaN;
+            float duration = (float)durationField.GetValue(native), speed = (float)speedField.GetValue(native), interval = (float)intervalField.GetValue(native), life = (float)lifeField.GetValue(native);
+            bool pass = near(actual, expected) && near(slip, 0.35f) && near(gravity, 1.15f) && near(duration, 2.8f) && near(speed, 0.55f) && near(interval, 0.18f) && near(life, 2.4f) && (bool)burnField.GetValue(native) == boosting;
+            projectiles.Add(strength + "," + acc + "," + flat + "," + module + "," + boosting + "," + number(expected) + "," + number(actual) + "," + number(slip) + "," + number(gravity) + "," + number(duration) + "," + number(speed) + "," + number(interval) + "," + number(life) + "," + pass);
+            projectileCount++;
+            if (!pass) failures.Add("native Configure STR=" + strength + " ACC=" + acc + " flat=" + flat + " module=" + module + " boost=" + boosting);
+        } finally { UnityEngine.Object.DestroyImmediate(bullet); }
+    }
+    status.steamThrowerNoBulletGravity = true;
+    var noGravityBullet = UnityEngine.Object.Instantiate(steam.bulletPrefab, root.transform, false);
+    try {
+        configure.Invoke(player, new object[] { noGravityBullet });
+        checkNumber("native_NoFall_card", noGravityBullet.GetComponent<UnityEngine.Rigidbody2D>().gravityScale, 0f);
+    } finally { UnityEngine.Object.DestroyImmediate(noGravityBullet); }
+    check("prefab_controller_unchanged", prefabControllerBefore == UnityEngine.JsonUtility.ToJson(prefabController));
+    check("prefab_object_unchanged", prefabBefore == UnityEditor.EditorJsonUtility.ToJson(steam.bulletPrefab));
+} catch (System.Exception ex) {
+    exception = ex.ToString();
+    failures.Add("exception: " + ex.Message);
+} finally {
+    // Temporary objects never become active, so native Awake/Start and save hooks never run.
+    if (root != null) UnityEngine.Object.DestroyImmediate(root);
+    if (preview.IsValid()) UnityEditor.SceneManagement.EditorSceneManager.ClosePreviewScene(preview);
+    if (!object.ReferenceEquals(StatusManager.Instance, originalSingleton)) {
+        failures.Add("singleton changed unexpectedly; reference restored");
+        StatusManager.Instance = originalSingleton;
+    }
+    if (UnityEngine.JsonUtility.ToJson(UnityEngine.Random.state) != originalRandomJson) {
+        failures.Add("Random state changed unexpectedly; state restored");
+        UnityEngine.Random.state = originalRandom;
+    }
+}
+check("existing_singleton_reference_unchanged", object.ReferenceEquals(StatusManager.Instance, originalSingleton));
+check("existing_singleton_fields_unchanged", originalSingleton == null ? originalStatus == null : originalStatus == UnityEngine.JsonUtility.ToJson(originalSingleton));
+check("playerprefs_8_unchanged", originalPrefs == capturePrefs());
+check("active_scene_unchanged", UnityEngine.SceneManagement.SceneManager.GetActiveScene().handle == originalScene.handle);
+check("scene_dirty_state_unchanged", originalScene.isDirty == originalDirty);
+checkNumber("loaded_scene_count_unchanged", UnityEngine.SceneManagement.SceneManager.sceneCount, originalSceneCount);
+checkNumber("time_scale_unchanged", UnityEngine.Time.timeScale, originalScale);
+checkNumber("capture_delta_unchanged", UnityEngine.Time.captureDeltaTime, originalCapture);
+checkNumber("fixed_delta_unchanged", UnityEngine.Time.fixedDeltaTime, originalFixed);
+check("temporary_root_destroyed", root == null);
+foreach (var pair in assetSnapshots) check("asset_unchanged_" + pair.Key.name, pair.Value == UnityEngine.JsonUtility.ToJson(pair.Key));
+checkNumber("matrix_case_count", matrixCount, 120f);
+checkNumber("native_projectile_case_count", projectileCount, 48f);
+System.IO.File.WriteAllLines(prefix + "-checks.csv", checks.ToArray());
+System.IO.File.WriteAllLines(prefix + "-matrix.csv", matrix.ToArray());
+System.IO.File.WriteAllLines(prefix + "-projectiles.csv", projectiles.ToArray());
+string summary = "status=" + (failures.Count == 0 ? "PASS" : "FAIL") + "\nUTC=" + System.DateTime.UtcNow.ToString("O") + "\nweapon_assets=9\nmatrix_cases=" + matrixCount + "\nnative_projectile_cases=" + projectileCount + "\nfailures=" + failures.Count + "\noutput_prefix=" + prefix + "\nExisting singleton and 8 PlayerPrefs keys were compared before/after; temporary inactive objects and preview scene removed. No frame, collision, enemy hit, save, scene transition or balance-duration test was run.\n";
+if (failures.Count > 0) summary += string.Join("\n", failures.ToArray()) + "\n";
+if (exception != null) summary += exception + "\n";
+System.IO.File.WriteAllText(prefix + "-summary.txt", summary);
+System.IO.File.WriteAllText(folder + "weapon-scaling-latest.txt", prefix + "\n");
+return summary;

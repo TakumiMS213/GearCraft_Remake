@@ -1,0 +1,16 @@
+RailCraft,19,late_day7_ranged,77
+day=7
+boss_kills=2
+HP=100
+GATE=100
+flat_damage=13
+attack_speed=0.391680032
+module_damage=0
+parts=Damage+2;Damage+2;Damage+2;Damage+2;HeavySlug;SpeedGear;SpeedGear+;SpeedGear++;SpeedGear++;SpeedGear++;TwinBarrel
+placements=late_day7_ranged:HeavySlug:0:0:0;late_day7_ranged:Damage+2:2:0:0;late_day7_ranged:Damage+2:2:1:0;late_day7_ranged:Damage+2:0:2:0;late_day7_ranged:Damage+2:2:2:0;late_day7_ranged:SpeedGear++:4:0:0;late_day7_ranged:SpeedGear++:4:2:0;late_day7_ranged:SpeedGear++:0:3:0;late_day7_ranged:SpeedGear+:1:3:0;late_day7_ranged:SpeedGear:2:3:0;late_day7_ranged:TwinBarrel:3:4:0
+double_shot=True
+spread_modifier=0
+ricochet=0
+bullet_size=1.25
+initial_hit_damage=283
+asset=Assets/GearCraft/ScriptableObject/WeaponData/RailCraft.asset

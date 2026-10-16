@@ -18,7 +18,7 @@ MonoBehaviour:
   weight: 0.03
   effects:
   - type: 10
-    value: 1
+    value: 2
     weaponToGrant: {fileID: 0}
     partToGrant: {fileID: 0}
     materialType: 0

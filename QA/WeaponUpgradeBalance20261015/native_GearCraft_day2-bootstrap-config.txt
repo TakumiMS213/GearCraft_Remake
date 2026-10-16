@@ -1,0 +1,16 @@
+GearCraft,4,tutorial_day2,77
+day=2
+boss_kills=0
+HP=100
+GATE=100
+flat_damage=4
+attack_speed=1
+module_damage=0
+parts=Damage+1;Damage+2
+placements=tutorial_day2:Damage+2:0:0:0;tutorial_day2:Damage+1:2:0:0
+double_shot=False
+spread_modifier=0
+ricochet=0
+bullet_size=1
+initial_hit_damage=46
+asset=Assets/GearCraft/ScriptableObject/WeaponData/GearCraft_Sword.asset

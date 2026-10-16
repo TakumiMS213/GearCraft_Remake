@@ -14,6 +14,10 @@ public class WeaponDataSO : ScriptableObject
     public float coolTime = 0.5f;
     public float baseDamage = 20f;
     public float accDamageMultiplier = 1f;
+    [Tooltip("Flat damage bonus multiplier. A negative value uses the ACC multiplier for existing weapon data.")]
+    public float flatDamageMultiplier = -1f;
+    [Min(0f), Tooltip("Damage gained from Upgrade Modules. Kept separate from ACC and grid parts.")]
+    public float craftModuleDamageMultiplier = 1f;
     public float attackRange = 1f;
 
     [Header("Ranged Settings")]
@@ -35,8 +39,14 @@ public class WeaponDataSO : ScriptableObject
     public bool isDefault = false;
     public bool isPiercing = false;
 
+    public float GetScaledAccDamageBonus(float acc)
+    {
+        return acc * accDamageMultiplier;
+    }
+
     public float GetScaledFlatDamageBonus(float flatDamage)
     {
-        return flatDamage * accDamageMultiplier;
+        float multiplier = flatDamageMultiplier < 0f ? accDamageMultiplier : flatDamageMultiplier;
+        return flatDamage * multiplier;
     }
 }

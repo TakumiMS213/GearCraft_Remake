@@ -1,0 +1,22 @@
+RailCraft ACC係数変更・静的確認（2026-10-15）
+
+依頼：RailCraftのACC 1ごとのダメージ増加を従来の10倍へ変更する。
+変更対象はWeaponDataSO.cs、StatusManager.csのGetWeaponDamageBonus、RailCraft.assetの3ファイル。
+
+変更後のRailCraft 1ヒットの基本ダメージ：
+150 + ACC×10 + bonusDamage×1 + craftWeaponDamagebuff
+ACC0・他加算0：150
+ACC1・他加算0：160（従来151）
+ACC12・bonusDamage3・module0：273（従来165）
+ACC20・bonusDamage3・module20：373（従来193）
+攻撃間隔・貫通・射程・発射速度・工房モジュールの加算量は変更していない。
+
+既存互換：
+WeaponDataSO.flatDamageMultiplierの初期値は-1。負値の場合、従来どおりaccDamageMultiplierをパーツのbonusDamageにも適用する。
+RailCraftだけflatDamageMultiplier=1を明示し、ACC係数10と切り分ける。
+StatusManagerの近接STR分岐は変更していない。射撃のACCとbonusDamageを別メソッドで加算し、その後のcraftWeaponDamagebuff加算も変更していない。
+WeaponDataディレクトリ全9 assetをHEADと比較し、RailCraft以外のACC係数と有効flat係数が従来値と一致することを静的に確認。
+AR 0.3、SteamCannon 0.8、SteamGatling 0.05、SteamThrower 0.08、Katana/GearCraft/GearCraft_Sword/GearCraft_Axeは1。
+
+検証範囲：git diff --check通過。上記はソース・assetの静的確認であり、Unityコンパイルと未指定フィールドのデシリアライズ、および実弾ダメージは親担当によるnative確認が必要。
+以前のroute/probes/reportは変更前のACC係数1で得た履歴として保持。今回の変更後の実測結果に読み替えない。

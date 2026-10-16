@@ -1,0 +1,27 @@
+Play継続バッチ（QA専用）
+
+生成：python3 QA/DefenseBalance20261016/build_batch.py
+実行：TitleのPlay中にBatchDefense.cs.txtをexecute_codeへ渡す。最初のEdit→Playだけはrootで行う。
+進行：Title → 同梱bootstrap → Main READY → 指定初期値/モジュール反映 → Gate対応native route → 終了記録 → 次のTitle。
+全件終了時にPlay停止し、rootが今回の退避PlayerPrefs/Editor/GameView/loggerを復元・照合する。
+
+対象：batch-cases.csvの14件。gate_で始まる独自labelを使い、旧reactive/baseline結果を上書きしない。
+既存の完了結果はskipとして記録する。同名の途中ログがある場合は停止し、勝手に消去しない。
+batch-cases.csvは生成スクリプトの再実行でも維持する。修正後は再生成して、埋込source/plan SHAを更新する。
+元NativeSurvivalBootstrap.cs.txtとReactiveGateSurvivalRoute.cs.txtは変更しない。
+生成版の変換点は、route終了のPlay停止をtimeScale=0へ置換、bootstrap/routeの終了処理hookをouterへ渡す点のみ。
+戦闘・報酬・日末・HP/GATE・native出現処理は既存bodyのまま。各native callbackは終了時に解除する。
+
+batch-progress.txt：RUNNING/COMPLETE/FAILED。
+batch-events-{UTC}.csv：case開始・bootstrap/route起動・完了・skip。
+caseごとのevents/bosses/waves/samples/result/initial-status等は既存形式。
+analyze_defense.pyはbatch-cases.csvを主試験一覧として採用し、旧reactive/baselineを対照欄に分離する。
+
+cancel-defense-batch.txtまたはcancel-native-survival.txtを作ると途中停止する。再開前にログと停止理由を確認する。
+本来の死亡/門破壊/900ゲーム秒打切は記録して次のcaseへ進む。例外、起動timeout、異常な終了理由では全体停止。
+Consoleはバッチ実行中だけErrorフィルタへ抑え、終了時に開始前の値へ戻す。セッション開始前の復元はrootの最終確認で行う。
+
+初回がMain READYの場合は、先頭未実行caseのweapon/start/profile/seedと一致するpaused Mainだけを再利用できる。
+一致しないMain起動演出中の強制破棄は行わない（ShowDayAsyncにdestroy tokenがないため）。
+終了後のMain/Ending/CraftSpaceからはTitleへ戻って再初期化する。
+静的生成・変換点・14label一意性確認済み。Unityコンパイルと実行結果はrootの実測記録を参照。

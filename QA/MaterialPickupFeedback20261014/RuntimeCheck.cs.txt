@@ -1,0 +1,50 @@
+const string folder = "QA/MaterialPickupFeedback20261014/";
+if(!UnityEditor.EditorApplication.isPlaying || UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "Main") throw new System.Exception("Main Play required");
+var player=GameObject.FindGameObjectWithTag("Player").transform;
+var feedback=GearCraft.Scripts.Items.MaterialPickupFeedback.Instance;
+var materials=MaterialManager.Instance;
+if(feedback==null||materials==null)throw new System.Exception("Initialized HUD/materials required");
+var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Public;
+var activeField=feedback.GetType().GetField("active",flags);
+var layer=(RectTransform)feedback.GetType().GetField("popupLayer",flags).GetValue(feedback);
+var template=(RectTransform)feedback.GetType().GetField("popupTemplate",flags).GetValue(feedback);
+var types=(MaterialManager.MaterialType[])System.Enum.GetValues(typeof(MaterialManager.MaterialType));
+var prefabs=new GameObject[6];var baseline=new int[6];
+string[] paths={"Scrap","Gear","UpgradeCore","ModuleCore_lv1","ModuleCore_lv2","ModuleCore_lv3"};
+for(int i=0;i<6;i++){prefabs[i]=UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/GearCraft/ScriptableObject/Prehubs/Drops/Drop_"+paths[i]+".prefab");baseline[i]=materials.GetMaterial(types[i]);}
+var inventory=UnityEngine.Object.FindFirstObjectByType<InventoryUI>(FindObjectsInactive.Include);if(inventory==null||prefabs[2].GetComponent<SpriteRenderer>().sprite!=inventory.upgradeCoreIcon)throw new System.Exception("Core drop icon differs from inventory");
+var controller=player.GetComponent<PlayerController>();if(controller!=null)controller.enabled=false;
+foreach(var enemy in UnityEngine.Object.FindObjectsByType<EnemyController>(FindObjectsSortMode.None))enemy.gameObject.SetActive(false);
+float originalTimeScale=Time.timeScale;int phase=0,checks=0;bool finished=false;double started=UnityEditor.EditorApplication.timeSinceStartup,next=started;Vector2 oldPosition=Vector2.zero;RectTransform first=null;int pooledChildren=0;
+UnityEditor.EditorApplication.CallbackFunction tick=null;
+System.IO.File.WriteAllText(folder+"runtime-result.txt","Real drop prefab collection, icon/quantity, tracking, fade and bounded reuse. Runtime fixture, not physical input E2E.\n");
+System.Action<string> log=s=>System.IO.File.AppendAllText(folder+"runtime-result.txt",(UnityEditor.EditorApplication.timeSinceStartup-started).ToString("F2")+"s "+s+"\n");
+System.Action<bool,string> check=(ok,s)=>{if(!ok)throw new System.Exception(s);checks++;log("PASS "+s);};
+System.Func<int> count=()=>((System.Collections.IList)activeField.GetValue(feedback)).Count;
+System.Func<GameObject,GearCraft.Scripts.Items.DroppedMaterialItem> spawn=prefab=>{var go=UnityEngine.Object.Instantiate(prefab,player.position,Quaternion.identity);var item=go.GetComponent<GearCraft.Scripts.Items.DroppedMaterialItem>();item.GetType().GetField("scatterForce",flags).SetValue(item,0f);return item;};
+System.Action<bool,string> finish=(passed,message)=>{
+ if(finished)return;finished=true;UnityEditor.EditorApplication.update-=tick;Time.timeScale=originalTimeScale;log((passed?"COMPLETE ":"FAILED ")+message+" checks="+checks);
+ foreach(var row in System.IO.File.ReadAllLines(folder+"playerprefs-before.txt")){var p=row.Split('|');if(!bool.Parse(p[1]))PlayerPrefs.DeleteKey(p[0]);else if(p[0].Contains("Progress"))PlayerPrefs.SetString(p[0],System.Text.Encoding.UTF8.GetString(System.Convert.FromBase64String(p[2])));else PlayerPrefs.SetInt(p[0],int.Parse(p[2]));}PlayerPrefs.Save();
+ typeof(GearCraft.Gallery.GalleryProgress).GetField("data",flags).SetValue(null,null);UnityEditor.EditorApplication.isPlaying=false;
+};
+tick=()=>{try{
+ double now=UnityEditor.EditorApplication.timeSinceStartup;if(now-started>10)throw new System.Exception("Watchdog");if(now<next)return;next=now+.10;
+ foreach(var spawner in UnityEngine.Object.FindObjectsByType<EnemySpawner>(FindObjectsSortMode.None))spawner.StopSpawning();
+ switch(phase){
+ case 0:for(int i=0;i<6;i++){var item=spawn(prefabs[i]);item.Configure(types[i],1);}phase=1;next=now+.15;break;
+ case 1:
+  for(int i=0;i<6;i++)check(materials.GetMaterial(types[i])==baseline[i]+1,"actual collected "+types[i]+" exactly once");check(count()==6,"six simultaneous pickups are visible");check(!template.gameObject.activeSelf,"authored template stays inactive");
+  foreach(var text in layer.GetComponentsInChildren<TMPro.TMP_Text>()){text.ForceMeshUpdate();check(text.text=="+1"&&!text.isTextOverflowing,"quantity +1 fits");check(!text.raycastTarget,"quantity does not block input");}
+  foreach(var prefab in prefabs)check(layer.GetComponentsInChildren<UnityEngine.UI.Image>().Any(image=>image.sprite==prefab.GetComponent<SpriteRenderer>().sprite),"actual pickup icon "+prefab.name);
+  var rects=layer.GetComponentsInChildren<RectTransform>().Where(r=>r.name=="MaterialPickupPopup").OrderBy(r=>r.anchoredPosition.y).ToArray();for(int i=1;i<rects.Length;i++)check(rects[i].anchoredPosition.y-rects[i-1].anchoredPosition.y>=51f,"simultaneous rows separate");
+  first=rects[0];oldPosition=first.anchoredPosition;pooledChildren=layer.childCount;ScreenCapture.CaptureScreenshot(folder+"pickup-icons.png");phase=2;break;
+ case 2:Time.timeScale=0f;player.position+=Vector3.right;phase=3;break;
+ case 3:check(first.anchoredPosition.x>oldPosition.x+5f,"popup follows character motion");ScreenCapture.CaptureScreenshot(folder+"pickup-follow.png");phase=4;break;
+ case 4:
+  Time.timeScale=originalTimeScale;var once=spawn(prefabs[0]);once.Configure(types[0],1);var method=once.GetType().GetMethod("Pickup",flags);method.Invoke(once,null);method.Invoke(once,null);check(materials.GetMaterial(types[0])==baseline[0]+2,"repeat pickup callback does not double award");check(count()==6&&layer.childCount==pooledChildren,"burst uses bounded six-row pool");phase=5;next=now+.72;break;
+ case 5:check(layer.GetComponentsInChildren<CanvasGroup>().Any(g=>g.alpha>0f&&g.alpha<1f),"feedback fades before expiry");ScreenCapture.CaptureScreenshot(folder+"pickup-fade.png");phase=6;next=now+.55;break;
+ case 6:check(count()==0,"all feedback expires");feedback.Show(player,prefabs[0].GetComponent<SpriteRenderer>().sprite,1);check(layer.childCount==pooledChildren&&count()==1,"next pickup reuses existing objects");phase=7;break;
+ case 7:finish(true,"Pickup UI checks passed; original preferences restored before Play exit");break;
+ }
+ }catch(System.Exception ex){finish(false,ex.ToString());}};
+UnityEditor.EditorApplication.update+=tick;return "Scheduled actual pickup verification with preference restoration and Play exit";

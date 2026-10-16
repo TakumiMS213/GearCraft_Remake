@@ -1,0 +1,6 @@
+id,weapon,stage,day,profile,seed,result,seconds,total_including_summons,killed,escaped_or_suicided,remaining,damage,shots,player_damage,gate_damage,boss_name,boss_seconds,boss_remaining_hp,average_game_dt,frames,scheduled_count,scheduled_killed,scheduled_escaped,scheduled_remaining,attack_events
+boss31_GearCraft_module20_seed77,GearCraft,31,11,final_day11_melee_module20,77,cleared,149.767,1,1,0,0,147600.00,1532,324.00,0.00,EK-9,148.750,0.00,0.016668,8986,0,0,0,0,1532
+boss31_SteamCannon_module20_seed77,SteamCannon,31,11,final_day11_ranged_fitted_speed_module20,77,cleared,64.967,1,1,0,0,147600.00,854,162.00,0.00,EK-9,63.950,0.00,0.016667,3898,0,0,0,0,427
+boss31_SteamThrower_module20_seed77,SteamThrower,31,11,final_day11_thrower_fitted_damage_module20,77,cleared,41.800,1,1,0,0,147600.00,4892,210.00,0.00,EK-9,40.783,0.00,0.016666,2508,0,0,0,0,2446
+boss31_RailCraft_module20_seed77,RailCraft,31,11,final_day11_ranged_fitted_speed_module20,77,cleared,61.683,1,1,0,0,147600.00,430,606.00,0.00,EK-9,60.667,0.00,0.016666,3701,0,0,0,0,215
+boss31_SteamGatling_module20_seed77,SteamGatling,31,11,final_day11_ranged_module20,77,cleared,61.500,1,1,0,0,147600.00,7258,642.00,0.00,EK-9,60.483,0.00,0.016666,3690,0,0,0,0,3629

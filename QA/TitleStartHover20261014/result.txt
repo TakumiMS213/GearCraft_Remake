@@ -1,0 +1,8 @@
+Initial selected focus and native raycast reach StartButton; selected tint=RGBA(0.961, 0.961, 0.961, 1.000)
+PASS hover tint=RGBA(0.613, 0.613, 0.613, 1.000); keyboard focus retained
+PASS pressed tint takes priority
+PASS release returns hover
+PASS exit restores selected tint and keyboard focus; original 2 click callbacks retained
+Cause: Panel focus initially selects StartButton. Unity Selectable prioritizes Selected over Highlighted, so pointer enter retained 0.9607843 rather than the configured 0.6132076 hover tint.
+Fix: scene-authored StartButton now uses HoverPriorityButton, a Button subclass that maps Selected to Highlighted while hovered. Pressed/Disabled retain their priorities; pointer exit restores selected visuals. Keyboard selection, target graphic, navigation and two click callbacks retain their original serialized settings.
+Unity compiled the new component successfully. Native UGUI pointer enter/down/up/exit and actual raycast inspected; hover image inspected. No game-start click or physical Enter E2E was performed. Play ended in the original clean Title scene.

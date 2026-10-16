@@ -1,0 +1,44 @@
+ M Assets/GearCraft/Scenes/Craft.unity
+ M Assets/GearCraft/Scenes/CraftSpace.unity
+ M Assets/GearCraft/Scenes/Main.unity
+ M Assets/GearCraft/Scenes/Title.unity
+ M Assets/GearCraft/ScriptableObject/BonusCard/ACC_to_STR.asset
+ M Assets/GearCraft/ScriptableObject/BonusCard/STR_to_ACC.asset
+ M Assets/GearCraft/ScriptableObject/CraftResultDescription/SteamThrower.asset
+ M Assets/GearCraft/ScriptableObject/EnemyData/lv3_FinalBoss.asset
+ M Assets/GearCraft/ScriptableObject/Gallery/GalleryCatalog.asset
+ M Assets/GearCraft/ScriptableObject/Prehubs/Drops/Drop_UpgradeCore.prefab
+ M Assets/GearCraft/ScriptableObject/Story/CraftSpaceArrivalMessage.asset
+ M Assets/GearCraft/ScriptableObject/WeaponData/RailCraft.asset
+ M Assets/GearCraft/ScriptableObject/WeaponData/SteamThrower.asset
+ M Assets/GearCraft/Scripts/Craft/CraftManager.cs
+ M Assets/GearCraft/Scripts/Craft/CraftTutorialController.cs
+ M Assets/GearCraft/Scripts/CraftSpace/CraftSpaceTaskUI.cs
+ M Assets/GearCraft/Scripts/CraftSpace/UIRangeDisplay.cs
+ M Assets/GearCraft/Scripts/Data/BonusCardDataSO.cs
+ M Assets/GearCraft/Scripts/Data/CraftTutorialDataSO.cs
+ M Assets/GearCraft/Scripts/Data/WeaponDataSO.cs
+ M Assets/GearCraft/Scripts/EnemyAI/EnemyAI_BossFinal.cs
+ M Assets/GearCraft/Scripts/Items/DroppedMaterialItem.cs
+ M Assets/GearCraft/Scripts/Main/BonusCardsManager.cs
+ M Assets/GearCraft/Scripts/Main/EnemyController.cs
+ M Assets/GearCraft/Scripts/Main/StageFlowManager.cs
+ M Assets/GearCraft/Scripts/StatusManager.cs
+ M Assets/GearCraft/Scripts/Upgrade/UpgradeGridUI.cs
+ M Assets/Resources/GearCraft/CraftTutorialData.asset
+?? Assets/GearCraft/Scripts/Items/MaterialPickupFeedback.cs
+?? Assets/GearCraft/Scripts/Items/MaterialPickupFeedback.cs.meta
+?? Assets/GearCraft/Scripts/Main/BonusCardTooltipTrigger.cs
+?? Assets/GearCraft/Scripts/Main/BonusCardTooltipTrigger.cs.meta
+?? Assets/GearCraft/Scripts/Title/HoverPriorityButton.cs
+?? Assets/GearCraft/Scripts/Title/HoverPriorityButton.cs.meta
+?? QA/BossBalance20261015/
+?? QA/DayEndPickup20261014/
+?? QA/MaterialPickupFeedback20261014/
+?? QA/RewardCardTooltip20261014/
+?? QA/TitleStartHover20261014/
+?? QA/UXReview20261014-ShopAvailability/restore-verified.txt
+?? QA/UXReview20261014-TutorialOnboarding/
+?? QA/WeaponBalance20261015/
+?? QA/WeaponTargetBalance20261015/
+?? QA/WeaponUpgradeBalance20261015/

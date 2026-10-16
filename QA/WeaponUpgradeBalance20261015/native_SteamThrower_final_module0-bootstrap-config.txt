@@ -1,0 +1,16 @@
+SteamThrower,31,final_day11_thrower_fitted_damage,77
+day=11
+boss_kills=3
+HP=100
+GATE=100
+flat_damage=16
+attack_speed=0.182742208
+module_damage=0
+parts=Damage+1;Damage+2;Damage+2;Damage+2;Damage+2;Damage+2;SpeedGear;SpeedGear;SpeedGear;SpeedGear;SpeedGear+;SpeedGear++;SpeedGear++;SpeedGear++;SpeedGear++;SpeedGear++;TwinBarrel
+placements=final_day11_thrower_fitted_damage:Damage+2:0:0:0;final_day11_thrower_fitted_damage:Damage+2:2:0:0;final_day11_thrower_fitted_damage:Damage+2:4:0:0;final_day11_thrower_fitted_damage:Damage+2:0:1:0;final_day11_thrower_fitted_damage:SpeedGear++:2:1:0;final_day11_thrower_fitted_damage:SpeedGear++:3:1:0;final_day11_thrower_fitted_damage:SpeedGear++:4:1:0;final_day11_thrower_fitted_damage:SpeedGear++:5:1:0;final_day11_thrower_fitted_damage:SpeedGear++:0:2:0;final_day11_thrower_fitted_damage:SpeedGear:1:2:0;final_day11_thrower_fitted_damage:SpeedGear+:2:3:0;final_day11_thrower_fitted_damage:SpeedGear:3:3:0;final_day11_thrower_fitted_damage:SpeedGear:4:3:0;final_day11_thrower_fitted_damage:SpeedGear:5:3:0;final_day11_thrower_fitted_damage:TwinBarrel:0:4:0;final_day11_thrower_fitted_damage:Damage+2:0:5:0;final_day11_thrower_fitted_damage:Damage+1:2:5:0
+double_shot=True
+spread_modifier=0
+ricochet=0
+bullet_size=1
+initial_hit_damage=3.87999988
+asset=Assets/GearCraft/ScriptableObject/WeaponData/SteamThrower.asset

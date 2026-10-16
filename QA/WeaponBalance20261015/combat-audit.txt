@@ -1,0 +1,51 @@
+2026-10-15 工房武装・実装性能の静的監査
+対象: GearCraft剣/斧、SteamCannon、RailCraft、SteamGatling、SteamThrower、PunkDrive。
+これはコード/assetの監査であり、通常プレイのクリア時間や実測DPSではない。
+
+基礎値 (Assets/GearCraft/ScriptableObject/WeaponData/*.asset):
+GearCraft_Sword: damage40, coolTime0.5, attackRange1, meleeRotateDuration0.5, ACC係数1。
+GearCraft_Axe: damage60, coolTime0.8, attackRange1.2, meleeRotateDuration0.8, ACC係数1。
+SteamCannon: damage50, coolTime1, attackRange3, bulletSpeed25, spread0, ACC係数0.8。
+RailCraft: damage150, coolTime2, attackRange10, bulletSpeed180, spread0, ACC係数1、貫通。
+SteamGatling: damage1, coolTime0.03, attackRange3, bulletSpeed30, spread±12度, ACC係数0.05。
+SteamThrower: damage1, coolTime0.08, attackRange2.4, bulletSpeed13, spread0, ACC係数0.08、貫通。
+
+ダメージ加算 (Assets/GearCraft/Scripts/StatusManager.cs:170-207):
+近接 = 基礎 + STR + bonusDamage*武器係数 + craftWeaponDamagebuff。
+遠距離 = 基礎 + (ACC+bonusDamage)*武器係数 + craftWeaponDamagebuff。
+UpgradeModule.asset:28のstatBonusは5。CraftManager.cs:409で工房武装強化値に加算。
+craftWeaponDamagebuffは武器係数を掛けないため、Gatling/Throwerの基礎1は1回で6に増える。
+PunkDriveは上記ダメージ計算に接続されていない。
+
+攻撃間隔/射程 (Assets/GearCraft/Scripts/Main/PlayerController.cs:351-637):
+近接はMouseButtonDown、射撃はMouseButtonの押し続けで攻撃。Updateにつき最大1発。
+coolTimeにattackSpeedMultを乗算し、cooldown超過分は繰り越さない。GatlingなどはFPS/フレーム量子化の影響を受ける。
+各射撃weapon.attackRangeは距離ではなく弾寿命秒として渡される。Railの10は10秒であり10mではない。
+Prefabの重力はCannon0.2、Rail0、Gatling0、Thrower1.15。弾速と重力で実射程/滞空時間が変わる。
+
+武器別の注意:
+GearCraft剣: 1命中/攻撃として80 DPS。実際は360度回転コライダーで複数敵と敵弾に接触。
+GearCraft斧: 1命中/攻撃として75 DPS。剣より単発と範囲が強い。通常はShiftで5秒変形して剣に戻り、その後5秒の再使用待ち (PlayerController.cs:917-948)。斧を常時装備した通し結果は通常操作条件と異なる。
+MeleeWeapon.cs:75以降はOnTriggerEnter2Dごとにダメージ。1攻撃1敵1命中の重複排除がないため、大型敵/再接触で命中数が変わり得る。敵弾を消す防御性能もある。
+
+SteamCannon: BulletController.cs:160以降で直撃ダメージ後にBombDamage。525以降のBombDamageは半径5の全Enemyへ同じダメージを追加し、直撃対象を除外しない。生存する直撃対象には基礎50+爆風50=100、周辺には50。地形衝突とEnemyProjectileDamageableへの命中はこの爆風を起動しない。密集数で殲滅力が大きく増す。
+
+RailCraft: 同一直線の敵を貫通。BulletController.cs:332以降のdamagedEnemiesが同一弾の重複命中を防ぐ。跳弾でも記録は消えない。PrefabでuseSweptHitDetection=true、sweptHitRadius0.08。弾サイズ強化はTransform拡大であり、この掃引半径自体は不変。1敵1命中で75 DPS相当。
+
+SteamGatling: 基礎約33.3 DPSは全弾命中かつ0.03秒間隔の理論値。実際は1フレーム1発上限と拡散で低下。専用カードTargetDamageでボス0.7倍/雑魚1.3倍になるため、無指定で専用カードを混ぜるとボス比較が変わる。
+
+SteamThrower: SteamThrowerBulletController.cs:76以降。各弾が同じ敵へ0.18秒ごとに再命中。単発1回命中なら12.5 DPS相当だが、大型敵の内部を通る時間が長いほど1弾あたり命中数が増える。過熱は2.5秒、敵速度0.55倍。専用SlipOverheatは秒間0.35、BoostBurnはBoost中1.2倍とドロップ焼却。弾重力無効カードも射程/命中を大きく変える。
+
+PunkDrive: Main.unity:13450でdamageAmount=0、damageInterval=0。PunkDriveManager.cs:8のコード初期値0.1/0.5秒はMainで使われない。StartでplayerController.STRを一度だけprivate STRに記録 (26行)。DamageLoop (60行) はdamageAmount+STR/10をWaitForSeconds(damageInterval)ごとに与える。MainではSTR/10を毎描画フレーム近く加算するため、STR0は0ダメージ、STR10は1/フレーム。初回起動後のSTR上昇が反映されない。Punkのnative colliderはMain.unity:13488で半径1.03125 (親Transform倍率の影響あり)。
+
+実測用呼び出し入口:
+StatusManager.EquipWeapon → PlayerController private SyncWeaponFromStatus。
+近接: private PerformMeleeAttack → MeleeWeapon.BeginAttack + ArmRotation.RotateArmOnce。
+射撃: currentDamage=weapon.baseDamage を設定しprivate PerformShotAttack。実Input.mousePositionを使う。
+マウスが制御できない場合: 同じPrefab/銃口位置/速度で生成しprivate ConfigureSpawnedProjectile(GameObject)を呼ぶとnative強化が入る。ただし拡散/二重弾/反動はPerformShotAttack側なので別途扱う。
+Punk: StatusManager.punkDrive=trueでPlayerController.Updateが既存Punkを起動する。
+
+報告上の区別:
+素の値、通常進行で得た能力値、装着パーツ、専用カード、アップグレードモジュールを記録する。
+特にCannon直撃+爆風、Gatling/Throwerの+5加算、PunkのFPS/初回STRキャッシュは順位に直結する。
+静的理論DPSを通常プレイのタイム/殲滅力と呼ばない。

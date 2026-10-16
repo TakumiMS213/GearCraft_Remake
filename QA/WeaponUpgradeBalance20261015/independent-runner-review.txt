@@ -1,0 +1,68 @@
+UpgradeCombatBenchmark / NativeSurvival 独立コードレビュー（2026-10-15）
+
+対象：UpgradeCombatBenchmark.cs.txt、NativeSurvivalBootstrap.cs.txt、NativeSurvivalRoute.cs.txtと、通常PlayerController/StatusManager/BulletController/SteamThrowerBulletController/MeleeWeapon/ArmRotation。
+このレビューは読取専用。実測runnerとゲームコードは変更せず、本QAメモだけ追加した。以下の行番号はレビュー時点。
+
+結論
+パーツ効果を射撃へ接続する主要処理は通常実装と整合している。二重弾と拡散の反映漏れは解消済み。
+ただし攻撃間隔の管理方式は通常処理と同一でなく、パーツなしの一部武器で浮動小数の減算境界に由来する1フレーム差がある。厳密比較では修正を推奨する。
+GearCraftの多重swingはゲーム本体の仕様として実測に含まれるが、速度パーツの理論倍率をそのままDPS倍率にはしない。
+
+通常発射と一致する点
+1. UpgradeCombatBenchmark:147で実UpgradePartSOをRecalculateUpgradeEffects(parts)へ渡す。rangedOnly、累積flat、速度の乗算、二重弾bool、拡散加減算、跳弾回数、サイズ加算はStatusManager:219以降の通常集計で決まる。
+2. currentDamageはweapon.baseDamage。native ConfigureSpawnedProjectileはStatusManager.GetWeaponDamageBonusを足す。RailのACC係数10/flat係数1と、係数外の工房module加算も通る。
+3. spreadAngle + spreadModifierをnative CalculateSpreadAngleへ渡すので負値は0になる。初弾と追加弾は別々に抽選。追加弾にも個別のnative muzzle/speed/Configureを実行する（Benchmark:213–233、Native:190–210）。
+4. 二重弾はhasBulletDoubleがtrueなら追加1発。複数Twinを積んでも追加数は増えず、通常処理と一致。shotsは弾数、attack_eventsは攻撃開始回数を区別する。
+5. ConfigureSpawnedProjectileによるbulletSizeMult、Rail専用サイズ、Cannon巨大弾抽選、damage、弾寿命、貫通、跳弾回数、専用ボーナスは通常処理を使用する。BulletControllerの物理・掃引・反射・爆風もnativeのまま。
+6. SteamThrowerはConfigure後に通常処理もreturnするため、一般弾のricochetCountは設定されない。蒸気でReflectionが効かない結果はrunnerの漏れではない。弾サイズとTwinは適用される。
+7. native GetCurrentBulletSpeedを使うのでCannon/Gatlingの速度カードも反映。NativeSurvivalの狙点補正はThrowerの重力無効カードを考慮する。Benchmarkはカードをfalseへ戻すためprefab重力で正しい。
+8. useLineHitboxならnative line処理のみで、Twinと反動を飛ばす。これは通常PerformShotAttackの早期returnと一致。ただし現在の想定武器は全てbulletPrefabを持つため問題は出ないが、将来bulletPrefab=nullのline武器を追加すると狙点補正時のGetComponentが先に失敗する可能性がある。
+9. native Gatling反動を射撃末尾に呼ぶ。Benchmarkは該当カードfalse、NativeSurvivalは取得時に通常反動が適用される。
+10. 射撃の乱数消費順序は初弾spread→初弾Configure→二発目spread→二発目Configureを保つ。射撃と敵のRNGを分離しているため、人間のプレイ時の共有乱数列と同一という意味ではない。
+
+修正推奨：cooldownを通常と同じ減算方式にする
+通常PlayerController.UpdateはHandleAttackの後にCoolTimeUpdateを呼ぶ（PlayerController:138/149）。HandleAttackはcoolTime<=0を確認してweapon.coolTime*attackSpeedMultを代入し、同フレーム末尾からTime.deltaTimeずつ減算する（:355–374、:641–646）。
+現runnerはTime.time<nextShotで待ち、発射時nextShot=Time.time+間隔とする（Benchmark:199/235、Native:176/212）。数学的には近いがfloat演算経路が違う。
+float32、deltaTime=float(1/60)の逐次減算によるコード上の数値再現：
+武器・パーツなし     通常減算で次回可能まで    絶対nextShotの代表値
+GearCraft_Axe 0.8秒       49フレーム                 48フレーム
+SteamCannon 1秒          61フレーム                 60フレーム
+RailCraft 2秒            121フレーム                120フレーム
+これはUnityでの発射ログ実測ではなく、ソースが使用するfloat算術の再現。少なくともベース条件で約0.8～2.1%の攻撃頻度差を生じ得る。
+early/mid/lateの主要倍率では通常ほぼ同フレーム数だったが、長時間経過後の絶対Time.timeの精度も境界へ影響する。例：Rail×0.39168は逐次減算48フレームに対し、Time.time約10000秒では絶対比較47フレームとなる数値例がある。
+推奨案：private coolTime fieldとprivate CoolTimeUpdateをreflectionで取得。新case開始時にcoolTime=0。攻撃可否はそのfield、発射時の代入も同fieldへ行い、各ゲームフレーム末尾にnative CoolTimeUpdateを一度呼ぶ。early returnのあるフレームや報酬UI中でも、通常Update同様に減算する。終了・破棄後のplayerには呼ばない。呼出し順序をfinally等で固定する。
+1ゲームフレーム最大1攻撃は現在も守られている。通常の非BOOST攻撃に0.05秒などの固定下限は存在しない。BOOST開始時にattackSpeedMultをMathf.Max(saved*0.5,0.05)へ制限する処理は今回BOOSTなしの比較に関係しない。
+Gatling×0.39168の設定間隔は約0.01175秒なので60fpsでは1フレーム1攻撃に達する。ここから速度だけを上げても毎秒60回を超えない。理論上の1/間隔を実際の攻撃回数として扱わない。
+
+GearCraftのswingと速度パーツ
+剣はcoolTime=0.5、meleeRotateDuration=0.5。斧は0.8、0.8。速度パーツが短くするのはcoolTimeだけで、swingのdurationはそのまま（PlayerController:378–383）。
+MeleeWeapon.BeginAttack:40は毎回EndAttackを呼び、同じコライダーを無効→有効にしてattackEndsAtを新しい期限へ更新する。攻撃中の再入力を拒否せず、待機キューも持たない。
+ArmRotation.RotateArmOnce:164は既存コルーチンを止めずにStartCoroutineを追加する。短い間隔で発動すると複数の回転処理が同じarmのposition/rotationを書き込む。各コルーチンが終了時にも最終姿勢を書き込む。
+MeleeWeaponの敵へのダメージはOnTriggerEnter2D:78のみで、OnTriggerStay攻撃や「攻撃1回につき必ず1命中」はない。接触し直す機会とphysics時刻が実ヒットを決める。
+したがって高速化の効果には、重なる回転・攻撃判定の更新・接触再入場・物理更新間隔が関わる。増速倍率の逆数どおりDPSが伸びるとは置けないし、コードだけで必ず悪化/上限固定とも断定しない。runnerはnative BeginAttack/RotateArmOnce/コライダーを使用しており、これらの現象は実測に含まれる。
+また通常近接入力はGetMouseButtonDownであり、runnerは理想的に再攻撃可能時に入力を与える。人間が同じクリック頻度を維持できることの証明ではない。
+
+照準補正の確認
+発射基点O、狙点P、r=P-O、弾方向d、dの左法線n、muzzleOffset=(mx,my)とすると、銃口はO+mx*d+my*n。
+狙点を直線弾道上に乗せる条件はdot(r,n)=myなので、theta=atan2(r.y,r.x)-asin(my/|r|)で正しい。前方offsetのmxは弾道の横ズレ条件に影響しない。負のRail/Gatlingのmyを引くことで角度が上向きへ補正される。
+ただし|r|>|my|かつ狙点が銃口より前にある範囲が前提。runnerのasin入力clamp±0.99と角度clamp±90度は、極近距離・背後・角度端では完全な交点を保証しない。今回の基本距離設定は前方3.2/5/7を狙うが、画面端の移動制限時はこの条件を確認する必要がある。
+重力補正は水平距離/弾速で計算した時間を使う近似。cos(theta)、実FirePointからの飛距離、敵の移動速度を厳密には解いていない。コメントの「small velocity lead」に反して敵速度を参照した予測項はない。この方法は人間の照準の再現ではなく、共通bot方針として明示する。
+
+NativeSurvival配置と検証範囲
+Bootstrapは実assetのsavedUpgradePartPlacementsとownedUpgradePartsを設定し、通常RecalculateUpgradeEffects()を呼ぶ。持ち替え後もsaved配置から再集計できる。配置の形状・重なり・予算は別の静的監査の責任で、Bootstrap自身のチェックはprofile内assetの個数一致が中心。
+NativeのGear形態切替はEquipWeaponを使うが、ChangeGearCraftの歯車付与は通らない。素材報酬と経済収支は通常変形の再現ではない。前回と同様BOOSTなし・後続購入なしなら直接の火力には影響しない。
+JunkCollector/MagnetRangeも計算へ反映されるが、毎waveのビルド固定およびnative一日後終了という構造では、回収増による後日の買い物効果を火力結果に含めない。
+
+追記：cooldown修正後
+親担当が通常coolTime fieldへの判定/代入と、各gameframe末尾のnative CoolTimeUpdateへ変更し再コンパイル済み。レビュー時点の絶対nextShot比較の差は、新route開始前に修正されている。finally内のprocessCooldownガードにより同フレームのEditor callback重複時は再減算せず、finish後は有効になった通常Player.Updateへ戻す。
+
+追記：初回スポーン混入と報酬UI残留
+route_GearCraft_4は予定21体に対して観測39体で、予定外18体を独立検出。bootstrapのStageFlowManager.StartがShowDayAsync待機後にStartNextStageを呼び、runner開始後に通常wave4を追加した経路と整合する。初回caseは再測定・差替え対象。
+native OnStageCompleteはIsStageActive=false、ClearBullets、2秒待ちを経てShowBonusCardsAsyncをawait。選択前にはTime.timeScaleや戦闘ステータスを変更しない。IsChoosingRewardの参照先はPlayer.Update/FixedUpdateとIdleHelp等のUI入力制御で、Playerはrunner中disabled、攻撃は直接呼出し。敵AI・弾・Meleeはこのフラグを参照しない。
+遅延後のカード抽選がwave5の共有RNGを消費した可能性はあるが、当該waveのlv1敵はランダムAIを使わず、射撃RNGは分離、各caseで再seedする。素材抽選は影響し得るが、後続購入/BOOSTなしの固定ビルドではそれによる直接火力変化はない。報酬カードが選択されない限り、case5以後の戦闘設定へ継続影響する経路は静的監査では見つからない。
+BonusCardsManager.enabled=falseは未解決維持ではなくOnDisableがcompletion.TrySetCanceledを呼ぶ。親担当は実行済み介入の記録をcancelledへ訂正した。OnStageCompleteにcatchがないためawait後のstage++/StartNextStageへは進まない。キャンセル後のIsStageActive=false/IsChoosingReward=falseは親担当がruntime確認。
+報酬UI残留中のスクリーンショットは通常の視認性/UXを示す根拠には使用しない。ゲーム秒固定の火力比較と描画負荷・実時間性能を区別する。
+
+追記：native GearCraft 最終module0の攻撃継続に関する制約
+native_GearCraft_final_module0-events.csvではEK出現15.467秒時点で42攻撃、16.750秒時点で47攻撃。その後26.783秒の門破壊まで47のままで、少なくとも10.033秒は攻撃が実行されていない。live=1、HP95で推移し、門は100から-20へ減少した。装備効果、native cooldown呼出し、最終被害収支は検証上整合するが、攻撃実行が止まった区間を含むため、この門破壊をGearCraftの純粋なDPS不足の証明に使わない。
+runnerには近接対象との距離3.8超、可視域外の対象、通常入力ブロック等で攻撃を見送る分岐がある。現ログは各時点の位置・コライダー距離・分岐理由を記録していないため、追従/衝突/距離/入力ブロックのどれかを断定できない。botの追従と攻撃継続の制約として結果と併記する。

@@ -1,0 +1,30 @@
+AR / EK の主条件を維持した seed 反復試験（2026-10-16）
+
+repeat-cases.csv の先頭20行は主 batch-cases.csv の start_stage 28 / 31 の10行をコピーし、seed 101 / 202 の各10行としたもの。変更はseed値とlabel末尾の_seed77→_seed101/202のみ。その他12列は対応する主条件と一致することをhelperで検証する。末尾に下記の姿勢感度1行を追加し、全21行。
+stage28はDay10の前座2waveを経てARへ、stage31はDay11のEKへ進む。武器はGearCraft/SteamCannon/SteamThrower/RailCraft/SteamGatlingの各5種類。部品・STR/ACC・Module・HP/門・Repair/Barrier/Punk/ScrapModule条件は主CSVと同一。
+
+初期Gear0、native BOOST最大2回を維持。敵・ドロップ・報酬の乱数や行動差による結果の変動を観測する目的であり、同seedにおける武器間の完全に同一な報酬候補を保証する試験ではない。seed77の主実測と合わせても各条件3件で、実プレイヤー母集団の成功率や平均装備という意味にはしない。
+
+21件目：巨大地上ボスに対する近接姿勢の感度試験
+label=gate_EK9_GearCraft_grounded_seed77。主gate_EK9_GearCraft_seed77とCSVのlabel以外13列が同じ。
+通常botのautoJump条件は bounds.center.y-player.y>2.7 であり、地上EKの巨大な本体中心にも反応する。今回の主結果で本人死亡となった不利が、この不要な跳躍姿勢に由来するかを確認する。
+生成版のrouteだけ、label.Contains("_grounded_") かつ現在の敵target.aiTypeがBoss_Final/Boss_Tankの場合にautoJumpを抑止する。それ以外は元のjump条件を原文のまま実行する。通常20条件は_grounded_を含まず、元の跳躍挙動・装備・反応・native攻撃を保持する。
+この追加条件もHP/門補充や無敵を行わず、native物理・被弾・ノックバック・迎撃・dash・BOOST2・Gear0を維持。姿勢を地面へ固定したり、既存の上下速度を強制0にしたりはしない。したがって『一切空中へ移動しない』条件ではなく、『巨大地上ボスを見て自発的に跳ばない』条件。
+追加caseだけmetaへ条件文を追記し、posture_conditionイベントを記録する。seed反復の4件目として成功率集計へ混ぜず、主seed77との姿勢比較として別枠で示す。
+
+生成
+python3 QA/DefenseBalance20261016/build_repeat_batch.py
+出力：BatchDefenseRepeat.cs.txt / repeat-batch-build-manifest.json
+初回だけrepeat-cases.csvを作成。既存20行の場合はそれをバイト列のまま保持し、依頼された姿勢条件1行のみ末尾へ追記。21行が既に存在すれば内容一致を確認し、ケース計画を勝手に上書きしない。
+最新のNativeSurvivalBootstrap / BatchDefense.template / ReactiveGateSurvivalRouteから別出力を生成する。main generatorのpure helper関数だけimportしmain()は呼ばない。主BatchDefense・manifest・template・CSV・progressionとIC速度感度のbody/manifest/CSVなど13ファイルを前後hashで保持確認。
+生成版だけ、route前に初期Gear0をValidateしrepeat_condition_validatedを記録する。素材の代入/配布は一切追加しない。6回BOOSTのIC感度routeは使わない。
+
+実行
+rootが主14条件の完了後、安定したTitle PlayでBatchDefenseRepeat.cs.txtを実行する。IC速度感度3条件はBatchDefenseSensitivity.cs.txtで別途順次実行し、合計24追加を二つのbatchに分離する。共通RUNNING marker/stop sentinelを使うため同時実行しない。
+初期Playをまたぐdelegate設置は行わず、最新templateのscene安定待ち/cleanup/Watchdog/既存ログ上書き拒否を保持する。結果は主seed77と異なるlabel末尾を持つ。終了後のPrefs8・Editor・画面等の復元はroot既存手順で行う。
+
+解析
+撃破/門破壊/プレイヤー死亡/timeout/lifecycle errorを区別。bosses.csvの出現→終了秒、HP/門とボス残HP、攻撃数、実BOOST消費回数、前座の素材と報酬選択を併記する。3seed全ての最小/中央値/最大と成功件数を示し、成功時だけの秒数で失敗を隠さない。
+
+準備結果
+21行、うち10条件×2seedは主条件からseed/label以外の差分0、姿勢条件1件はlabel以外の差分0。通常jump条件の原文保持、姿勢条件のlabel guard、入力と生成C#のbyte hash整合、保護対象13ファイル不変を確認。Unityコンパイル/Play/MCPは未実施。

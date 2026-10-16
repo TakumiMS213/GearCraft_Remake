@@ -1,0 +1,12 @@
+Real drop prefab collection, icon/quantity, tracking, fade and bounded reuse. Runtime fixture, not physical input E2E.
+0.17s PASS actual collected Scrap exactly once
+0.17s PASS actual collected Gear exactly once
+0.17s PASS actual collected UpgradeCore exactly once
+0.17s PASS actual collected ModuleCore_lv1 exactly once
+0.17s PASS actual collected ModuleCore_lv2 exactly once
+0.17s PASS actual collected ModuleCore_lv3 exactly once
+0.17s PASS six simultaneous pickups are visible
+0.17s PASS authored template stays inactive
+0.17s FAILED System.Exception: quantity +1 fits
+  at MCPDynamicCode+<Execute>c__AnonStorey0.<>m__1 (System.Boolean ok, System.String s) [0x00006] in <844c8ab2b3564973a8083bb47437b7f7>:0 
+  at MCPDynamicCode+<Execute>c__AnonStorey0.<>m__5 () [0x001e0] in <844c8ab2b3564973a8083bb47437b7f7>:0  checks=8

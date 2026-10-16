@@ -1,0 +1,20 @@
+終盤武器目標時間・第1回計測の独立照合（2026-10-15）
+対象：target-pass1-results.csv / boss-states.csv / loadout-stats.csv、保存済みtarget-pass1-cases.csv。全5件完了。
+条件：wave31 EK単体、seed77、終盤パーツ＋攻撃Module20、STR/ACC20、最大240秒。HP/GATE補充ありの処理能力測定であり、通常耐久での防衛成功を証明する試験ではない。
+
+武器              目標       EK撃破秒     目標差       旧同条件秒     プレイヤー被害   門被害
+GearCraft         60秒超      148.767     条件内       148.750        342              0
+SteamCannon       60           59.883     -0.117        63.950        126              0
+SteamThrower      60           60.317     +0.317        40.783        246              0
+RailCraft         45           45.367     +0.367        60.667        510              0
+SteamGatling      45           44.983     -0.017        60.483        510              0
+全件cleared、EK初期HP147600、撃破1/出現1、残敵0、timeout0。遠距離4種の最大目標差は0.367秒（0.82%）。
+旧同条件はQA/BossBalance20261015/boss-m20-pass1-results.csvの同じパーツprofile・Module20・HP147600。旧HP49200の計測や前座込みrouteとは比較していない。
+
+装甲/フェーズ確認：各武器ともHP98400および49200で3.000秒ずつ装甲状態に入り、計6秒。10区間すべてHPとbossXが一定で、記録上HPの逆行なし。Phase1のCrossfireBurst / Phase2のCombinedVolley出現回数はGear3/4、Cannon1/2、Thrower2/2、Rail1/1、Gatling1/1。全5種で両攻撃状態へ実際に到達した。Windupの一部は撃破/移行で中断するため、状態到達と実弾全発射の保証は区別する。
+
+Gearの攻撃継続：boss-states全220sampleを照合。隣接sample間が0.9秒以上かつattack_events増分0の区間は0件。最大sampling間隔1.01667秒でも攻撃9回増加。累計1532回で旧同条件と同数。記録上の長期攻撃停止は見られないが、約1秒間隔のログから全frameの連続性までは保証しない。
+
+入手時Gatling補助確認：target-entryのwave19/late_day7_ranged/Module0は29.517秒、敵20/20、門被害0、プレイヤー被害6、536発/268攻撃。旧route同条件30.283秒、20/20、同被害、1602発/801攻撃。20体の予定出現列・時刻は一致。基礎1→10により初撃2.25→11.25、完了は0.766秒短縮、発射1066発減少。出現待ちの影響があるため、完了時間だけで威力差を評価しない。また1waveから入手以降全経路の適正を断定しない。
+
+数値差分：Rail基礎150→300（ACC10維持）、Gatling基礎1→10、Cannon基礎50→57、ThrowerのModule係数0.30→0.17。PartsFlatとModuleは別項目。今回の到達目標は指定終盤構成で確認済みで、平均的な取得条件・通常生存条件は別試験が必要。

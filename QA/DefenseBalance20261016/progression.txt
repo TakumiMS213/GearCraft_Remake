@@ -1,0 +1,44 @@
+防衛バランス試験：到達段階の条件定義（2026-10-16）
+
+試験案はprogression-cases.csvの14条件。ICはGear、BBはGear/Cannon/Thrower、ARとEKは5武器。日頭wave7/16/28/31から開始し、当日の雑魚戦・報酬を本来の進行で経てボスへ到達する。HP/門耐久は補充せず、各ボスの出現から撃破/防衛失敗までを記録する。ボス単体HP補充試験のタイムは、生存成功率と混同しない。
+
+「平均強化」の定義と限界
+実プレイヤーの行動・購入分布がないため、平均的なプレイヤーがこの装備になるとは判定できない。今回は全予定敵の撃破・全回収を仮定した資源中央値モデルの範囲で、過去に実購入/配置できた代表パーツ構成を選ぶ。中央値は素材残高についての値。特定の装備数、食事回数、モジュール作成数を観測中央値とは呼ばない。序盤で防衛に失敗した場合、この全回収モデルの収入にも到達しない。
+
+確定する進行
+ボスはwave9 IC(Day3)、18 BB(Day6)、30 AR(Day10)、31 EK(Day11)。盤面は3+撃破ボス数、従って各ボス到達前3/4/5/6四方。敵補正はMain入場時のwave番号を日中固定し、baseHP×(1+日頭wave/10)。今回HPはIC13600、BB13000、AR15200、EK147600。30単体開始などの誤った日頭補正を避ける。
+根拠：Assets/GearCraft/ScriptableObject/StageGeneratorConfig/StageGeneratorConfig.asset、EnemyData/lv3_*.asset、Scripts/Main/StageFlowManager.cs、EnemyController.cs、StatusManager.GetUpgradeGridSize。
+
+代表装備と別枠機能
+Day3：early_day3_common、STR/ACC各4、Module0、Repairなし、Barrierなし。
+Day6：mid_day4_common、STR/ACC各10、Module0、Repairあり、Barrierなし。Day4用パーツをそのまま使う控えめな中盤条件。
+Day10：Gearはlate_day7_melee、遠距離はlate_day7_ranged、STR/ACC各18、Module20、Repair/Barrierあり。
+Day11：Gearはfinal_day11_melee、Cannon/Railはfinal_day11_ranged_fitted_speed、Throwerはfinal_day11_thrower_fitted_damage、Gatlingはfinal_day11_ranged、STR/ACC各20、Module20、Repair/Barrierあり。
+全条件ScrapModule/PunkDriveあり、開始HP/門100。今回の目的は防衛の成立確認なので、教材で作成可能な補助武装も含める。Punkの費用は下記の資源モデルで控除済み。HP/門100も比較用初期値で、実キャンペーンの夜間修復履歴を再現した値ではない。門は宿舎修理で+50できるため、実戦の初期耐久は100に限られない。
+元profileのmoduleDamageが0の場合は、同じ配置でmodule20の測定用profileを生成し、execution-cases.jsonで対応を明記する。モジュール効果は武器固有係数を通す。特にThrowerの現在係数0.17を使い、全武器へ額面20を直接加算しない。
+
+資源中央値モデル（1000試行、seed20261016、教材Day1前）
+朝              Scrap   Gear   UpgradeCore   低級Core  中級Core  上級Core   AR所有率
+Day3/wave7        87      39        0             7        0        0       22.9%
+Day6/wave16      418     140        8            21        8        1       48.2%
+Day10/wave28    1089     301       36            33       33        2       68.6%
+Day11/wave31    1314     354       44            36       41        3       72.3%
+これはScrapModule/Punk教材費用の後、その他の買い物前の残高。素材ごとの周辺中央値であり、全値を同時に満たす確率そのものではない。旧QAのeconomic_model.pyを現行assetへ再実行し、新フォルダのprogression-economic-snapshot.jsonにsource SHA256/条件を保存。Katana報酬プール、AR最優先→素材優先、召喚分除外、Junkなし、全回収。実武器専用カードや戦闘結果は再現しない。
+
+費用の整合
+GearCraftはGear10、Cannon/Throwerは各Gear30＋AR装備条件、Rail/Gatlingは各Gear30＋上級Core1。前武器への投資も残高から差し引く。全5武器を同時所有する前提ではなく、各経路を独立比較する。
+代表パーツ予算上限はDay3 S24/G6/U0、Day6 S48/G12/U0、Day10 S72/G24/U4、Day11 S96/G30/U8。G枠はリロール用も含む。実部品費はこれ以下。旧QAのパーツ購入/配置検証を再利用し、6×6構成をAR前へ持ち込まない。
+Repair：IC撃破後、Scrap10＋低級Core1で1回作成。各wave終了時HP+20（敵1体ごとではない）。
+Barrier：BB撃破後、Gear5＋中級Core1。自動展開し攻撃1回を防ぎ、破壊後3秒で再展開。門は守らない。
+攻撃Module：BB撃破後、1個につきUpgradeCore3＋中級Core1、額面+5。今回はAR/EKで4個（UpgradeCore12＋中級Core4）を別予算で採用。Barrierと合わせ中級Core5。Day10の中央値U36/中級33、Day11のU44/中級41に対し、パーツU4～8＋ModuleU12/中級4＋Barrier中級1は範囲内。使用数4は比較用の投資方針であって、自然に4個になる平均という意味ではない。BB前は素材があっても未解禁なのでModule0を厳守。
+過去パーツの買い替え・使用しない在庫には費用が残る。これをゼロ扱いせず、初期/中盤パーツ費とリロールを控除しても十分な後半残高を持つ条件としている。ショップ抽選は購入可能性と別。既存モデルの予算内確保率はearly_common59.2%、mid_common72.0%、late_melee85.7%、late_ranged63.3%、final_melee73.4%、final_ranged67.0%。fitted版は実購入配置可能を確認済みだが抽選確保率未算出。特定配列を通常確定入手とは扱わない。
+根拠：CraftRecipe/*.asset、Scripts/Upgrade/UpgradeShopManager.cs、QA/WeaponUpgradeBalance20261015/{loadouts.csv,loadout-budgets.csv,loadout-placements.csv,upgrade-parts-audit.json,native-purchase-validation.csv}。
+
+AR入手条件の再確認
+CraftTutorialControllerの配布はScrap/GearとScrapModule用不足素材で、ARの無条件配布はない。StatusManager.ResetRunProgressはownedWeaponsを空にし、InitializeWeaponsがdefaultWeaponを追加する。TitleのdefaultWeaponはKatana。よってCannon/ThrowerをBBまでに必ず所持するとは言えない。上記Katana固定のAR最優先モデルでもBB朝48.2%であり、武器専用カードを含む経路では提示率が変わる。BBのCannon/Throwerは明示的に「入手済み条件付き」。レシピがDay4で解禁されることと、実際に購入できることは分ける。
+
+食事・過去報酬の扱い
+宿舎設備は一晩に一つ。食事は50%ずつSTRかACCに+3、材料費なし。医療はHP全回復、修理は門+50で食事と排他。回復を選ぶ経路ほど攻撃成長は減る。
+今回は過去分STR/ACC=2×(day−1)を既存比較との接続用代表値として維持し、朝からの2回の報酬はnativeで実際に選択して増減させる。この値は実測平均でも厳密な食事/報酬中央値でもない。毎夜食事の場合、食事だけの期待値は各1.5×(day−1)。上記素材優先・共通プールからの直接STR/ACC加算は各約0.175～0.191/日であり、2/日はそれよりやや高い代表値となる。武器系カード優先ではまた変わる。したがって資源中央値と戦闘ステータス代表値を混同しない。
+新たな仮想データを平均と呼ばず、必要なら低めの1.5×(day−1)や修理優先経路を追加感度試験する。今回14条件は選択済みの強化状態からその一日を守れるかを検証し、Day1から全キャンペーンを無停止で通した事実とは扱わない。
+根拠：Scripts/CraftSpace/UIRangeDisplay.cs:227-264、Main/BonusCardsManager.cs:244-309,400-416、Main/StageFlowManager.cs:249。

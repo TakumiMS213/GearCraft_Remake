@@ -1,0 +1,4 @@
+stage,scaling_stage,result,start_game_seconds,end_game_seconds,wave_seconds,start_hp,start_gate,end_hp,end_gate,player_damage,gate_damage,player_healed,gate_healed,attack_events
+"28","28","completed","1.21655273","38.5","37.2834473","100","100","100","100","0","0","0","0","18"
+"29","28","completed","41.5333252","78.2666","36.7332764","100","100","100","100","0","0","0","0","20"
+"30","28","completed","81.29993","113.599976","32.30005","100","100","96","100","4","0","0","0","54"

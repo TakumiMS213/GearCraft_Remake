@@ -229,6 +229,7 @@ public class EnemyController : MonoBehaviour
 
     public void TakeDamage(float amount, Vector2 hitPosition)
     {
+        if (!PrepareFinalBossDamage(ref amount)) return;
         if (amount > 0f && HP > 0f)
         {
             // 2Dの命中点を本体のZへ合わせる。継続ダメージ中も同じ被弾箇所を保つ。
@@ -236,10 +237,27 @@ public class EnemyController : MonoBehaviour
             lastHitLocalPosition = transform.InverseTransformPoint(point);
             hasHitPosition = true;
         }
-        TakeDamage(amount);
+        ApplyDamage(amount);
     }
 
     public void TakeDamage(float amount)
+    {
+        if (!PrepareFinalBossDamage(ref amount)) return;
+        ApplyDamage(amount);
+    }
+
+    private bool PrepareFinalBossDamage(ref float amount)
+    {
+        // 他の敵のダメージ・被弾イベントはそのまま。EKだけ装甲と段階境界で制限する。
+        EnemyAI_BossFinal finalBoss = currentAI as EnemyAI_BossFinal;
+        if (finalBoss == null) return true;
+        amount = finalBoss.FilterIncomingDamage(amount);
+        return amount > 0f;
+    }
+
+    private bool IsFinalBossArmored => currentAI is EnemyAI_BossFinal finalBoss && finalBoss.IsArmored;
+
+    private void ApplyDamage(float amount)
     {
         RecordGalleryEncounterIfVisible();
         HP -= amount;
@@ -251,7 +269,8 @@ public class EnemyController : MonoBehaviour
         else
         {
             if (amount > 0f) Damaged?.Invoke(amount);
-            if (spriteRenderer != null)
+            // 段階境界のDamagedで装甲が閉じた場合も、装甲色を被弾点滅で上書きしない。
+            if (spriteRenderer != null && !IsFinalBossArmored)
             {
                 spriteRenderer.color = originalColor;
                 StartCoroutine(FlashOnHit());
@@ -323,9 +342,10 @@ public class EnemyController : MonoBehaviour
 
     private System.Collections.IEnumerator FlashOnHit()
     {
+        if (IsFinalBossArmored) yield break;
         spriteRenderer.color = Color.red;
         yield return new WaitForSeconds(0.05f);
-        if (spriteRenderer != null)
+        if (spriteRenderer != null && !IsFinalBossArmored)
             spriteRenderer.color = originalColor;
     }
 

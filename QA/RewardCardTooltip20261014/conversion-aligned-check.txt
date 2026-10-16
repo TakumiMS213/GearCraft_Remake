@@ -1,0 +1,7 @@
+STR5/ACC7 -> STR3/ACC9
+STR3/ACC9 -> STR5/ACC7
+STR/ACC below2 -> unchanged
+<b><color=#E2BE59>【筋力を精度へ】</color></b>
+STRが2以上なら、STR -2 / ACC +2。
+<b><color=#E2BE59>【精度を筋力へ】</color></b>
+ACCが2以上なら、ACC -2 / STR +2。

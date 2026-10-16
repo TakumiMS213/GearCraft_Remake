@@ -1,0 +1,25 @@
+最終構成の追加条件（2026-10-15）
+
+Module20接続条件
+final_day11_melee_module20 / final_day11_ranged_module20 は元finalのパーツ・配置・パーツ予算をそのままコピーし、moduleDamageだけ20にした。
+UpgradeModuleは1個につき攻撃加算5、中級ModuleCore1＋UpgradeCore3、ボス2体撃破で解放。4個分の追加費用は中級ModuleCore4＋UpgradeCore12。S96/G30/U8はパーツ用上限のままなので、Module0との総費用は同じではない。
+prepare_cases.pyは各主武器1件、stage31/seed77/boss/60秒を追加し、probesは77件。集計はModule20を主比較から分ける。
+
+既知の無効枠を交換したfitted-final条件
+final_day11_rangedのPrecisionNozzle2個は拡散0のCannon/Rail/Throwerでは働かない。下記はその枠の限定交換で、最適な構成を探した結果ではない。
+
+final_day11_ranged_fitted_speed（Cannon/Rail）
+Nozzle2→SpeedGear2。他のパーツ・占有位置は元finalのまま。
+原価S96/G14/U6、6×6の34マス、パーツ加算12、攻撃間隔倍率0.139797798912、2発化あり、拡散補正0。
+
+final_day11_thrower_fitted_damage（Thrower）
+Nozzle2→Damage+2とDamage+1、SpeedGear+1→SpeedGear1。他の配置は元finalのまま。
+原価S95/G13/U6、6×6の33マス、パーツ加算16、攻撃間隔倍率0.1827422208、2発化あり、拡散補正0。
+Thrower.coolTime=0.08なので設定間隔は約0.0146194秒で1/60秒未満。現行60fps計測では速度を少し落としても1フレームごとの発射上限を維持する条件。実攻撃回数は実測記録で確認する。
+
+両profileともmodule0と、同一パーツにmodule20だけ追加する *_module20 を用意した。全てパーツ上限S96/G30/U8内で、module20の費用は別枠。
+add_fitted_final_profiles.pyで素材費・真セルの重なり/枠外・登録asset・回転を検査。fitted-final-loadouts.jsonに配置と効果を保存した。これは静的検査であり、追加profileのnative購入/戦闘確認はroot側で行う。
+追加時にcases.csv、probes-cases.csv、route-cases.csv、batch-name.txtのSHA256が不変であることを確認済み。再実行は既存内容を照合して重複追加しない。
+
+分析方法
+fitted-final-cases/results/spawns/loadout-stats.csvをanalyze_upgrades.pyが独立バッチとして読む。元route98件とその合計は書き換えない。Module0同士なら元代表routeとの時間差を表示し、Module20は追加支出として別記する。nativefinalでfittedを使用した結果も、元routeの構成と同一とは扱わない。

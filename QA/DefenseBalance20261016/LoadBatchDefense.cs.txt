@@ -1,0 +1,11 @@
+// Load the reviewed QA body from disk to avoid the MCP message's 50,000-character payload limit.
+// Keep the MCP compiler's own blocked-pattern validation and CodeDom compilation.
+string qaBody=System.IO.File.ReadAllText("QA/DefenseBalance20261016/BatchDefense.cs.txt");
+var qaCompiler=typeof(MCPForUnity.Editor.Tools.ExecuteCode);
+var qaFlags=System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.NonPublic;
+var qaCheck=qaCompiler.GetMethod("CheckBlockedPatterns",qaFlags);
+var qaCompile=qaCompiler.GetMethod("CompileAndExecute",qaFlags);
+if(qaCheck==null||qaCompile==null)throw new System.Exception("Native MCP compiler methods missing");
+var qaViolation=qaCheck.Invoke(null,new object[]{qaBody});
+if(qaViolation!=null)throw new System.Exception("Native safety check: "+qaViolation);
+return Newtonsoft.Json.JsonConvert.SerializeObject(qaCompile.Invoke(null,new object[]{qaBody,"codedom"}));

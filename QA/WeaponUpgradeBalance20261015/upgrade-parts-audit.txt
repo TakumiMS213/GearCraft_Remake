@@ -1,0 +1,107 @@
+アップグレードパーツ・通常取得条件の静的監査（2026-10-15）
+
+結論
+Gear 6/12/24 の上限に Scrap と UpgradeCore の上限を追加し、素材別の予算で比較する。購入に Scrap だけを使う強いパーツがあるため Gear だけでは等予算にならない。Module は 0 固定を主比較とし、終盤の Module +20 は別条件に分ける。全構成は現行ショップ登録品だけで作り、形状・回転・重なり・盤面・素材費・リロール費を検査済み。これはオフラインの配置／購入可能性の確認であり Unity での購入・戦闘実測ではない。
+
+監査対象と参照
+Assets/GearCraft/ScriptableObject/UpgradeParts/*.asset（17 個）、Scenes/Craft.unity:12422、Scripts/Data/UpgradePartSO.cs、UpgradeEffect.cs、PartRarity.cs、Scripts/Upgrade/UpgradeShopManager.cs、UpgradeGridManager.cs、Scripts/StatusManager.cs、Scripts/Main/PlayerController.cs、Scripts/Items/MaterialDropper.cs。
+再現：python3 QA/WeaponUpgradeBalance20261015/upgrade_parts_audit.py
+詳細：upgrade-parts-audit.json。全 asset の GUID/SHA256、費用、形状、各構成の gridX/gridY/rotation、ショップ抽選例と購入明細を含む。Python RNG は Unity RNG と同じ列ではない。
+
+全パーツ一覧
+S=Scrap、G=Gear、U=UpgradeCore。shape は y=0 からの行を / で区切り、#=占有、.=空き。全て 90 度回転可能。
+rarity は 0 Common / 1 Uncommon / 2 Rare / 3 Epic。R は rangedOnly。
+
+asset                 表示名                   rarity  shape    cells  費用         R  効果（現実装）
+Damage+1              Damage Plate             0       #        1     S3           0  DamageFlat +1
+Damage+2              Damage Plate+            1       ##       2     S6           0  DamageFlat +3
+Damage+3              Damage Plate++           1       ##/.#    3     S9           0  DamageFlat +5 ※ショップ未登録
+SpeedGear             Speed Gear               0       #/#      2     S4           0  攻撃間隔 ×0.9
+SpeedGear+            Speed Gear+              1       #/#      2     S6 G1        0  攻撃間隔 ×0.85
+SpeedGear++           Speed Gear++             2       #/#      2     S8 G2 U1     0  攻撃間隔 ×0.8
+HeavySlug             Heavy Slug               1       ##/##    4     G4           1  弾サイズ加算 +0.25、DamageFlat +1
+HeavySlug+            Heavy Slug+              2       ##/##    4     G5 U1        1  弾サイズ加算 +0.5、DamageFlat +2
+HeavySlug++           Heavy Slug++             3       ##/##    4     G7 U2        1  弾サイズ加算 +0.75、DamageFlat +3
+JunkMagnet            Junk Magnet              1       ###      3     S6           0  ドロップ個数倍率加算 +0.35、回収範囲 +1.5
+JunkMagnet+           Junk Magnet+             2       ###      3     S8 U1        0  ドロップ個数倍率加算 +0.6、回収範囲 +3
+JunkMagnet++          Junk Magnet++            3       ###      3     S10 U2       0  ドロップ個数倍率加算 +0.9、回収範囲 +6
+PrecisionNozzle       Precision Nozzle         0       #/#      2     S4 G1        1  拡散半角 -4 度（結果は 0 以上）
+ReflectionBullet      Reflection Bullet        2       #./##    3     G3 U1        1  跳弾回数 +1
+ReflectionBullet+     Reflection Bullet        2       #./##    3     G3 U1        1  跳弾回数 +1 ※ショップ未登録、通常版と同仕様
+TwinBarrel            Twin Barrel              2       ##       2     G2 U1        1  1 攻撃に追加弾 1 発（bool、複数装着でも加算なし）
+UnstableChamber       Unstable Chamber         1       ##/##    4     S5 G2        1  DamageFlat +3、拡散半角 +6 度
+
+enum の意味と注意
+UpgradeEffectType: 0=DamageFlat、1=AttackSpeedMult、2=BulletDouble、3=SpreadReduction、4=SpreadIncrease、6=Ricochet、7=JunkCollector、8=BulletSizeUp、10=MagnetRangeUp（5/9 の定義なし）。MaterialType: 0=Scrap、1=Gear、2=UpgradeCore、3/4/5=低級/中級/上級モジュールコア。
+・DamageFlat は status.bonusDamage への加算。現行 GetWeaponDamageBonus は近接 STR + パーツ加算、遠距離 ACC×accDamageMultiplier + パーツ加算×flatDamageMultiplier。flatDamageMultiplier が未指定なら accDamageMultiplier を代用。現在 GearCraft=1、Cannon=0.8、Thrower=0.08、Gatling=0.05、Rail のパーツ倍率=1（ACC 倍率10とは別）。同じ +12 のパーツでも実際の一撃増加は異なる。Module 加算はこの倍率の後。
+・AttackSpeedMult は攻撃間隔へ乗算。0.8 は間隔20%短縮、理論上の攻撃回数は1.25倍。複数は乗算し、実際の回数にはフレーム／近接攻撃時間等の制約がある。
+・rangedOnly は購入／盤面配置の禁止条件ではない。近接装備中にパーツの全効果を読み飛ばし、UI が無効警告を出す。
+・JunkCollector の UI 文言は「素材ドロップ率」だが、現実装は抽選確率を変えず、当選した個数に倍率を掛けて丸める。個数倍率は基準1から加算。弾サイズも基準1から加算、回収範囲は基準3から加算。
+・SteamThrower の projectile 設定は専用 controller 設定後に return する。Reflection の ricochetCount を付与しないため跳弾パーツは蒸気に効かない。Twin と弾サイズは射撃側で適用可能。
+・Damage+3 / ReflectionBullet+ は Craft の allParts に無く、Assets 内の他の asset/scene/prefab からの参照も見つからない。通常購入比較には使用しない。
+
+ショップ・在庫・入手段階
+・Craft は 6 枠。登録 15 種のうち Rare/Epic 7 種から均等に 1 個を確保し、残り 14 種から重複なしで 5 個を均等抽選する。レアリティ別重み／日数／ボス数による解放制限はない。1 品の 1 回あたり登場率は Common/Uncommon=5/14=35.714%、Rare/Epic=1/7+(6/7)(5/14)=44.898%。特定品の保証ではない。
+・装着購入するとその日の棚から該当品を除去。同じ asset の複数個購入は別の日またはリロールが必要。再抽選は Gear1。同じ日の画面出入りでは在庫を復元し、日が変わると新規抽選となる。
+・取り外すと購入費が返却される。購入した日と同日なら棚にも戻る。返品で異なるパーツに替えることはできるが、同じ支払いを複数品の取得に数えない。
+・盤面は (3+bossKillCount) 四方。Day1～3=3×3、IC後 Day4～6=4×4、BB後 Day7～10=5×5、AR後 EK当日=6×6。EK後は理論上7×7。以下の後半案は厳しい5×5に収まり、6×6でも使用できる。
+・U不要の品は素材と抽選さえ満たせば初回から購入可能。U必要の品も最初から棚には出るが、Uの通常供給源は IC後の lv2 雑魚。Day4 開始前のU残高は0で、最早工房購入は Day4の戦闘を終えた Day5。ボス自身からUは出ない。
+・初回 WeaponCustom 教材は Damage+1 の品揃え＋不足Scrap3、独力課題で Damage+2/SpeedGear の品揃え＋不足Scrap6を補充する。「Damage+1 と Damage+2 を残す」課題の進め方なら S9、+4、3マスが可能。教材を終えただけで両方の所有を無条件に仮定しない。
+
+同予算での比較構成案
+上限は素材ベクトルで統一し、購入済みパーツの原価とリロール費を同時に数える。別行は選択肢であり同時購入しない。開始時の既存パーツは原価に含めるか、全武器共通の教材枠として別記する。直接 bonusDamage 等を設定せず、savedUpgradePartPlacements と RecalculateUpgradeEffects を通して本来の値を作る。
+
+ID                         盤面  共通上限 S/G/U  パーツ原価 S/G/U  マス  効果
+tutorial_day2              3×3   9/0/0           9/0/0            3    +4、間隔1
+early_day3_common          3×3   24/6/0          22/1/0           8    +6、間隔0.765
+mid_day4_common            4×4   48/12/0         38/2/0          14    +9、間隔0.585225
+mid_day4_precision         4×4   48/12/0         42/3/0          16    上記＋拡散-4度
+mid_day4_size              4×4   48/12/0         32/6/0          16    +7、間隔0.585225、弾サイズ1.25
+late_day7_common           5×5   72/24/4         58/7/3          18    +12、間隔0.39168
+late_day7_ranged           5×5   72/24/4         58/13/4         24    +13、間隔0.39168、弾2発、弾サイズ1.25
+early_day3_speed           3×3   24/6/0          22/3/0           8    +0、間隔0.5527125
+mid_day4_speed             4×4   48/12/0         40/4/0          16    +0、間隔0.342488300625
+late_day7_melee            5×5   72/24/4         70/7/3          24    +12、間隔0.28553472
+late_day7_precision        5×5   72/24/4         66/11/4         24    +12、間隔0.39168、弾2発、拡散-8度
+late_day7_reflect          5×5   72/24/4         60/12/4         25    +12、間隔0.41616、弾2発、拡散-4度、跳弾1
+final_day11_melee          6×6   96/30/8         96/14/6         30    +12、間隔0.13807190016
+final_day11_ranged         6×6   96/30/8         96/16/6         34    +12、間隔0.1725898752、弾2発、拡散-8度
+
+内訳
+tutorial: Damage+1×1、Damage+2×1。
+early: Damage+2×2、SpeedGear+×1、SpeedGear×1。
+mid common: Damage+2×3、SpeedGear+×2、SpeedGear×2。
+mid precision: mid common＋PrecisionNozzle（拡散0の武器では効果なし）。
+mid size: Damage+2×2、SpeedGear+×2、SpeedGear×2、HeavySlug×1。
+late common: Damage+2×4、SpeedGear++×3、SpeedGear+×1、SpeedGear×1。
+late ranged: late common＋TwinBarrel×1、HeavySlug×1。
+early speed: SpeedGear+×3、SpeedGear×1。
+mid speed: SpeedGear+×4、SpeedGear×4。
+late melee: late common＋SpeedGear×3。
+late precision: late ranged から HeavySlug を除き、PrecisionNozzle×2 を追加。
+late reflect: late ranged から HeavySlug を除き、ReflectionBullet×1 と PrecisionNozzle×1 を追加し、SpeedGear++×1 を SpeedGear+×1 へ置換。
+final melee: Damage+2×4、SpeedGear++×6、SpeedGear+×2、SpeedGear×3。
+final ranged: Damage+2×4、SpeedGear++×5、SpeedGear+×2、SpeedGear×3、TwinBarrel×1、PrecisionNozzle×2。
+全 final 構成は Module0固定。同じ素材上限で近接は速度、遠距離は二重射撃・拡散抑制に予算／盤面を使う確定構成。パーツ原価で上限を使い切ることは求めず、残Gearを抽選に使える条件とする。
+これらは最大火力を求めた最適解ではなく、取得可能な共通対照と射撃用追加条件。Precision/跳弾/Unstable/Junk は各々の得意状況や経済を測る別条件に回す。
+
+抽選制約と予算に収まる購入例
+初回無料棚1回＋残額でGear1再抽選、必要品だけを購入する5000試行のオフラインモデルで、当日中に構成が揃う率は early59.24%、mid common72.00%、mid precision61.90%、mid size43.50%、late common92.52%、late ranged63.26%。日をまたいで既に集めた棚や教材保証は含めない。したがって「予算内で実現可能」と「通常毎回この日に揃う」は別である。
+実現する抽選列と最終総費用の例は JSON 内に保存済み：early S22/G4（3 rerolls）、mid common S38/G12（10）、mid precision S42/G10（7）、mid size S32/G12（6）、late common S58/G18/U3（11）、late ranged S58/G24/U4（11）。同じ棚に同品を複製する購入例は使っていない。
+追加構成の当日収集率：early speed11.02%、mid speed14.26%、late melee85.74%、late precision76.78%、late reflect71.50%、final melee73.40%、final ranged67.04%。速度特化の序盤／中盤案は同じ非レア品を3～4個集める必要があるため、予算内で可能でも「通常確実に揃う標準装備」とはしない。
+追加構成の購入例総費用：early speed S22/G6（3 rerolls）、mid speed S40/G10（6）、late melee S70/G18/U3（11）、late precision S66/G22/U4（11）、late reflect S60/G23/U4（11）、final melee S96/G25/U6（11）、final ranged S96/G27/U6（11）。配置座標・回転・購入順序・抽選seedは全て JSON に保存。
+
+経済的現実性と過去モデルの限界
+過去 economic_model.py は全予定敵撃破・全回収、Katana報酬プール、AR最優先→Gear優先、ScrapModule＋PunkDrive教材のみ購入、他のクラフト・パーツ・リロールなし、召喚敵収入なし、Junkなしを仮定した経済モデル。生存実測ではなく、通常の火力優先カードを選ぶプレイよりGearが多くなり得る。Scrap4→Gear1変換は現行実装に無く換算していない。
+教材Day1前モデルの未使用残高平均は Day2朝 S10.66/G10.64/U0、Day3朝 S87.55/G38.92/U0、Day4朝 S181.73/G77.55/U0、Day5朝 S300.38/G108.74/U4.19、Day7朝 S555.24/G181.56/U12.48。武器代もパーツ代も引いていない残高なので、そのまま通常所持金と呼ばない。
+今回、旧モデル3000試行×教材時期2条件から、武器代の累積Gearを別途確保してパーツ予算を判定した。GearCraft購入G10、さらに中盤武器G30、さらに後半武器G30を順に予約する（武器を全種類買うモデルではない）。
+・Day3朝 S24/G6/U0＋武器G10を確保：99.7～100%。一方 Day2朝は武器G10＋S9でも約6～45%しか満たさない（この計算では追加のWeaponCustom教材Scrapを含めない）。序盤G6予算をDay2の標準とせず、Day2は教材小構成、G6案はDay3とする。
+・Day4朝 S48/G12/U0＋武器累計G40を確保：97.6～99.9%。AR所有はこの判定に含めず、Cannon/Throwerの実入手は別のAR抽選条件にも依存する。
+・Day5朝 U2付き中盤予算を確保：92.6～93.1%。Day4朝にU品を前倒ししない。
+・Day7朝 S72/G24/U4＋武器累計G70を確保：99.8～99.9%。しかし Module+20（UpgradeModule4個、U12＋中級コア4）を同時に想定しUをさらに12予約すると、Uを含む予算達成は17.9～18.4%まで下がる。ここでは中級コア4の追加充足も未判定なので、同居可能性はさらに限定される。Module0固定の主比較を推奨する。
+・Day11朝では同モデルの両予算は100%充足。これは未計上の修理・BOOST・追加購入を考慮しない条件下の結果。
+・拡張した最終予算 S96/G30/U8＋武器累計G70 も Day11朝の両教材時期モデルで100%充足。追加U12を仮に予約しても今回3000試行では100%だが、主比較はModule0のままとする。
+日数の数値・収支・抽選率は旧モデルを現行データで再実行した推定値であり、通常の通しプレイの所持量保証ではない。
+
+再検証ランナーに必要な条件
+現行 NativeSurvivalRoute/旧 CombatBenchmark の手動射撃は base spreadAngle と弾1発を直接使うため、Precision/Unstable/Twin を含めると native PerformShotAttack と差が出る。spreadAngle+status.spreadModifier の下限0と、hasBulletDouble時の追加1発を両方反映してから比較すること。Size/通常弾Ricochetは ConfigureSpawnedProjectile が反映する。初期パーツを保存配置として作り、持ち替え時の RecalculateUpgradeEffects でも維持されることを確認する。Module/Punk/カード/BOOSTは独立要因として固定し、費用内の取得可能性と戦闘性能を別の観測値にする。

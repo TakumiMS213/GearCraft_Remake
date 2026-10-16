@@ -1,0 +1,33 @@
+EK-9 装甲・フェーズ改修の独立静的レビュー（2026-10-15）
+
+対象：EnemyAI/EnemyAI_BossFinal.cs、Main/EnemyController.csの差分と、弾・DoT・発射口・生成/破棄の呼び出し経路。ゲーム側ファイルの変更、Unity/MCP操作は行っていない。
+結論：現行の通常生成→攻撃→撃破経路で、装甲すり抜け・二重ダメージ・フェーズ飛ばし・死亡処理の新しい重大な不備は見つからなかった。ただし以下の仕様上の注意を実測結果と分けて扱う。
+
+装甲境界・多重ヒット・DoT
+・TakeDamageの両overloadがFilterIncomingDamageを一回だけ通る。命中位置付きoverloadはApplyDamageへ直接進み、二重filterにならない（EnemyController 230～255）。
+・phase0/1ではHPを次の2/3・1/3境界までに制限し、HP減算直後のDamagedを同期的に処理してArmorTransitionへ移る。次の弾・爆発・同フレームの二重射撃はIsArmoredにより入口で拒否され、境界を同時に二つ越えない（BossFinal 136～178、271～277）。超過ダメージは意図どおり持ち越さない。
+・継続DoTはUpdateOverheatStatus→TakeDamageなので同じfilterを通る。装甲中にDoTの次回時刻は進むがHPとDamagedは更新されず、解除時に未適用分をまとめて与える挙動ではない（EnemyController 352～357）。
+・float32で境界計算・減算・0.001比較を再現し、最大HP1～1,000万のランダム値等10,004値×2境界=20,008件の過大ダメージを点検。現行HP147,600付近の0.08/0.2/1/4,920/大ダメージも含め、境界遷移漏れ・二段飛ばしはなかった。これは数値式のオフライン確認でありUnity実測ではない。
+・ゲーム内で敵HPを直接書き換える通常経路は生成時以外に見つからない。外部デバッグでphaseを維持したままHPだけ境界以下へ設定すると、filterが0となりDamagedも発火しないため遷移できない。通常TakeDamage経路の問題ではない。
+
+死亡・無効化・再使用
+・最後のphaseだけ致死ダメージを許可する。DieでAI.OnDeath→Dead、Damaged購読解除、弾破棄、色・アニメ速度・Visual位置を復元。OnDisable/OnDestroyでの重複cleanupもnull確認とClearにより問題なし（BossFinal 566～590）。
+・現在のbossPoolはEnemyDataの選択配列であり、敵個体の再利用プールではない。EnemySpawnerはInstantiate、EnemyControllerは撃破後Destroy（Spawner 212/247、Controller 340）。
+・既存個体をSetActive(false)→trueだけで再利用する場合はOnDisableのDeadが残り、OnEnableでInitializeを再実行しないため動かず攻撃も無効になる。これは以前からのライフサイクル制約であり、今回の通常スポーンには該当しない。将来個体プール化するならHP・当たり判定・表示を含む再初期化が必要。
+
+見た目・命中点・発射口
+・装甲で拒否したヒットはLastHitPositionを変更しない。受理した位置付きヒットのみlocal座標を記録し、DoTは最後の有効命中位置を維持する。後退爆発はその位置を使用する。
+・装甲に入るヒットの直後のFlashOnHit、以前開始したFlashOnHitの復帰処理とも装甲色を上書きしない。LateUpdateも装甲色を優先し、解除時は同じUpdateのUpdateVisualsで通常色と速度へ戻る（Controller 271～276/343～349、BossFinal 328～335/537～563）。
+・FinalBoss.prefabの機銃口は6個（前方3＋上方3）、ミサイル口は4個（左上/右上/左下/右下）で全参照有効。Crossfireは0～2と3～5を組にして使い、通常/複合射撃も同じ口を経由。弾の向きは各口のright±18度、ミサイルは各口のright方向に出てから追尾する。発射位置を本体中心へ戻す変更はない。
+
+強火力と反撃・残る解釈上の注意
+・後退中/猶予中のダメージは閾値まで貯めるが後退アニメを再開始しない。後退0.85秒＋猶予3秒の間は追加staggerを止め、同フレーム連鎖も防ぐ。猶予後は次の有効ヒットで蓄積分が発動する。
+・装甲は最低3秒、かつ4発のミサイル反撃を終えるまで解除しない。現行の有効な4発射口/ミサイルprefabでは、強火力でも2回の切替中の反撃が残る。
+・一方、通常フェーズ固有の全攻撃を完遂する保証はない。装甲解除後はphase2のCrossfire発射まで回復1.3＋予告1.0秒、phase3のCombined発射まで回復1.0＋予告1.2秒を要し、その間もHPは減る。極端な火力なら次の境界/死亡へ進める。装甲ミサイル以外の新パターンも必ず見せる要件なら追加制約が必要だが、現時点では実測stateログで到達・発射を確認する対象とする。
+・装甲が止めるのはHP減算・Damaged・被弾点滅・LastHitPosition更新。弾側は戻り値を受け取らないため、Overheat、直撃Knockback、命中エフェクトは装甲中も適用する（BulletController 345～352/400～414、SteamThrowerBulletController 115～124）。本体位置は装甲Updateで戻すが、全状態異常・物理反応を無効にする仕様ではない。
+
+備考：QA/BossBalance20261015内のrunnerはrootによるboss stateログ追加後の版を前提とする。準備時のfolder-onlyコピー照合はコピー時点の履歴であり、現在の意図した計測変更を異常とは扱わない。
+
+レビュー時点SHA256
+de1a08ce4c45a0cc5445d46a82c82724f3dccbc40f8c15f7cc116f6b1106e8e4  Assets/GearCraft/Scripts/EnemyAI/EnemyAI_BossFinal.cs
+f112467871be7d72c493f500134f10d7563fd8a6cc70c5b0e63496a39e022f95  Assets/GearCraft/Scripts/Main/EnemyController.cs

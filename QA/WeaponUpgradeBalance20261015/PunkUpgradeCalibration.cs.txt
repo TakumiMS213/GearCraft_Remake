@@ -1,0 +1,125 @@
+// Unity MCP execute_code C#6 method body. Run only in paused-progression Main after the combat batch has finished.
+// Four native collider/DamageLoop cases, each ten game seconds at 60 game frames/sec. No main-weapon attack is invoked.
+// Preserves StatusManager (including parts), PlayerController/arm state, StageCounter, native source object and timing; creates disposable clones only.
+const string punkFolder="QA/WeaponUpgradeBalance20261015/";
+const string punkResult=punkFolder+"punk-upgrade-calibration.txt";
+const string punkCsv=punkFolder+"punk-upgrade-calibration.csv";
+const string punkProgress=punkFolder+"punk-upgrade-calibration-progress.txt";
+const string punkCancel=punkFolder+"punk-upgrade-calibration-cancel.txt";
+if(!Application.isPlaying||UnityEditor.EditorApplication.isPaused||UnityEngine.SceneManagement.SceneManager.GetActiveScene().name!="Main")throw new System.Exception("Unpaused Main Play required");
+foreach(string file in new[]{"benchmark-progress.txt","native-survival-progress.txt","punk-upgrade-calibration-progress.txt"})
+ if(System.IO.File.Exists(punkFolder+file)&&System.IO.File.ReadAllText(punkFolder+file).StartsWith("RUNNING"))throw new System.Exception("Another QA callback is running: "+file);
+if(System.IO.File.Exists(punkCancel))throw new System.Exception("Remove stale punk cancel sentinel first");
+var punkFlags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Public;
+var punkFlow=StageFlowManager.Instance;var punkStatus=StatusManager.Instance;var punkPlayer=UnityEngine.Object.FindFirstObjectByType<PlayerController>();
+if(punkFlow==null||punkFlow.IsStageActive||punkStatus==null||punkPlayer==null||punkPlayer.runtimeStatus!=punkStatus||punkPlayer.punkdrive==null)throw new System.Exception("Stopped native flow and initialized player/status/Punk required");
+var punkSpawner=punkFlow.enemySpawner;
+if(punkSpawner!=null){var cts=(System.Threading.CancellationTokenSource)typeof(EnemySpawner).GetField("cts",punkFlags).GetValue(punkSpawner);if(cts!=null&&!cts.IsCancellationRequested)throw new System.Exception("Caller must stop native spawning before calibration");}
+if(UnityEngine.Object.FindObjectsByType<EnemyController>(FindObjectsSortMode.None).Length!=0)throw new System.Exception("Caller must finish/clean combat enemies before calibration");
+var punkOriginal=punkPlayer.punkdrive;var punkSource=punkOriginal.GetComponent<PunkDriveManager>();
+var punkEnemyPrefab=UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/GearCraft/ScriptableObject/Prehubs/Enemy/G-1.prefab");
+var punkWeapon=UnityEditor.AssetDatabase.LoadAssetAtPath<WeaponDataSO>("Assets/GearCraft/ScriptableObject/WeaponData/GearCraft_Sword.asset");
+if(punkSource==null||punkEnemyPrefab==null||punkWeapon==null)throw new System.Exception("Native calibration assets missing");
+if(Physics2D.GetIgnoreLayerCollision(punkOriginal.layer,punkEnemyPrefab.layer))throw new System.Exception("Native Punk/Enemy layers do not collide");
+var punkCachedSTR=typeof(PunkDriveManager).GetField("STR",punkFlags);var punkLoops=typeof(PunkDriveManager).GetField("activeCoroutines",punkFlags);
+if(punkCachedSTR==null||punkLoops==null)throw new System.Exception("Native Punk fields missing");
+var punkProfiles=new System.Collections.Generic.Dictionary<string,System.Collections.Generic.List<UpgradePartSO>>();
+var punkModuleDamage=new System.Collections.Generic.Dictionary<string,int>();
+foreach(string line in System.IO.File.ReadAllLines(punkFolder+"loadouts.csv")){
+ if(string.IsNullOrWhiteSpace(line)||line.StartsWith("#")||line.StartsWith("profile,"))continue;
+ var fields=line.Split(',');if(fields.Length!=3)throw new System.Exception("Invalid loadout row: "+line);
+ if(fields[0]!="none"&&fields[0]!="final_day11_melee")continue;
+ var parts=new System.Collections.Generic.List<UpgradePartSO>();
+ foreach(string asset in fields[1].Split(';')){if(string.IsNullOrWhiteSpace(asset))continue;var part=UnityEditor.AssetDatabase.LoadAssetAtPath<UpgradePartSO>("Assets/GearCraft/ScriptableObject/UpgradeParts/"+asset.Trim()+".asset");if(part==null)throw new System.Exception("Part missing: "+asset);parts.Add(part);}
+ punkProfiles.Add(fields[0],parts);punkModuleDamage.Add(fields[0],int.Parse(fields[2]));
+}
+if(!punkProfiles.ContainsKey("none")||!punkProfiles.ContainsKey("final_day11_melee"))throw new System.Exception("Required loadout profiles missing");
+string punkStatusBefore=JsonUtility.ToJson(punkStatus);bool punkPlayerEnabledBefore=punkPlayer.enabled;int punkSTRBefore=punkPlayer.STR,punkACCBefore=punkPlayer.ACC;
+var punkPlayerWeaponBefore=punkPlayer.currentWeapon;var punkArm=punkPlayer.armRotation;bool punkArmEnabledBefore=punkArm!=null&&punkArm.enabled;bool punkOriginalActiveBefore=punkOriginal.activeSelf;
+var punkCounter=StageCounter.Instance;int punkStageBefore=punkCounter!=null?punkCounter.StageCount:0;int punkScalingBefore=punkFlow.EnemyScalingStage;
+float punkScaleBefore=Time.timeScale,punkCaptureBefore=Time.captureDeltaTime,punkFixedBefore=Time.fixedDeltaTime;
+int punkVsyncBefore=QualitySettings.vSyncCount,punkTargetBefore=Application.targetFrameRate;bool punkBackgroundBefore=Application.runInBackground;
+Vector3 punkSourceScale=punkOriginal.transform.lossyScale;
+int[] punkSTRValues={2,2,20,20};string[] punkProfileNames={"none","final_day11_melee","none","final_day11_melee"};
+int punkCase=0,punkPhase=0,punkPhaseFrame=0,punkLastFrame=-1,punkMeasureFrame=0,punkNextProgressFrame=0,punkDamageEvents=0;
+float punkInitialHP=0f,punkMeasureTime=0f;double punkEventDamage=0.0;bool punkDone=false;
+double punkStarted=UnityEditor.EditorApplication.timeSinceStartup,punkLastAdvanced=punkStarted;
+GameObject punkClone=null,punkTargetObject=null;PunkDriveManager punkManager=null;EnemyController punkEnemy=null;System.Action<float> punkDamageHandler=null;
+UnityEditor.EditorApplication.CallbackFunction punkTick=null;
+var punkInvariant=System.Globalization.CultureInfo.InvariantCulture;
+System.Func<float,string> punkFmt=value=>value.ToString("R",punkInvariant);
+System.IO.File.WriteAllText(punkCsv,"case,profile,STR,frames,game_seconds,native_damage_events,event_damage,event_dps,hp_damage,hp_dps,cached_STR,part_count,flat_damage,attack_speed,bullet_double,spread_modifier,ricochet,bullet_size,module_damage\n");
+System.IO.File.WriteAllText(punkFolder+"punk-upgrade-loadout-effects.csv","case,profile,part_index,asset,part_name,ranged_only,applied,effect_type,value\n");
+System.IO.File.WriteAllText(punkResult,"Native PunkDrive upgrade calibration: STR2/STR20 x none/final_day11_melee, 10 game seconds each at captureDeltaTime=1/60. Main attacks disabled; native colliders/DamageLoop/EnemyController.TakeDamage only. Native Start captures STR after actual StatusManager.RecalculateUpgradeEffects(parts).\n"+
+ "Damage from EnemyController.Damaged event is summed in double precision; HP subtraction is also logged but can show float rounding on the high-HP target. No artificial damage is injected. Target AI/Start disabled, position frozen, original layers retained, temporary clone HitEffect disabled.\n"+
+ "This verifies Punk's scaling with the real part effects; it is a controlled single-contact calibration, not a weapon route or survival test.\n"+
+ "source_damage="+punkFmt((float)typeof(PunkDriveManager).GetField("damageAmount",punkFlags).GetValue(punkSource))+" source_interval="+punkFmt((float)typeof(PunkDriveManager).GetField("damageInterval",punkFlags).GetValue(punkSource))+" original_fixed_delta="+punkFmt(punkFixedBefore)+" stage="+punkStageBefore+" scaling="+punkScalingBefore+"\n");
+System.Action<string> punkLog=line=>System.IO.File.AppendAllText(punkResult,line+"\n");
+System.Action punkDestroyCase=()=>{
+ if(punkEnemy!=null&&punkDamageHandler!=null)punkEnemy.Damaged-=punkDamageHandler;
+ if(punkClone!=null){punkClone.SetActive(false);UnityEngine.Object.Destroy(punkClone);}
+ if(punkTargetObject!=null){punkTargetObject.SetActive(false);UnityEngine.Object.Destroy(punkTargetObject);}
+ punkClone=null;punkTargetObject=null;punkManager=null;punkEnemy=null;punkDamageHandler=null;
+};
+System.Action<bool,string> punkFinish=(passed,reason)=>{
+ if(punkDone)return;punkDone=true;UnityEditor.EditorApplication.update-=punkTick;punkDestroyCase();
+ if(punkStatus!=null)JsonUtility.FromJsonOverwrite(punkStatusBefore,punkStatus);
+ if(punkPlayer!=null){punkPlayer.STR=punkSTRBefore;punkPlayer.ACC=punkACCBefore;punkPlayer.currentWeapon=punkPlayerWeaponBefore;punkPlayer.enabled=punkPlayerEnabledBefore;}
+ if(punkArm!=null)punkArm.enabled=punkArmEnabledBefore;if(punkOriginal!=null)punkOriginal.SetActive(punkOriginalActiveBefore);
+ if(punkCounter!=null)punkCounter.StageCount=punkStageBefore;
+ if(punkFlow!=null)typeof(StageFlowManager).GetProperty("EnemyScalingStage",punkFlags).SetValue(punkFlow,punkScalingBefore,null);
+ Time.captureDeltaTime=punkCaptureBefore;Time.timeScale=punkScaleBefore;Time.fixedDeltaTime=punkFixedBefore;QualitySettings.vSyncCount=punkVsyncBefore;Application.targetFrameRate=punkTargetBefore;Application.runInBackground=punkBackgroundBefore;
+ bool statusRestored=punkStatus!=null&&JsonUtility.ToJson(punkStatus)==punkStatusBefore;
+ string text=(passed&&statusRestored?"COMPLETE ":"FAILED ")+reason+"; status/parts_restored="+statusRestored+"; runtime settings restored, Play remains active";
+ punkLog(text);System.IO.File.WriteAllText(punkProgress,text+"\n");
+};
+punkPlayer.enabled=false;if(punkArm!=null)punkArm.enabled=false;punkOriginal.SetActive(false);
+Time.timeScale=1f;Time.captureDeltaTime=1f/60f;QualitySettings.vSyncCount=0;Application.targetFrameRate=-1;Application.runInBackground=true;
+System.IO.File.WriteAllText(punkProgress,"RUNNING preparing\n");
+punkTick=()=>{try{
+ double now=UnityEditor.EditorApplication.timeSinceStartup;
+ if(!Application.isPlaying){punkFinish(false,"Play stopped");return;}if(System.IO.File.Exists(punkCancel)){punkFinish(false,"Cancelled by sentinel");return;}
+ if(now-punkStarted>240.0)throw new System.Exception("240 second wall watchdog");
+ if(Time.frameCount==punkLastFrame){if(now-punkLastAdvanced>30.0)throw new System.Exception("No game frames for 30 seconds");return;}
+ punkLastFrame=Time.frameCount;punkLastAdvanced=now;
+ if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name!="Main"||punkPlayer==null||punkOriginal==null)throw new System.Exception("Native Main/player lost");
+ if(punkFlow.IsStageActive)throw new System.Exception("Native progression unexpectedly resumed");
+ string profile=punkProfileNames[punkCase];string caseName="STR"+punkSTRValues[punkCase]+"_"+profile;
+ if(punkPhase==0){
+  JsonUtility.FromJsonOverwrite(punkStatusBefore,punkStatus);
+  punkStatus.currentWeapon=punkWeapon;punkPlayer.currentWeapon=punkWeapon;punkStatus.STR=punkPlayer.STR=punkSTRValues[punkCase];punkStatus.ACC=punkPlayer.ACC=punkSTRValues[punkCase];
+  punkStatus.craftWeaponDamagebuff=punkModuleDamage[profile];punkStatus.punkDrive=true;punkStatus.RecalculateUpgradeEffects(punkProfiles[profile]);
+  int partIndex=0;foreach(var part in punkProfiles[profile]){if(part.effects!=null)foreach(var effect in part.effects){if(effect==null)continue;System.IO.File.AppendAllText(punkFolder+"punk-upgrade-loadout-effects.csv",string.Join(",",new[]{caseName,profile,partIndex.ToString(),part.name,(part.partName??"").Replace(",",";"),part.rangedOnly.ToString(),(!part.rangedOnly).ToString(),effect.type.ToString(),punkFmt(effect.value)})+"\n");}partIndex++;}
+  var arena=new Vector3(1000f+punkCase*30f,1000f,0f);punkClone=UnityEngine.Object.Instantiate(punkOriginal,arena,Quaternion.identity);punkClone.name="QA_PunkUpgrade_"+caseName;punkClone.transform.SetParent(null,true);punkClone.transform.localScale=punkSourceScale;
+  punkManager=punkClone.GetComponent<PunkDriveManager>();punkManager.HitEffect=null;
+  // Original is inactive, so Start has not run on the clone. STR and actual parts are already set.
+  punkClone.SetActive(true);punkPhase=1;punkPhaseFrame=Time.frameCount;System.IO.File.WriteAllText(punkProgress,"RUNNING "+caseName+" warming native Start\n");return;
+ }
+ if(punkPhase==1){
+  if(Time.frameCount-punkPhaseFrame<5)return;
+  float cached=(float)punkCachedSTR.GetValue(punkManager);if(cached!=punkSTRValues[punkCase])throw new System.Exception("Native Start STR mismatch: "+cached);
+  punkTargetObject=UnityEngine.Object.Instantiate(punkEnemyPrefab,punkClone.transform.position,Quaternion.identity);punkTargetObject.name="QA_PunkUpgrade_G1";punkEnemy=punkTargetObject.GetComponent<EnemyController>();
+  punkEnemy.enabled=false;punkEnemy.HP=1000000f;typeof(EnemyController).GetField("galleryEncounterRecorded",punkFlags).SetValue(punkEnemy,true);
+  punkDamageHandler=amount=>{if(punkPhase==3){punkEventDamage+=(double)amount;punkDamageEvents++;}};punkEnemy.Damaged+=punkDamageHandler;
+  var body=punkTargetObject.GetComponent<Rigidbody2D>();body.gravityScale=0f;body.constraints=RigidbodyConstraints2D.FreezeAll;body.linearVelocity=Vector2.zero;body.angularVelocity=0f;body.simulated=true;body.WakeUp();Physics2D.SyncTransforms();
+  punkPhase=2;punkPhaseFrame=Time.frameCount;return;
+ }
+ if(punkPhase==2){
+  var loops=(System.Collections.IDictionary)punkLoops.GetValue(punkManager);
+  if(loops.Count!=1){if(Time.frameCount-punkPhaseFrame>120)throw new System.Exception("Expected exactly one native damage coroutine, got "+loops.Count);return;}
+  punkInitialHP=punkEnemy.HP;punkMeasureFrame=Time.frameCount;punkMeasureTime=Time.time;punkNextProgressFrame=punkMeasureFrame+60;punkEventDamage=0.0;punkDamageEvents=0;punkPhase=3;
+  punkLog("START "+caseName+" cachedSTR="+punkCachedSTR.GetValue(punkManager)+" flat="+punkFmt(punkStatus.bonusDamage)+" attackSpeed="+punkFmt(punkStatus.attackSpeedMult)+" partCount="+punkProfiles[profile].Count);return;
+ }
+ if(punkPhase==3){
+  int frames=Time.frameCount-punkMeasureFrame;
+  if(Time.frameCount>=punkNextProgressFrame){System.IO.File.WriteAllText(punkProgress,"RUNNING "+caseName+" frames="+frames+"/600 nativeEventDamage="+punkEventDamage.ToString("F6",punkInvariant)+"\n");punkNextProgressFrame=Time.frameCount+60;}
+  if(frames<600)return;
+  float elapsed=Time.time-punkMeasureTime;float hpDamage=punkInitialHP-punkEnemy.HP;float cached=(float)punkCachedSTR.GetValue(punkManager);
+  var values=new[]{caseName,profile,punkSTRValues[punkCase].ToString(),frames.ToString(),punkFmt(elapsed),punkDamageEvents.ToString(),punkEventDamage.ToString("F6",punkInvariant),(punkEventDamage/elapsed).ToString("F6",punkInvariant),punkFmt(hpDamage),punkFmt(hpDamage/elapsed),punkFmt(cached),punkProfiles[profile].Count.ToString(),punkFmt(punkStatus.bonusDamage),punkFmt(punkStatus.attackSpeedMult),punkStatus.hasBulletDouble.ToString(),punkFmt(punkStatus.spreadModifier),punkStatus.ricochetCount.ToString(),punkFmt(punkStatus.bulletSizeMult),punkStatus.craftWeaponDamagebuff.ToString()};
+  System.IO.File.AppendAllText(punkCsv,string.Join(",",values)+"\n");punkLog("RESULT "+string.Join(",",values));
+  if(cached!=punkSTRValues[punkCase]||punkDamageEvents<=0||punkEventDamage<=0.0||punkEnemy.HP<=0)throw new System.Exception("Native Punk calibration failed validity checks");
+  punkDestroyCase();punkCase++;if(punkCase>=punkSTRValues.Length){punkFinish(true,"Four native collision cases recorded");return;}punkPhase=0;
+ }
+}catch(System.Exception ex){punkFinish(false,ex.ToString());}};
+UnityEditor.EditorApplication.update+=punkTick;
+return "Prepared Punk upgrade calibration: 4 x 10 game seconds; progress="+punkProgress;

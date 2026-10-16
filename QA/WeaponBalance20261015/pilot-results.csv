@@ -1,0 +1,6 @@
+id,weapon,stage,day,profile,seed,result,seconds,scheduled_spawned,total_including_summons,killed,escaped_or_suicided,remaining,damage,shots,player_damage,gate_damage,boss_name,boss_seconds,boss_remaining_hp,average_game_dt,frames
+pilot_gear_ic,GearCraft,9,3,common,77,cleared,153.567,0,1,1,0,0,13600.00,246,5.00,580.00,IC-408,152.550,0.00,0.016667,9214
+pilot_cannon_bb,SteamCannon,18,6,common,77,cleared,108.033,0,19,5,14,0,13010.40,108,120.00,2510.00,BB-413,107.017,0.00,0.016668,6482
+pilot_thrower_bb,SteamThrower,18,6,common,77,cleared,134.683,0,19,19,0,0,13046.79,1604,300.00,3300.00,BB-413,133.667,0.00,0.016668,8081
+pilot_rail_ek,RailCraft,31,11,common,77,timeout,180.000,0,1,0,0,1,15570.00,90,1258.00,2720.00,EK-9,179.983,33630.00,0.016667,10800
+pilot_gatling_ek,SteamGatling,31,11,common,77,timeout,180.000,0,1,0,0,1,11599.41,5400,1294.00,2820.00,EK-9,179.983,37600.59,0.016667,10800

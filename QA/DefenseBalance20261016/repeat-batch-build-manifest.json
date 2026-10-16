@@ -1,0 +1,152 @@
+{
+  "generated_utc": "2026-10-16T03:23:41.188881+00:00",
+  "output": "BatchDefenseRepeat.cs.txt",
+  "output_sha256": "045de33106f10d172f0719d376a531e7c5bb3153a8a6da495038fb1ac60b0a35",
+  "cases": "repeat-cases.csv",
+  "case_count": 21,
+  "seed_repeat_count": 20,
+  "seeds": [
+    101,
+    202
+  ],
+  "posture_probe_seed": 77,
+  "source_sha256": {
+    "NativeSurvivalBootstrap.cs.txt": "38fbb8cf679d4fa1e6a02592b9f59bd9f5ed8e210b5943fc9649648a481f9484",
+    "ReactiveGateSurvivalRoute.cs.txt": "cd5be87ab32620c92d9c5a985acfd21164f49a2043c445222e72d554b3e8d36c",
+    "BatchDefense.template.cs.txt": "87e1cf65e130ec9c68dbebed3b09eeea854cd1cccaba0669fd8d46ab1b407e5d",
+    "batch-cases.csv": "7970438534bde9f5625308c83a83b31d74017097b31a0af0ba80e0753a587e55",
+    "repeat-cases.csv": "0f1c5ea10760aa63f5f083eb8f0d28b2926987b33c7f2d97804c137ab1caf95e"
+  },
+  "protected_unchanged_sha256": {
+    "BatchDefense.cs.txt": "5f87289526665e9f6109df16674c8d249030d4b509c3189a8c123999bec57753",
+    "batch-build-manifest.json": "2413aa64f3530b01645ab3e25a0e5a7a3033f3353c186a63a3b4c7f487e64097",
+    "BatchDefense.template.cs.txt": "87e1cf65e130ec9c68dbebed3b09eeea854cd1cccaba0669fd8d46ab1b407e5d",
+    "NativeSurvivalBootstrap.cs.txt": "38fbb8cf679d4fa1e6a02592b9f59bd9f5ed8e210b5943fc9649648a481f9484",
+    "ReactiveGateSurvivalRoute.cs.txt": "cd5be87ab32620c92d9c5a985acfd21164f49a2043c445222e72d554b3e8d36c",
+    "batch-cases.csv": "7970438534bde9f5625308c83a83b31d74017097b31a0af0ba80e0753a587e55",
+    "progression-cases.csv": "0f93a79d9bd86ba38001997d0de24550e3428b5a2e214144948e44cc56ec9bf5",
+    "execution-cases.json": "3e0cdc4e88fcb926c41bd67080a192ae6b515068639f4db1f2a713ff61c21107",
+    "build_batch.py": "30a0a7a5499d71de553a435c078de3c12c810a3ff5544140146bc677332acd22",
+    "ReactiveGateSpeedSurvivalRoute.cs.txt": "44fd5bb67fbc00a8af1e462101a374c1ff5bb59bc6f4bc7a6d11c47c75995fa1",
+    "BatchDefenseSensitivity.cs.txt": "c42d41c252a47a1fa092b8c8671cf45a699505d84210fd450e82477adb147da9",
+    "sensitivity-batch-build-manifest.json": "d16198b395bfce9383271b69fd2d73f5c838a52331e2f394e401c70369c7152b",
+    "sensitivity-cases.csv": "b65d8dfe1959d861f75c21c286f02389ded0294ae20e66dde445cf5612fd5cd3"
+  },
+  "condition_changes": "First20: only seed/label suffix differ; last1: EK GearCraft seed77 build, suppress auto-jump only against Boss_Final/Tank. Gear0 / BOOST2 unchanged for all21",
+  "primary_case_links": [
+    {
+      "label": "gate_AR227_GearCraft_seed101",
+      "primary_label": "gate_AR227_GearCraft_seed77",
+      "seed": 101
+    },
+    {
+      "label": "gate_AR227_SteamCannon_seed101",
+      "primary_label": "gate_AR227_SteamCannon_seed77",
+      "seed": 101
+    },
+    {
+      "label": "gate_AR227_SteamThrower_seed101",
+      "primary_label": "gate_AR227_SteamThrower_seed77",
+      "seed": 101
+    },
+    {
+      "label": "gate_AR227_RailCraft_seed101",
+      "primary_label": "gate_AR227_RailCraft_seed77",
+      "seed": 101
+    },
+    {
+      "label": "gate_AR227_SteamGatling_seed101",
+      "primary_label": "gate_AR227_SteamGatling_seed77",
+      "seed": 101
+    },
+    {
+      "label": "gate_EK9_GearCraft_seed101",
+      "primary_label": "gate_EK9_GearCraft_seed77",
+      "seed": 101
+    },
+    {
+      "label": "gate_EK9_SteamCannon_seed101",
+      "primary_label": "gate_EK9_SteamCannon_seed77",
+      "seed": 101
+    },
+    {
+      "label": "gate_EK9_SteamThrower_seed101",
+      "primary_label": "gate_EK9_SteamThrower_seed77",
+      "seed": 101
+    },
+    {
+      "label": "gate_EK9_RailCraft_seed101",
+      "primary_label": "gate_EK9_RailCraft_seed77",
+      "seed": 101
+    },
+    {
+      "label": "gate_EK9_SteamGatling_seed101",
+      "primary_label": "gate_EK9_SteamGatling_seed77",
+      "seed": 101
+    },
+    {
+      "label": "gate_AR227_GearCraft_seed202",
+      "primary_label": "gate_AR227_GearCraft_seed77",
+      "seed": 202
+    },
+    {
+      "label": "gate_AR227_SteamCannon_seed202",
+      "primary_label": "gate_AR227_SteamCannon_seed77",
+      "seed": 202
+    },
+    {
+      "label": "gate_AR227_SteamThrower_seed202",
+      "primary_label": "gate_AR227_SteamThrower_seed77",
+      "seed": 202
+    },
+    {
+      "label": "gate_AR227_RailCraft_seed202",
+      "primary_label": "gate_AR227_RailCraft_seed77",
+      "seed": 202
+    },
+    {
+      "label": "gate_AR227_SteamGatling_seed202",
+      "primary_label": "gate_AR227_SteamGatling_seed77",
+      "seed": 202
+    },
+    {
+      "label": "gate_EK9_GearCraft_seed202",
+      "primary_label": "gate_EK9_GearCraft_seed77",
+      "seed": 202
+    },
+    {
+      "label": "gate_EK9_SteamCannon_seed202",
+      "primary_label": "gate_EK9_SteamCannon_seed77",
+      "seed": 202
+    },
+    {
+      "label": "gate_EK9_SteamThrower_seed202",
+      "primary_label": "gate_EK9_SteamThrower_seed77",
+      "seed": 202
+    },
+    {
+      "label": "gate_EK9_RailCraft_seed202",
+      "primary_label": "gate_EK9_RailCraft_seed77",
+      "seed": 202
+    },
+    {
+      "label": "gate_EK9_SteamGatling_seed202",
+      "primary_label": "gate_EK9_SteamGatling_seed77",
+      "seed": 202
+    },
+    {
+      "label": "gate_EK9_GearCraft_grounded_seed77",
+      "primary_label": "gate_EK9_GearCraft_seed77",
+      "seed": 77,
+      "condition": "Only giant ground-boss auto-jump suppressed; not a seed repeat"
+    }
+  ],
+  "transformations": [
+    "Native cleanup hooks and continuous-Play handoff identical to primary generator",
+    "Generated output only: validate initial Gear0 and log repeat_condition_validated before route",
+    "Generated route only: label.Contains(_grounded_) suppresses Boss_Final/Tank auto-jump; original normal jump condition retained verbatim",
+    "Grounded case only: append posture metadata and posture_condition event"
+  ],
+  "runtime_verification": "Pending root Unity compile and execution; no MCP used",
+  "primary_manifest_handling": "Main generator main() not called; primary runner and manifest were never written"
+}

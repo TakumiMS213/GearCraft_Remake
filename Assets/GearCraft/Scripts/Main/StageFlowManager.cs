@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
+using GearCraft.Scripts.Items;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
@@ -12,6 +14,7 @@ using UnityEngine.UI;
 public class StageFlowManager : MonoBehaviour
 {
     private const string OpeningNoticeSeenKey = "GearCraft.Main.OpeningNotice.Seen.v1";
+    private const float DayEndPickupSeconds = 0.65f;
 
     public static StageFlowManager Instance { get; private set; }
 
@@ -48,12 +51,13 @@ public class StageFlowManager : MonoBehaviour
     private bool finalBossDefeated;
     private bool dayRetryTriggered;
     private bool isOpeningNoticeShowing;
+    private bool isCollectingRemainingMaterials;
     private static int playerInputBlockedFrame = -1;
     private DayStartSnapshot dayStartSnapshot;
 
     public bool IsStageActive { get; private set; }
     public int EnemyScalingStage { get; private set; } = 1;
-    public bool IsBlockingGameplayUI => isOpeningNoticeShowing ||
+    public bool IsBlockingGameplayUI => isOpeningNoticeShowing || isCollectingRemainingMaterials ||
         (bonusCardsManager != null && bonusCardsManager.IsChoosingReward) ||
         (restResultReportUI != null && restResultReportUI.IsShowing);
     public static bool IsPlayerInputBlocked => Time.timeScale <= 0f ||
@@ -213,6 +217,15 @@ public class StageFlowManager : MonoBehaviour
             ShowPerfect();
         }
 
+        bool willReturnToRest = stageConfig != null &&
+            stageConfig.stagesPerRest > 0 &&
+            stagesSinceRest + 1 >= stageConfig.stagesPerRest;
+        bool isFinalStage = stageConfig != null && stageConfig.IsFinalStage(currentStage);
+        if ((willReturnToRest || isFinalStage) && !dayRetryTriggered && !EndingManager.IsLoadingEnding)
+        {
+            await CollectRemainingMaterialsAsync(cancellationToken);
+        }
+
         bool completedBossStage = stageConfig != null && stageConfig.IsBossStage(currentStage);
         if (completedBossStage && StatusManager.Instance != null)
         {
@@ -238,15 +251,11 @@ public class StageFlowManager : MonoBehaviour
             StatusManager.Instance.HP = Mathf.Min(100, StatusManager.Instance.HP + 20);
         }
 
-        if (stageConfig != null && stageConfig.IsFinalStage(currentStage))
+        if (isFinalStage)
         {
             await HandleGameClearAsync();
             return;
         }
-
-        bool willReturnToRest = stageConfig != null &&
-            stageConfig.stagesPerRest > 0 &&
-            stagesSinceRest + 1 >= stageConfig.stagesPerRest;
 
         if (!willReturnToRest && bonusCardsManager != null)
         {
@@ -284,6 +293,30 @@ public class StageFlowManager : MonoBehaviour
         gateWasHit = false;
         await UniTask.Delay(TimeSpan.FromSeconds(1f), cancellationToken: cancellationToken);
         StartNextStage();
+    }
+
+    private async UniTask CollectRemainingMaterialsAsync(CancellationToken cancellationToken)
+    {
+        GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
+        if (playerObject == null) return;
+        var remaining = new List<DroppedMaterialItem>();
+        foreach (DroppedMaterialItem item in FindObjectsByType<DroppedMaterialItem>(FindObjectsSortMode.None))
+            if (item.gameObject.scene == gameObject.scene && !item.IsPickupComplete) remaining.Add(item);
+        if (remaining.Count == 0) return;
+
+        isCollectingRemainingMaterials = true;
+        try
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            foreach (DroppedMaterialItem item in remaining)
+                item.CollectAtDayEnd(playerObject.transform, DayEndPickupSeconds);
+            await UniTask.WaitUntil(() => remaining.TrueForAll(item => item == null || item.IsPickupComplete),
+                cancellationToken: cancellationToken);
+        }
+        finally
+        {
+            isCollectingRemainingMaterials = false;
+        }
     }
 
     private async UniTask ShowRestResultReportAsync()

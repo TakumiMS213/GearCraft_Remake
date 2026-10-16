@@ -1,0 +1,1 @@
+2 original preferences verified after Play exit; playing=False; scene=Assets/GearCraft/Scenes/Title.unity

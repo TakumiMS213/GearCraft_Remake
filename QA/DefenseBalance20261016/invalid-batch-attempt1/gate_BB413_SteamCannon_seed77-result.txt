@@ -1,0 +1,17 @@
+result=failed_Native managers disappeared before scene transition
+start_hp=100
+start_gate=100
+end_hp=100
+end_gate=100
+start_stage=16
+last_stage=16
+completed_native_waves=0
+rewards_selected=0
+game_seconds=1.000
+wall_seconds=0.541
+shots=0
+attack_events=0
+player_damage=0.00
+gate_damage=0.00
+player_healed=0.00
+gate_healed=0.00

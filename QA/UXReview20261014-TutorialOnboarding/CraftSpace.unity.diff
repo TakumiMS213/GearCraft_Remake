@@ -1,0 +1,15 @@
+diff --git a/Assets/GearCraft/Scenes/CraftSpace.unity b/Assets/GearCraft/Scenes/CraftSpace.unity
+index c401768..ceb204e 100644
+--- a/Assets/GearCraft/Scenes/CraftSpace.unity
++++ b/Assets/GearCraft/Scenes/CraftSpace.unity
+@@ -3196,8 +3196,8 @@ MonoBehaviour:
+   modalLayerStart: {fileID: 1387623691}
+   sleepTask: "\u30D9\u30C3\u30C9\u3067\u7720\u3063\u3066\u660E\u65E5\u306B\u5099\u3048\u308B"
+   defenseTask: "\u9580\u306E\u9632\u885B\u3092\u7D9A\u3051\u308B"
+-  craftTask: "\u4F5C\u696D\u53F0\u3067CRAFT\u3092\u884C\u3046"
+-  upgradeTask: "\u4F5C\u696D\u53F0\u3067\u6B66\u5668\u306E\u30A2\u30C3\u30D7\u30B0\u30EC\u30FC\u30C9\u3092\u884C\u3046"
++  craftTask: "作業台で新しい装備を作る"
++  upgradeTask: "作業台で武器の性能を高める"
+   panelWidth: 670
+   fontSize: 28
+   bedGuideSprite: {fileID: -765150924802650856, guid: 50a53fff82e384e2bb9a5a90ea3a7c95, type: 3}

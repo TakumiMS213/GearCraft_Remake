@@ -1,0 +1,266 @@
+// C#6 execute_code body. Runtime native combat benchmark; no scene/asset save.
+// Scene progression is paused; native EnemySpawner planning methods build a seeded, fixed spawn replay; AI/bullet/weapon collision code remains native.
+// Survival is measured as damage taken but HP/gate are replenished each frame, so completion is NOT proof of human clearability.
+const string folder="QA/WeaponTargetBalance20261015/";
+if(!Application.isPlaying || UnityEngine.SceneManagement.SceneManager.GetActiveScene().name!="Main")throw new System.Exception("Main Play required");
+var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Public;
+var flow=StageFlowManager.Instance;var status=StatusManager.Instance;var player=UnityEngine.Object.FindFirstObjectByType<PlayerController>();
+if(flow==null||status==null||player==null)throw new System.Exception("Native managers required");
+var spawner=flow.enemySpawner;var mover=spawner.GetComponent<LoopMover>();var arm=player.armRotation;var body=player.GetComponent<Rigidbody2D>();
+var playerCollider=player.GetComponent<Collider2D>();var enemyList=(System.Collections.Generic.List<EnemyController>)typeof(StageFlowManager).GetField("activeEnemies",flags).GetValue(flow);
+var oldStatus=JsonUtility.ToJson(status);bool oldEnabled=player.enabled;bool oldArmEnabled=arm.enabled;var oldPos=player.transform.position;
+float oldCapture=Time.captureDeltaTime;float oldScale=Time.timeScale;int oldVSync=QualitySettings.vSyncCount;int oldTarget=Application.targetFrameRate;bool oldBackground=Application.runInBackground;
+var coolTimeField=typeof(PlayerController).GetField("coolTime",flags);
+var coolTimeUpdate=typeof(PlayerController).GetMethod("CoolTimeUpdate",flags);
+if(coolTimeField==null||coolTimeUpdate==null)throw new System.Exception("Native cooldown members missing");
+float oldCoolTime=(float)coolTimeField.GetValue(player);
+var staticFlags=System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Public;
+var calculateSpread=typeof(PlayerController).GetMethod("CalculateSpreadAngle",staticFlags);
+var getBulletSpeed=typeof(PlayerController).GetMethod("GetCurrentBulletSpeed",flags);
+var getMuzzle=typeof(PlayerController).GetMethod("GetMuzzlePosition",flags);
+var lineAttack=typeof(PlayerController).GetMethod("PerformLineHitboxAttack",flags);
+var gatlingRecoil=typeof(PlayerController).GetMethod("ApplySteamGatlingDownwardRecoil",flags);
+if(calculateSpread==null||getBulletSpeed==null||getMuzzle==null||lineAttack==null||gatlingRecoil==null)throw new System.Exception("Native shot methods missing");
+if(player.runtimeStatus!=status)throw new System.Exception("Player Start has not bound runtime StatusManager");
+var configure=typeof(PlayerController).GetMethod("ConfigureSpawnedProjectile",flags);var sync=typeof(PlayerController).GetMethod("SyncWeaponFromStatus",flags);
+var meleeAttack=typeof(PlayerController).GetMethod("PerformMeleeAttack",flags);var updateAnim=typeof(PlayerController).GetMethod("UpdateArmAnimation",flags);
+var damageField=typeof(PlayerController).GetField("currentDamage",flags);var poseMethod=typeof(ArmRotation).GetMethod("GetPoseIndex",flags);var offsetMethod=typeof(ArmRotation).GetMethod("GetOffset",flags);var scaleMethod=typeof(ArmRotation).GetMethod("GetScale",flags);
+var sourceLines=System.IO.File.ReadAllLines(folder+"cases.csv").Where(x=>!string.IsNullOrWhiteSpace(x)&&!x.StartsWith("#")&&!x.StartsWith("id,")).ToArray();
+var profileParts=new System.Collections.Generic.Dictionary<string,System.Collections.Generic.List<UpgradePartSO>>();
+var profileModules=new System.Collections.Generic.Dictionary<string,int>();
+foreach(var line in System.IO.File.ReadAllLines(folder+"loadouts.csv")){
+ if(string.IsNullOrWhiteSpace(line)||line.StartsWith("#")||line.StartsWith("profile,"))continue;
+ var values=line.Split(',');if(values.Length!=3)throw new System.Exception("Invalid loadout row: "+line);
+ var parts=new System.Collections.Generic.List<UpgradePartSO>();
+ foreach(var assetName in values[1].Split(';')){
+  if(string.IsNullOrWhiteSpace(assetName))continue;
+  var part=UnityEditor.AssetDatabase.LoadAssetAtPath<UpgradePartSO>("Assets/GearCraft/ScriptableObject/UpgradeParts/"+assetName.Trim()+".asset");
+  if(part==null)throw new System.Exception("Upgrade part not found: "+assetName);
+  parts.Add(part);
+ }
+ profileParts.Add(values[0],parts);profileModules.Add(values[0],int.Parse(values[2],System.Globalization.CultureInfo.InvariantCulture));
+}
+foreach(var line in sourceLines){var values=line.Split(',');if(values.Length<6||!profileParts.ContainsKey(values[3]))throw new System.Exception("Case references invalid profile: "+line);}
+string label=System.IO.File.ReadAllText(folder+"batch-name.txt").Trim();string output=folder+label+"-results.csv";string progress=folder+"benchmark-progress.txt";
+if(System.IO.File.Exists(progress)&&System.IO.File.ReadAllText(progress).StartsWith("RUNNING"))throw new System.Exception("Existing benchmark running");
+System.IO.File.WriteAllText(output,"id,weapon,stage,day,profile,seed,result,seconds,total_including_summons,killed,escaped_or_suicided,remaining,damage,shots,player_damage,gate_damage,boss_name,boss_seconds,boss_remaining_hp,average_game_dt,frames,scheduled_count,scheduled_killed,scheduled_escaped,scheduled_remaining,attack_events\n");
+System.IO.File.WriteAllText(folder+label+"-spawns.csv","case,elapsed,name,maxhp,x,y,last\n");
+System.IO.File.WriteAllText(folder+label+"-boss-states.csv","case,elapsed,hp,state,phase,player_x,player_y,boss_x,attack_events,player_damage,gate_damage\n");
+string observedBossState="";float lastBossSample=-1f;
+var bossScreenshotStates=new System.Collections.Generic.HashSet<string>();
+System.IO.File.WriteAllText(folder+label+"-spawn-plan.csv","case,stage,seed,index,scheduled_elapsed,name,last\n");
+System.IO.File.WriteAllText(folder+label+"-scheduled-spawns.csv","case,index,scheduled_elapsed,actual_elapsed,name,x,y,last\n");
+System.IO.File.WriteAllText(folder+label+"-meta.txt","Native EnemySpawner planning methods generate a seeded fixed spawn replay using native prefabs/AI/physics and 1/60 game delta. Physics step unchanged. Actual spawn time/position recorded separately. Bot controls movement/aim; aim compensates muzzleOffset. HP/GATE replenished each frame, so these are offensive throughput tests, not human ordinary clear times or survival proofs. Each wave resets. STR=ACC=2*(day-1), no unique reward cards, no PunkDrive, no BOOST. Upgrade effects are read from actual UpgradePartSO assets and applied through StatusManager.RecalculateUpgradeEffects(parts), with no direct fixed bonusDamage assignment. moduleDamage is separate crafted module damage. Native spread/muzzle/speed/configuration/line-hit/recoil methods are invoked; double-shot duplicates the native branch. Cooldown uses the native private timer and one CoolTimeUpdate call after each game frame including no-target frames; shots counts projectiles (or melee/line attacks), attack_events counts attacks. Original PlayerPrefs are not restored by this script; root restoration is required after all tests. No crafting/ED time counted.\n");
+System.IO.File.WriteAllText(folder+label+"-loadout-effects.csv","case,weapon,profile,part_index,asset,part_name,ranged_only,applied,effect_type,value\n");
+System.IO.File.WriteAllText(folder+label+"-loadout-stats.csv","case,weapon,profile,STR,ACC,base_damage,damage_per_hit,flat_damage,module_damage,cooldown_multiplier,double_shot,spread_modifier,ricochet,bullet_size,junk_collector,magnet_range,base_spread,effective_spread,bullet_speed\n");
+System.Func<float,string> fmt=x=>x.ToString("R",System.Globalization.CultureInfo.InvariantCulture);
+
+var scheduledEnemies=new System.Collections.Generic.HashSet<EnemyController>();var tracked=new System.Collections.Generic.List<EnemyController>();var maxHps=new System.Collections.Generic.Dictionary<EnemyController,float>();var deadSeen=new System.Collections.Generic.HashSet<EnemyController>();
+int index=-1,phase=0,lastFrame=-1,shots=0,frames=0,attackEvents=0;float started=0f,waitUntil=0f,lastProgress=0f,playerDamage=0f,gateDamage=0f,dtSum=0f,nextJump=0f;
+float bossStarted=-1f,bossEnded=-1f;EnemyController boss=null;bool sawLast=false,done=false;string[] row=null;string weaponName="";int stage=0,seed=0,day=0;float maxSeconds=0f;
+WeaponDataSO mainWeapon=null,sword=null,axe=null;UnityEngine.Random.State aimRandom=UnityEngine.Random.state;double wallStarted=UnityEditor.EditorApplication.timeSinceStartup,lastFrameAt=wallStarted;
+var sequenceMethod=typeof(EnemySpawner).GetMethod("BuildNormalEnemySequence",flags);
+var groupMethod=typeof(EnemySpawner).GetMethod("BuildSpawnGroup",flags);
+var groupedMethod=typeof(EnemySpawner).GetMethod("ShouldUseGroupedNormalSpawn",flags);
+var groupDelayMethod=typeof(EnemySpawner).GetMethod("GetGroupSpawnDelay",System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.NonPublic);
+var warningMethod=typeof(EnemySpawner).GetMethod("ShowEmergencyWarningIfNeeded",flags);
+if(sequenceMethod==null||groupMethod==null||groupedMethod==null||groupDelayMethod==null||warningMethod==null)throw new System.Exception("Native spawn planning methods missing");
+var scheduledData=new System.Collections.Generic.List<EnemyDataSO>();var scheduledTimes=new System.Collections.Generic.List<float>();var scheduledLast=new System.Collections.Generic.List<bool>();int nextScheduled=0;
+System.Action buildScheduledSpawns=()=>{
+ scheduledData.Clear();scheduledTimes.Clear();scheduledLast.Clear();nextScheduled=0;
+ var config=flow.stageConfig;var plan=new StageSpawnPlanner(config).CreatePlan(stage);bool bossStage=config.IsBossStage(stage);
+ int scalingStage=flow.EnemyScalingStage;float interval=config.GetSpawnInterval(scalingStage);float difficulty=config.GetDifficulty(scalingStage);
+ int primaryCount=bossStage?plan.MinionCount:config.GetEnemyCount(scalingStage);
+ // Only these native planning calls consume the seeded spawn RNG. Combat cannot change later choices.
+ var sequence=(System.Collections.Generic.List<EnemyDataSO>)sequenceMethod.Invoke(spawner,new object[]{scalingStage,difficulty,primaryCount});
+ float cursor=0f;
+ for(int primaryIndex=0;primaryIndex<sequence.Count;primaryIndex++){
+  var primary=sequence[primaryIndex];bool grouped=(bool)groupedMethod.Invoke(spawner,new object[]{stage,primary});
+  var group=(System.Collections.Generic.List<EnemyDataSO>)groupMethod.Invoke(spawner,new object[]{primary,grouped});
+  for(int groupIndex=0;groupIndex<group.Count;groupIndex++){
+   if(groupIndex>0){float delay=(float)groupDelayMethod.Invoke(null,new object[]{group[groupIndex-1]});cursor+=(int)(delay*1000f)/1000f;}
+   var data=group[groupIndex];if(data==null||data.prefab==null)continue;
+   bool isLast=primaryIndex==sequence.Count-1&&groupIndex==group.Count-1&&(!bossStage||plan.MarkLastMinionAsStageEnd);
+   scheduledData.Add(data);scheduledTimes.Add(cursor);scheduledLast.Add(isLast);
+  }
+  // Native SpawnNormalStage/SpawnBossStage wait after every primary group, including the last.
+  cursor+=(int)(interval*1000f)/1000f;
+ }
+ if(bossStage&&plan.HasBoss){cursor+=2f;scheduledData.Add(plan.BossData);scheduledTimes.Add(cursor);scheduledLast.Add(true);}
+ for(int i=0;i<scheduledData.Count;i++)System.IO.File.AppendAllText(folder+label+"-spawn-plan.csv",row[0]+","+stage+","+seed+","+i+","+scheduledTimes[i].ToString("F6",System.Globalization.CultureInfo.InvariantCulture)+","+scheduledData[i].enemyName+","+scheduledLast[i]+"\n");
+ if(bossStage&&spawner.warning!=null)spawner.warning.SetActive(true);
+};
+System.Action replayScheduledSpawns=()=>{
+ while(nextScheduled<scheduledData.Count&&Time.time>=started+scheduledTimes[nextScheduled]){
+  int i=nextScheduled++;var data=scheduledData[i];warningMethod.Invoke(spawner,new object[]{data});
+  var position=spawner.transform.position;var go=UnityEngine.Object.Instantiate(data.prefab,position,Quaternion.identity);var ec=go.GetComponent<EnemyController>();
+  if(ec!=null){
+   ec.enemyData=data;ec.isLastEnemy=scheduledLast[i];tracked.Add(ec);scheduledEnemies.Add(ec);maxHps[ec]=data.baseHP*(1f+flow.EnemyScalingStage/10f);
+   System.IO.File.AppendAllText(folder+label+"-spawns.csv",row[0]+","+(Time.time-started).ToString("F3")+","+data.enemyName+","+maxHps[ec]+","+position.x.ToString("F2")+","+position.y.ToString("F2")+","+ec.isLastEnemy+"\n");
+   if(data.IsBossType){boss=ec;bossStarted=Time.time;}
+  }
+  System.IO.File.AppendAllText(folder+label+"-scheduled-spawns.csv",row[0]+","+i+","+scheduledTimes[i].ToString("F6",System.Globalization.CultureInfo.InvariantCulture)+","+(Time.time-started).ToString("F6",System.Globalization.CultureInfo.InvariantCulture)+","+data.enemyName+","+position.x.ToString("F3",System.Globalization.CultureInfo.InvariantCulture)+","+position.y.ToString("F3",System.Globalization.CultureInfo.InvariantCulture)+","+scheduledLast[i]+"\n");
+ }
+};
+UnityEditor.EditorApplication.CallbackFunction tick=null;
+System.Action cleanup=()=>{
+ scheduledData.Clear();scheduledTimes.Clear();scheduledLast.Clear();nextScheduled=0;
+ spawner.StopSpawning();foreach(var e in UnityEngine.Object.FindObjectsByType<EnemyController>(FindObjectsSortMode.None)){e.gameObject.SetActive(false);UnityEngine.Object.Destroy(e.gameObject);}
+ foreach(var b in UnityEngine.Object.FindObjectsByType<BulletController>(FindObjectsSortMode.None))UnityEngine.Object.Destroy(b.gameObject);
+ foreach(var b in UnityEngine.Object.FindObjectsByType<GearCraft.Scripts.Main.SteamThrowerBulletController>(FindObjectsSortMode.None))UnityEngine.Object.Destroy(b.gameObject);
+ foreach(var b in UnityEngine.Object.FindObjectsByType<EnemyBulletController>(FindObjectsSortMode.None))UnityEngine.Object.Destroy(b.gameObject);
+ foreach(var b in UnityEngine.Object.FindObjectsByType<EnemyProjectileDamageable>(FindObjectsSortMode.None))UnityEngine.Object.Destroy(b.gameObject);
+ foreach(var d in UnityEngine.Object.FindObjectsByType<GearCraft.Scripts.Items.DroppedMaterialItem>(FindObjectsSortMode.None))UnityEngine.Object.Destroy(d.gameObject);
+ enemyList.Clear();arm.StopAllCoroutines();
+};
+System.Action<string> finish=reason=>{if(done)return;done=true;UnityEditor.EditorApplication.update-=tick;cleanup();JsonUtility.FromJsonOverwrite(oldStatus,status);coolTimeField.SetValue(player,oldCoolTime);player.enabled=oldEnabled;arm.enabled=oldArmEnabled;player.transform.position=oldPos;body.linearVelocity=Vector2.zero;Time.captureDeltaTime=oldCapture;Time.timeScale=oldScale;QualitySettings.vSyncCount=oldVSync;Application.targetFrameRate=oldTarget;Application.runInBackground=oldBackground;System.IO.File.WriteAllText(progress,"COMPLETE "+reason+" cases="+Mathf.Min(index+1,sourceLines.Length)+"/"+sourceLines.Length+"\n");};
+System.Action<string> saveCase=result=>{
+ float seconds=Time.time-started;int killed=0,escaped=0,remaining=0;float damage=0f;
+ foreach(var e in tracked){float initial=maxHps[e];float hp=e.HP;damage+=Mathf.Clamp(initial-hp,0f,initial);if(hp<=0f)killed++;else if(e==null||!e.gameObject.activeInHierarchy||!e.GetComponentInChildren<SpriteRenderer>().enabled)escaped++;else remaining++;}
+ string bn=object.ReferenceEquals(boss,null)?"":boss.enemyData.enemyName;float bh=object.ReferenceEquals(boss,null)?0f:Mathf.Max(0f,boss.HP);float bt=bossStarted<0f?-1f:(bossEnded>=0f?bossEnded:Time.time)-bossStarted;
+ string line=string.Join(",",new[]{row[0],weaponName,stage.ToString(),day.ToString(),row[3],seed.ToString(),result,seconds.ToString("F3"),tracked.Count.ToString(),killed.ToString(),escaped.ToString(),remaining.ToString(),damage.ToString("F2"),shots.ToString(),playerDamage.ToString("F2"),gateDamage.ToString("F2"),bn,bt.ToString("F3"),bh.ToString("F2"),(dtSum/Mathf.Max(1,frames)).ToString("F6"),frames.ToString(),scheduledEnemies.Count.ToString(),scheduledEnemies.Count(e=>e.HP<=0f).ToString(),scheduledEnemies.Count(e=>e.HP>0f&&(e==null||!e.GetComponent<Collider2D>().enabled)).ToString(),scheduledEnemies.Count(e=>e!=null&&e.HP>0f&&e.GetComponent<Collider2D>().enabled).ToString(),attackEvents.ToString()});
+ System.IO.File.AppendAllText(output,line+"\n");System.IO.File.WriteAllText(progress,"RUNNING finished "+line+"\n");
+
+ cleanup();phase=0;waitUntil=Time.time+.3f;
+};
+player.enabled=false;arm.enabled=false;status.punkDrive=false;if(player.punkdrive!=null)player.punkdrive.SetActive(false);
+Time.timeScale=1f;Time.captureDeltaTime=1f/60f;QualitySettings.vSyncCount=0;Application.targetFrameRate=-1;Application.runInBackground=true;
+flow.GetType().GetProperty("IsStageActive",flags).SetValue(flow,false,null);cleanup();waitUntil=Time.time+.25f;
+System.IO.File.WriteAllText(progress,"RUNNING preparing "+label+"\n");
+tick=()=>{bool processCooldown=false;try{
+ double now=UnityEditor.EditorApplication.timeSinceStartup;
+ if(!Application.isPlaying){finish("Stopped by caller");return;}
+ if(System.IO.File.Exists(folder+"cancel-benchmark.txt")){finish("Cancelled by sentinel");return;}
+ if(now-wallStarted>7200)throw new System.Exception("2 hour wall watchdog");
+ if(Time.frameCount==lastFrame){if(now-lastFrameAt>60)throw new System.Exception("No game frames for 60 seconds");return;}
+ lastFrame=Time.frameCount;lastFrameAt=now;processCooldown=true;
+ if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name!="Main")throw new System.Exception("Unexpected scene transition");
+ if(Time.time<waitUntil)return;
+ if(phase==0){
+  index++;if(index>=sourceLines.Length){finish("All cases finished");return;}
+  row=sourceLines[index].Split(',');weaponName=row[1];stage=int.Parse(row[2]);seed=int.Parse(row[4]);maxSeconds=float.Parse(row[5],System.Globalization.CultureInfo.InvariantCulture);day=(stage-1)/3+1;
+  status.bossKillCount=stage>30?3:stage>18?2:stage>9?1:0;status.STR=status.ACC=2*(day-1);status.craftWeaponDamagebuff=profileModules[row[3]];
+  status.module_barrier=false;status.module_repair=false;status.punkDrive=false;status.HP=100;status.GATE=10000;
+  status.gearCraftAxeSizeMultiplier=1f;status.gearCraftSwordMoveSpeedBonus=0f;status.gearCraftTransformGearGain=0;
+  status.steamCannonBulletSpeedMultiplier=1f;status.steamCannonExplosionRadiusMultiplier=1f;status.steamCannonGiantBulletChance=0f;status.steamCannonDirectHitKnockback=0f;
+  status.steamThrowerOverheatSlipDamage=0f;status.steamThrowerNoBulletGravity=false;status.steamThrowerBoostDamageMultiplier=1f;status.steamThrowerBoostBurnDrops=false;status.steamThrowerBoostBurnDropsActive=false;
+  status.railCraftApplyOverheat=false;status.railCraftBulletSizeMultiplier=1f;status.railCraftRicochetMultiplier=1f;
+  status.steamGatlingBulletSpeedMultiplier=1f;status.steamGatlingBossDamageMultiplier=1f;status.steamGatlingNormalDamageMultiplier=1f;status.steamGatlingDownwardRecoil=false;
+  typeof(PlayerController).GetField("isBoostActive",flags).SetValue(player,false);
+
+  mainWeapon=UnityEditor.AssetDatabase.LoadAssetAtPath<WeaponDataSO>("Assets/GearCraft/ScriptableObject/WeaponData/"+(weaponName=="GearCraft"?"GearCraft_Sword":weaponName)+".asset");
+  sword=UnityEditor.AssetDatabase.LoadAssetAtPath<WeaponDataSO>("Assets/GearCraft/ScriptableObject/WeaponData/GearCraft_Sword.asset");axe=UnityEditor.AssetDatabase.LoadAssetAtPath<WeaponDataSO>("Assets/GearCraft/ScriptableObject/WeaponData/GearCraft_Axe.asset");
+  if(mainWeapon==null||sword==null||axe==null)throw new System.Exception("Weapon asset missing for "+weaponName);
+  status.currentWeapon=mainWeapon;status.RecalculateUpgradeEffects(profileParts[row[3]]);
+  int partIndex=0;foreach(var part in profileParts[row[3]]){
+   bool applied=!part.rangedOnly||mainWeapon.weaponType==WeaponType.Ranged;
+   if(part.effects!=null)foreach(var effect in part.effects){if(effect==null)continue;
+    System.IO.File.AppendAllText(folder+label+"-loadout-effects.csv",string.Join(",",new[]{row[0],weaponName,row[3],partIndex.ToString(),part.name,part.partName.Replace(",",";"),part.rangedOnly.ToString(),applied.ToString(),effect.type.ToString(),fmt(effect.value)})+"\n");
+   }partIndex++;
+  }
+  player.currentWeapon=mainWeapon;player.STR=status.STR;player.ACC=status.ACC;sync.Invoke(player,null);updateAnim.Invoke(player,null);
+  System.IO.File.AppendAllText(folder+label+"-loadout-stats.csv",string.Join(",",new[]{row[0],weaponName,row[3],status.STR.ToString(),status.ACC.ToString(),fmt(mainWeapon.baseDamage),fmt(status.GetWeaponDamage(mainWeapon)),fmt(status.bonusDamage),status.craftWeaponDamagebuff.ToString(),fmt(status.attackSpeedMult),status.hasBulletDouble.ToString(),fmt(status.spreadModifier),status.ricochetCount.ToString(),fmt(status.bulletSizeMult),fmt(status.junkCollectorMult),fmt(status.magnetRange),fmt(mainWeapon.spreadAngle),fmt(Mathf.Max(0f,mainWeapon.spreadAngle+status.spreadModifier)),fmt((float)getBulletSpeed.Invoke(player,null))})+"\n");
+  player.transform.position=new Vector3(-4.8f,-3.82f,0f);body.linearVelocity=Vector2.zero;body.constraints=RigidbodyConstraints2D.FreezeRotation;
+  typeof(PlayerController).GetField("isInvincible",flags).SetValue(player,false);typeof(PlayerController).GetField("isDeathRetrying",flags).SetValue(player,false);player.GetComponent<SpriteRenderer>().color=Color.white;
+  StageCounter.Instance.StageCount=stage;flow.GetType().GetProperty("EnemyScalingStage",flags).SetValue(flow,(day-1)*3+1,null);flow.GetType().GetField("currentStage",flags).SetValue(flow,stage);
+  flow.GetType().GetField("stageLastEnemyKilled",flags).SetValue(flow,false);flow.GetType().GetField("stageCompletionTriggered",flags).SetValue(flow,false);
+  mover.transform.position=mover.pointA.position;typeof(LoopMover).GetField("targetPos",flags).SetValue(mover,mover.pointB.position);
+  tracked.Clear();scheduledEnemies.Clear();maxHps.Clear();deadSeen.Clear();shots=frames=attackEvents=0;dtSum=playerDamage=gateDamage=0f;boss=null;bossStarted=bossEnded=-1f;sawLast=false;
+  UnityEngine.Random.InitState(seed+stage*100);aimRandom=UnityEngine.Random.state;UnityEngine.Random.InitState(seed+stage);
+  started=Time.time;coolTimeField.SetValue(player,0f);nextJump=started;lastProgress=started;
+  if(row.Length>6&&row[6]=="boss"){
+    var bd=flow.stageConfig.bossPool[flow.stageConfig.GetBossIndex(stage)];var go=UnityEngine.Object.Instantiate(bd.prefab,spawner.transform.position,Quaternion.identity);var ec=go.GetComponent<EnemyController>();ec.enemyData=bd;ec.isLastEnemy=true;
+  }else{buildScheduledSpawns();replayScheduledSpawns();}
+  phase=1;System.IO.File.WriteAllText(progress,"RUNNING "+label+" "+(index+1)+"/"+sourceLines.Length+" "+row[0]+"\n");return;
+ }
+ playerDamage+=Mathf.Max(0f,100-status.HP);gateDamage+=Mathf.Max(0f,10000-status.GATE);status.HP=100;status.GATE=10000;frames++;dtSum+=Time.deltaTime;
+ replayScheduledSpawns();
+ var all=UnityEngine.Object.FindObjectsByType<EnemyController>(FindObjectsSortMode.None);
+ foreach(var e in all){if(!maxHps.ContainsKey(e)&&e.HP>0f){tracked.Add(e);maxHps[e]=e.enemyData.baseHP*(1f+flow.EnemyScalingStage/10f);System.IO.File.AppendAllText(folder+label+"-spawns.csv",row[0]+","+(Time.time-started).ToString("F3")+","+e.enemyData.enemyName+","+e.HP+","+e.transform.position.x.ToString("F2")+","+e.transform.position.y.ToString("F2")+","+e.isLastEnemy+"\n");if(e.enemyData.IsBossType){boss=e;bossStarted=Time.time;}}if(e.isLastEnemy)sawLast=true;}
+ if(!object.ReferenceEquals(boss,null)&&bossEnded<0f&&boss.HP<=0f&&(float)typeof(EnemyController).GetField("runtimeMaxHP",flags).GetValue(boss)>0f)bossEnded=Time.time;
+ if(boss!=null){
+  var ai=boss.GetComponent<EnemyAI_BossFinal>();
+  if(ai!=null){
+   string stateName=typeof(EnemyAI_BossFinal).GetField("state",flags).GetValue(ai).ToString();
+   string phaseName=typeof(EnemyAI_BossFinal).GetField("phase",flags).GetValue(ai).ToString();
+   string stateKey=row[0]+"_"+phaseName+"_"+stateName;
+   if(observedBossState!=stateKey||Time.time-lastBossSample>=1f){
+    observedBossState=stateKey;lastBossSample=Time.time;
+    System.IO.File.AppendAllText(folder+label+"-boss-states.csv",string.Join(",",new[]{row[0],fmt(Time.time-started),fmt(boss.HP),stateName,phaseName,fmt(player.transform.position.x),fmt(player.transform.position.y),fmt(boss.transform.position.x),attackEvents.ToString(),fmt(playerDamage),fmt(gateDamage)})+"\n");
+    if((stateName.Contains("Armor")||stateName.Contains("Crossfire")||stateName.Contains("Barrage")||stateName.Contains("Combined"))&&bossScreenshotStates.Add(phaseName+"_"+stateName))ScreenCapture.CaptureScreenshot(folder+label+"-"+phaseName+"-"+stateName+".png");
+   }
+  }
+ }
+ var alive=all.Where(e=>e.HP>0f&&e.GetComponent<Collider2D>()!=null&&e.GetComponent<Collider2D>().enabled).ToArray();
+ if(sawLast&&alive.Length==0&&all.Length==0){saveCase("cleared");return;}
+ if(Time.time-started>=maxSeconds){saveCase("timeout");return;}
+ if(Time.time-lastProgress>=5f){lastProgress=Time.time;System.IO.File.WriteAllText(progress,"RUNNING "+label+" "+(index+1)+"/"+sourceLines.Length+" "+row[0]+" time="+(Time.time-started).ToString("F1")+" spawned="+tracked.Count+" live="+alive.Length+" bossHP="+(boss!=null?boss.HP.ToString("F0"):"-")+" damage="+playerDamage+" gate="+gateDamage+"\n");}
+ if(frames==600&&(stage==4||stage==10||stage==19||stage==31))ScreenCapture.CaptureScreenshot(folder+label+"-"+row[0]+"-10s.png");
+ // Choose nearest threat to gate, but ignore enemies until their body enters the visible area.
+ EnemyController target=null;float priority=float.MaxValue;
+ foreach(var e in alive){var cb=e.GetComponent<Collider2D>().bounds;if(cb.min.x>8.6f||cb.max.x<-7.2f)continue;float key=cb.min.x+(e.enemyData.IsBossType?1f:0f);if(key<priority){priority=key;target=e;}}
+ bool melee=mainWeapon.weaponType==WeaponType.Melee;
+ if(weaponName=="GearCraft"){
+   // Match normal 5s axe / 5s sword transform cadence; no permanent axe equip.
+   var desired=((Time.time-started)%10f<5f)?sword:axe;if(status.currentWeapon!=desired){status.currentWeapon=desired;player.currentWeapon=desired;sync.Invoke(player,null);updateAnim.Invoke(player,null);}
+ }
+ var weapon=status.currentWeapon;
+ int pose=(int)poseMethod.Invoke(arm,new object[]{weapon});Vector3 offset=(Vector3)offsetMethod.Invoke(arm,new object[]{pose});Vector3 scale=(Vector3)scaleMethod.Invoke(arm,new object[]{pose});
+ arm.arm.localScale=scale;
+ if(melee)arm.arm.position=player.transform.position+offset;
+ if(target==null){body.linearVelocity=new Vector2(0f,body.linearVelocity.y);return;}
+ var bounds=target.GetComponent<Collider2D>().bounds;
+ float desiredDistance=melee?1.1f:weaponName=="SteamThrower"?3.2f:weaponName=="SteamGatling"?5f:7f;
+ float desiredX=Mathf.Clamp(bounds.min.x-desiredDistance,-6.15f,6.4f);float dx=desiredX-player.transform.position.x;
+ float vx=Mathf.Abs(dx)<.15f?0f:Mathf.Sign(dx)*player.moveSpeed;
+ float vy=body.linearVelocity.y;bool grounded=playerCollider.bounds.min.y<=-4.38f&&Mathf.Abs(vy)<.35f;
+ if(melee&&grounded&&Time.time>=nextJump&&bounds.center.y-player.transform.position.y>2.7f&&Mathf.Abs(dx)<2.5f){vy=player.jumpForce;nextJump=Time.time+.8f;}
+ body.linearVelocity=new Vector2(vx,vy);
+ if(!((float)coolTimeField.GetValue(player)<=0f))return;
+ if(melee){if(Vector2.Distance(player.transform.position,bounds.ClosestPoint(player.transform.position))>3.8f)return;coolTimeField.SetValue(player,weapon.coolTime*status.attackSpeedMult);damageField.SetValue(player,weapon.baseDamage);meleeAttack.Invoke(player,null);shots++;attackEvents++;return;}
+ // Use native shoulder pose/muzzle offsets; aim at closest visible body point, with gravity correction.
+ Vector3 aim=bounds.center;aim.y=Mathf.Clamp(player.transform.position.y+1.4f,bounds.min.y+.1f,bounds.max.y-.1f);
+ Vector3 shoulder=arm.sholder.position;float speed=(float)getBulletSpeed.Invoke(player,null);float travel=Mathf.Clamp((aim.x-shoulder.x-weapon.muzzleOffset.x)/Mathf.Max(1f,speed),0f,1.5f);
+ var projectileBody=weapon.bulletPrefab.GetComponent<Rigidbody2D>();float gravity=projectileBody!=null?projectileBody.gravityScale:0f;
+ aim.y-=.5f*Physics2D.gravity.y*gravity*travel*travel;
+ Vector2 dir=((Vector2)aim-(Vector2)shoulder).normalized;float angle=Mathf.Clamp(Mathf.Atan2(dir.y,dir.x)*Mathf.Rad2Deg,-85f,85f);
+ arm.sholder.rotation=Quaternion.Euler(0f,0f,angle);arm.arm.position=arm.sholder.position+arm.sholder.rotation*offset;arm.arm.rotation=arm.sholder.rotation;
+ Vector3 origin=player.FirePoint.position;Vector2 aimOffset=(Vector2)aim-(Vector2)origin;dir=aimOffset.normalized;float muzzleCorrection=Mathf.Asin(Mathf.Clamp(weapon.muzzleOffset.y/Mathf.Max(.01f,aimOffset.magnitude),-.99f,.99f))*Mathf.Rad2Deg;angle=Mathf.Clamp(Mathf.Atan2(dir.y,dir.x)*Mathf.Rad2Deg-muzzleCorrection,-90f,90f);
+ // Native PerformShotAttack parity, except the bot supplies base aim instead of Input.mousePosition.
+ // Include ConfigureSpawnedProjectile in the isolated shot RNG stream so both native branches consume randomness in their original order.
+ coolTimeField.SetValue(player,weapon.coolTime*status.attackSpeedMult);
+ var savedRandom=UnityEngine.Random.state;UnityEngine.Random.state=aimRandom;
+ try{
+  float spread=weapon.spreadAngle+status.spreadModifier;
+  float finalAngle=(float)calculateSpread.Invoke(null,new object[]{angle,spread});
+  dir=new Vector2(Mathf.Cos(finalAngle*Mathf.Deg2Rad),Mathf.Sin(finalAngle*Mathf.Deg2Rad));
+  Vector3 muzzle=(Vector3)getMuzzle.Invoke(player,new object[]{dir});
+  damageField.SetValue(player,weapon.baseDamage);
+  if(weapon.useLineHitbox){lineAttack.Invoke(player,new object[]{dir,finalAngle,muzzle});shots++;}
+  else{
+   var bullet=UnityEngine.Object.Instantiate(weapon.bulletPrefab,muzzle,Quaternion.Euler(0f,0f,finalAngle));
+   if(bullet==null)throw new System.Exception("Primary projectile Instantiate returned null");
+   var rb=bullet.GetComponent<Rigidbody2D>();if(rb!=null)rb.linearVelocity=dir*(float)getBulletSpeed.Invoke(player,null);
+   configure.Invoke(player,new object[]{bullet});shots++;
+   if(status.hasBulletDouble){
+    float secondAngle=(float)calculateSpread.Invoke(null,new object[]{angle,spread});
+    Vector2 secondDirection=new Vector2(Mathf.Cos(secondAngle*Mathf.Deg2Rad),Mathf.Sin(secondAngle*Mathf.Deg2Rad));
+    Vector3 secondMuzzle=(Vector3)getMuzzle.Invoke(player,new object[]{secondDirection});
+    var secondBullet=UnityEngine.Object.Instantiate(weapon.bulletPrefab,secondMuzzle,Quaternion.Euler(0f,0f,secondAngle));
+    if(secondBullet==null)throw new System.Exception("Secondary projectile Instantiate returned null");
+    var secondBody=secondBullet.GetComponent<Rigidbody2D>();if(secondBody!=null)secondBody.linearVelocity=secondDirection*(float)getBulletSpeed.Invoke(player,null);
+    configure.Invoke(player,new object[]{secondBullet});shots++;
+   }
+   gatlingRecoil.Invoke(player,new object[]{dir});
+  }
+  attackEvents++;
+ }finally{aimRandom=UnityEngine.Random.state;UnityEngine.Random.state=savedRandom;}
+
+ }catch(System.Exception ex){System.IO.File.AppendAllText(folder+label+"-errors.txt",ex+"\n");finish("FAILED "+ex.Message);}
+ finally{
+  // Native PlayerController resumes its own decrement after finish; never run both.
+  if(processCooldown&&!done&&Application.isPlaying&&player!=null&&!player.enabled&&UnityEngine.SceneManagement.SceneManager.GetActiveScene().name=="Main")coolTimeUpdate.Invoke(player,null);
+ }
+};
+UnityEditor.EditorApplication.update+=tick;
+return "Scheduled "+sourceLines.Length+" native combat cases; progress="+progress;

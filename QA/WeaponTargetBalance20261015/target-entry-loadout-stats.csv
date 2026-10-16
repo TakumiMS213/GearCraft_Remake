@@ -1,0 +1,2 @@
+case,weapon,profile,STR,ACC,base_damage,damage_per_hit,flat_damage,module_damage,cooldown_multiplier,double_shot,spread_modifier,ricochet,bullet_size,junk_collector,magnet_range,base_spread,effective_spread,bullet_speed
+entry_SteamGatling_19_module0_seed77,SteamGatling,late_day7_ranged,12,12,10,11.25,13,0,0.391680032,True,0,0,1.25,1,3,12,12,30

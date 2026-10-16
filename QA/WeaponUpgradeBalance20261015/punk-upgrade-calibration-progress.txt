@@ -1,0 +1,1 @@
+COMPLETE Four native collision cases recorded; status/parts_restored=True; runtime settings restored, Play remains active

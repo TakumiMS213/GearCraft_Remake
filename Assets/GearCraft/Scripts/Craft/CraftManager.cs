@@ -14,6 +14,7 @@ using TMPro;
 public class CraftManager : MonoBehaviour
 {
     public event Action<CraftRecipeSO> RecipeCrafted;
+    public event Action<CraftRecipeSO> RecipeSelected;
     public event Action<CraftRecipeSO> CraftFailed;
 
     public CraftRecipeSO SelectedRecipe => selectedRecipe;
@@ -182,6 +183,7 @@ public void SelectRecipe(int index)
 
         ApplyRecipeVisuals(selectedRecipe);
         RefreshCraftControls();
+        RecipeSelected?.Invoke(selectedRecipe);
     }
 
     public bool TrySelectRecipe(CraftRecipeSO recipe)

@@ -1,0 +1,134 @@
+// C#6 execute_code method body. Real UGUI submit, raycast, tooltip and drag handlers.
+// Runtime fixture, not a first-time human test or physical keyboard/mouse E2E.
+// Mutations are deferred one tick after capture so asynchronous screenshots keep the named state.
+const string prefix="UXTutorialOnboarding20261014.";
+const string folder="QA/UXReview20261014-TutorialOnboarding/";
+if(!UnityEditor.SessionState.GetBool(prefix+"backupReady",false) || !System.IO.File.Exists(folder+"playerprefs-before-runtime.txt")) throw new System.Exception("Before-Play backup required");
+if(!UnityEditor.EditorApplication.isPlaying || UnityEditor.EditorApplication.isPaused || UnityEngine.SceneManagement.SceneManager.GetActiveScene().name!="Craft") throw new System.Exception("Unpaused initialized Craft required");
+if(UnityEditor.SessionState.GetBool(prefix+"running",false)) throw new System.Exception("Already running");
+var status=StatusManager.Instance;var materials=MaterialManager.Instance;
+var craft=UnityEngine.Object.FindFirstObjectByType<CraftManager>();
+var c=UnityEngine.Object.FindFirstObjectByType<GearCraft.Scripts.Craft.CraftTutorialController>();
+var tabs=UnityEngine.Object.FindFirstObjectByType<CraftTabController>();
+if(status==null || materials==null || craft==null || c==null || tabs==null || !craft.IsReadyForTutorial) throw new System.Exception("Bootstrap from Title first");
+var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
+System.Func<string,object> field=n=>c.GetType().GetField(n,flags).GetValue(c);
+System.Func<string,UnityEngine.UI.Button> button=n=>(UnityEngine.UI.Button)field(n);
+System.Func<string,TMPro.TMP_Text> text=n=>(TMPro.TMP_Text)field(n);
+System.Func<bool> active=()=>((GameObject)field("tutorialRoot")).activeInHierarchy;
+System.Func<int> frameCount=()=>((System.Collections.Generic.List<Rect>)field("highlightBounds")).Count;
+var events=UnityEngine.EventSystems.EventSystem.current;
+int phase=0,checks=0,craftEvents=0,errors=0,lastFrame=-1;bool finished=false;
+double started=UnityEditor.EditorApplication.timeSinceStartup,next=started;
+UpgradeGridManager grid=null;UpgradeShopManager shop=null;UpgradeGridUI gridUI=null;
+GameObject source=null;UpgradePartSO draggingPart=null;
+UnityEngine.EventSystems.PointerEventData drag=null;Vector2 target=Vector2.zero;
+System.Action<CraftRecipeSO> onCraft=r=>craftEvents++;
+craft.RecipeCrafted+=onCraft;
+UnityEditor.EditorApplication.CallbackFunction tick=null;
+UnityEngine.Application.LogCallback onLog=null;
+System.Action pendingAction=null;
+System.IO.File.WriteAllText(folder+"runtime-flow.txt","Runtime fixtures; UGUI handlers and actual raycasts. Parent restores 8 preferences after Play.\n");
+System.Action<string> log=s=>System.IO.File.AppendAllText(folder+"runtime-flow.txt",(UnityEditor.EditorApplication.timeSinceStartup-started).ToString("F2")+"s phase="+phase+" "+s+"\n");
+System.Action<bool,string> check=(ok,s)=>{if(!ok)throw new System.Exception(s);checks++;log("PASS "+s);};
+System.Func<string,GameObject> find=n=>{foreach(var tr in UnityEngine.Object.FindObjectsByType<Transform>(FindObjectsSortMode.None))if(tr.name==n && tr.gameObject.activeInHierarchy)return tr.gameObject;return null;};
+System.Func<GameObject,Vector2> center=o=>{var rect=o.GetComponent<RectTransform>();var canvas=o.GetComponentInParent<Canvas>().rootCanvas;return RectTransformUtility.WorldToScreenPoint(canvas.renderMode==RenderMode.ScreenSpaceOverlay?null:canvas.worldCamera,rect.TransformPoint(rect.rect.center));};
+System.Func<GameObject,UnityEngine.EventSystems.PointerEventData> pointer=o=>{
+ Canvas.ForceUpdateCanvases();var data=new UnityEngine.EventSystems.PointerEventData(events);data.position=center(o);data.button=UnityEngine.EventSystems.PointerEventData.InputButton.Left;
+ var hits=new System.Collections.Generic.List<UnityEngine.EventSystems.RaycastResult>();events.RaycastAll(data,hits);check(hits.Count>0,"raycast hits "+o.name);data.pointerCurrentRaycast=hits[0];data.pointerPressRaycast=hits[0];return data;
+};
+System.Action<UnityEngine.UI.Button> submitNow=b=>{
+ check(b!=null && b.IsActive() && b.IsInteractable(),"submit available "+(b==null?"null":b.name));
+ TooltipSystem.FindInstance().Hide();var p=pointer(b.gameObject);
+ check(UnityEngine.EventSystems.ExecuteEvents.GetEventHandler<UnityEngine.EventSystems.ISubmitHandler>(p.pointerCurrentRaycast.gameObject)==b.gameObject,"top raycast reaches button "+b.name);
+ b.Select();UnityEngine.EventSystems.ExecuteEvents.Execute(b.gameObject,new UnityEngine.EventSystems.BaseEventData(events),UnityEngine.EventSystems.ExecuteEvents.submitHandler);
+};
+System.Action<UnityEngine.UI.Button> submit=b=>{pendingAction=()=>submitNow(b);};
+System.Action<string> inspect=label=>{
+ Canvas.ForceUpdateCanvases();var panel=(RectTransform)field("messagePanel");var root=(RectTransform)panel.GetComponentInParent<Canvas>().transform;
+ var bounds=RectTransformUtility.CalculateRelativeRectTransformBounds(root,panel);
+ check(bounds.min.x>=root.rect.xMin-.5f && bounds.max.x<=root.rect.xMax+.5f && bounds.min.y>=root.rect.yMin-.5f && bounds.max.y<=root.rect.yMax+.5f,label+" panel within canvas");
+ var rects=new System.Collections.Generic.List<Rect>();
+ foreach(var t in panel.GetComponentsInChildren<TMPro.TMP_Text>()){t.ForceMeshUpdate();check(!t.isTextOverflowing && !t.isTextTruncated,label+" text fits "+t.name+" "+t.text.Replace("\n"," / "));}
+ foreach(var b in panel.GetComponentsInChildren<UnityEngine.UI.Button>()){var r=RectTransformUtility.CalculateRelativeRectTransformBounds(panel,b.transform);var rr=new Rect(r.min.x,r.min.y,r.size.x,r.size.y);check(rr.xMin>=panel.rect.xMin-.5f && rr.xMax<=panel.rect.xMax+.5f,label+" button within panel "+b.name);foreach(var prior in rects)check(!prior.Overlaps(rr),label+" buttons do not overlap");rects.Add(rr);}
+ log("SCREEN "+Screen.width+"x"+Screen.height+" "+label+" action="+text("taskActionText").text);
+ ScreenCapture.CaptureScreenshot(folder+"runtime-"+label+".png");
+};
+System.Action<UpgradePartSO> beginNow=part=>{
+ draggingPart=part;source=find("ShopItem_"+part.name);check(source!=null,"shop row exists "+part.name);
+ var scroll=shop.shopParent.GetComponentInParent<UnityEngine.UI.ScrollRect>();if(scroll!=null){scroll.StopMovement();scroll.verticalNormalizedPosition=1f;Canvas.ForceUpdateCanvases();}
+ drag=pointer(source);check(UnityEngine.EventSystems.ExecuteEvents.GetEventHandler<UnityEngine.EventSystems.IBeginDragHandler>(drag.pointerCurrentRaycast.gameObject)==source,"row drag handler receives raycast");drag.pointerDrag=source;drag.dragging=true;
+ UnityEngine.EventSystems.ExecuteEvents.Execute(source,drag,UnityEngine.EventSystems.ExecuteEvents.beginDragHandler);
+ check(gridUI.IsShopDragging,"real begin-drag starts preview");
+ int px=-1,py=-1;for(int y=0;y<grid.GridSize && px<0;y++)for(int x=0;x<grid.GridSize;x++)if(grid.CanPlace(part,x,y,0)){px=x;py=y;break;}
+ check(px>=0,"valid placement exists");var shape=part.GetRotatedShape(0);int minX=999,minY=999,maxX=-1,maxY=-1;
+ for(int y=0;y<shape.GetLength(0);y++)for(int x=0;x<shape.GetLength(1);x++)if(shape[y,x]){minX=Mathf.Min(minX,x);maxX=Mathf.Max(maxX,x);minY=Mathf.Min(minY,y);maxY=Mathf.Max(maxY,y);}
+ float size=(float)typeof(UpgradeGridUI).GetField("currentCellSize",flags).GetValue(gridUI);float step=size+gridUI.cellSpacing;float total=grid.GridSize*step-gridUI.cellSpacing;
+ Vector3 local=new Vector3(-total/2f+size/2f+(px+(minX+maxX)/2f)*step,total/2f-size/2f-(py+(minY+maxY)/2f)*step,0);
+ var canvas=gridUI.GetComponentInParent<Canvas>().rootCanvas;target=RectTransformUtility.WorldToScreenPoint(canvas.renderMode==RenderMode.ScreenSpaceOverlay?null:canvas.worldCamera,gridUI.gridParent.TransformPoint(local));
+};
+System.Action<UpgradePartSO> begin=part=>{pendingAction=()=>beginNow(part);};
+System.Action dropNow=()=>{drag.position=target;UnityEngine.EventSystems.ExecuteEvents.Execute(source,drag,UnityEngine.EventSystems.ExecuteEvents.dragHandler);UnityEngine.EventSystems.ExecuteEvents.Execute(source,drag,UnityEngine.EventSystems.ExecuteEvents.endDragHandler);check(!gridUI.IsShopDragging,"end drag clears preview");};
+System.Action drop=()=>{pendingAction=dropNow;};
+System.Action<bool,string> finish=(ok,message)=>{
+ if(finished)return;finished=true;UnityEditor.EditorApplication.update-=tick;Application.logMessageReceived-=onLog;craft.RecipeCrafted-=onCraft;
+ if(gridUI!=null)gridUI.CancelShopDrag();UnityEditor.SessionState.SetBool(prefix+"running",false);UnityEditor.SessionState.SetBool(prefix+"passed",ok);UnityEditor.SessionState.SetInt(prefix+"checks",checks);UnityEditor.SessionState.SetString(prefix+"result",message);
+ log((ok?"COMPLETE ":"FAILED ")+message+" checks="+checks+" errors="+errors);
+};
+onLog=(message,stack,type)=>{if(type==LogType.Error||type==LogType.Exception||type==LogType.Assert){errors++;log("ERROR "+message+"\n"+stack);}};
+tick=()=>{try{
+ if(!UnityEditor.EditorApplication.isPlaying||UnityEditor.EditorApplication.isPaused)throw new System.Exception("Play stopped/paused");
+ double now=UnityEditor.EditorApplication.timeSinceStartup;if(now-started>100)throw new System.Exception("100s watchdog");if(errors>0)throw new System.Exception("Runtime error");
+ if(now<next||lastFrame==Time.frameCount)return;next=now+.3;lastFrame=Time.frameCount;UnityEditor.SessionState.SetInt(prefix+"phase",phase);
+ if(pendingAction!=null){var action=pendingAction;pendingAction=null;action();return;}
+ switch(phase){
+ case 0:
+  c.OnCraftSceneLeaving();status.CraftTutorials.Reset();status.module_scrap=false;status.punkDrive=false;status.craftWeaponDamagebuff=0;materials.ClearAllMaterials();
+  PlayerPrefs.SetInt(CraftTutorialMetrics.CraftMasteryKey,0);PlayerPrefs.SetInt(CraftTutorialMetrics.WeaponMasteryKey,0);
+  var auto=(bool[])field("autoStarted");auto[0]=auto[1]=false;craft.TrySelectRecipe(craft.FindUnlockedRecipe("GearCraft"));tabs.SwitchTab(0);phase++;break;
+ case 1:
+  if(!active())return;check(status.CraftTutorials.craft.stepIndex==0,"first task starts automatically");check(button("hintButton").IsActive(),"hint available immediately");check(!button("affordableButton").gameObject.activeSelf && !button("shortageButton").gameObject.activeSelf,"assessment answers hidden before recipe selection");check(frameCount()==1,"initial guide highlights recipe region");inspect("01-craft-start");phase++;break;
+ case 2:submit(find("Recipe_ScrapModule").GetComponent<UnityEngine.UI.Button>());phase++;break;
+ case 3:
+  check(button("affordableButton").IsActive() && button("shortageButton").IsActive(),"assessment answers appear after selecting ScrapModule");check(frameCount()==2,"guide now highlights two materials");inspect("02-material-assessment");submit(button("hintButton"));phase++;break;
+ case 4:check(status.CraftTutorials.craft.hintLevel==1,"first hint is conceptual");submit(button("hintButton"));phase++;break;
+ case 5:check(status.CraftTutorials.craft.hintLevel==2,"second hint shows reading area");submit(button("hintButton"));phase++;break;
+ case 6:
+  check(status.CraftTutorials.craft.hintLevel==3,"third hint gives concrete operation");inspect("03-hint-three");submit(button("practiceButton"));phase++;break;
+ case 7:
+  check(!text("bodyText").gameObject.activeSelf && text("taskActionText").gameObject.activeSelf,"folding hides explanation and keeps current operation");inspect("03b-materials-folded");submit(button("hintButton"));phase++;break;
+ case 8:
+  check(text("bodyText").gameObject.activeSelf && status.CraftTutorials.craft.hintRequests==3,"last hint reopens without duplicate use count");submit(button("shortageButton"));phase++;break;
+ case 9:
+  check(status.CraftTutorials.craft.showingFeedback && CraftManager.HasEnoughMaterials(craft.SelectedRecipe),"shortage judgment grants required materials and shows feedback");inspect("04-materials-supplied");submit(button("nextButton"));phase++;break;
+ case 10:
+  check(status.CraftTutorials.craft.stepIndex==1 && frameCount()==1,"next task guides actual creation");inspect("05-craft-action");submit(craft.craftButton);phase++;break;
+ case 11:
+  check(craft.IsCrafting,"craft presentation is running");check(((CanvasGroup)field("messageGroup")).alpha==0 && frameCount()==0,"tutorial text and frames hidden during craft");var statusText=(TMPro.TMP_Text)typeof(CraftManager).GetField("craftStatusText",flags).GetValue(craft);check(!statusText.gameObject.activeSelf,"no crafting status during animation");check(craftEvents==0,"completion event waits for presentation");int gear=materials.gear,core=materials.moduleCore_lv1;craft.OnCraftButton();check(gear==materials.gear && core==materials.moduleCore_lv1,"duplicate craft input does not consume again");ScreenCapture.CaptureScreenshot(folder+"runtime-06-craft-animation.png");phase++;break;
+ case 12:
+  if(craft.IsCrafting)return;check(craftEvents==1 && status.CraftTutorials.craft.showingFeedback,"one completion notification after animation");check(((TMPro.TMP_Text)typeof(CraftManager).GetField("craftStatusText",flags).GetValue(craft)).text=="作成済み","crafted status shown after final fade");inspect("07-craft-complete");submit(button("nextButton"));phase++;break;
+ case 13:
+  check(status.CraftTutorials.craft.stepIndex==2 && frameCount()==0 && !status.CraftTutorials.craft.usedHint,"independent craft starts without target guidance");submit(find("Recipe_PunkDrive").GetComponent<UnityEngine.UI.Button>());phase++;break;
+ case 14:check(frameCount()==0,"choosing independent recipe does not reveal answer");inspect("08-independent-craft");submit(craft.craftButton);phase++;break;
+ case 15:
+  if(craft.IsCrafting)return;check(craftEvents==2 && status.punkDrive && status.CraftTutorials.craft.mastered,"different unhinted craft marks mastery after completion");inspect("09-independent-craft-complete");submit(button("nextButton"));phase++;break;
+ case 16:check(!active(),"finishing craft guidance closes its window");tabs.SwitchTab(1);phase++;break;
+ case 17:
+  if(!active() || (int)field("currentTab")!=1)return;grid=UpgradeGridManager.Instance;gridUI=grid.gridUI;shop=UnityEngine.Object.FindFirstObjectByType<UpgradeShopManager>();check(grid.PlacedParts.Count==0,"fresh weapon grid empty");check(frameCount()==1 && button("hintButton").IsActive(),"initial upgrade highlights shop and provides hint");inspect("10-upgrade-start");source=find("ShopItem_Damage+1");check(source!=null,"funded practice row visible");drag=pointer(source);pendingAction=()=>UnityEngine.EventSystems.ExecuteEvents.Execute(source,drag,UnityEngine.EventSystems.ExecuteEvents.pointerEnterHandler);phase++;break;
+ case 18:
+  check(((CanvasGroup)field("messageGroup")).alpha==0 && frameCount()==0,"detail tooltip takes precedence over tutorial");ScreenCapture.CaptureScreenshot(folder+"runtime-11-part-tooltip.png");pendingAction=()=>UnityEngine.EventSystems.ExecuteEvents.Execute(source,drag,UnityEngine.EventSystems.ExecuteEvents.pointerExitHandler);phase++;break;
+ case 19:begin(shop.FindPart("Damage+1"));phase++;break;
+ case 20:
+  check((bool)field("compactTask") && frameCount()==1 && text("taskActionText").text.Contains("マウスを離す"),"dragging folds explanation and guides placement");inspect("12-upgrade-drag");drop();phase++;break;
+ case 21:
+  check(grid.PlacedParts.Count==1 && status.bonusDamage>0 && status.CraftTutorials.weaponCustom.showingFeedback,"real placement raises damage and completes practice");check(frameCount()==1,"feedback highlights resulting effects");inspect("13-upgrade-result");submit(button("nextButton"));phase++;break;
+ case 22:
+  check(status.CraftTutorials.weaponCustom.stepIndex==1 && frameCount()==0,"independent upgrade has no target highlight");inspect("14-independent-upgrade");begin(shop.FindPart("SpeedGear"));phase++;break;
+ case 23:check(frameCount()==0 && !status.CraftTutorials.weaponCustom.usedHint,"independent drag does not reveal placement answer");drop();phase++;break;
+ case 24:
+  check(grid.PlacedParts.Count==2 && status.attackSpeedMult<1 && status.CraftTutorials.weaponCustom.mastered,"different unhinted part improves weapon and marks mastery");inspect("15-independent-upgrade-result");submit(button("nextButton"));phase++;break;
+ case 25:check(!active(),"finishing upgrade guidance closes its window");finish(true,"Craft and upgrade flow passed");break;
+ }
+}catch(System.Exception ex){finish(false,ex.ToString());}};
+Application.logMessageReceived+=onLog;UnityEditor.SessionState.SetBool(prefix+"running",true);UnityEditor.EditorApplication.update+=tick;
+return "Scheduled 26-phase tutorial flow; parent restores backed-up prefs after Play";

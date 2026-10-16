@@ -1,0 +1,39 @@
+{
+  "route": {
+    "recorded": 98,
+    "expected": 98,
+    "missing": [],
+    "data_issues": [
+      {
+        "kind": "frame_time_mismatch",
+        "case": "RailCraft_w31",
+        "absolute_seconds": 0.09452799999996842
+      },
+      {
+        "kind": "frame_time_mismatch",
+        "case": "SteamGatling_w31",
+        "absolute_seconds": 0.12657600000000002
+      }
+    ],
+    "spawn_mismatches": {
+      "plan_mismatch_group_count": 0,
+      "plan_mismatches": [],
+      "initial_hp_mismatch_count": 0,
+      "initial_hp_mismatches": []
+    },
+    "native_plan_consistent": true
+  },
+  "probes": {
+    "recorded": 56,
+    "expected": 56,
+    "missing": [],
+    "data_issues": [],
+    "spawn_mismatches": {
+      "plan_mismatch_group_count": 0,
+      "plan_mismatches": [],
+      "initial_hp_mismatch_count": 0,
+      "initial_hp_mismatches": []
+    },
+    "native_plan_consistent": true
+  }
+}

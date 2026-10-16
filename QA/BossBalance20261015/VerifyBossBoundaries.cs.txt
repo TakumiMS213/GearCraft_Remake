@@ -1,0 +1,59 @@
+
+const string folder="QA/BossBalance20261015/";
+if(!Application.isPlaying||UnityEngine.SceneManagement.SceneManager.GetActiveScene().name!="Main"||Time.timeScale!=0f)throw new System.Exception("Paused Main required");
+if(UnityEngine.Object.FindObjectsByType<EnemyController>(FindObjectsSortMode.None).Length!=0)throw new System.Exception("Finish combat first");
+var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.NonPublic;
+var checks=new System.Collections.Generic.List<string>();checks.Add("check,pass");
+var failures=new System.Collections.Generic.List<string>();
+System.Action<string,bool> check=(name,pass)=>{checks.Add(name+","+pass);if(!pass)failures.Add(name);};
+var status=StatusManager.Instance;string before=JsonUtility.ToJson(status);
+GameObject root=null;EnemyAI_BossFinal ai=null;
+try{
+ var data=UnityEditor.AssetDatabase.LoadAssetAtPath<EnemyDataSO>("Assets/GearCraft/ScriptableObject/EnemyData/lv3_FinalBoss.asset");
+ root=new GameObject("QA_EKBoundaryProbe");root.SetActive(false);
+ var go=UnityEngine.Object.Instantiate(data.prefab,root.transform,false);
+ var ec=go.GetComponent<EnemyController>();ec.enemyData=data;ec.HP=data.baseHP*4.1f;
+ ai=go.AddComponent<EnemyAI_BossFinal>();ai.Initialize(ec,data);
+ typeof(EnemyController).GetField("currentAI",flags).SetValue(ec,ai);
+ float maxHp=ec.HP;int events=0;float observedDamage=0f;ec.Damaged+=amount=>{events++;observedDamage+=amount;};
+ ec.TakeDamage(maxHp*100f,new Vector2(1f,-2f));
+ check("huge_hit_stops_at_two_thirds",Mathf.Abs(ec.HP-maxHp*2f/3f)<.01f);
+ check("phase2_armored",ai.IsArmored&&ai.CurrentPhase==2);
+ check("event_reports_only_applied_damage",events==1&&Mathf.Abs(observedDamage-maxHp/3f)<.01f);
+ Vector3 lastHit=ec.LastHitPosition;float hp=ec.HP;
+ for(int i=0;i<32;i++)ec.TakeDamage(maxHp,new Vector2(-100f,100f));
+ ec.TakeDamage(.35f);
+ check("same_frame_hits_and_dot_entry_blocked",ec.HP==hp&&events==1);
+ check("blocked_hits_keep_last_hit",Vector3.Distance(ec.LastHitPosition,lastHit)<.001f);
+ ec.ApplyOverheat(2.8f,.55f,null);
+ check("overheat_applies_during_armor",Mathf.Abs(ec.GetMoveSpeed(1f)-.55f)<.00001f);
+ // Only force the already-runtime-verified transition completion to reach the next damage boundary.
+ // This isolated probe does not verify timing, projectile counts, collisions, or native death/ED.
+ typeof(EnemyAI_BossFinal).GetField("stateElapsed",flags).SetValue(ai,3f);
+ typeof(EnemyAI_BossFinal).GetField("shotsFired",flags).SetValue(ai,4);
+ typeof(EnemyAI_BossFinal).GetMethod("UpdateArmorTransition",flags).Invoke(ai,new object[]{0f});
+ check("phase2_armor_clears",!ai.IsArmored&&ai.CurrentPhase==2);
+ ec.TakeDamage(maxHp*100f,new Vector2(2f,-1f));
+ check("huge_hit_stops_at_one_third",Mathf.Abs(ec.HP-maxHp/3f)<.01f);
+ check("phase3_armored",ai.IsArmored&&ai.CurrentPhase==3);
+ lastHit=ec.LastHitPosition;hp=ec.HP;
+ for(int i=0;i<32;i++)ec.TakeDamage(maxHp,new Vector2(100f,100f));
+ ec.TakeDamage(.35f);
+ check("second_armor_blocks_same_frame_hits",ec.HP==hp&&events==2);
+ check("second_armor_keeps_last_hit",Vector3.Distance(ec.LastHitPosition,lastHit)<.001f);
+ typeof(EnemyAI_BossFinal).GetField("stateElapsed",flags).SetValue(ai,3f);
+ typeof(EnemyAI_BossFinal).GetField("shotsFired",flags).SetValue(ai,4);
+ typeof(EnemyAI_BossFinal).GetMethod("UpdateArmorTransition",flags).Invoke(ai,new object[]{0f});
+ check("final_phase_accepts_lethal_damage",!ai.IsArmored&&ai.FilterIncomingDamage(maxHp)==maxHp);
+ ai.OnDeath();check("dead_has_no_armor_or_damage",!ai.IsArmored&&ai.FilterIncomingDamage(1f)==0f);
+}catch(System.Exception ex){failures.Add(ex.ToString());}
+finally{
+ if(ai!=null)ai.OnDeath();
+ if(root!=null)UnityEngine.Object.DestroyImmediate(root);
+ check("existing_status_unchanged",JsonUtility.ToJson(status)==before);
+ check("no_test_enemy_remaining",UnityEngine.Object.FindObjectsByType<EnemyController>(FindObjectsSortMode.None).Length==0);
+ check("paused_main_preserved",Application.isPlaying&&Time.timeScale==0f&&UnityEngine.SceneManagement.SceneManager.GetActiveScene().name=="Main");
+ System.IO.File.WriteAllLines(folder+"boss-boundary-checks.csv",checks);
+ System.IO.File.WriteAllText(folder+"boss-boundary-summary.txt",(failures.Count==0?"PASS":"FAIL")+" checks="+(checks.Count-1)+" failures="+failures.Count+"\nInactive isolated EK, real EnemyController.TakeDamage entry. Armor expiry is forced only to reach the next boundary; timing/attacks/death were checked separately by combat pass1.\n"+string.Join("\n",failures));
+}
+return System.IO.File.ReadAllText(folder+"boss-boundary-summary.txt");

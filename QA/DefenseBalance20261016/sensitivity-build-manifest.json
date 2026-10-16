@@ -1,0 +1,16 @@
+{
+  "source": "ReactiveGateSurvivalRoute.cs.txt",
+  "source_sha256": "cd5be87ab32620c92d9c5a985acfd21164f49a2043c445222e72d554b3e8d36c",
+  "output": "ReactiveGateSpeedSurvivalRoute.cs.txt",
+  "output_sha256": "44fd5bb67fbc00a8af1e462101a374c1ff5bb59bc6f4bc7a6d11c47c75995fa1",
+  "logic_change_only": "reactiveBoostBudget 2 -> 6; reaction cadence, targets, movement, damage, timings, native flow and cleanup unchanged",
+  "metadata_changes": "Header, per-case meta and bot_mode distinguish affordability sensitivity and budget6; gate-aware marker retained for generator compatibility",
+  "case_count": 3,
+  "seeds": [
+    77,
+    101,
+    202
+  ],
+  "runtime_compile_and_execution": "Pending root; no MCP called",
+  "initial_gear_injection": "Caller setup only; variant does not grant or replenish material"
+}

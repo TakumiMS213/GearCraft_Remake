@@ -1,0 +1,138 @@
+{
+    "HP": -14,
+    "SAN": 100,
+    "STR": 20,
+    "ACC": 20,
+    "GATE": 100.0,
+    "defaultWeapon": {
+        "instanceID": 48222
+    },
+    "currentWeapon": {
+        "instanceID": 47900
+    },
+    "ownedWeapons": [
+        {
+            "instanceID": 48222
+        },
+        {
+            "instanceID": 47900
+        }
+    ],
+    "weaponCatalog": [
+        {
+            "instanceID": 48222
+        },
+        {
+            "instanceID": 48046
+        },
+        {
+            "instanceID": 48192
+        },
+        {
+            "instanceID": 48038
+        },
+        {
+            "instanceID": 48130
+        },
+        {
+            "instanceID": 47900
+        },
+        {
+            "instanceID": 48260
+        },
+        {
+            "instanceID": 48132
+        }
+    ],
+    "ownedUpgradeParts": [],
+    "savedUpgradePartPlacements": [],
+    "selectWeapon": 0,
+    "module_scrap": false,
+    "module_repair": false,
+    "module_barrier": false,
+    "punkDrive": false,
+    "craftWeaponDamagebuff": 20,
+    "killAllEnemies": true,
+    "UseCraftSpacebuff": false,
+    "bossKillCount": 3,
+    "upgradeShopDay": 0,
+    "hasSavedUpgradeShopLineup": false,
+    "savedUpgradeShopLineup": [],
+    "notifiedCraftUnlockIds": [],
+    "dormTaskProgress": {
+        "hasStartedFirstDay": true,
+        "hasCrafted": false,
+        "hasUpgradedWeapon": false,
+        "hasEncounteredFirstBoss": false
+    },
+    "craftTutorialProgress": {
+        "craft": {
+            "stepIndex": 0,
+            "showingFeedback": false,
+            "feedback": "",
+            "hintLevel": 0,
+            "usedHint": false,
+            "hintRequests": 0,
+            "invalidAttempts": 0,
+            "elapsedSeconds": 0.0,
+            "baselineCaptured": false,
+            "baselineDamage": 0.0,
+            "baselineAttackSpeed": 0.0,
+            "baselineCraftWeaponDamageBuff": 0,
+            "practicePartName": "",
+            "baselineParts": [],
+            "craftedRecipeIds": [],
+            "practiceSuppliesGranted": false,
+            "challengeSuppliesGranted": false,
+            "mastered": false
+        },
+        "weaponCustom": {
+            "stepIndex": 0,
+            "showingFeedback": false,
+            "feedback": "",
+            "hintLevel": 0,
+            "usedHint": false,
+            "hintRequests": 0,
+            "invalidAttempts": 0,
+            "elapsedSeconds": 0.0,
+            "baselineCaptured": false,
+            "baselineDamage": 0.0,
+            "baselineAttackSpeed": 0.0,
+            "baselineCraftWeaponDamageBuff": 0,
+            "practicePartName": "",
+            "baselineParts": [],
+            "craftedRecipeIds": [],
+            "practiceSuppliesGranted": false,
+            "challengeSuppliesGranted": false,
+            "mastered": false
+        }
+    },
+    "bonusDamage": 3.0,
+    "attackSpeedMult": 0.6560999751091003,
+    "hasBulletDouble": false,
+    "spreadModifier": 0.0,
+    "ricochetCount": 0,
+    "junkCollectorMult": 1.0,
+    "bulletSizeMult": 1.0,
+    "magnetRange": 3.0,
+    "selectedUniqueBonusCardIds": [],
+    "gearCraftAxeSizeMultiplier": 1.0,
+    "gearCraftSwordMoveSpeedBonus": 0.0,
+    "gearCraftTransformGearGain": 0,
+    "steamCannonBulletSpeedMultiplier": 1.0,
+    "steamCannonExplosionRadiusMultiplier": 1.0,
+    "steamCannonGiantBulletChance": 0.0,
+    "steamCannonDirectHitKnockback": 0.0,
+    "steamThrowerOverheatSlipDamage": 0.0,
+    "steamThrowerNoBulletGravity": false,
+    "steamThrowerBoostDamageMultiplier": 1.0,
+    "steamThrowerBoostBurnDrops": false,
+    "steamThrowerBoostBurnDropsActive": false,
+    "railCraftBulletSizeMultiplier": 1.0,
+    "railCraftApplyOverheat": false,
+    "railCraftRicochetMultiplier": 1.0,
+    "steamGatlingBulletSpeedMultiplier": 1.0,
+    "steamGatlingBossDamageMultiplier": 1.0,
+    "steamGatlingNormalDamageMultiplier": 1.0,
+    "steamGatlingDownwardRecoil": false
+}

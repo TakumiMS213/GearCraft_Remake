@@ -1,0 +1,15 @@
+Native PunkDrive calibration, four 10-game-second conditions. Enemy is fixed, high HP, AI disabled; native collision/DamageLoop retained.
+VFX only suppressed on disposable Punk clones. Player input disabled during test. No weapon/balance source values changed.
+captureDeltaTime sets game-frame duration; this is controlled simulation frame-rate sensitivity, not a hardware FPS benchmark.
+original captureDeltaTime=0 fixedDeltaTime=0.01999999 timeScale=1
+source damageAmount=0 damageInterval=0
+START STR0_60fps cachedSTR=0 frame=82599 hp=1000000 nativeDamageLoops=1
+RESULT STR0_60fps frames=600 gameSeconds=10.0000 damage=0.0000 dps=0.0000 cachedSTR=0 playerSTR=0 postChangeDamage=0
+START STR10_60fps cachedSTR=10 frame=83206 hp=999999 nativeDamageLoops=1
+RESULT STR10_60fps frames=600 gameSeconds=10.0000 damage=600.0000 dps=60.0000 cachedSTR=10 playerSTR=10 postChangeDamage=600
+START STR10_30fps cachedSTR=10 frame=83813 hp=999999 nativeDamageLoops=1
+RESULT STR10_30fps frames=300 gameSeconds=10.0000 damage=300.0000 dps=30.0000 cachedSTR=10 playerSTR=10 postChangeDamage=300
+START STR0_then10_60fps cachedSTR=0 frame=84120 hp=1000000 nativeDamageLoops=1
+MID STR0_then10_60fps player.STR=10 cachedSTR=0 frame=300
+RESULT STR0_then10_60fps frames=600 gameSeconds=10.0000 damage=0.0000 dps=0.0000 cachedSTR=0 playerSTR=10 postChangeDamage=0
+COMPLETE four native-physics cases recorded; runtime settings restored; Play remains active if caller has not stopped it

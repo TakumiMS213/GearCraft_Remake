@@ -1,0 +1,43 @@
+防衛バランス試験・短評草案（主14条件、2026-10-16）
+主seed77の14条件は全件有効。対象ボス撃破＋native日末帰還/EDを9件、門破壊3件、本人死亡2件で確認。主14のボス生存・操作可sample間に1秒以上の攻撃回数不増は0区間。命中率や人間の成功率を保証する意味ではない。
+AR/EKのseed101/202反復、EK Gearの自発jump抑止、IC速度/持込Gear/BOOST上限を変えた追加条件は進行中。現時点で3seedの安定性を断定しない。最終復元の完了認定はrootが行う。
+
+条件の範囲
+本試験は朝wave7/16/28/31の指定装備から、その一日を通常耐久で守る条件。予定敵/報酬/回収/Repair/Barrier/迎撃/dash/BOOSTはnative処理を使う。HP/門の注入回復なし。Punkは全件あり、BOOSTは持込Gear0＋当日実在庫から最大2回。AR/EKは攻撃Module20、IC/BBは解禁前なので0。
+素材量は条件付き中央値モデル内、STR/ACC=2×(day−1)は代表値。選定パーツ・Module数そのものの実プレイヤー平均ではない。Cannon/ThrowerはAR取得済みの条件付き。取得から全キャンペーンを連続でクリアした検証ではない。
+以下の「ボス秒」は出現から撃破/失敗まで。「戦闘wave合計」は当日waveがactiveだった記録の合計。総game_secondsには回収/報告/遷移も入り、固定captureDeltaTimeとunscaled待機の組合せで端末速度に依存するため、通常プレイの実所要時間とは呼ばない。
+
+GearCraft
+ICは出現31.22秒で門破壊、ボス残7652/13600。BBも10.47秒で門破壊し残8803/13000。前座を通って攻撃を継続していても、この標準構成では両方の防衛に届かなかった。
+ARは23.32秒で撃破し帰還。EKは106.05秒で本人が倒れ、残25852/147600だったが門100は維持。必要火力だけでなく近接位置・自発跳躍と被弾を分けて検討する。戦闘wave合計はIC117.03、BB96.30、AR117.63、EK119.40秒（失敗例を含む）。
+
+SteamCannon
+BBは10.47秒で門が100→−20となり失敗、本人HP97のまま・ボス残9317。強弾が本体の進出後に門へ重なる静的/実測所見があり、単にプレイヤー側のDPS不足とは結論しない。
+ARは17.63秒、EKは59.88秒で撃破。EK撃破時HP10/門100、ED到達時HP30はRepair回復後の値。戦闘wave合計はBB98.13、AR109.45、EK74.50秒。終盤の撃破目標は満たすが、今回のEK条件では生存余裕が小さい。
+
+SteamThrower
+BBでは14.02秒で本人HP94→−26、門100維持・ボス残11790。攻撃Module未解禁の中盤条件では、今回の接近戦・対応操作で防衛に失敗した。
+Module20を使うARは11.87秒、EKは59.65秒で撃破。EK撃破時HP97/門100で、Cannonとほぼ同じ撃破時間でも被害は大幅に少なかった。戦闘wave合計はBB114.20、AR110.68、EK75.43秒。装備段階と戦い方を含む差であり、Module係数0.17の寄与だけを分離した試験ではない。
+
+RailCraft
+ARは5.63秒、EKは45.38秒で撃破し、両方の防衛を達成。戦闘wave合計はAR97.45、EK60.80秒。EK撃破時HP28/門100、ED時HP48だった。
+後半のボス処理は速いが、被弾余裕はGatling/Throwerより小さい。現行基礎300・ACC係数10と終盤パーツ/Module20を使った結果であり、旧基礎150の記録との差をアップグレードパーツだけの効果には帰さない。
+
+SteamGatling
+ARは4.43秒、EKは44.97秒で撃破して帰還/EDへ到達。戦闘wave合計はAR91.83、EK60.30秒。EK撃破時HP64/門100、ED時HP84で、今回の終盤5武器では速さと生存を両立した。
+最終構成ではPrecisionNozzle×2で拡散を抑えている。連射は60fps条件で1frame上限があるため、速度パーツを追加した分だけ無制限に火力が伸びるとは扱わない。3seed反復を終えるまでは安定優位と断定しない。
+
+PunkDrive（併用要因）
+主14条件すべてで有効。主武器と独立した有無比較を今回行っていないため、上記の撃破時間/生存を主武器単独の性能とは呼ばない。単体の防衛成否・寄与DPSは今回の記録から分離できない。
+
+EK状態の観測
+主5武器すべてでphase0/1/2、ArmorTransition、Staggered、CrossfireBurst、CombinedVolleyをsamplesに確認。各武器ArmorTransitionは6sample。約1秒sampleの観測数であり、厳密な装甲秒数/全弾発射数ではない。装甲/後退を含むnative戦闘時間である。全5条件でボス戦の門耐久100を維持した。
+旧QA/WeaponTargetBalance20261015のHP/GATE補充・EK単体計測は処理能力の試験。今回の前座/Punk/モジュール防御/有限BOOST/迎撃/回避/実報酬と異なるため、時間差を単一パラメータの効果として比較しない。
+
+無効試験と生成エラーの扱い
+初回Play継続バッチのBB Gearは全78samples=ending_loading/攻撃0、BB Cannonは開始1秒のNative managers disappeared例外で無効。元25ファイルをinvalid-batch-attempt1へSHA付きで保持し、武器の防衛失敗へ算入しない。
+原因に対応してQA batchだけTitle待機6ゲーム秒＋360frames・captureDeltaTime1/60・遷移安定確認・Ending runtime resetを追加。C#6オフライン/in-memoryコンパイル後に再実行し、主14は無効0で完了。ゲーム本体の変更は行っていない。
+
+原典：各gate_*-result.txt / bosses.csv / waves.csv / samples.csv / initial-status.json、summary.csv、tables.txt。
+補助解析：analysis-IC.txt、analysis-BB.txt、batch-first-run-analysis.txt。
+追加反復の途中集計：multiseed-summary.csv / multiseed-summary.txt。最終結果到着後にこの草案を更新する。

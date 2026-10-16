@@ -1,0 +1,40 @@
+Actual last-enemy death -> day-end pickup -> report -> Dorm. Six types, off-screen, near-expiry, pre-Start and already-collected/burned drops.
+0.25s PASS actual final enemy registered
+0.26s PASS day end blocks player input during collection
+0.26s PASS day-end collection started from real enemy death
+0.26s PASS pickup bypasses physical obstacles Scrap
+0.26s PASS pickup bypasses physical obstacles Gear
+0.26s PASS pickup bypasses physical obstacles UpgradeCore
+0.26s PASS pickup bypasses physical obstacles ModuleCore_lv1
+0.26s PASS pickup bypasses physical obstacles ModuleCore_lv2
+0.26s PASS pickup bypasses physical obstacles ModuleCore_lv3
+0.50s PASS visible travel before expiry Scrap
+0.50s PASS visible travel before expiry Gear
+0.50s PASS visible travel before expiry UpgradeCore
+0.50s PASS visible travel before expiry ModuleCore_lv1
+0.50s PASS visible travel before expiry ModuleCore_lv2
+0.50s PASS visible travel before expiry ModuleCore_lv3
+1.16s PASS exact final collection count Scrap
+1.16s PASS exact final collection count Gear
+1.16s PASS exact final collection count UpgradeCore
+1.16s PASS exact final collection count ModuleCore_lv1
+1.16s PASS exact final collection count ModuleCore_lv2
+1.16s PASS exact final collection count ModuleCore_lv3
+1.16s PASS off-screen drop collected
+1.16s PASS no drops remain before report
+1.16s PASS collection releases input block
+1.16s PASS head feedback remains connected
+3.73s PASS daily report includes automatic pickups Scrap
+3.73s PASS daily report includes automatic pickups Gear
+3.74s PASS daily report includes automatic pickups UpgradeCore
+3.74s PASS daily report includes automatic pickups ModuleCore_lv1
+3.74s PASS daily report includes automatic pickups ModuleCore_lv2
+3.74s PASS daily report includes automatic pickups ModuleCore_lv3
+3.74s PASS day advance occurs after collection
+8.34s PASS collected material survives Dorm transition Scrap
+8.34s PASS collected material survives Dorm transition Gear
+8.34s PASS collected material survives Dorm transition UpgradeCore
+8.34s PASS collected material survives Dorm transition ModuleCore_lv1
+8.34s PASS collected material survives Dorm transition ModuleCore_lv2
+8.34s PASS collected material survives Dorm transition ModuleCore_lv3
+8.34s COMPLETE Day-end collection, final enemy drop and report/Dorm integration passed; original preferences restored checks=38

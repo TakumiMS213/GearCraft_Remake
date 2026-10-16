@@ -1,0 +1,7 @@
+id,weapon,stage,profile,seed,maxSeconds,mode
+fitted_SteamCannon_module0,SteamCannon,31,final_day11_ranged_fitted_speed,77,900,wave
+fitted_SteamCannon_module20,SteamCannon,31,final_day11_ranged_fitted_speed_module20,77,900,wave
+fitted_SteamThrower_module0,SteamThrower,31,final_day11_thrower_fitted_damage,77,900,wave
+fitted_SteamThrower_module20,SteamThrower,31,final_day11_thrower_fitted_damage_module20,77,900,wave
+fitted_RailCraft_module0,RailCraft,31,final_day11_ranged_fitted_speed,77,900,wave
+fitted_RailCraft_module20,RailCraft,31,final_day11_ranged_fitted_speed_module20,77,900,wave

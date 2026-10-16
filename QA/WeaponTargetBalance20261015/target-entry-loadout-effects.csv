@@ -1,0 +1,13 @@
+case,weapon,profile,part_index,asset,part_name,ranged_only,applied,effect_type,value
+entry_SteamGatling_19_module0_seed77,SteamGatling,late_day7_ranged,0,Damage+2,Damage Plate+,False,True,DamageFlat,3
+entry_SteamGatling_19_module0_seed77,SteamGatling,late_day7_ranged,1,Damage+2,Damage Plate+,False,True,DamageFlat,3
+entry_SteamGatling_19_module0_seed77,SteamGatling,late_day7_ranged,2,Damage+2,Damage Plate+,False,True,DamageFlat,3
+entry_SteamGatling_19_module0_seed77,SteamGatling,late_day7_ranged,3,Damage+2,Damage Plate+,False,True,DamageFlat,3
+entry_SteamGatling_19_module0_seed77,SteamGatling,late_day7_ranged,4,SpeedGear++,Speed Gear++,False,True,AttackSpeedMult,0.8
+entry_SteamGatling_19_module0_seed77,SteamGatling,late_day7_ranged,5,SpeedGear++,Speed Gear++,False,True,AttackSpeedMult,0.8
+entry_SteamGatling_19_module0_seed77,SteamGatling,late_day7_ranged,6,SpeedGear++,Speed Gear++,False,True,AttackSpeedMult,0.8
+entry_SteamGatling_19_module0_seed77,SteamGatling,late_day7_ranged,7,SpeedGear+,Speed Gear+,False,True,AttackSpeedMult,0.85
+entry_SteamGatling_19_module0_seed77,SteamGatling,late_day7_ranged,8,SpeedGear,Speed Gear,False,True,AttackSpeedMult,0.9
+entry_SteamGatling_19_module0_seed77,SteamGatling,late_day7_ranged,9,TwinBarrel,Twin Barrel,True,True,BulletDouble,1
+entry_SteamGatling_19_module0_seed77,SteamGatling,late_day7_ranged,10,HeavySlug,Heavy Slug,True,True,BulletSizeUp,0.25
+entry_SteamGatling_19_module0_seed77,SteamGatling,late_day7_ranged,10,HeavySlug,Heavy Slug,True,True,DamageFlat,1
