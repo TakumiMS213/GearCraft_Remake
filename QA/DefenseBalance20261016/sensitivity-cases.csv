@@ -2,3 +2,4 @@ label,weapon,start_stage,profile,seed,STR,ACC,moduleDamage,repair,barrier,punk,s
 gate_sensitivity_IC408_GearCraft_speed6_gear8_seed77,GearCraft,7,ic_speed_budget,77,4,4,0,0,0,1,1,100,100
 gate_sensitivity_IC408_GearCraft_speed6_gear8_seed101,GearCraft,7,ic_speed_budget,101,4,4,0,0,0,1,1,100,100
 gate_sensitivity_IC408_GearCraft_speed6_gear8_seed202,GearCraft,7,ic_speed_budget,202,4,4,0,0,0,1,1,100,100
+gate_sensitivity_IC408_GearCraft_speed6_gear8_repair2_seed77,GearCraft,7,ic_speed_budget,77,1,1,0,0,0,1,1,100,200

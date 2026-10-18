@@ -1,0 +1,176 @@
+ M QA/DefenseBalance20261016/BatchDefenseSensitivity.cs.txt
+ M QA/DefenseBalance20261016/__pycache__/analyze_defense.cpython-311.pyc
+ M QA/DefenseBalance20261016/analyze_defense.py
+ M QA/DefenseBalance20261016/attack-pauses.csv
+ M QA/DefenseBalance20261016/batch-build-manifest.json
+ M QA/DefenseBalance20261016/batch-events-20261016-032502-661.csv
+ M QA/DefenseBalance20261016/batch-progress.txt
+ M QA/DefenseBalance20261016/build_sensitivity_batch.py
+ M QA/DefenseBalance20261016/gate_AR227_RailCraft_seed202-bosses.csv
+ M QA/DefenseBalance20261016/gate_AR227_RailCraft_seed202-events.csv
+ M QA/DefenseBalance20261016/gate_AR227_RailCraft_seed202-samples.csv
+ M QA/DefenseBalance20261016/gate_AR227_RailCraft_seed202-waves.csv
+ M QA/DefenseBalance20261016/multiseed-summary.csv
+ M QA/DefenseBalance20261016/multiseed-summary.txt
+ M QA/DefenseBalance20261016/native-survival-bootstrap-config-used.txt
+ M QA/DefenseBalance20261016/native-survival-bootstrap-progress.txt
+ M QA/DefenseBalance20261016/native-survival-config.csv
+ M QA/DefenseBalance20261016/native-survival-name.txt
+ M QA/DefenseBalance20261016/native-survival-progress.txt
+ M QA/DefenseBalance20261016/repeat-batch-build-manifest.json
+ M QA/DefenseBalance20261016/report-results-draft.txt
+ M QA/DefenseBalance20261016/sensitivity-batch-build-manifest.json
+ M QA/DefenseBalance20261016/sensitivity-cases.csv
+ M QA/DefenseBalance20261016/sensitivity-extra-setup.csv
+ M QA/DefenseBalance20261016/sensitivity-plan.txt
+ M QA/DefenseBalance20261016/session-status.json
+ M QA/DefenseBalance20261016/summary.csv
+ M QA/DefenseBalance20261016/tables.txt
+?? QA/DefenseBalance20261016/analysis-EK-spawn-fall.txt
+?? QA/DefenseBalance20261016/batch-cases-used-20261016-034005-662.csv
+?? QA/DefenseBalance20261016/batch-events-20261016-034005-662.csv
+?? QA/DefenseBalance20261016/batch-runtime-before-20261016-034005-662.txt
+?? QA/DefenseBalance20261016/console-counts-final.json
+?? QA/DefenseBalance20261016/console-warnings-final.txt
+?? QA/DefenseBalance20261016/execution-validation.json
+?? QA/DefenseBalance20261016/final-restoration.txt
+?? QA/DefenseBalance20261016/gate_AR227_RailCraft_seed202-final-materials.json
+?? QA/DefenseBalance20261016/gate_AR227_RailCraft_seed202-final-status.json
+?? QA/DefenseBalance20261016/gate_AR227_RailCraft_seed202-restore-pending.txt
+?? QA/DefenseBalance20261016/gate_AR227_RailCraft_seed202-result.txt
+?? QA/DefenseBalance20261016/gate_AR227_SteamGatling_seed202-bootstrap-config.txt
+?? QA/DefenseBalance20261016/gate_AR227_SteamGatling_seed202-bosses.csv
+?? QA/DefenseBalance20261016/gate_AR227_SteamGatling_seed202-events.csv
+?? QA/DefenseBalance20261016/gate_AR227_SteamGatling_seed202-final-materials.json
+?? QA/DefenseBalance20261016/gate_AR227_SteamGatling_seed202-final-status.json
+?? QA/DefenseBalance20261016/gate_AR227_SteamGatling_seed202-initial-materials.json
+?? QA/DefenseBalance20261016/gate_AR227_SteamGatling_seed202-initial-status.json
+?? QA/DefenseBalance20261016/gate_AR227_SteamGatling_seed202-meta.txt
+?? QA/DefenseBalance20261016/gate_AR227_SteamGatling_seed202-restore-pending.txt
+?? QA/DefenseBalance20261016/gate_AR227_SteamGatling_seed202-result.txt
+?? QA/DefenseBalance20261016/gate_AR227_SteamGatling_seed202-samples.csv
+?? QA/DefenseBalance20261016/gate_AR227_SteamGatling_seed202-waves.csv
+?? QA/DefenseBalance20261016/gate_EK9_GearCraft_grounded_seed77-bootstrap-config.txt
+?? QA/DefenseBalance20261016/gate_EK9_GearCraft_grounded_seed77-bosses.csv
+?? QA/DefenseBalance20261016/gate_EK9_GearCraft_grounded_seed77-events.csv
+?? QA/DefenseBalance20261016/gate_EK9_GearCraft_grounded_seed77-final-materials.json
+?? QA/DefenseBalance20261016/gate_EK9_GearCraft_grounded_seed77-final-status.json
+?? QA/DefenseBalance20261016/gate_EK9_GearCraft_grounded_seed77-initial-materials.json
+?? QA/DefenseBalance20261016/gate_EK9_GearCraft_grounded_seed77-initial-status.json
+?? QA/DefenseBalance20261016/gate_EK9_GearCraft_grounded_seed77-meta.txt
+?? QA/DefenseBalance20261016/gate_EK9_GearCraft_grounded_seed77-restore-pending.txt
+?? QA/DefenseBalance20261016/gate_EK9_GearCraft_grounded_seed77-result.txt
+?? QA/DefenseBalance20261016/gate_EK9_GearCraft_grounded_seed77-samples.csv
+?? QA/DefenseBalance20261016/gate_EK9_GearCraft_grounded_seed77-waves.csv
+?? QA/DefenseBalance20261016/gate_EK9_GearCraft_seed202-bootstrap-config.txt
+?? QA/DefenseBalance20261016/gate_EK9_GearCraft_seed202-bosses.csv
+?? QA/DefenseBalance20261016/gate_EK9_GearCraft_seed202-events.csv
+?? QA/DefenseBalance20261016/gate_EK9_GearCraft_seed202-final-materials.json
+?? QA/DefenseBalance20261016/gate_EK9_GearCraft_seed202-final-status.json
+?? QA/DefenseBalance20261016/gate_EK9_GearCraft_seed202-initial-materials.json
+?? QA/DefenseBalance20261016/gate_EK9_GearCraft_seed202-initial-status.json
+?? QA/DefenseBalance20261016/gate_EK9_GearCraft_seed202-meta.txt
+?? QA/DefenseBalance20261016/gate_EK9_GearCraft_seed202-restore-pending.txt
+?? QA/DefenseBalance20261016/gate_EK9_GearCraft_seed202-result.txt
+?? QA/DefenseBalance20261016/gate_EK9_GearCraft_seed202-samples.csv
+?? QA/DefenseBalance20261016/gate_EK9_GearCraft_seed202-waves.csv
+?? QA/DefenseBalance20261016/gate_EK9_RailCraft_seed202-bootstrap-config.txt
+?? QA/DefenseBalance20261016/gate_EK9_RailCraft_seed202-bosses.csv
+?? QA/DefenseBalance20261016/gate_EK9_RailCraft_seed202-events.csv
+?? QA/DefenseBalance20261016/gate_EK9_RailCraft_seed202-final-materials.json
+?? QA/DefenseBalance20261016/gate_EK9_RailCraft_seed202-final-status.json
+?? QA/DefenseBalance20261016/gate_EK9_RailCraft_seed202-initial-materials.json
+?? QA/DefenseBalance20261016/gate_EK9_RailCraft_seed202-initial-status.json
+?? QA/DefenseBalance20261016/gate_EK9_RailCraft_seed202-meta.txt
+?? QA/DefenseBalance20261016/gate_EK9_RailCraft_seed202-restore-pending.txt
+?? QA/DefenseBalance20261016/gate_EK9_RailCraft_seed202-result.txt
+?? QA/DefenseBalance20261016/gate_EK9_RailCraft_seed202-samples.csv
+?? QA/DefenseBalance20261016/gate_EK9_RailCraft_seed202-waves.csv
+?? QA/DefenseBalance20261016/gate_EK9_SteamCannon_seed202-bootstrap-config.txt
+?? QA/DefenseBalance20261016/gate_EK9_SteamCannon_seed202-bosses.csv
+?? QA/DefenseBalance20261016/gate_EK9_SteamCannon_seed202-events.csv
+?? QA/DefenseBalance20261016/gate_EK9_SteamCannon_seed202-final-materials.json
+?? QA/DefenseBalance20261016/gate_EK9_SteamCannon_seed202-final-status.json
+?? QA/DefenseBalance20261016/gate_EK9_SteamCannon_seed202-initial-materials.json
+?? QA/DefenseBalance20261016/gate_EK9_SteamCannon_seed202-initial-status.json
+?? QA/DefenseBalance20261016/gate_EK9_SteamCannon_seed202-meta.txt
+?? QA/DefenseBalance20261016/gate_EK9_SteamCannon_seed202-restore-pending.txt
+?? QA/DefenseBalance20261016/gate_EK9_SteamCannon_seed202-result.txt
+?? QA/DefenseBalance20261016/gate_EK9_SteamCannon_seed202-samples.csv
+?? QA/DefenseBalance20261016/gate_EK9_SteamCannon_seed202-waves.csv
+?? QA/DefenseBalance20261016/gate_EK9_SteamGatling_seed202-bootstrap-config.txt
+?? QA/DefenseBalance20261016/gate_EK9_SteamGatling_seed202-bosses.csv
+?? QA/DefenseBalance20261016/gate_EK9_SteamGatling_seed202-events.csv
+?? QA/DefenseBalance20261016/gate_EK9_SteamGatling_seed202-final-materials.json
+?? QA/DefenseBalance20261016/gate_EK9_SteamGatling_seed202-final-status.json
+?? QA/DefenseBalance20261016/gate_EK9_SteamGatling_seed202-initial-materials.json
+?? QA/DefenseBalance20261016/gate_EK9_SteamGatling_seed202-initial-status.json
+?? QA/DefenseBalance20261016/gate_EK9_SteamGatling_seed202-meta.txt
+?? QA/DefenseBalance20261016/gate_EK9_SteamGatling_seed202-restore-pending.txt
+?? QA/DefenseBalance20261016/gate_EK9_SteamGatling_seed202-result.txt
+?? QA/DefenseBalance20261016/gate_EK9_SteamGatling_seed202-samples.csv
+?? QA/DefenseBalance20261016/gate_EK9_SteamGatling_seed202-waves.csv
+?? QA/DefenseBalance20261016/gate_EK9_SteamThrower_seed202-bootstrap-config.txt
+?? QA/DefenseBalance20261016/gate_EK9_SteamThrower_seed202-bosses.csv
+?? QA/DefenseBalance20261016/gate_EK9_SteamThrower_seed202-events.csv
+?? QA/DefenseBalance20261016/gate_EK9_SteamThrower_seed202-final-materials.json
+?? QA/DefenseBalance20261016/gate_EK9_SteamThrower_seed202-final-status.json
+?? QA/DefenseBalance20261016/gate_EK9_SteamThrower_seed202-initial-materials.json
+?? QA/DefenseBalance20261016/gate_EK9_SteamThrower_seed202-initial-status.json
+?? QA/DefenseBalance20261016/gate_EK9_SteamThrower_seed202-meta.txt
+?? QA/DefenseBalance20261016/gate_EK9_SteamThrower_seed202-restore-pending.txt
+?? QA/DefenseBalance20261016/gate_EK9_SteamThrower_seed202-result.txt
+?? QA/DefenseBalance20261016/gate_EK9_SteamThrower_seed202-samples.csv
+?? QA/DefenseBalance20261016/gate_EK9_SteamThrower_seed202-waves.csv
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_repair2_seed77-bootstrap-config.txt
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_repair2_seed77-bosses.csv
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_repair2_seed77-events.csv
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_repair2_seed77-final-materials.json
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_repair2_seed77-final-status.json
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_repair2_seed77-initial-materials.json
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_repair2_seed77-initial-status.json
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_repair2_seed77-meta.txt
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_repair2_seed77-restore-pending.txt
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_repair2_seed77-result.txt
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_repair2_seed77-samples.csv
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_repair2_seed77-waves.csv
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_seed101-bootstrap-config.txt
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_seed101-bosses.csv
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_seed101-events.csv
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_seed101-final-materials.json
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_seed101-final-status.json
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_seed101-initial-materials.json
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_seed101-initial-status.json
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_seed101-meta.txt
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_seed101-restore-pending.txt
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_seed101-result.txt
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_seed101-samples.csv
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_seed101-waves.csv
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_seed202-bootstrap-config.txt
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_seed202-bosses.csv
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_seed202-events.csv
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_seed202-final-materials.json
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_seed202-final-status.json
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_seed202-initial-materials.json
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_seed202-initial-status.json
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_seed202-meta.txt
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_seed202-restore-pending.txt
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_seed202-result.txt
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_seed202-samples.csv
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_seed202-waves.csv
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_seed77-bootstrap-config.txt
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_seed77-bosses.csv
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_seed77-events.csv
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_seed77-final-materials.json
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_seed77-final-status.json
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_seed77-initial-materials.json
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_seed77-initial-status.json
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_seed77-meta.txt
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_seed77-restore-pending.txt
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_seed77-result.txt
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_seed77-samples.csv
+?? QA/DefenseBalance20261016/gate_sensitivity_IC408_GearCraft_speed6_gear8_seed77-waves.csv
+?? QA/DefenseBalance20261016/report.txt
+?? QA/DefenseBalance20261016/sensitivity-plan-runtime-verification.json
+?? QA/DefenseBalance20261016/source-after-verification.json
+?? QA/DefenseBugfix20261016/

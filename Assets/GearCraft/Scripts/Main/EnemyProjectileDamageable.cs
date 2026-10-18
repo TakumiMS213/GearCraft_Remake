@@ -59,11 +59,6 @@ public sealed class EnemyProjectileDamageable : MonoBehaviour
         if (gate != null)
         {
             gate.TakeDamage(contactDamage);
-            if (StageFlowManager.Instance != null && !MainDebugEnemySpawnWindow.IsDebugModeActive)
-            {
-                StageFlowManager.Instance.OnGateHit();
-            }
-
             DestroyProjectile();
         }
     }

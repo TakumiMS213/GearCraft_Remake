@@ -1,0 +1,6 @@
+PASS
+2026-10-16T11:47:12.2842880Z begin scene_handle=-10206700 HP=100 GATE=100 speed=1
+2026-10-16T11:47:13.3530920Z target loaded Main handle=-10207604 wait samples=342
+2026-10-16T11:47:13.7544800Z PASS
+
+Play stopped; fresh PlayerPrefs/editor restoration is still required.

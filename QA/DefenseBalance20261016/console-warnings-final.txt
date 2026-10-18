@@ -1,0 +1,4 @@
+Console errorCount=0, warningCount=2, logCount=0; historical entries included.
+1. URP Render Graph compatibility mode deprecation.
+2. DOTween SafeMode captured 6 errors; details/root cause not collected.
+The count does not prove there were no transient runtime warnings during earlier Play sessions.

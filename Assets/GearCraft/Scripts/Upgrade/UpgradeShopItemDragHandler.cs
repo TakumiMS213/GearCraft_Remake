@@ -17,6 +17,7 @@ public class UpgradeShopItemDragHandler : MonoBehaviour, IBeginDragHandler, IDra
 
     public void OnBeginDrag(PointerEventData eventData)
     {
+        if (eventData == null || eventData.button != PointerEventData.InputButton.Left) return;
         TooltipSystem tooltipSystem = TooltipSystem.FindInstance();
         if (tooltipSystem != null)
         {
@@ -32,6 +33,7 @@ public class UpgradeShopItemDragHandler : MonoBehaviour, IBeginDragHandler, IDra
 
     public void OnDrag(PointerEventData eventData)
     {
+        if (eventData == null || eventData.button != PointerEventData.InputButton.Left) return;
         if (!dragging || gridUI == null)
         {
             return;
@@ -42,6 +44,7 @@ public class UpgradeShopItemDragHandler : MonoBehaviour, IBeginDragHandler, IDra
 
     public void OnEndDrag(PointerEventData eventData)
     {
+        if (eventData == null || eventData.button != PointerEventData.InputButton.Left) return;
         if (!dragging || gridUI == null)
         {
             gridUI?.CancelShopDrag();

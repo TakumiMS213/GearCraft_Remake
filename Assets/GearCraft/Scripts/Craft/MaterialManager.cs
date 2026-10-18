@@ -24,7 +24,9 @@ public class MaterialManager : MonoBehaviour
     [SerializeField] public int moduleCore_lv2 = 0;
     [SerializeField] public int moduleCore_lv3 = 0;
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
     private bool gearCheatWasPressed;
+#endif
     private bool hasNotifiedMaterials;
     private int notificationBatchDepth;
     private (int, int, int, int, int, int) lastNotifiedMaterials;
@@ -43,6 +45,7 @@ public class MaterialManager : MonoBehaviour
 
     private void Update()
     {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
         bool gearCheatPressed =
             Input.GetKey(KeyCode.G) &&
             Input.GetKey(KeyCode.E) &&
@@ -55,6 +58,7 @@ public class MaterialManager : MonoBehaviour
         }
 
         gearCheatWasPressed = gearCheatPressed;
+#endif
     }
 
     private void LateUpdate()

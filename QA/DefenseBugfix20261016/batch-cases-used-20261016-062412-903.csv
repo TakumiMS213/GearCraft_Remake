@@ -1,0 +1,7 @@
+label,weapon,start_stage,profile,seed,STR,ACC,moduleDamage,repair,barrier,punk,scrap_module,initial_hp,initial_gate
+gate_fix_EK9_GearCraft_seed101,GearCraft,31,final_day11_melee_defense_module20,101,20,20,20,1,1,1,1,100,100
+gate_fix_EK9_GearCraft_seed77,GearCraft,31,final_day11_melee_defense_module20,77,20,20,20,1,1,1,1,100,100
+gate_fix_EK9_GearCraft_seed202,GearCraft,31,final_day11_melee_defense_module20,202,20,20,20,1,1,1,1,100,100
+gate_fix_BB413_GearCraft_seed77,GearCraft,16,mid_day4_common,77,10,10,0,1,0,1,1,100,100
+gate_fix_BB413_SteamCannon_seed77,SteamCannon,16,mid_day4_common,77,10,10,0,1,0,1,1,100,100
+gate_fix_BB413_SteamThrower_seed77,SteamThrower,16,mid_day4_common,77,10,10,0,1,0,1,1,100,100

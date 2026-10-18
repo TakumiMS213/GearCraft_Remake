@@ -281,6 +281,8 @@ public class EnemyController : MonoBehaviour
     public async UniTaskVoid Die()
     {
         Vector3 deathPos = transform.position;
+        var deathToken = this.GetCancellationTokenOnDestroy();
+        StageFlowManager deathFlow = StageFlowManager.Instance;
 
         // 見た目と当たり判定を即座に消す
         if (spriteRenderer == null)
@@ -313,18 +315,25 @@ public class EnemyController : MonoBehaviour
             // カメラシェイク
             if (cameraShake != null)
             {
-                if (enemyData != null && enemyData.IsBossType)
-                    await cameraShake.ShakeAsync(1f, 3f, 10, 90f);
-                else
-                    await cameraShake.ShakeAsync(0.2f, 0.6f, 10, 90f);
+                try
+                {
+                    if (enemyData != null && enemyData.IsBossType)
+                        await cameraShake.ShakeAsync(1f, 3f, 10, 90f).AttachExternalCancellation(deathToken);
+                    else
+                        await cameraShake.ShakeAsync(0.2f, 0.6f, 10, 90f).AttachExternalCancellation(deathToken);
+                }
+                catch (System.OperationCanceledException) when (deathToken.IsCancellationRequested) { return; }
             }
         }
+
+        // 演出中にシーン移動・プレイヤー死亡で破棄された敵は、新しい日の状態を触らない。
+        if (this == null || deathToken.IsCancellationRequested) return;
 
         // 素材ドロップ
         if (enemyData != null && enemyData.drops != null && MaterialDropper.Instance != null)
         {
             int stageNum = StageCounter.Instance != null ? StageCounter.Instance.StageCount : 1;
-            var stageConfig = StageFlowManager.Instance?.stageConfig;
+            var stageConfig = deathFlow != null ? deathFlow.stageConfig : null;
             if (stageConfig != null)
                 MaterialDropper.Instance.DropMaterialsWithStageBonus(deathPos, enemyData.drops, stageConfig, stageNum);
             else
@@ -332,9 +341,9 @@ public class EnemyController : MonoBehaviour
         }
 
         // StageFlowManagerに通知（ステージ進行を委譲）
-        if (StageFlowManager.Instance != null)
+        if (deathFlow != null)
         {
-            StageFlowManager.Instance.OnEnemyKilled(this, isLastEnemy);
+            deathFlow.OnEnemyKilled(this, isLastEnemy);
         }
 
         Destroy(gameObject);

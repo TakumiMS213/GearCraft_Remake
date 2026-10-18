@@ -1,0 +1,73 @@
+// C#6 execute_code method body. Starts only from this QA's READY paused Main.
+const string folder="QA/ReleaseReadiness20261016/";
+const string backupFolder="QA/DefenseBugfix20261016/";
+const string label="death-player-first";
+if(!Application.isPlaying||UnityEngine.SceneManagement.SceneManager.GetActiveScene().name!="Main"||Time.timeScale!=0f)throw new System.Exception("Requires READY paused Main");
+if(!System.IO.File.Exists(backupFolder+"session-backup-ready.txt")||System.IO.File.ReadAllLines(backupFolder+"playerprefs-before.txt").Count(x=>!string.IsNullOrWhiteSpace(x))!=8)throw new System.Exception("Fresh eight-key backup required");
+if(!System.IO.File.Exists(folder+"native-survival-bootstrap-progress.txt")||!System.IO.File.ReadAllText(folder+"native-survival-bootstrap-progress.txt").StartsWith("READY"))throw new System.Exception("PreparePausedMain must finish first");
+if(System.IO.File.Exists(folder+label+"-result.txt"))throw new System.Exception("Existing result: archive it explicitly before repeating");
+if(System.IO.File.Exists(folder+"probe-progress.txt")&&System.IO.File.ReadAllText(folder+"probe-progress.txt").StartsWith("RUNNING"))throw new System.Exception("Another local probe is running");
+if(MainDebugEnemySpawnWindow.IsDebugModeActive||EndingManager.IsLoadingEnding)throw new System.Exception("Debug/Ending must be inactive");
+var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.NonPublic;
+var status=StatusManager.Instance;var player=UnityEngine.Object.FindFirstObjectByType<PlayerController>();var flow=StageFlowManager.Instance;var gate=GateManager.Instance;
+if(status==null||player==null||flow==null||gate==null||player.runtimeStatus!=status)throw new System.Exception("Native Main managers not ready");
+var initialScene=UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+double wallStart=UnityEditor.EditorApplication.timeSinceStartup;
+float captureBefore=Time.captureDeltaTime;
+var evidence=new System.Text.StringBuilder();
+System.Action<string> note=(s)=>evidence.AppendLine(System.DateTime.UtcNow.ToString("O")+" "+s);
+System.Action<bool,string> require=(ok,s)=>{if(!ok)throw new System.Exception(s);};
+UnityEditor.EditorApplication.CallbackFunction tick=null;
+bool done=false;
+System.Action<string> finish=(outcome)=>{
+ if(done)return;done=true;
+ if(tick!=null)UnityEditor.EditorApplication.update-=tick;
+ Time.captureDeltaTime=captureBefore;
+ note(outcome);
+ System.IO.File.WriteAllText(folder+label+"-result.txt",outcome+"\n"+evidence.ToString()+"\nPlay stopped; fresh PlayerPrefs/editor restoration is still required.\n");
+ System.IO.File.WriteAllText(folder+"probe-progress.txt",outcome+" "+label+"\n");
+ UnityEditor.EditorApplication.isPlaying=false;
+};
+System.IO.File.WriteAllText(folder+"probe-progress.txt","RUNNING "+label+"\n");
+note("begin scene_handle="+initialScene.handle+" HP="+status.HP+" GATE="+status.GATE+" speed="+status.attackSpeedMult);
+Time.captureDeltaTime=1f/60f;
+if(flow.enemySpawner!=null)flow.enemySpawner.StopSpawning();
+
+try{
+ var inv=typeof(PlayerController).GetField("isInvincible",flags);
+ var gateInv=typeof(GateManager).GetField("isInvincible",flags);
+ var retry=typeof(StageFlowManager).GetField("dayRetryTriggered",flags);
+ require(inv!=null&&gateInv!=null&&retry!=null,"Death/Flow fields missing");
+ inv.SetValue(player,false);gateInv.SetValue(gate,false);status.module_barrier=false;status.HP=1;status.GATE=1;
+ var transition=UnityEngine.Object.FindFirstObjectByType<SceneTransitionManager>();
+ require(transition!=null,"Native SceneTransitionManager required");
+ // Hold the native transition longer than the player's one-second retry delay.
+ // Only runtime timing is changed. A real Ending scene is loaded by the native methods.
+ transition.fadeDuration=0.05f;
+ typeof(SceneTransitionManager).GetField("minLoadingSeconds",flags).SetValue(transition,2f);
+ typeof(SceneTransitionManager).GetField("maxLoadingSeconds",flags).SetValue(transition,2f);
+ Time.timeScale=1f;
+ player.TakeDamageByBullet(2f);gate.TakeDamage(2f);
+ require(EndingManager.IsLoadingEnding&&EndingManager.PendingEndingNum==1,"Gate destruction did not request BAD Ending");
+ note("same-call damage order=player_then_gate; HP="+status.HP+" GATE="+status.GATE+" EndingPending=1");
+ int pendingSamples=0,endingSamples=0;float endingGame=0f;
+ tick=()=>{
+  try{
+   if(!Application.isPlaying){finish("ABORTED");return;}
+   require(UnityEditor.EditorApplication.timeSinceStartup-wallStart<30,"Probe wall timeout");
+   var scene=UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+   if(scene.handle==initialScene.handle){
+    require(!(bool)retry.GetValue(flow),"Player retry was triggered while Ending was loading");
+    require(EndingManager.IsLoadingEnding,"Ending lost its loading guard before scene change");
+    pendingSamples++;return;
+   }
+   require(scene.name=="Ending","Unexpected scene instead of Ending: "+scene.name);
+   require(EndingManager.PendingEndingNum==1,"Wrong ending number");
+   require(Time.timeScale==1f,"Ending timeScale not resumed");
+   if(endingSamples++==0){endingGame=Time.time;note("native Ending loaded; pending samples="+pendingSamples);}
+   if(Time.time-endingGame>=2f){require(pendingSamples>0,"No transition wait observed");note("Ending retained for two game seconds; no Main retry");finish("PASS");}
+  }catch(System.Exception ex){note(ex.ToString());finish("FAIL");}
+ };
+ UnityEditor.EditorApplication.update+=tick;
+}catch(System.Exception ex){note(ex.ToString());finish("FAIL");}
+return "Scheduled simultaneous-death probe; inspect probe-progress.txt";

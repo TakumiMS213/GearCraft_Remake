@@ -1,0 +1,10 @@
+PASS
+2026-10-16T08:11:39.4421800Z begin scene_handle=-10200496 HP=100 GATE=100 speed=1
+2026-10-16T08:11:39.4569100Z Gallery-equivalent suspension: enabled=false, speed=0.4, remaining=5, weapon=GearCraft_Axe
+2026-10-16T08:11:40.1578480Z suspension retained state; resumed enabled=true/timeScale1
+2026-10-16T08:11:40.1964960Z resumed remaining=4.7; destroying old Player
+2026-10-16T08:11:40.2031150Z old Player destroyed; new run sentinel speed=.73 weapon=Katana
+2026-10-16T08:11:40.6496320Z new state stable for 6 game seconds; samples=360
+2026-10-16T08:11:40.6497930Z PASS
+
+Play stopped; fresh PlayerPrefs/editor restoration is still required.

@@ -1,0 +1,32 @@
+リリース前・コード/設定の静的監査（2026-10-16）
+範囲: ビルド設定、通常配布のdebug露出、Title/NewGame/Gallery保存と接続、Editor依存、未実装表示。MCP・Player実行はこの監査担当では未実施。対象配布platformはroot確認中。以下は実根拠ある候補で、対象外の設定を独断変更していない。
+
+1. P1: GEARデバッグが通常配布版に露出 → 依頼を受け局所修正済み
+変更前MaterialManager.cs:44-57はGEAR同時押しでSetAllMaterials(99)、全素材を99へ上書き。MainDebugEnemySpawnWindow.cs:24-58/73-106/271は無条件runtime生成・GEARで敵spawnパネル/IsDebugModeActiveを有効化。PlayerController.cs:680等はこのflagで被害を無効化する。GalleryDebugUnlockPanel.csはGEARによる全解放プレビューを無条件有効化していた。
+ユーザー指定の開発用GEAR操作は残し、UNITY_EDITOR || DEVELOPMENT_BUILDでのみ有効にした。非開発版は素材入力処理をコンパイル除外、Main生成/表示/spawnを拒否しdebug被害無効flagはtrue設定されてもfalse、Galleryは既存scene objectを維持してAwakeでパネルを隠し、Update/Openを拒否。
+変更前3ファイルをsource-before/Assets/GearCraft/Scripts/...へ退避。Release/Development/Editorの3定義でruntimeソースのオフラインコンパイル成功（各error0、既存含むwarning132）。反射検査でRelease guard=false/強制debug setter後もfalse/Material.UpdateのIL2bytes、Dev・Editor guard=true/素材入力IL77bytesを確認。Unity操作・配布Player実測を代替するものではない。git diff --check通過。
+
+2. P1: 強化後の射撃が描画fpsで変わり、60fpsバランス試験がそのまま他端末へ適用されない
+根拠: PlayerController.cs:116-149はUpdateごとにHandleAttackを1回、351-375でcoolTime<=0時1回発射し、641-647でdeltaTime減算・負の余剰を0へ丸める。ProjectSettings/QualitySettings.assetのvSyncCountは品質により0/1、ゲーム側の固定射撃tickや統一fps指定は見つからない。
+前回実測の終盤GatlingはcoolTime .03×attackSpeedMult .172589883=約.00518秒（WeaponData/SteamGatling.asset:19、QA/DefenseBalance20261016/gate_EK9_SteamGatling_seed77-initial-status.json:371）。60fpsでは毎frame60回が上限だが、120fpsでも間隔が1frame未満なので120回に変わりうる。Thrower .08×.182742208=約.01462秒もframe丸めの影響を受ける。これはソースからの演繹で今回fps別の実測はしていない。
+候補: 射撃進行をフレーム数から分離するか、意図した上限を明示したうえで60/120/144fps回帰。単なるfps固定や弾数増加は設計判断になるため未編集。
+
+3. P1: Main破棄後の遅延処理が次のrun/sceneへ書き込める（他担当で修正進行中）
+変更前根拠: PlayerController.cs:842-909のBOOSTはdestroy tokenと連動しないCancellationTokenSourceで待ち、終了時にDontDestroyのruntimeStatus.attackSpeedMultを古いsavedSpeedMultへ戻す。938-946の変形解除もdestroy tokenなし、709-710の死亡待機も破棄後に新しいStageFlowManager.Instanceを呼べる。PauseManagerのTitle帰還はStatusManager.ResetRunProgress（attackSpeedMult=1）を先に実行するため、旧BOOSTの完了書込みと競合できる。
+前回QAはTitleで6秒/360frames消化して連続試験の汚染を回避していたが、そのQA側対策だけでは製品のscene寿命の保証にはならない。rootのcombat/UI担当が寿命・同時死亡/門破壊・退場中pauseを修正中。今回担当は独立短probeを準備し、実測結果はrootが確認する。修正後の行番号は変化しうる。
+
+4. P2: 音量設定がアプリ再起動をまたいで保存されない
+根拠: Title/Audio.cs:14-24は現在のAudioMixer値をsliderへ表示、27-36はSetFloatだけ。ゲームruntime全体のPlayerPrefs使用はGallery/チュートリアル/冒頭告知に限られ、BGM/SE設定の保存・復元経路は見つからない。
+提案: 現行session内の音量維持は保ち、BGM/SEの永続キーと起動時復元を追加する候補。未編集。初回既定音量、完全mute、再起動時の値を配布Playerで確認する。
+
+5. P2: 配布識別子にテンプレート名が残る
+根拠: ProjectSettings/ProjectSettings.asset:15-16はcompanyName=Takumi/productName=GearCraft_Remake、169はStandalone applicationIdentifier=com.DefaultCompany.2D-URP、145はbundleVersion=1.0。EditorBuildSettings.assetではTitleが起動sceneで7scene全てenabled。
+Standalone識別子のテンプレート残りは確定だが、希望製品名・配布platform/ストア条件は未確認。名前やIDを独断変更しない。PlayerPrefsの保存場所への影響も含め、初回配布前にrootが最終IDを確定する候補。
+
+確認できた正常な構造・仕様の区別
+・Title/Story/Main/Ending/CraftSpace/Craft/Galleryの7つのenabled sceneパスは全て実在。Title.unity:5147のGAMESTARTはStorySceneLoader.LoadStory、Story→CraftSpaceの指定も存在。WeaponCustomは独立sceneでなくCraftのtabなので、Build Settingsにsceneがないこと自体は不足ではない。
+・Title/CraftSpaceのGalleryボタンはOpenGalleryへ接続。GalleryNavigation.csは元sceneをadditiveで保持してtimeScale/表示/inputを停止し、帰還時に戻す設計。途中の戦闘をscene再ロードしない。
+・EndingManager.cs:43-49は有効ED1～3でGallery解放を保存。GalleryProgress.cs:65/74/120-124の専用JSON PlayerPrefsはStatusManager.ResetRunProgressで削除されず、ED後/メニュー帰還時のrun初期化から独立する。Gallery未知項目の名前/説明/画像を伏せる処理も存在。
+・GalleryCatalogは25項目、enemy/weapon/recipe/artworkの非0主要GUIDは全て解決した。EK-9の登録あり。runtimeコード/scene/catalog対象のTODO/NotImplemented/未実装/placeholder文字列は見つからなかった。ただし外観・全asset描画や全リンクの実機動作を証明するものではない。「？」は未発見仕様であり未実装とは扱わない。
+・Titleの初期StatusはHP100/STR0/ACC0/GATE100、素材0。Pause帰還とED後帰還でrunの装備/素材/日数をリセットし、Gallery/習得済みチュートリアルは維持。防衛途中をディスクへ保存するContinue機能は見つからず、現行のTitle帰還確認にも「今回の防衛の進行・装備・素材は失われます」とある。したがって未実装セーブをバグと断定せず、一周型の配布仕様として確認対象にする。
+・ゲーム本体のUnityEditor参照はEditorフォルダかUNITY_EDITOR分岐内。現在調べたruntimeコードにEditor依存の無条件漏れは見つからない。静的コンパイルは配布ビルドのIL2CPP/stripping/OS動作を保証しない。

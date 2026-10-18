@@ -15,7 +15,7 @@
     "Route: expose native finish callback only",
     "Route: replace one isPlaying=false with timeScale=0; all native cleanup retained"
   ],
-  "runtime_verification": "Not executed by agent; pending root",
+  "runtime_verification": "Unity MCP CodeDom C#6 execution completed; see execution-validation.json and individual result files",
   "offline_compile": {
     "compiler": "Unity 6000.0.67f1 Mono mcs",
     "language_version": "6",
@@ -24,5 +24,7 @@
     "errors": 0,
     "generated_body_sha256": "5f87289526665e9f6109df16674c8d249030d4b509c3189a8c123999bec57753",
     "utc": "2026-10-16T03:15:57.814972+00:00"
-  }
+  },
+  "completed_plan_cases": 14,
+  "runtime_validation_record": "execution-validation.json"
 }

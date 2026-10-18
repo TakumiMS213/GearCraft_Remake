@@ -42,6 +42,11 @@ public class PlayerController : MonoBehaviour
     private float boostRemainingTime = 0f;
     private bool isBoostActive = false;
     private CancellationTokenSource boostCts;
+    private float boostSavedSpeedMult;
+    private float boostAppliedSpeedMult;
+    private CancellationTokenSource gearCraftCts;
+    private WeaponDataSO gearCraftReturnWeapon;
+    private WeaponDataSO gearCraftTemporaryWeapon;
     private const float ENEMY_CONTACT_DAMAGE = 5f;
     private bool isBarrierActive;
     private bool isBarrierRecharging;
@@ -128,7 +133,7 @@ public class PlayerController : MonoBehaviour
         // 武器同期
         SyncWeaponFromStatus();
 
-        if (StageFlowManager.IsPlayerInputBlocked)
+        if (isDeathRetrying || StageFlowManager.IsPlayerInputBlocked)
         {
             StopPlayerMovementInput();
         }
@@ -163,7 +168,7 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (StageFlowManager.IsPlayerInputBlocked) StopPlayerMovementInput();
+        if (isDeathRetrying || StageFlowManager.IsPlayerInputBlocked) StopPlayerMovementInput();
     }
 
     private void StopPlayerMovementInput()
@@ -678,6 +683,7 @@ public class PlayerController : MonoBehaviour
     public async void TakeDamageByBullet(float bulletDamage)
     {
         if (MainDebugEnemySpawnWindow.IsDebugModeActive) return;
+        if (EndingManager.IsLoadingEnding) return;
         if (isDeathRetrying) return;
         if (isInvincible) return;
         if (TryBreakBarrier())
@@ -691,7 +697,10 @@ public class PlayerController : MonoBehaviour
             if (runtimeStatus.HP <= 0)
             {
                 isDeathRetrying = true;
-                AllBlack.SetAllToBlack();
+                CancelTemporaryCombatEffects();
+                StageFlowManager deathFlow = StageFlowManager.Instance;
+                deathFlow?.enemySpawner?.StopSpawning();
+                if (AllBlack != null) AllBlack.SetAllToBlack();
 
                 // 他の敵を破壊
                 foreach (var enemy in GameObject.FindGameObjectsWithTag("Enemy"))
@@ -706,8 +715,15 @@ public class PlayerController : MonoBehaviour
                     rb2d.angularVelocity = 0f;
                     rb2d.constraints = RigidbodyConstraints2D.FreezeAll;
                 }
-                await UniTask.Delay(1000);
-                StageFlowManager.Instance?.RetryDayAfterPlayerDeath();
+                var token = this.GetCancellationTokenOnDestroy();
+                try
+                {
+                    await UniTask.Delay(1000, cancellationToken: token);
+                    // 同時に門が破壊された場合はEDを優先し、別シーンのFlowへ再試行を送らない。
+                    if (!EndingManager.IsLoadingEnding && deathFlow != null)
+                        deathFlow.RetryDayAfterPlayerDeath();
+                }
+                catch (OperationCanceledException) when (token.IsCancellationRequested) { }
                 return;
             }
         }
@@ -810,6 +826,7 @@ public class PlayerController : MonoBehaviour
         effect.transform.position = transform.position;
 
         ParticleSystem particle = effect.AddComponent<ParticleSystem>();
+        particle.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         ParticleSystem.MainModule main = particle.main;
         main.duration = 0.45f;
         main.loop = false;
@@ -837,6 +854,7 @@ public class PlayerController : MonoBehaviour
         {
             particleRenderer.sortingOrder = 5000;
         }
+        particle.Play();
     }
 
     private async UniTaskVoid BoostActive()
@@ -886,27 +904,44 @@ public class PlayerController : MonoBehaviour
         }
 
         isBoostActive = true;
-        boostCts = new CancellationTokenSource();
-        float savedSpeedMult = runtimeStatus.attackSpeedMult;
-        runtimeStatus.attackSpeedMult = Mathf.Max(savedSpeedMult * 0.5f, 0.05f);
+        var source = CancellationTokenSource.CreateLinkedTokenSource(this.GetCancellationTokenOnDestroy());
+        boostCts = source;
+        boostSavedSpeedMult = runtimeStatus.attackSpeedMult;
+        boostAppliedSpeedMult = Mathf.Max(boostSavedSpeedMult * 0.5f, 0.05f);
+        runtimeStatus.attackSpeedMult = boostAppliedSpeedMult;
 
         try
         {
             while (boostRemainingTime > 0f)
             {
-                await UniTask.Delay(TimeSpan.FromSeconds(0.1f), cancellationToken: boostCts.Token);
+                await UniTask.Delay(TimeSpan.FromSeconds(0.1f), cancellationToken: source.Token);
                 boostRemainingTime -= 0.1f;
             }
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (source.IsCancellationRequested)
         {
         }
+        finally
+        {
+            FinishBoost(source);
+            source.Dispose();
+        }
+    }
 
+    private void FinishBoost(CancellationTokenSource source)
+    {
+        if (boostCts != source) return;
+        boostCts = null;
         boostCount = 0;
         isBoostActive = false;
         boostRemainingTime = 0f;
-        runtimeStatus.attackSpeedMult = savedSpeedMult;
-        runtimeStatus.steamThrowerBoostBurnDropsActive = false;
+        if (runtimeStatus != null)
+        {
+            // 日の再試行やラン初期化が済んでいたら、その新しい値を上書きしない。
+            if (Mathf.Approximately(runtimeStatus.attackSpeedMult, boostAppliedSpeedMult))
+                runtimeStatus.attackSpeedMult = boostSavedSpeedMult;
+            runtimeStatus.steamThrowerBoostBurnDropsActive = false;
+        }
 
         if (BoostPanel != null)
         {
@@ -924,8 +959,11 @@ public class PlayerController : MonoBehaviour
             armAnimator.SetFloat("speedNum", 1);
 
         // GearCraft_Axeに切替（StatusManagerの武器リストから検索）
-        var swordWeapon = currentWeapon;
+        var source = CancellationTokenSource.CreateLinkedTokenSource(this.GetCancellationTokenOnDestroy());
+        gearCraftCts = source;
+        gearCraftReturnWeapon = currentWeapon;
         var axeWeapon = runtimeStatus.FindOwnedWeaponByName("GearCraft_Axe");
+        gearCraftTemporaryWeapon = axeWeapon;
         if (axeWeapon != null)
         {
             runtimeStatus.EquipWeapon(axeWeapon);
@@ -935,17 +973,57 @@ public class PlayerController : MonoBehaviour
             }
         }
 
-        await UniTask.Delay(TimeSpan.FromSeconds(5f));
-        if (armAnimator != null)
-            armAnimator.SetFloat("speedNum", -1);
+        try
+        {
+            await UniTask.Delay(TimeSpan.FromSeconds(5f), cancellationToken: source.Token);
+            if (armAnimator != null) armAnimator.SetFloat("speedNum", -1);
+            RestoreGearCraftWeapon();
+            await UniTask.Delay(TimeSpan.FromSeconds(5f), cancellationToken: source.Token);
+        }
+        catch (OperationCanceledException) when (source.IsCancellationRequested) { }
+        finally
+        {
+            FinishGearCraftTransform(source);
+            source.Dispose();
+        }
+    }
 
-        // 元に戻す
-        if (swordWeapon != null && runtimeStatus.ownedWeapons.Contains(swordWeapon))
-            runtimeStatus.EquipWeapon(swordWeapon);
+    private void RestoreGearCraftWeapon()
+    {
+        if (runtimeStatus != null && gearCraftReturnWeapon != null &&
+            runtimeStatus.currentWeapon == gearCraftTemporaryWeapon &&
+            runtimeStatus.ownedWeapons.Contains(gearCraftReturnWeapon))
+            runtimeStatus.EquipWeapon(gearCraftReturnWeapon);
+        gearCraftReturnWeapon = null;
+        gearCraftTemporaryWeapon = null;
+    }
 
-        await UniTask.Delay(TimeSpan.FromSeconds(5f));
+    private void FinishGearCraftTransform(CancellationTokenSource source)
+    {
+        if (gearCraftCts != source) return;
+        gearCraftCts = null;
+        RestoreGearCraftWeapon();
         CanUseGearCraft = true;
     }
+
+    public void CancelTemporaryCombatEffects()
+    {
+        // 待機の再開を待たずに解除し、Snapshot復元後の書き戻しを防ぐ。
+        CancellationTokenSource pendingBoost = boostCts;
+        if (pendingBoost != null)
+        {
+            FinishBoost(pendingBoost);
+            pendingBoost.Cancel();
+        }
+        CancellationTokenSource pendingTransform = gearCraftCts;
+        if (pendingTransform != null)
+        {
+            FinishGearCraftTransform(pendingTransform);
+            pendingTransform.Cancel();
+        }
+    }
+
+    private void OnDestroy() => CancelTemporaryCombatEffects();
 
     /// <summary>
     /// エフェクトを生成するヘルパー

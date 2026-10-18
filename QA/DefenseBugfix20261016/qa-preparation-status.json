@@ -1,0 +1,19 @@
+{
+  "qa_only": true,
+  "unity_execution_performed": false,
+  "session_backup_captured": false,
+  "measurement_results_created": false,
+  "native_case_count": 6,
+  "ar_controlled_movement_cases": 8,
+  "ar_lifecycle_checks": 3,
+  "bb_controlled_geometry_cases": 5,
+  "pending_reason": "Unity MCP has no connected session",
+  "offline_csharp6_compilation": {
+    "BatchDefense": "passed",
+    "CaptureSession": "passed",
+    "RestoreSession": "passed",
+    "AROverheatControlled": "passed",
+    "BBMuzzleControlled": "passed"
+  },
+  "backups_copied_from_previous_session": false
+}

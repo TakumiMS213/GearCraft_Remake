@@ -10,7 +10,7 @@ public class ButtonScaler : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     [SerializeField] private float scaleFactor = 1.1f;  // 拡大倍率
     [SerializeField] private float duration = 0.2f;     // アニメーション時間
 
-    private void Start()
+    private void Awake()
     {
         originalScale = transform.localScale;
     }
@@ -18,12 +18,19 @@ public class ButtonScaler : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     public void OnPointerEnter(PointerEventData eventData)
     {
         currentTween?.Kill(); // 途中のTweenがあれば止める
-        currentTween = transform.DOScale(originalScale * scaleFactor, duration).SetEase(Ease.OutBack);
+        currentTween = transform.DOScale(originalScale * scaleFactor, duration).SetEase(Ease.OutBack).SetUpdate(true);
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
         currentTween?.Kill();
-        currentTween = transform.DOScale(originalScale, duration).SetEase(Ease.OutBack);
+        currentTween = transform.DOScale(originalScale, duration).SetEase(Ease.OutBack).SetUpdate(true);
+    }
+
+    private void OnDisable()
+    {
+        currentTween?.Kill();
+        currentTween = null;
+        transform.localScale = originalScale;
     }
 }

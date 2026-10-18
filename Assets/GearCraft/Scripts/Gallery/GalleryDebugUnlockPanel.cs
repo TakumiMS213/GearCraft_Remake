@@ -21,15 +21,29 @@ namespace GearCraft.Gallery
         private bool chordWasHeld;
         private GameObject previousSelection;
 
-        public bool IsOpen => panel != null && panel.activeSelf;
+        private static bool DebugToolsEnabled
+        {
+            get
+            {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                return true;
+#else
+                return false;
+#endif
+            }
+        }
+
+        public bool IsOpen => DebugToolsEnabled && panel != null && panel.activeSelf;
 
         private void Awake()
         {
             if (panel != null) panel.SetActive(false);
+            if (!DebugToolsEnabled) enabled = false;
         }
 
         private void Update()
         {
+            if (!DebugToolsEnabled) return;
             if (gameObject.scene.name != "Gallery" || SceneManager.GetActiveScene().name != "Gallery") return;
 
             bool chordHeld = IsGearHeld();
@@ -49,7 +63,7 @@ namespace GearCraft.Gallery
 
         public void Open()
         {
-            if (IsOpen || panel == null || gallery == null || catalog == null) return;
+            if (!DebugToolsEnabled || IsOpen || panel == null || gallery == null || catalog == null) return;
             previousSelection = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
             gallery.ClearPreviewProgress();
             panel.SetActive(true);
@@ -123,7 +137,9 @@ namespace GearCraft.Gallery
 
         private static bool IsGearHeld()
         {
-#if ENABLE_INPUT_SYSTEM
+#if !UNITY_EDITOR && !DEVELOPMENT_BUILD
+            return false;
+#elif ENABLE_INPUT_SYSTEM
             Keyboard keyboard = Keyboard.current;
             return keyboard != null && keyboard.gKey.isPressed && keyboard.eKey.isPressed
                 && keyboard.aKey.isPressed && keyboard.rKey.isPressed;

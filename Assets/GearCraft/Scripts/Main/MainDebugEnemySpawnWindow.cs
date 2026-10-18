@@ -19,11 +19,29 @@ public sealed class MainDebugEnemySpawnWindow : MonoBehaviour
     private EnemySpawner spawner;
     private bool comboLatch;
 
-    public static bool IsDebugModeActive { get; private set; }
+    private static bool DebugToolsEnabled
+    {
+        get
+        {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            return true;
+#else
+            return false;
+#endif
+        }
+    }
+
+    private static bool debugModeActive;
+    public static bool IsDebugModeActive
+    {
+        get => DebugToolsEnabled && debugModeActive;
+        private set => debugModeActive = DebugToolsEnabled && value;
+    }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void InitializeRuntime()
     {
+        if (!DebugToolsEnabled) return;
         SceneManager.sceneLoaded -= OnSceneLoaded;
         SceneManager.sceneLoaded += OnSceneLoaded;
         EnsureForActiveScene();
@@ -36,6 +54,7 @@ public sealed class MainDebugEnemySpawnWindow : MonoBehaviour
 
     private static void EnsureForActiveScene()
     {
+        if (!DebugToolsEnabled) return;
         if (SceneManager.GetActiveScene().name != MainSceneName)
         {
             IsDebugModeActive = false;
@@ -59,6 +78,13 @@ public sealed class MainDebugEnemySpawnWindow : MonoBehaviour
 
     private void Awake()
     {
+        if (!DebugToolsEnabled)
+        {
+            SetWindowVisible(false);
+            if (canvas != null) canvas.enabled = false;
+            enabled = false;
+            return;
+        }
         if (instance != null && instance != this)
         {
             Destroy(gameObject);
@@ -72,6 +98,7 @@ public sealed class MainDebugEnemySpawnWindow : MonoBehaviour
 
     private void Update()
     {
+        if (!DebugToolsEnabled) return;
         if (SceneManager.GetActiveScene().name != MainSceneName)
         {
             return;
@@ -98,6 +125,7 @@ public sealed class MainDebugEnemySpawnWindow : MonoBehaviour
 
     private void SetWindowVisible(bool visible)
     {
+        visible &= DebugToolsEnabled;
         if (panel != null)
         {
             panel.SetActive(visible);
@@ -270,7 +298,7 @@ public sealed class MainDebugEnemySpawnWindow : MonoBehaviour
 
     private void SpawnEnemy(EnemyDataSO enemyData)
     {
-        if (enemyData == null || enemyData.prefab == null)
+        if (!DebugToolsEnabled || enemyData == null || enemyData.prefab == null)
         {
             return;
         }

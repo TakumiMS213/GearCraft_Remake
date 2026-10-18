@@ -626,8 +626,13 @@ namespace GearCraft.Scripts.Craft
                 { Fail("先ほどとは違うパーツで、今より威力か速さを伸ばしましょう。効果を見比べてみてください。"); return; }
             }
             else return;
+            float addedDamageBonus = status.bonusDamage - progress.baselineDamage;
+            WeaponDataSO weapon = status.currentWeapon;
+            string damageResult = weapon != null
+                ? $"パーツが組み込まれ、一撃のダメージが{weapon.GetScaledFlatDamageBonus(addedDamageBonus):0.###}増えました。"
+                : $"パーツが組み込まれ、攻撃力の補正が{addedDamageBonus:0.###}増えました。";
             string result = damageUp
-                ? $"パーツが組み込まれ、一撃のダメージが{status.bonusDamage - progress.baselineDamage:0.##}増えました。"
+                ? damageResult
                 : "パーツが組み込まれ、次の攻撃までの待ち時間が短くなりました。";
             if (damageUp && faster) result += "\n次の攻撃までの待ち時間も短くなっています。";
             Succeed(result);
@@ -1310,7 +1315,7 @@ namespace GearCraft.Scripts.Craft
             ApplyFont(text);
             text.color = Color.white;
             text.alignment = TextAlignmentOptions.TopLeft;
-            text.enableWordWrapping = true;
+            text.textWrappingMode = TMPro.TextWrappingModes.Normal;
             return text;
         }
 

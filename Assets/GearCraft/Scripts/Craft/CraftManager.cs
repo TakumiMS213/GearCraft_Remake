@@ -853,7 +853,7 @@ private void ConfigureMaterialImage(Image image, CraftCost cost)
             label.fontSize = 52f;
             label.alignment = TextAlignmentOptions.Center;
             label.raycastTarget = false;
-            label.enableWordWrapping = false;
+            label.textWrappingMode = TMPro.TextWrappingModes.NoWrap;
         }
 
         int current = MaterialManager.Instance != null ? MaterialManager.Instance.GetMaterial(cost.type) : 0;

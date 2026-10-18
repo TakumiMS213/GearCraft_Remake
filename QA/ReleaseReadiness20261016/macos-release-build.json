@@ -1,0 +1,13 @@
+{
+  "result": "Succeeded",
+  "errors": 0,
+  "warnings": 0,
+  "platform": "StandaloneOSX",
+  "options": "ForceOptimizeScriptCompilation, Il2CPP, CompressTextures, StripDebugSymbols, ShaderLivelinkSupport, DetailedBuildReport",
+  "output": "/private/tmp/GearCraftReleaseCheck20261018/Verified/GearCraft.app",
+  "size": 201097753,
+  "duration": 5.2874162999999994,
+  "development": false,
+  "incremental": true,
+  "known_shader_warnings_remain_in_previous_full_compile": true
+}

@@ -1,0 +1,45 @@
+リリース前・戦闘/進行の監査と局所修正（2026-10-16）
+
+範囲と証拠
+Main / EnemyAI / Ending / SceneTransition / CameraShake のコード、Mainシーン設定、同梱DOTween実装を読取。以下は具体的な実行経路がある候補を5件に限定。Unity再現はroot担当で、本書作成時点では未実施。新規の非同期基盤やバランス変更は行っていない。修正前のファイルは source-before/Assets/... に相対パスを保持して保存した。以下の「旧」はそのバックアップの行番号。
+
+1. P0: 本人死亡の自動再試行が、門破壊のED要求を取り消す
+根拠: 旧 Main/PlayerController.cs:678,709-710 は本人死亡から1秒後にその時点のStageFlowManager.Instanceへ再試行を要求。旧 Main/StageFlowManager.cs:362-375 はEnding状態を確認せずMainを再ロード。Ending/EndingManager.cs:89-99 は要求時にIsLoadingEnding=true、falseへの復帰はEnding.Awake:43-45。SceneTransitionManager.cs:94-107 と Scenes/Main.unity:9339,9343-9344 は0.7秒fade＋1～1.5秒loading。
+Trigger: HPとGATEを各1にして、同一frameに本人へ致死ダメージ→門へ致死ダメージ。BB-12の半径3の爆発が門際で両者を巻き込む実経路もある。本人の1秒待ちがEDロードの1.7～2.2秒より先にMainを再ロードし、Ending.Awake未実行のままIsLoadingEnding=trueが残り、以後のED要求が拒否され得る。
+最小修正（実装済み）: Main/PlayerController.cs:683 はED要求後の追加ダメージを拒否、死亡待機を旧Flowとdestroy tokenへ束縛。死亡時に新規スポーンと本人の操作を停止。Main/StageFlowManager.cs:351,370 はED中のsnapshot復元・retryを拒否し、旧日の進行も失効させる。
+検証: 本人→門、門→本人の両順序でED1へ1回だけ遷移、Main再ロード0回、ED.Awake後IsLoadingEnding=false。本人だけの死亡は元の日開始snapshotへ1回戻る。終了演出中に旧Playerを破棄しても新Flowへretryを送らない。
+
+2. P1: BOOST / GearCraft変形の古い待機が、新しいランの攻撃速度・装備を上書きする
+根拠: 旧 Main/PlayerController.cs:889-909 のBOOST CTSはdestroy連動もCancelもなく、5秒後に保存したattackSpeedMultを無条件書戻し。旧同:938-947 の変形5秒＋再使用5秒待機にも寿命トークンなし。StatusManager.cs:101 はDontDestroyOnLoad。
+Trigger: BOOST直後に死亡→再試行、旧BOOSTの5秒が満了する前に再度BOOST。旧Playerが新Playerの攻撃速度を戻してしまう。変形直後にMainを離れ、別の武器を選んだ後にも旧PlayerがSwordを再装備できる。
+最小修正（実装済み）: Main/PlayerController.cs:902-1025。各CTSをdestroyに連動。Finish処理はそのCTSが現在の所有者である場合のみ実行。新 CancelTemporaryCombatEffects() で待機再開を待たず同期解除し、OnDestroy/死亡とsnapshot復元前に呼ぶ。変形は現在もその一時Axeを装備中の場合のみ元武器へ戻す。BOOSTは適用した値と一致するときだけ保存値へ戻す。新run reset前の同期解除はPauseManager担当が統合する。
+検証: 通常BOOSTが5秒持続し期限で戻る。途中追加は従来の最大5秒更新。旧Playerを破棄→新速度/装備を設定→旧期限経過後も不変。snapshot復元直後/TitleReset直後にも変化なし。変形は通常5秒でSword、10秒で再使用可能、キャンセル時は即解除。再試行後の新BOOSTを旧finallyが解除しない。
+注意: 解除をdestroy tokenだけに依存すると、snapshot復元後にfinallyが旧値を戻せるため、同期解除を復元前に置いた。TitleReset側でも同様にreset前の呼出が必要。
+
+3. P1: Bomber爆発の門被害がPERFECT/ED判定に記録されない
+根拠: EnemyAI/EnemyAI_Bomber.cs:70-75 はGateManager.TakeDamageのみ。旧 Main/GateManager.cs:108-118 はHPを減らすだけ。OnGateHitはTank/Final/HeavyShot/通常門接触の各呼出元に分散していた。Main/StageFlowManager.cs のgateWasHitはPERFECT、killAllEnemiesはED2/3の判定に使う。
+Trigger: 門への接触より手前で、B-1/BB-12の爆発範囲だけが門に当たる。爆発後Dieでcolliderが直ちに無効になれば通常の門接触経路へ入らず、GATEが減ってもgateWasHit=false、killAllEnemies=trueが残る。
+最小修正（実装済み）: Main/GateManager.cs:104-113、正の被害が実際に通った時だけkillAllEnemies=false/StageFlow.OnGateHitを記録。無敵・デバッグ・ED遷移中は記録しない。EnemyProjectileDamageable/BossTank/BossFinalから重複OnGateHit呼出を削除した。Bomber本体の変更は不要。通常敵が門へ到達した場合は、無敵で被害0でも撃ち漏らしとしてkillAllEnemies=falseだけ残す。高頻度の門接触/点滅Debug.Logを削除。
+検証: Bomber範囲爆発でGATEが減ると両フラグが更新される。無敵中の強弾/Tank/Final攻撃はGATEもgateWasHitも変えない。通常門到達はPERFECT用被害と撃ち漏らしを区別する。門への被害を伴わないBomber撃破では変化なし。
+
+4. P2: CameraShakeの古いawait完了が、新しい揺れや破棄済みTransformを触る
+根拠: 旧 CameraShake.cs:31-34 は既存Tween.Kill、同:53-56 は待機後に無条件で初期位置へ書戻し。Plugins/Demigiant/DOTween/Modules/DOTweenModuleUnityVersion.cs:216-223 のAsyncWaitForCompletionはKillでも完了する。旧Main/EnemyController.cs:317-337 はカメラ演出をawaitした後に、その時点のSingletonへドロップ・撃破通知するがdestroyガードなし。
+Trigger: 連続撃破でシェイクA待機中にBを開始すると、Aの完了処理がBの途中でカメラ位置を戻す。演出中にMainを破棄すると、旧Shakeの継続が破棄済みTransformへアクセスする。敵を死亡演出中に破棄した場合にも旧Dieの後半が走り得る。
+最小修正（実装済み）: CameraShake.cs:24-71 は各Tweenをローカル捕捉し、現在のTweenと一致する完了だけ位置復元。OnDisable/OnDestroyで参照を外してKill。Main/EnemyController.cs:281-346 はdestroy tokenで死亡待機を中止し、通知先Flowを開始時に捕捉。演出中に破棄された敵は後半のドロップ/通知を実行しない。
+検証: 同frameと連続frameで2回シェイクし、Aの完了がBを停止/原点復帰させない。シェイク中にカメラ破棄してMissingReferenceExceptionなし。敵死亡演出中に敵またはシーンを破棄し、後続sceneへ素材/撃破通知が漏れない。通常撃破は1回だけ通知される。
+
+5. P2: MainのDay表示待機が破棄後にUIを操作する
+根拠: 旧Main/StageFlowManager.cs:138-139,503-514 の初回Day表示はdestroy cancellationなしで、待機後にstageNumTextを書換えて次stageを開始する。OpeningNoticeの待機には既にtokenがあり、その後のDayだけ対象外。
+Trigger: Day表示中に直接Mainを再ロード/シーン破棄。旧startの待機後に破棄済みTextMeshProへアクセスする。通常UIの退場待機が長ければ表面化しないため、主に素早い再試行/外部シーン切替で確認する。
+最小修正（実装済み）: StageFlowManager.cs:139-146,512-523 のShowDayAsyncにdestroy tokenを渡してキャンセル捕捉。StartNextStageもretry/ending中は開始しない。同時にShowPerfectの2秒待機も同じ寿命へ束縛した。
+検証: Day表示開始から0.1秒でMain再ロード、旧UI例外なし、旧Spawnerの追加生成なし、新Flowだけがstage開始。
+
+編集の保持/検証状況
+・source-beforeに相対パスを保持した9ファイルのバックアップ。EnemyAI_Bomberは変更不要だったため原文のまま。
+・実編集8ファイル。BossFinal/BossTankはOnGateHit重複1行の削除だけで、先行BB/AR/EKの配置・後退・攻撃・過熱修正を変更していない。
+・git diff --check は対象ファイルすべてPASS。
+・upgrade_benchmarkがUnity実Bee Assembly-CSharp.rspを用いて全146ソースをcompile PASS。既存TMP非推奨7警告のみ、検証中のソース変更なし。ログ /private/tmp/gearcraft-ui-readiness-20261016/full.compile.log.txt と full.compile.json。Unity実測はroot/weapon_progression_auditの局所probeで行う。
+・SceneTransition/Ending/StatusManager/PauseManager はこの担当では編集していない。退場時timeScaleとTitleReset前解除は他担当/rootと連携。
+
+独立レビューでの補正
+GalleryNavigation.SuspendSource:107 は時間停止のままPlayer.enabled=falseにしており、Gallery閲覧はscene破棄ではない。初版Player.OnDisableで一時効果を解除すると、閲覧だけでBOOST/変形が失われるため、rootがPlay停止後にOnDisableの1行を削除した。破棄時はOnDestroy/linked destroy token、死亡・snapshot・TitleReset前は明示同期解除だけで保護する。Gallery往復時の効果残時間保持を回帰項目に追加。CameraShakeのOnDisableは残す（Gallery退避はCameraだけを無効化し、CameraShake Behaviour自体は無効化しない）。

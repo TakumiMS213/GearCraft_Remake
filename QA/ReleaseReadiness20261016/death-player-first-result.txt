@@ -1,0 +1,8 @@
+PASS
+2026-10-16T11:20:03.1177850Z begin scene_handle=-10202684 HP=100 GATE=100 speed=1
+2026-10-16T11:20:03.1451880Z same-call damage order=player_then_gate; HP=-1 GATE=-1 EndingPending=1
+2026-10-16T11:20:06.3120740Z native Ending loaded; pending samples=1393
+2026-10-16T11:20:06.5279070Z Ending retained for two game seconds; no Main retry
+2026-10-16T11:20:06.5281390Z PASS
+
+Play stopped; fresh PlayerPrefs/editor restoration is still required.

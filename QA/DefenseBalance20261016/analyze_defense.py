@@ -381,6 +381,7 @@ def render(rows, cases):
 
 MULTI_FIELDS = "group boss weapon profile planned_seeds planned_count result_count valid_count pending_count invalid_count defense_success_count defense_failed_count boss_defeated_count boss_unreached_count player_dead_count gate_destroyed_count censored_count completed_seeds pending_seeds".split()
 MULTI_FIELDS += "regular_valid_count abnormal_count abnormal_failure_count abnormal_success_count regular_success_count min_player_y".split()
+MULTI_FIELDS += "planned_STR planned_ACC planned_initial_hp planned_initial_gate".split()
 for _metric in ("defeated_boss_seconds", "failure_boss_seconds", "observed_boss_end_seconds", "wave_seconds", "total_record_seconds", "boss_end_hp", "boss_end_gate", "boss_remaining_hp"):
     MULTI_FIELDS += [_metric + suffix for suffix in ("_n", "_min", "_median", "_max")]
 MULTI_FIELDS += "boss_attack_pause_max_seconds initial_gear_observed boost_count_observed per_seed_outcomes labels".split()
@@ -392,6 +393,7 @@ def summarize_groups(rows, plans):
     for plan in plans:
         label = plan["label"]
         group = ("grounded_posture" if "_grounded_" in label else
+                 "ic_repair_allocation" if "repair2" in label else
                  "ic_speed_sensitivity" if "sensitivity" in label else
                  "standard_3seeds" if int(plan["start_stage"]) in (28, 31) else "primary_only")
         # A group must have identical planned build and initial durability/stat flags.
@@ -413,6 +415,8 @@ def summarize_groups(rows, plans):
         failures = [row for row in regular if row.get("result") in ("player_dead", "gate_destroyed")]
         boss_stage, boss = BOSSES.get(int(members[0]["start_stage"]), ("", ""))
         summary = dict(group=key[0], boss=boss, weapon=members[0]["weapon"], profile=members[0]["profile"],
+                       planned_STR=members[0].get("STR", ""), planned_ACC=members[0].get("ACC", ""),
+                       planned_initial_hp=members[0].get("initial_hp", ""), planned_initial_gate=members[0].get("initial_gate", ""),
                        planned_seeds=";".join(plan["seed"] for plan in members), planned_count=len(members), result_count=len(complete),
                        valid_count=len(valid), pending_count=len(pending), invalid_count=len(invalid),
                        regular_valid_count=len(regular), abnormal_count=len(abnormal),
@@ -459,11 +463,12 @@ def summarize_groups(rows, plans):
 
 def render_multiseed(summaries):
     lines = ["防衛試験・seed反復集計", "生成UTC: " + datetime.now(timezone.utc).isoformat(),
+             f"計画対象の完了{sum(row['result_count'] for row in summaries)}/{sum(row['planned_count'] for row in summaries)}、無効{sum(row['invalid_count'] for row in summaries)}、通常成功{sum(row['regular_success_count'] for row in summaries)}・通常失敗{sum(row['defense_failed_count'] for row in summaries)}・異常落下失敗{sum(row['abnormal_failure_count'] for row in summaries)}・異常落下成功{sum(row['abnormal_success_count'] for row in summaries)}・打切{sum(row['censored_count'] for row in summaries)}。条件の異なる対照を含む件数であり、同一条件の成功率ではない。",
              "標準AR/EKはseed77/101/202の3件。取得済み代表装備・有限bot条件の少数反復であり、人間の成功率や平均装備の推定ではない。",
              "撃破時間は撃破例だけの中央値/範囲を明示し、失敗の秒数・本人/門/ボス残HPもseed別に併記。未完了・無効を成功/失敗へ算入しない。",
              "player_y < -20の異常落下は記録として保持し、通常失敗とは別計数。全ての時間/耐久の中央値・範囲から除外し、seed別の生値を表示する。原因は別途調査し、通常DPS不足とは判断しない。",
-             "grounded姿勢とIC速度/持込Gear8/BOOST6は別枠。標準3seedへ混ぜない。", ""]
-    names = {"primary_only": "IC/BB 主seed77のみ", "standard_3seeds": "標準AR/EK 3seed", "grounded_posture": "EK Gear 自発jump抑止の姿勢比較", "ic_speed_sensitivity": "IC速度・持込資源の感度試験"}
+             "grounded姿勢とIC速度/持込Gear8/BOOST6は別枠。ICの修理2夜投資（STR/ACC1・門200）も速度3seedから分離する。標準3seedへ混ぜない。", ""]
+    names = {"primary_only": "IC/BB 主seed77のみ", "standard_3seeds": "標準AR/EK 3seed", "grounded_posture": "EK Gear 自発jump抑止の姿勢比較", "ic_speed_sensitivity": "IC速度・持込資源の感度試験（3seed）", "ic_repair_allocation": "IC修理2夜の防衛投資比較（単発、速度3seedと分離）"}
     for group in names:
         selected = [row for row in summaries if row["group"] == group]
         if not selected:
@@ -475,7 +480,7 @@ def render_multiseed(summaries):
             if row["abnormal_success_count"]:
                 lines.append(f"  異常落下を伴う成功{row['abnormal_success_count']}件（通常成功と統計は分離）")
             lines.append("  " + row["per_seed_outcomes"])
-            lines.append(f"  profile={row['profile']}、初期Gear実測={row['initial_gear_observed'] or '未記録'}、BOOST実使用={row['boost_count_observed'] or '未記録'}、戦闘wave合計秒={stats('wave_seconds')}、ボス中攻撃不増最大={fmt(row['boss_attack_pause_max_seconds'])}秒")
+            lines.append(f"  profile={row['profile']}、計画STR/ACC={row['planned_STR']}/{row['planned_ACC']}・HP/門={row['planned_initial_hp']}/{row['planned_initial_gate']}、初期Gear実測={row['initial_gear_observed'] or '未記録'}、BOOST実使用={row['boost_count_observed'] or '未記録'}、戦闘wave合計秒={stats('wave_seconds')}、ボス中攻撃不増最大={fmt(row['boss_attack_pause_max_seconds'])}秒")
         lines.append("")
     lines.extend(["observed_boss_end_secondsは撃破と失敗の終了時刻を含むため、全例撃破と確認できない限りTTKとは呼ばない。",
                   "区間総game_secondsは日末回収/報告/遷移を含む。captureDeltaTime固定中のunscaled待機は端末速度に依存してゲーム秒換算が増えるため、通常プレイの実所要時間とは扱わない。",

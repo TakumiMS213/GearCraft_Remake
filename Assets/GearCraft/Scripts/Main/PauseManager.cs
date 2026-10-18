@@ -57,6 +57,7 @@ public class PauseManager : MonoBehaviour
 
     private void Update()
     {
+        if (leavingScene) return;
         if (StageFlowManager.Instance != null && StageFlowManager.Instance.IsBlockingGameplayUI) return;
         if (Input.GetKeyDown(KeyCode.Escape))
         {
@@ -78,6 +79,7 @@ public class PauseManager : MonoBehaviour
 
     public void Pause()
     {
+        if (leavingScene) return;
         if (StageFlowManager.Instance != null && StageFlowManager.Instance.IsBlockingGameplayUI) return;
         if (!isPaused) previousTimeScale = Time.timeScale;
         isPaused = true;
@@ -92,6 +94,7 @@ public class PauseManager : MonoBehaviour
 
     public void Resume()
     {
+        if (leavingScene) return;
         StageFlowManager.BlockPlayerInputForCurrentFrame();
         isPaused = false;
         Time.timeScale = previousTimeScale;
@@ -111,6 +114,7 @@ public class PauseManager : MonoBehaviour
 
     public void Back()
     {
+        if (leavingScene) return;
         if (StageFlowManager.Instance != null && StageFlowManager.Instance.IsBlockingGameplayUI) return;
         if (titleReturnConfirmPanel != null && titleReturnConfirmPanel.activeInHierarchy)
         {
@@ -133,14 +137,13 @@ public class PauseManager : MonoBehaviour
 
     private void ConfirmRetryDay()
     {
-        Time.timeScale = 1f;
-        isPaused = false;
         StageFlowManager.Instance?.RestoreDayStartSnapshot();
         SceneTransitionManager.LoadSceneWithTransition("Main");
     }
 
     public void ToggleInventory()
     {
+        if (leavingScene) return;
         if (inventoryPanel == null)
         {
             return;
@@ -175,6 +178,7 @@ public class PauseManager : MonoBehaviour
 
     public void CloseInventory()
     {
+        if (leavingScene) return;
         if (inventoryPanel != null)
         {
             inventoryPanel.SetActive(false);
@@ -266,6 +270,7 @@ public class PauseManager : MonoBehaviour
 
     private void ShowActionConfirmation(string message, string confirmLabel)
     {
+        if (leavingScene) return;
         if (titleReturnConfirmPanel == null)
         {
             return;
@@ -285,6 +290,7 @@ public class PauseManager : MonoBehaviour
 
     private void HideTitleReturnConfirm()
     {
+        if (leavingScene) return;
         retryConfirmationPending = false;
         if (titleReturnConfirmPanel != null)
         {
@@ -296,19 +302,22 @@ public class PauseManager : MonoBehaviour
     {
         if (leavingScene) return;
         leavingScene = true;
+        // Keep the old Main frozen after restoring/resetting persistent state.
+        // SceneTransitionManager resumes time after the new scene has loaded.
+        isPaused = true;
+        Time.timeScale = 0f;
         if (retryConfirmationPending)
         {
             ConfirmRetryDay();
             return;
         }
-        Time.timeScale = 1f;
-        isPaused = false;
         ResetRunProgress();
         SceneTransitionManager.LoadSceneWithTransition("Title");
     }
 
     private static void ResetRunProgress()
     {
+        FindFirstObjectByType<PlayerController>()?.CancelTemporaryCombatEffects();
         StoryPlaybackRequest.ClearRequest();
 
         if (StageCounter.Instance != null)

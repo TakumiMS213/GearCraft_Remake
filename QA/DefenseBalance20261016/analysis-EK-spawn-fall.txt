@@ -1,0 +1,59 @@
+EK-9 / GearCraft / seed101：出現直後の床抜けと試験結果の分類
+確認日：2026-10-16
+対象：gate_EK9_GearCraft_seed101-*。比較対象：同 seed77。保存ログ・制作コード・Scene/Prefab の静的監査のみ。MCP 実行、制作コード、runner、既存結果の変更なし。
+
+判定
+seed101 の gate_destroyed は、通常の戦闘を継続した末の GearCraft 火力・耐久不足として扱わない。EK 出現から約 1 秒以内にプレイヤーが床下へ落下し、残りの時間は近接攻撃の範囲外となっている。「出現直後の位置・衝突異常により戦闘不能となった防衛失敗」として別分類し、武器性能だけの勝率・敗北時間・与ダメージの集計へ混ぜない。
+これは記録そのものを無効として捨てる意味ではない。native 物理・敵 AI を使う試験で機能上の異常を捕捉した記録として保持する。ログと重なり形状から、巨大な非 Trigger ボスの移設時にプレイヤーを覆い、接触解決で床下へ押し出した可能性が高い。ただし各物理ステップの接触法線・位置が未記録のため、床を抜けた瞬間の物理解決を確定したとはしない。
+
+1. ログで確定する時系列
+・14.016663 秒：player (6.257401, -3.82227063)、Y 速度 0、HP 100 / 門 100、攻撃累計 18。床上で静止していた。
+・15.000000 秒：EK が HP 147600、位置 (3.10338926, -0.802267551) で登録された。player は引き続き (6.257401, -3.82227063)。
+・15.016663 秒：player の位置・Y 速度は上記と同じ。flow_active true / input_blocked false。攻撃抑止は no_visible_target。
+・16.016663 秒：player (-1.02848983, -15.41555)、Y 速度 -22.9553852。攻撃累計は 26、EK HP 146654。既に床下へ完全に落下している。
+・17.016663 秒：Y -53.3802147、Y 速度 -52.38539。以後も Y 速度は一秒につき約 -29.43 ずつ低下。重力 -9.81 × player gravityScale 3 と一致する。
+・16.016663 秒から終了まで、攻撃累計は 26、EK HP 146654 のまま。ターゲットは EK のままで、抑止理由は melee_out_of_range。UI 入力停止や ending_loading が原因ではない。
+・26.299988 秒：門 -20 で終了。player Y -1815.99231 / Y 速度 -326.0819、HP は 100 のまま。ボス時間は 11.2999878 秒、ボス出現後の攻撃は 8 回、観測された門被害は 120。
+・reactive_dash の記録は一件もない。15.133 秒と20.650 秒には歯車を実消費した BOOST があるが、これは攻撃待ち時間を変える処理であり、下向き速度を設定しない。
+根拠：対象 bosses.csv / events.csv / samples.csv / result.txt。samples は一秒間隔なので床を抜け始めた正確なフレームは不明。
+
+2. 本編に「bot が省略した落下復帰処理」があるか
+PlayerController.cs:116-162 の Update は status/武器同期、入力処理、CoolTimeUpdate、Barrier、演出、Punk 起動を行う。落下 Y の検査・床上への復帰・下向き速度の上限処理はない。
+同 :251-286 の HandleMovement は水平速度を変更し、Y は現在の rb.linearVelocity.y を保持する。例外は Space + isGrounded で正の jumpForce を設定する処理。:164-179 の FixedUpdate / StopPlayerMovementInput も Y を保持する。
+Ground 衝突時は :653 で isGrounded を true にするだけで、床下へ抜けた場合の救済はない。HP 死亡時の速度停止・翌日の再試行は :691-710 にあるが、今回 HP は 100 のままなので該当しない。
+Main の Character に付く制御スクリプトは PlayerController と ArmRotation。ArmRotation は腕の座標・回転を更新し、プレイヤー本体を床上へ戻す処理はない。
+したがって、今回の持続落下を「本編にはある床下復帰を bot が呼んでいないため」と説明するコード根拠はない。
+
+3. bot の維持処理と限界
+BatchDefenseRepeat.cs.txt:465 は PlayerController と ArmRotation の Update を無効にし、:504-506 で status/武器/腕/Barrier/Punk を維持する。
+:529-540 の移動は水平の目的地へ向かう速度を設定し、Y は既存 linearVelocity.y を引き継ぐ。Y を変更するのは近接用の自動ジャンプで、正の jumpForce を設定するだけ。ダッシュ処理 (:370-377) も X の速度だけを返す。
+今回のケース名に _grounded_ は含まれないため、比較用のジャンプ抑止分岐は対象外。落下前は本体へ近づき、床下に落ちた後は |vy| < 0.35 の接地判定を満たさず、自動ジャンプで救出されない。
+bot には、ボスの未来の出現領域を事前に避ける判断も、床下へ抜けた後の人工的な復帰もない。通常歩行の壁判定や人間の事前回避・ジャンプと完全に同じ入力列ではないため、「人間でも必ず同じ seed で落下する」とは断定しない。一方、今回は左右の床端へ移動したログではなく、runner が下向きの異常速度や位置を直接設定する経路も確認できない。
+
+4. EK 出現と衝突形状
+EnemySpawner.cs:209-218 は通常の Instantiate でボスをスポーナー位置に生成する。EnemyController.cs:60-95 の Start で AI を初期化・登録する。
+EnemyAI_BossFinal.cs:122-128 は BossArena を作成し、owner.transform.position を groundArena.Ground(visualArena.GetPosition(1,0)) へ直接変更する。プレイヤーとの重なり確認・出現位置の退避・接触解決は行わない。
+FinalBoss.prefab:305 は scale 8.8、:341 は非 Trigger、:345 の BoxCollider offset (0.075,0.1)、:355 の size (1.05,1.02)。実寸は 9.24 × 8.976。Rigidbody は Kinematic (:365)。EnemyController.cs:154-173 が無視するのは敵同士・敵と素材の衝突で、プレイヤーとの接触は残る。ProjectSettings の layer 8 (Player) と 3 (Enemy)、layer 8 と 0 (Ground) は衝突有効。
+BossArena.Ground (:102-118) は EK の箱の下面を床上面 + 0.02 に合わせる。EK 自身を床上へ置くが、その領域に既にいる player を考慮しない。
+
+出現記録の transform と現在の Scene/Prefab 値から、物理同期後に意図される AABB を再構成すると、
+  EK：x [-0.856611, 8.383389] / y [-4.410268, 4.565732]
+  player：x [5.582279, 6.905149] / y [-4.415267, -2.873398]
+となる。幅 1.32287 × 高さ 1.53687 の深い重なりを持ち、player は EK 下部の内側にいる計算になる。これは保存された transform と serialized collider の幾何計算であり、当該瞬間の接触法線の実測ではない。
+Main.unity:17932-17933 の Ground は x [-23.1482, 26.8518]、上面 Y -4.430267、厚さ約 0.915666。今回の player の X 範囲は床内に収まっており、水平移動で床の端を越えたケースではない。
+
+5. 出現直後の bounds 同期の不一致
+15.016663 秒の同一 sample で、EK transform は (3.09988928,-0.802267551) だが、Collider bounds は x [14.0400009,23.2799988] / y [-0.491333,8.484667] と旧スポーン位置側を示している。16.016663 秒には transform と一致する x [-1.06311011,8.176889] / y [-4.410268,4.565732] になっている。
+Physics2DSettings.asset:54 は AutoSyncTransforms 0。制作側で transform を変更した直後に Collider bounds がまだ更新されていない記録と整合する。
+bot は bounds.min.x > 8.6 を可視対象から除外するため、15.016663 秒時点では EK を選ばず no_visible_target となっている。その後は EK を選んで左へ移動するが、出現時点の重なり自体を防ぐ処理ではない。
+この一サンプルの不一致だけから、同期遅延が床抜けの唯一の原因だったとは言えない。深い初期重なり、物理ステップと Editor callback の順序、床・ボス双方との接触解決が候補として残る。
+
+6. seed77 との切り分け
+seed77 も出現時 player X 6.2799983 / Y -3.82227063 と似た位置で、15.016602 秒に一時的に Y -4.42787743 へ下がる。しかし次の 16.016602 秒には Y -3.822272 に戻り、その後も攻撃を継続している。出現後 106.049927 秒で本人死亡、門 100、EK 残 HP 25852、ボス中攻撃 1156 回。持続的な床下落下ではない。
+両ケースを同じ「GearCraft の防衛失敗」として一括しない。seed77 にも出現直後の一時的な接触侵入を疑わせる値はあるため、出現処理が完全に正常だったとは評価しないが、seed101 の戦闘不能・無抵抗時間とは分離できる。
+
+7. 集計と今後の確認に必要な最小情報
+・raw の result=gate_destroyed は維持する。解析側に classification=abnormal_fall_after_boss_spawn / combat_comparison_eligible=false 等の別分類を設ける。原因未確定の物理衝突を分類名で確定扱いしない。
+・通常の武器性能集計では seed101 を除外した件数と、その理由を明記する。単に撃破失敗として数える場合でも、機能不具合による失敗一件を必ず別記する。
+・今回 production 修正・再生条件追加は行わない。今後、別の検証で出現前後の各 FixedUpdate の player/EK transform と Rigidbody.position、双方 bounds、Ground bounds、接触点・法線・分離距離、player velocity と bot から設定した vx/vy を短時間だけ保存すれば、物理解決と bot 入力を切り分けられる。
+・その前に player を強制的に床上へ戻す補正だけを runner に入れると、今回発見した出現時衝突問題を隠すため、元試験の代用にはしない。

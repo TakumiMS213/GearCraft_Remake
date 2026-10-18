@@ -11,13 +11,15 @@ public class backGroundManager : MonoBehaviour
     {
         if (player == null)
         {
-            player = GameObject.FindGameObjectWithTag("Player").transform;
+            GameObject target = GameObject.FindGameObjectWithTag("Player");
+            player = target != null ? target.transform : null;
         }
-        previousPlayerPosition = player.position;
+        if (player != null) previousPlayerPosition = player.position;
     }
 
     void LateUpdate()
     {
+        if (player == null) return;
         Vector3 deltaMovement = player.position - previousPlayerPosition;
 
         // 背景をわずかに動かす

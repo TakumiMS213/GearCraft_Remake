@@ -116,7 +116,7 @@ public class InventoryItemView : MonoBehaviour
             text.alignment = alignment;
         }
 
-        text.enableWordWrapping = true;
+        text.textWrappingMode = TMPro.TextWrappingModes.Normal;
         text.overflowMode = TextOverflowModes.Ellipsis;
         text.color = new Color(1f, 0.96f, 0.82f, 1f);
         text.raycastTarget = false;

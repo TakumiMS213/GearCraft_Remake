@@ -1,0 +1,3 @@
+passed=2/5
+observation=synchronous_native_LaunchCounterableProjectile_before_physics_step
+no_native_flow_progressed=true

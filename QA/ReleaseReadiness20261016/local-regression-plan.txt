@@ -1,0 +1,39 @@
+局所回帰の準備手順（2026-10-16）
+
+状態: この担当は実機/MCPを実行していない。以下は準備した probe であり、PASS 結果ではない。コンパイル結果は probe-compile-results.json を参照。ゲーム本体の追加編集はない。
+
+前提とセーブ保護
+・root がこの session で取得した QA/DefenseBugfix20261016/session-backup-ready.txt、playerprefs-before.txt（8キー）、editor/gameview/logger-before を参照する。過去 session の値をコピーしない。
+・元の clean Title / Edit 状態から Play に入り、PreparePausedMain.cs.txt を execute_code の C#6 method body として実行。native-survival-bootstrap-progress.txt が READY になるまで待つ。
+・設定は新 QA 内の native-survival-config.csv: GearCraft,4,none,77。前回 NativeSurvivalBootstrap を流用し、ランを初期化して GearCraft 剣/斧、パーツなし、攻撃module0、HP/門100 の paused Main を用意する。冒頭告知とGallery発見を含む既知の保存キーはfresh backupに含まれる。
+・次の各 probe は独立実行する。同じ Main に連続投入しない。全 probe が結果/例外/中断で Editor callback を解除して Play を停止する。結果既存時は上書きを拒否する。
+・各 probe 後、Play=false を確認して RestoreReleaseSession.cs.txt を実行。8キー、時間、GameView、logger、clean Title が元と一致するかを確認する。これを次の probe でも繰り返す。
+・probe-progress.txt が RUNNING の間は復元を拒否する。手動停止した場合も callback が ABORTED を書いて解除されるのを待つ。プロセス強制終了時は、root が残留callback/Play状態を確認するまで RUNNING マーカーを消さない。
+・新規セーブ取得/原シーン保存は行わない。結果は新 QA にのみ出力し、復元記録も同フォルダの final-restoration.txt に保存する。
+
+実行する独立 probe
+1. ProbeGateDamage.cs.txt
+   HP100 の門に native TakeDamage(7)。門93、Flow.gateWasHit=true、killAllEnemies=false、無敵開始を確認。
+   通知検出用に gateWasHit/killAllEnemies だけを戻し、同フレームで2回目の7ダメージ。耐久と通知用値が変わらないことを確認。
+   PERFECT の判定条件への反映を検査する。wave完了やPERFECT画像の見た目までは再生しない。
+2. ProbeBoostLifetime.cs.txt
+   native BOOST＋GearCraft変形を開始し、Galleryの退避と同じ Player.enabled=false / timeScale0 で0.7実秒待機。BOOST active、残時間、攻撃間隔、斧装備を維持することを確認。
+   enabled=true / timeScale1 で0.35ゲーム秒進め、BOOST残時間の減少再開と斧装備維持を確認。
+   旧PlayerをDestroyし、完了後に永続StatusをResetRunProgress、speed=.73の新runへ変更。さらに6ゲーム秒、旧BOOST/変形から速度/装備の上書きがないことを確認。
+   空Mainのwave起動を止めるため、このprobeだけFlow.dayRetryTriggered=trueを設定する。GalleryNavigation.Open/Returnの実UI接続自体は操作していない。
+3. ProbeDeathPlayerFirst.cs.txt
+4. ProbeDeathGateFirst.cs.txt
+   バリア無効、本人HP/門1で、同じ呼出内に本人→門 / 門→本人の順でnative被害を与える。
+   native scene transitionのruntime待機を2秒にして、本人死亡の1秒retry待ちと競合させる。旧Mainでretry flagが立たず、BAD Endingへ到達後2ゲーム秒間Mainに奪われないことを確認。
+   門→本人ではEnding guardにより本人の被害が拒否されることを想定。2件は別Playで実行する。
+5. ProbePauseRetry.cs.txt
+6. ProbePauseTitle.cs.txt
+   native Pause→再試行/Title確認→確定を実行。0.55実秒以上のnative待機中、timeScale0を保持するかを各Editor updateで観測。
+   Resume/Back/Pause/RetryDay/ToggleInventory/CloseInventory/再確定を反復し、leavingScene、isPaused、menu、初期化後HP/門/日付が変わらないことを確認。
+   scene handle変更で旧Mainと再読込Mainを区別し、遷移先timeScale1、追加のscene再読込がないことを0.4実秒確認する。
+
+出力と判定
+・各 label-result.txt: PASS / FAIL / ABORTED、時刻付き観測、復元がまだ必要な旨。
+・probe-progress.txt: 現在の1件の状態。各probeファイルの既存resultは保持する。
+・ここでPASSが出ても、通常ゲームの長時間通し、フレームレート別火力、実配布ビルド、音量再起動保存、実Gallery UI全体を保証しない。
+・生成元: build_local_probes.py。既存測定結果やfresh backupを編集しない。再生成はbody/設定のみで結果を作らない。

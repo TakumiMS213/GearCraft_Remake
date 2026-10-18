@@ -1,0 +1,88 @@
+// C#6 execute_code method body. Starts only from this QA's READY paused Main.
+const string folder="QA/ReleaseReadiness20261016/";
+const string backupFolder="QA/DefenseBugfix20261016/";
+const string label="boost-lifetime";
+if(!Application.isPlaying||UnityEngine.SceneManagement.SceneManager.GetActiveScene().name!="Main"||Time.timeScale!=0f)throw new System.Exception("Requires READY paused Main");
+if(!System.IO.File.Exists(backupFolder+"session-backup-ready.txt")||System.IO.File.ReadAllLines(backupFolder+"playerprefs-before.txt").Count(x=>!string.IsNullOrWhiteSpace(x))!=8)throw new System.Exception("Fresh eight-key backup required");
+if(!System.IO.File.Exists(folder+"native-survival-bootstrap-progress.txt")||!System.IO.File.ReadAllText(folder+"native-survival-bootstrap-progress.txt").StartsWith("READY"))throw new System.Exception("PreparePausedMain must finish first");
+if(System.IO.File.Exists(folder+label+"-result.txt"))throw new System.Exception("Existing result: archive it explicitly before repeating");
+if(System.IO.File.Exists(folder+"probe-progress.txt")&&System.IO.File.ReadAllText(folder+"probe-progress.txt").StartsWith("RUNNING"))throw new System.Exception("Another local probe is running");
+if(MainDebugEnemySpawnWindow.IsDebugModeActive||EndingManager.IsLoadingEnding)throw new System.Exception("Debug/Ending must be inactive");
+var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.NonPublic;
+var status=StatusManager.Instance;var player=UnityEngine.Object.FindFirstObjectByType<PlayerController>();var flow=StageFlowManager.Instance;var gate=GateManager.Instance;
+if(status==null||player==null||flow==null||gate==null||player.runtimeStatus!=status)throw new System.Exception("Native Main managers not ready");
+var initialScene=UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+double wallStart=UnityEditor.EditorApplication.timeSinceStartup;
+float captureBefore=Time.captureDeltaTime;
+var evidence=new System.Text.StringBuilder();
+System.Action<string> note=(s)=>evidence.AppendLine(System.DateTime.UtcNow.ToString("O")+" "+s);
+System.Action<bool,string> require=(ok,s)=>{if(!ok)throw new System.Exception(s);};
+UnityEditor.EditorApplication.CallbackFunction tick=null;
+bool done=false;
+System.Action<string> finish=(outcome)=>{
+ if(done)return;done=true;
+ if(tick!=null)UnityEditor.EditorApplication.update-=tick;
+ Time.captureDeltaTime=captureBefore;
+ note(outcome);
+ System.IO.File.WriteAllText(folder+label+"-result.txt",outcome+"\n"+evidence.ToString()+"\nPlay stopped; fresh PlayerPrefs/editor restoration is still required.\n");
+ System.IO.File.WriteAllText(folder+"probe-progress.txt",outcome+" "+label+"\n");
+ UnityEditor.EditorApplication.isPlaying=false;
+};
+System.IO.File.WriteAllText(folder+"probe-progress.txt","RUNNING "+label+"\n");
+note("begin scene_handle="+initialScene.handle+" HP="+status.HP+" GATE="+status.GATE+" speed="+status.attackSpeedMult);
+Time.captureDeltaTime=1f/60f;
+if(flow.enemySpawner!=null)flow.enemySpawner.StopSpawning();
+
+try{
+ var boost=typeof(PlayerController).GetMethod("BoostActive",flags);
+ var transform=typeof(PlayerController).GetMethod("ChangeGearCraft",flags);
+ var active=typeof(PlayerController).GetField("isBoostActive",flags);
+ var remaining=typeof(PlayerController).GetField("boostRemainingTime",flags);
+ require(boost!=null&&transform!=null&&active!=null&&remaining!=null,"BOOST/transform reflection members missing");
+ require(player.currentWeapon!=null&&player.currentWeapon.weaponName=="GearCraft_Sword","GearCraft Sword is required");
+ MaterialManager.Instance.AddMaterial(MaterialManager.MaterialType.Gear,2);
+ status.attackSpeedMult=0.8f;
+ boost.Invoke(player,null);transform.Invoke(player,null);
+ require((bool)active.GetValue(player),"BOOST did not activate");
+ require(status.currentWeapon!=null&&status.currentWeapon.weaponName=="GearCraft_Axe","Gear transform did not activate");
+ float suspendedSpeed=status.attackSpeedMult;
+ float suspendedRemaining=(float)remaining.GetValue(player);
+ var suspendedWeapon=status.currentWeapon;
+ player.enabled=false;Time.timeScale=0f;
+ note("Gallery-equivalent suspension: enabled=false, speed="+suspendedSpeed+", remaining="+suspendedRemaining+", weapon="+suspendedWeapon.weaponName);
+ int phase=0;float phaseGame=Time.time;double phaseWall=UnityEditor.EditorApplication.timeSinceStartup;WeaponDataSO nextWeapon=null;int stableSamples=0;
+ // Keep the isolated empty Main from starting its wave after the opening display finishes.
+ typeof(StageFlowManager).GetField("dayRetryTriggered",flags).SetValue(flow,true);
+ tick=()=>{
+  try{
+   if(!Application.isPlaying){finish("ABORTED");return;}
+   require(UnityEditor.EditorApplication.timeSinceStartup-wallStart<40,"Probe wall timeout");
+   require(UnityEngine.SceneManagement.SceneManager.GetActiveScene().handle==initialScene.handle,"Unexpected scene transition");
+   if(phase==0){
+    require(player!=null&&!(player.enabled)&&(bool)active.GetValue(player),"Disabled Player lost BOOST");
+    require(Mathf.Approximately(status.attackSpeedMult,suspendedSpeed)&&Mathf.Approximately((float)remaining.GetValue(player),suspendedRemaining)&&status.currentWeapon==suspendedWeapon,"Paused suspension changed temporary combat state");
+    if(UnityEditor.EditorApplication.timeSinceStartup-phaseWall<0.7)return;
+    player.enabled=true;Time.timeScale=1f;phaseGame=Time.time;phase=1;note("suspension retained state; resumed enabled=true/timeScale1");return;
+   }
+   if(phase==1){
+    if(Time.time-phaseGame<0.35f)return;
+    require((float)remaining.GetValue(player)<suspendedRemaining,"BOOST did not resume elapsed-time progression");
+    require(status.currentWeapon==suspendedWeapon,"Transform expired before its natural duration");
+    note("resumed remaining="+remaining.GetValue(player)+"; destroying old Player");
+    UnityEngine.Object.Destroy(player.gameObject);phase=2;return;
+   }
+   if(phase==2){
+    if(player!=null)return;
+    status.ResetRunProgress();status.attackSpeedMult=0.73f;nextWeapon=status.currentWeapon;phaseGame=Time.time;phase=3;
+    note("old Player destroyed; new run sentinel speed=.73 weapon="+(nextWeapon==null?"null":nextWeapon.weaponName));return;
+   }
+   require(Mathf.Approximately(status.attackSpeedMult,0.73f),"Old BOOST overwrote the new run speed");
+   require(status.currentWeapon==nextWeapon,"Old Gear transform overwrote the new run weapon");
+   require(!status.steamThrowerBoostBurnDropsActive,"Old BOOST burn state leaked");
+   stableSamples++;
+   if(Time.time-phaseGame>=6f){note("new state stable for "+(Time.time-phaseGame)+" game seconds; samples="+stableSamples);finish("PASS");}
+  }catch(System.Exception ex){note(ex.ToString());finish("FAIL");}
+ };
+ UnityEditor.EditorApplication.update+=tick;
+}catch(System.Exception ex){note(ex.ToString());finish("FAIL");}
+return "Scheduled BOOST/suspension/lifetime probe; inspect probe-progress.txt";

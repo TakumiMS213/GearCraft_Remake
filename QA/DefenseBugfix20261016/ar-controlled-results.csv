@@ -1,0 +1,12 @@
+case,mode,heated,result,elapsed_game,saw_slow,saw_recovery,saw_returning,cleanup_ok,details
+0,Entering,False,completed,1.26666665,False,False,False,not_tested_here,"Natural native movement; overheat mid-flight 0.3s at 0.55. Actual progress rate must be checked from frame CSV; presence of flags alone is not speed validation."
+1,Arc,False,completed,1.51666665,False,False,False,not_tested_here,"Natural native movement; overheat mid-flight 0.3s at 0.55. Actual progress rate must be checked from frame CSV; presence of flags alone is not speed validation."
+2,Charging,False,completed,2.73333335,False,False,True,not_tested_here,"Natural native movement; overheat mid-flight 0.3s at 0.55. Actual progress rate must be checked from frame CSV; presence of flags alone is not speed validation."
+3,Returning,False,completed,0.8166666,False,False,True,not_tested_here,"Natural native movement; overheat mid-flight 0.3s at 0.55. Actual progress rate must be checked from frame CSV; presence of flags alone is not speed validation."
+4,Entering,True,completed,1.4000001,True,True,False,not_tested_here,"Natural native movement; overheat mid-flight 0.3s at 0.55. Actual progress rate must be checked from frame CSV; presence of flags alone is not speed validation."
+5,Arc,True,completed,1.64999962,True,True,False,not_tested_here,"Natural native movement; overheat mid-flight 0.3s at 0.55. Actual progress rate must be checked from frame CSV; presence of flags alone is not speed validation."
+6,Charging,True,completed,2.86666679,True,True,True,not_tested_here,"Natural native movement; overheat mid-flight 0.3s at 0.55. Actual progress rate must be checked from frame CSV; presence of flags alone is not speed validation."
+7,Returning,True,completed,0.9499998,True,True,True,not_tested_here,"Natural native movement; overheat mid-flight 0.3s at 0.55. Actual progress rate must be checked from frame CSV; presence of flags alone is not speed validation."
+8,DeathCleanup,False,passed,0.13333416,False,False,False,True,"Native lifecycle; active-before=True"
+9,DisableCleanup,False,passed,0.1333332,False,False,False,True,"Native lifecycle; active-before=True"
+10,DestroyCleanup,False,passed,0.1333332,False,False,False,True,"Native lifecycle; active-before=True"

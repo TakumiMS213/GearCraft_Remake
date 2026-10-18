@@ -1,0 +1,59 @@
+// C#6 execute_code body. Run after a fresh paused Main bootstrap; no route callback active.
+// Synchronously invoke the native BB fire method and observe actual clone bounds before any physics step.
+const string bbFolder="QA/DefenseBugfix20261016/";
+if(!Application.isPlaying||UnityEngine.SceneManagement.SceneManager.GetActiveScene().name!="Main"||Time.timeScale!=0f)throw new System.Exception("Requires fresh Main bootstrap READY at timeScale=0");
+if(!System.IO.File.Exists(bbFolder+"session-backup-ready.txt"))throw new System.Exception("Capture current session first");
+foreach(string file in new[]{"native-survival-progress.txt","batch-progress.txt"})if(System.IO.File.Exists(bbFolder+file)&&System.IO.File.ReadAllText(bbFolder+file).StartsWith("RUNNING"))throw new System.Exception("Native QA callback still running");
+if(System.IO.File.Exists(bbFolder+"bb-muzzle-controlled.csv"))throw new System.Exception("Refusing to overwrite BB controlled results");
+var bbData=UnityEditor.AssetDatabase.LoadAssetAtPath<EnemyDataSO>("Assets/GearCraft/ScriptableObject/EnemyData/lv3_BB-413.asset");
+var bbGate=GateManager.Instance;var bbGateBody=bbGate!=null?bbGate.GetComponent<Collider2D>():null;
+if(bbData==null||bbData.prefab==null||bbGateBody==null||GameObject.FindGameObjectWithTag("Player")==null)throw new System.Exception("Native BB/Gate/Player unavailable");
+var bbFlags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
+var bbLaunch=typeof(EnemyAI_BossArtillery).GetMethod("LaunchCounterableProjectile",bbFlags);
+var bbMuzzle=typeof(EnemyAI_BossArtillery).GetMethod("GetCounterableProjectileSpawnPosition",bbFlags);
+var bbLimit=typeof(EnemyAI_BossArtillery).GetMethod("GetAdvanceLimit",bbFlags);
+if(bbLaunch==null||bbMuzzle==null||bbLimit==null)throw new System.Exception("Updated native BB geometry helpers missing");
+var bbPrefab=bbData.bulletPrefabs[0];var bbPrefabBox=bbPrefab.GetComponent<BoxCollider2D>();
+if(bbPrefabBox==null)throw new System.Exception("Expected native BoxCollider2D projectile");
+var bbCulture=System.Globalization.CultureInfo.InvariantCulture;System.Func<float,string> bbN=x=>x.ToString("R",bbCulture);
+var bbOutput=new System.Text.StringBuilder("case,expected_shot,actual_shots,owner_x,owner_y,owner_left,planned_muzzle_x,planned_muzzle_y,projectile_x,projectile_y,projectile_left,projectile_right,projectile_bottom,projectile_top,gate_right,gate_overlap_x,gate_overlap_y,horizontal_gap,velocity_x,velocity_y,min_horizontal_flight_seconds,passed\n");
+var bbCreated=new System.Collections.Generic.List<GameObject>();GameObject bbClone=null;
+int bbPassed=0;
+try{
+ bbClone=UnityEngine.Object.Instantiate(bbData.prefab);bbClone.name="QA_BBMuzzleControlled";
+ var owner=bbClone.GetComponent<EnemyController>();owner.enabled=false;owner.enemyData=bbData;owner.HP=13000f;
+ var ai=bbClone.GetComponent<EnemyAI_BossArtillery>();if(ai==null)ai=bbClone.AddComponent<EnemyAI_BossArtillery>();ai.Initialize(owner,bbData);
+ var arena=new BossArena(owner);var rect=arena.GetMovementRect();Vector3 initialized=owner.transform.position;
+ float stop=(float)bbLimit.Invoke(ai,new object[]{rect});
+ foreach(string name in new[]{"initialize","stop_center","stop_sway_high","stop_sway_low","overlap_guard"}){
+  Vector3 pos=initialized;if(name!="initialize")pos.x=stop;
+  if(name=="stop_sway_high")pos.y=Mathf.Min(rect.yMax,pos.y+1.1f);if(name=="stop_sway_low")pos.y=Mathf.Max(rect.yMin,pos.y-1.1f);
+  owner.transform.position=pos;Physics2D.SyncTransforms();
+  Bounds gate=bbGateBody.bounds;Vector3 muzzle=(Vector3)bbMuzzle.Invoke(ai,new object[]{bbPrefab});
+  if(name=="overlap_guard"){
+   float left=muzzle.x+bbPrefabBox.offset.x*bbPrefab.transform.localScale.x-bbPrefabBox.size.x*Mathf.Abs(bbPrefab.transform.localScale.x)*0.5f;
+   pos.x+=gate.max.x+0.05f-left;owner.transform.position=pos;Physics2D.SyncTransforms();muzzle=(Vector3)bbMuzzle.Invoke(ai,new object[]{bbPrefab});
+  }
+  var before=new System.Collections.Generic.HashSet<int>(UnityEngine.Object.FindObjectsByType<EnemyProjectileDamageable>(FindObjectsSortMode.None).Select(x=>x.GetInstanceID()));
+  bbLaunch.Invoke(ai,null);Physics2D.SyncTransforms();
+  var shots=UnityEngine.Object.FindObjectsByType<EnemyProjectileDamageable>(FindObjectsSortMode.None).Where(x=>!before.Contains(x.GetInstanceID())).ToArray();
+  foreach(var shot in shots)bbCreated.Add(shot.gameObject);
+  bool expected=name!="overlap_guard",passed=expected?shots.Length==1:shots.Length==0;
+  if(shots.Length==0){
+   bbOutput.AppendLine(string.Join(",",new[]{name,expected.ToString(),"0",bbN(owner.transform.position.x),bbN(owner.transform.position.y),bbN(owner.GetComponent<Collider2D>().bounds.min.x),bbN(muzzle.x),bbN(muzzle.y),"","","","","","",bbN(gate.max.x),"","","","","","",passed.ToString()}));
+  }else foreach(var shot in shots){
+   Bounds b=shot.GetComponent<Collider2D>().bounds;var rb=shot.GetComponent<Rigidbody2D>();Vector2 v=rb!=null?rb.linearVelocity:Vector2.zero;
+   float ox=Mathf.Max(0f,Mathf.Min(b.max.x,gate.max.x)-Mathf.Max(b.min.x,gate.min.x)),oy=Mathf.Max(0f,Mathf.Min(b.max.y,gate.max.y)-Mathf.Max(b.min.y,gate.min.y)),gap=b.min.x-gate.max.x;
+   bool shotPassed=passed&&ox<=0f&&gap>=3.849f;passed=shotPassed;
+   bbOutput.AppendLine(string.Join(",",new[]{name,expected.ToString(),shots.Length.ToString(),bbN(owner.transform.position.x),bbN(owner.transform.position.y),bbN(owner.GetComponent<Collider2D>().bounds.min.x),bbN(muzzle.x),bbN(muzzle.y),bbN(shot.transform.position.x),bbN(shot.transform.position.y),bbN(b.min.x),bbN(b.max.x),bbN(b.min.y),bbN(b.max.y),bbN(gate.max.x),bbN(ox),bbN(oy),bbN(gap),bbN(v.x),bbN(v.y),v.x<0f?bbN(gap/-v.x):"not_heading_left",shotPassed.ToString()}));
+  }
+  if(passed)bbPassed++;
+  foreach(var shot in shots)if(shot!=null)UnityEngine.Object.DestroyImmediate(shot.gameObject);
+ }
+ System.IO.File.WriteAllText(bbFolder+"bb-muzzle-controlled.csv",bbOutput.ToString());
+ System.IO.File.WriteAllText(bbFolder+"bb-muzzle-controlled-result.txt","passed="+bbPassed+"/5\nobservation=synchronous_native_LaunchCounterableProjectile_before_physics_step\nno_native_flow_progressed=true\n");
+ return "BB synchronous muzzle checks: "+bbPassed+"/5; actual projectile bounds recorded before physics; Main remains paused. Stop Play then restore session.";
+}finally{
+ foreach(var go in bbCreated)if(go!=null)UnityEngine.Object.DestroyImmediate(go);
+ if(bbClone!=null)UnityEngine.Object.DestroyImmediate(bbClone);
+}

@@ -1,0 +1,9 @@
+{
+  "run_case_capture": "batch-cases-used-20261016-034005-662.csv",
+  "final_plan": "sensitivity-cases.csv",
+  "byte_equal": false,
+  "semantic_rows_equal": true,
+  "newline_normalized_equal": true,
+  "run_sha256": "5c1bb9825c2813f16ed7b6cb906b901eb159b63b2ef321059e5d92a9fca337e5",
+  "final_sha256": "2f3aaaa2a7f02658fa6744e36a5cb19c5ae90dc9e05acc7cdf40987d43c3063e"
+}

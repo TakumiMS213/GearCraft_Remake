@@ -27,12 +27,9 @@ public class CameraShake : MonoBehaviour
         int? vibrato = null,
         float? randomness = null)
     {
+        if (!isActiveAndEnabled) return;
         // 既存シェイク中なら停止
-        if (currentShake != null && currentShake.IsActive())
-        {
-            currentShake.Kill();
-            transform.localPosition = initialPosition;
-        }
+        StopCurrentShake();
 
         float d = duration ?? defaultDuration;
         float s = strength ?? defaultStrength;
@@ -40,7 +37,7 @@ public class CameraShake : MonoBehaviour
         float r = randomness ?? defaultRandomness;
 
         // DoTweenのDOShakePositionを使用
-        currentShake = transform.DOShakePosition(
+        Tween shake = transform.DOShakePosition(
             duration: d,
             strength: s,
             vibrato: v,
@@ -48,13 +45,30 @@ public class CameraShake : MonoBehaviour
             snapping: false,
             fadeOut: true
         ).SetEase(Ease.OutQuad);
+        currentShake = shake;
 
         // 終了待ち（await可能）
-        await currentShake.AsyncWaitForCompletion();
+        await shake.AsyncWaitForCompletion();
 
-        // 終了後位置リセット（微ズレ防止）
+        // 古いシェイクの完了が、新しく開始したシェイクや破棄済みカメラを触らない。
+        if (this != null && currentShake == shake)
+        {
+            currentShake = null;
+            transform.localPosition = initialPosition;
+        }
+    }
+
+    private void StopCurrentShake()
+    {
+        Tween shake = currentShake;
+        currentShake = null;
+        if (shake == null) return;
+        if (shake.IsActive()) shake.Kill();
         transform.localPosition = initialPosition;
     }
+
+    private void OnDisable() => StopCurrentShake();
+    private void OnDestroy() => StopCurrentShake();
 
     /// <summary>
     /// 単発で呼び出すだけ（待たない）

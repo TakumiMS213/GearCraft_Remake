@@ -1,0 +1,14 @@
+{
+  "prepared": [
+    "ProbeGateDamage",
+    "ProbeBoostLifetime",
+    "ProbeDeathPlayerFirst",
+    "ProbeDeathGateFirst",
+    "ProbePauseRetry",
+    "ProbePauseTitle"
+  ],
+  "executed_by_preparer": false,
+  "fresh_backup_folder": "QA/DefenseBugfix20261016/",
+  "bootstrap_input": "GearCraft,4,none,77",
+  "notes": "Unity execution and restoration verification pending root. Static compile is reported separately."
+}

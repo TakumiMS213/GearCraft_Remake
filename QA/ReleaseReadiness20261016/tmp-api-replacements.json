@@ -1,0 +1,34 @@
+[
+  {
+    "path": "Assets/GearCraft/Scripts/UI/InventoryUI.cs",
+    "count": 1
+  },
+  {
+    "path": "Assets/GearCraft/Scripts/UI/InventoryItemView.cs",
+    "count": 1
+  },
+  {
+    "path": "Assets/GearCraft/Scripts/Craft/CraftManager.cs",
+    "count": 1
+  },
+  {
+    "path": "Assets/GearCraft/Scripts/Craft/MaterialDisplay.cs",
+    "count": 1
+  },
+  {
+    "path": "Assets/GearCraft/Scripts/Craft/CraftUnlockPopupView.cs",
+    "count": 1
+  },
+  {
+    "path": "Assets/GearCraft/Scripts/Craft/CraftTutorialController.cs",
+    "count": 1
+  },
+  {
+    "path": "Assets/GearCraft/Scripts/Story/ArrivalMessageView.cs",
+    "count": 1
+  },
+  {
+    "path": "Assets/GearCraft/Scripts/Editor/WeaponBonusCardGenerator.cs",
+    "count": 1
+  }
+]

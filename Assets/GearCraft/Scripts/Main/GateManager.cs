@@ -65,7 +65,6 @@ public class GateManager : MonoBehaviour
     private async Task OnTriggerEnter2D(Collider2D collision)
     {
         EnemyController ec = collision.gameObject.GetComponent<EnemyController>();
-        Debug.Log("衝突検出: " + collision.name);
         if (collision.CompareTag("Enemy") && ec != null)
         {
             if (MainDebugEnemySpawnWindow.IsDebugModeActive)
@@ -78,13 +77,10 @@ public class GateManager : MonoBehaviour
             if (!isCircleType && !IsGateCollisionImmuneBoss(ec))
             {
                 TakeDamage(10f);
-                await cameraShake.ShakeAsync(0.1f, 0.3f, 1, 9f);
-                ec.Die().Forget();
-                statusManager.killAllEnemies = false;
-
-                // StageFlowManagerに通知（PERFECT判定用）
-                if (StageFlowManager.Instance != null)
-                    StageFlowManager.Instance.OnGateHit();
+                // 無敵中に門へ到達した敵も撃ち漏らしとして扱う。
+                if (statusManager != null) statusManager.killAllEnemies = false;
+                if (cameraShake != null) await cameraShake.ShakeAsync(0.1f, 0.3f, 1, 9f);
+                if (this != null && ec != null) ec.Die().Forget();
             }
         }
     }
@@ -108,9 +104,13 @@ public class GateManager : MonoBehaviour
     public void TakeDamage(float damage)
     {
         if (MainDebugEnemySpawnWindow.IsDebugModeActive) return;
-        if (isInvincible) return;
+        if (isInvincible || EndingManager.IsLoadingEnding || damage <= 0f) return;
+        if (statusManager == null) statusManager = StatusManager.Instance;
+        if (statusManager == null) return;
 
         statusManager.GATE -= damage;
+        statusManager.killAllEnemies = false;
+        StageFlowManager.Instance?.OnGateHit();
         StartCoroutine(BlinkEffect());
         if(statusManager.GATE <= 0)
         {
@@ -129,7 +129,6 @@ public class GateManager : MonoBehaviour
     // ======== 点滅エフェクト ========
     IEnumerator BlinkEffect()
     {
-        Debug.Log("ゲートがダメージを受けました。点滅エフェクトを開始します。");
         isInvincible = true;
 
         for (int i = 0; i < blinkCount; i++)

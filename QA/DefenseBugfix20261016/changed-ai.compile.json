@@ -1,0 +1,16 @@
+{
+  "purpose": "Syntax/API check only; output is outside Assets and is not loaded into Unity.",
+  "command": [
+    "/Applications/Unity/Hub/Editor/6000.0.67f1/Unity.app/Contents/MonoBleedingEdge/bin/mono",
+    "/Applications/Unity/Hub/Editor/6000.0.67f1/Unity.app/Contents/MonoBleedingEdge/lib/mono/4.5/csc.exe",
+    "@/Users/sora/Desktop/Unity/GearCraft_Remake/QA/DefenseBugfix20261016/changed-ai.compile.rsp"
+  ],
+  "compiler_exit_code": 0,
+  "source_unchanged_during_compile": true,
+  "source_sha256": {
+    "Assets/GearCraft/Scripts/EnemyAI/EnemyAI_BossSpeed.cs": "4a36e4d573d01b51fa48ce9e4a1fa3cc07596fee8e70cede2ac01be6ce4dcaa3",
+    "Assets/GearCraft/Scripts/EnemyAI/EnemyAI_BossArtillery.cs": "223f737fb1e8afd2b1a35beab50fe8296d9c62b0bf293ae2e7ca71f9199c46f3",
+    "Assets/GearCraft/Scripts/EnemyAI/EnemyAI_BossFinal.cs": "0609682b8193773eaf34de7a1073ec64f5d36ef58b6a029fcc4392dc0495279c"
+  },
+  "output_sha256": "5649a47c1ab6de508e417b85e8c5853656741f58005c9344fc3cc886b8caafea"
+}

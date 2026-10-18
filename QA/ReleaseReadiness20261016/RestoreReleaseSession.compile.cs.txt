@@ -1,0 +1,68 @@
+using System; using System.Linq; using System.Collections; using System.Collections.Generic; using UnityEngine; using UnityEngine.SceneManagement; using UnityEngine.UI; using UnityEditor;
+public static class QAProbeCompile { public static object Execute() {
+if(System.IO.File.Exists("QA/ReleaseReadiness20261016/probe-progress.txt")&&System.IO.File.ReadAllText("QA/ReleaseReadiness20261016/probe-progress.txt").StartsWith("RUNNING"))throw new System.Exception("Stop/finish local regression callback before restoration");
+// C#6 execute_code body. Restore only this test session's backed-up state.
+const string folder = "QA/DefenseBugfix20261016/";
+foreach (string progress in new[] { "benchmark-progress.txt", "native-survival-progress.txt", "batch-progress.txt", "ar-controlled-progress.txt" })
+    if (System.IO.File.Exists(folder + progress) && System.IO.File.ReadAllText(folder + progress).StartsWith("RUNNING"))
+        throw new System.Exception("Stop the active QA callback before restoration: " + progress);
+if (Application.isPlaying) throw new System.Exception("Stop Play before final restoration");
+int restored = 0;
+foreach (string row in System.IO.File.ReadAllLines(folder + "playerprefs-before.txt"))
+{
+    if (string.IsNullOrWhiteSpace(row)) continue;
+    var c = row.Split('|');
+    bool exists = bool.Parse(c[1]);
+    bool textValue = c[0].Contains(".Metrics.") || c[0].Contains("Gallery.Progress");
+    if (!exists) PlayerPrefs.DeleteKey(c[0]);
+    else if (textValue) PlayerPrefs.SetString(c[0], System.Text.Encoding.UTF8.GetString(System.Convert.FromBase64String(c[2])));
+    else PlayerPrefs.SetInt(c[0], int.Parse(c[2]));
+    restored++;
+}
+PlayerPrefs.Save();
+foreach (string row in System.IO.File.ReadAllLines(folder + "playerprefs-before.txt"))
+{
+    if (string.IsNullOrWhiteSpace(row)) continue;
+    var c = row.Split('|');
+    bool exists = bool.Parse(c[1]);
+    if (PlayerPrefs.HasKey(c[0]) != exists) throw new System.Exception("Existence mismatch: " + c[0]);
+    if (!exists) continue;
+    bool textValue = c[0].Contains(".Metrics.") || c[0].Contains("Gallery.Progress");
+    string actual = textValue ? System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(PlayerPrefs.GetString(c[0]))) : PlayerPrefs.GetInt(c[0]).ToString();
+    if (actual != c[2]) throw new System.Exception("Value mismatch: " + c[0]);
+}
+var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic;
+typeof(GearCraft.Gallery.GalleryProgress).GetField("data", flags).SetValue(null, null);
+var before = System.IO.File.ReadAllLines(folder + "editor-before.txt");
+QualitySettings.vSyncCount = int.Parse(before[1]);
+Application.targetFrameRate = int.Parse(before[2]);
+Application.runInBackground = bool.Parse(before[3]);
+Time.captureDeltaTime = float.Parse(before[4], System.Globalization.CultureInfo.InvariantCulture);
+Time.fixedDeltaTime = float.Parse(before[5], System.Globalization.CultureInfo.InvariantCulture);
+Time.timeScale = before.Length > 6 ? float.Parse(before[6], System.Globalization.CultureInfo.InvariantCulture) : 1f;
+if(System.IO.File.Exists(folder+"logger-enabled-before.txt")) Debug.unityLogger.logEnabled=bool.Parse(System.IO.File.ReadAllText(folder+"logger-enabled-before.txt").Trim());
+if (System.IO.File.Exists(folder + "logger-before.txt"))
+    Debug.unityLogger.filterLogType = (LogType)int.Parse(System.IO.File.ReadAllText(folder + "logger-before.txt").Trim());
+var assembly = typeof(UnityEditor.Editor).Assembly;
+var viewType = assembly.GetType("UnityEditor.GameView");
+var view = Resources.FindObjectsOfTypeAll(viewType).FirstOrDefault();
+var sizesType = assembly.GetType("UnityEditor.GameViewSizes");
+var sizes = typeof(UnityEditor.ScriptableSingleton<>).MakeGenericType(sizesType).GetProperty("instance", flags).GetValue(null, null);
+var group = sizesType.GetProperty("currentGroup", flags).GetValue(sizes, null);
+var groupType = group.GetType();
+var viewBackup = System.IO.File.ReadAllLines(folder + "gameview-before.txt");
+int originalViewIndex = int.Parse(viewBackup[0]);
+if (view != null) viewType.GetProperty("selectedSizeIndex", flags).SetValue(view, originalViewIndex, null);
+var labels = (string[])groupType.GetMethod("GetDisplayTexts", flags).Invoke(group, null);
+for (int i = labels.Length - 1; i >= 0; i--)
+    if (labels[i].StartsWith("QAWeaponBalance")) groupType.GetMethod("RemoveCustomSize", flags).Invoke(group, new object[] { i });
+labels = (string[])groupType.GetMethod("GetDisplayTexts", flags).Invoke(group, null);
+var originalLabels = viewBackup.Skip(1).ToArray();
+if (!labels.SequenceEqual(originalLabels)) throw new System.Exception("GameView size list differs from backup");
+var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+if (scene.path != before[0] || scene.isDirty) throw new System.Exception("Expected original clean Title scene, got " + scene.path + " dirty=" + scene.isDirty);
+string result = "PlayerPrefs verified=" + restored + "; Play=false; scene=" + scene.path + "; dirty=false; GameViewIndex=" + originalViewIndex + "; size list restored; vSync=" + QualitySettings.vSyncCount + "; captureDeltaTime=" + Time.captureDeltaTime + "; UTC=" + System.DateTime.UtcNow.ToString("O");
+System.IO.File.WriteAllText("QA/ReleaseReadiness20261016/final-restoration.txt", result + "\n");
+return result;
+
+} }

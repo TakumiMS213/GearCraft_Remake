@@ -1,0 +1,7 @@
+PASS
+2026-10-16T08:10:47.0576860Z begin scene_handle=-10198500 HP=100 GATE=100 speed=1
+2026-10-16T08:10:47.0600850Z first accepted: GATE=93, gateWasHit=true, killAllEnemies=false, invincible=true
+2026-10-16T08:10:47.0601100Z second rejected: GATE=93, notification sentinels unchanged
+2026-10-16T08:10:47.0602140Z PASS
+
+Play stopped; fresh PlayerPrefs/editor restoration is still required.

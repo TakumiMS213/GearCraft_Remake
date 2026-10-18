@@ -1,0 +1,20 @@
+{
+  "compiler": "Unity MCP CodeDom C#6, safety checks retained by native ExecuteCode",
+  "completed_primary_trials": 14,
+  "completed_repeat_and_posture_trials": 21,
+  "completed_sensitivity_trials": 4,
+  "run_plans": {
+    "batch-cases-used-20261016-031634-953.csv": "7970438534bde9f5625308c83a83b31d74017097b31a0af0ba80e0753a587e55",
+    "batch-cases-used-20261016-032502-661.csv": "0f1c5ea10760aa63f5f083eb8f0d28b2926987b33c7f2d97804c137ab1caf95e",
+    "batch-cases-used-20261016-034005-662.csv": "5c1bb9825c2813f16ed7b6cb906b901eb159b63b2ef321059e5d92a9fca337e5"
+  },
+  "initial_invalid_trials_archived": "invalid-batch-attempt1",
+  "sensitivity_current_plan_semantically_equal_to_run_capture": true,
+  "restoration_verified": true,
+  "production_hashes_unchanged": 406,
+  "console_error_count": 0,
+  "console_warnings": [
+    "URP compatibility mode",
+    "DOTween SafeMode captured6; cause not verified"
+  ]
+}

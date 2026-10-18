@@ -20,6 +20,7 @@ public sealed class EnemyAI_BossFinal : MonoBehaviour, IEnemyAI
     private const float EngineVibrationFrequency = 12f;
     private const float CrossfireWindup = 1f;
     private const float CombinedWindup = 1.2f;
+    private const float EntryClearance = 0.15f;
 
     [Header("Approach and damage stagger")]
     [SerializeField, Min(0f)] private float advanceSpeedMultiplier = 0.3f;
@@ -50,6 +51,7 @@ public sealed class EnemyAI_BossFinal : MonoBehaviour, IEnemyAI
     private PlayerController player;
     private Collider2D playerBody;
     private Collider2D body;
+    private Rigidbody2D bodyRigidbody;
     private SpriteRenderer sprite;
     private Animator animator;
     private FinalBossWeaponPorts weaponPorts;
@@ -64,6 +66,9 @@ public sealed class EnemyAI_BossFinal : MonoBehaviour, IEnemyAI
     private float stateElapsed;
     private float gateCrushTimer;
     private float frontOffset;
+    private float entryRightLimit;
+    private bool hasEnteredArena;
+    private float entrySpeed;
     private float shotTimer;
     private int shotsFired;
     private int shotCount;
@@ -93,6 +98,7 @@ public sealed class EnemyAI_BossFinal : MonoBehaviour, IEnemyAI
         this.data = data;
         runtimeMaxHp = Mathf.Max(1f, owner.HP);
         body = owner.GetComponent<Collider2D>();
+        bodyRigidbody = owner.GetComponent<Rigidbody2D>();
         sprite = owner.GetComponentInChildren<SpriteRenderer>();
         animator = owner.GetComponentInChildren<Animator>();
         weaponPorts = owner.GetComponent<FinalBossWeaponPorts>();
@@ -123,9 +129,22 @@ public sealed class EnemyAI_BossFinal : MonoBehaviour, IEnemyAI
         visualArena = new BossArena(owner, containSprite: true);
         Bounds visualBounds = sprite != null ? sprite.bounds : body != null ? body.bounds : new Bounds(owner.transform.position, Vector3.one);
         frontOffset = visualBounds.min.x - owner.transform.position.x;
-        // 右端に姿を見せ、コライダーの車輪下端を床に合わせる。
+        // 巨体を一度に画面内へ収めると、右側にいるプレイヤーを車体に埋め込み、
+        // 物理の押し出しで床下へ落としてしまう。車体は必ずプレイヤーの右から進入する。
+        Vector3 entryPosition = visualArena.GetPosition(1f, 0f);
+        if (body != null && playerBody != null && playerBody.enabled && playerBody.gameObject.activeInHierarchy)
+        {
+            float bodyLeftOffset = body.bounds.min.x - owner.transform.position.x;
+            entryPosition.x = Mathf.Max(entryPosition.x,
+                playerBody.bounds.max.x + EntryClearance - bodyLeftOffset);
+        }
+        entryRightLimit = entryPosition.x;
+        hasEnteredArena = false;
+        entrySpeed = Mathf.Max(1f, (entryPosition.x - visualArena.GetMovementRect().xMax) / EntryDuration);
         // Spriteの透明余白は接地判定に含めない。
-        owner.transform.position = groundArena.Ground(visualArena.GetPosition(1f, 0f));
+        owner.transform.position = groundArena.Ground(entryPosition);
+        // autoSyncTransformsが無効でも、同フレームの当たり判定は出現位置を参照する。
+        Physics2D.SyncTransforms();
         SetState(ActionState.Entering);
     }
 
@@ -194,6 +213,12 @@ public sealed class EnemyAI_BossFinal : MonoBehaviour, IEnemyAI
         if (state == ActionState.Staggered)
         {
             UpdateStagger();
+            UpdateVisuals();
+            return;
+        }
+
+        if (!hasEnteredArena)
+        {
             UpdateVisuals();
             return;
         }
@@ -280,14 +305,15 @@ public sealed class EnemyAI_BossFinal : MonoBehaviour, IEnemyAI
         float threshold = Mathf.Max(1f, staggerDamageThreshold);
         // 後退中の被弾は次の一回まで蓄積するが、後退アニメーションを再開始しない。
         staggerDamage = Mathf.Min(threshold, staggerDamage + Mathf.Max(0f, amount));
-        if (state == ActionState.Staggered || Time.time < staggerAvailableAt) return;
+        // 進入中に後退を繰り返して画面外へ居続けない。蓄積は到着後の被弾へ持ち越す。
+        if (!hasEnteredArena || state == ActionState.Staggered || Time.time < staggerAvailableAt) return;
         if (staggerDamage < threshold) return;
 
         staggerDamage = 0f;
         if (lastStaggerFrame == Time.frameCount) return;
         lastStaggerFrame = Time.frameCount;
         staggerStartX = owner.transform.position.x;
-        staggerTargetX = Mathf.Min(staggerStartX + staggerDistance, visualArena.GetMovementRect().xMax);
+        staggerTargetX = Mathf.Min(staggerStartX + staggerDistance, GetRightMovementLimit());
         staggerAvailableAt = Time.time + Mathf.Max(0.01f, staggerDuration) + staggerRecoveryGrace;
         atGate = false;
         bladeHit = false;
@@ -320,9 +346,31 @@ public sealed class EnemyAI_BossFinal : MonoBehaviour, IEnemyAI
         Vector3 position = owner.transform.position;
         // 武器側で追加されたノックバックも保持し、後退中に左へ巻き戻さない。
         position.x = Mathf.Min(Mathf.Max(position.x, Mathf.Lerp(staggerStartX, staggerTargetX, eased)),
-            visualArena.GetMovementRect().xMax);
+            GetRightMovementLimit());
         owner.transform.position = groundArena.Ground(position);
         if (progress >= 1f) SetState(ActionState.Recovering);
+    }
+
+    private void FixedUpdate()
+    {
+        if (owner == null || owner.HP <= 0f || hasEnteredArena || IsArmored ||
+            state == ActionState.Dead || Time.timeScale <= 0f) return;
+
+        float targetX = visualArena.GetMovementRect().xMax;
+        Vector3 position = owner.transform.position;
+        if (position.x <= targetX + 0.001f)
+        {
+            hasEnteredArena = true;
+            return;
+        }
+
+        // 物理tickごとに側面から押す。描画frameの移動を積み重ねて深く重ねない。
+        float maxStep = playerBody != null ? Mathf.Max(0.05f, playerBody.bounds.size.x * 0.25f) : 0.25f;
+        float step = Mathf.Min(owner.GetMoveSpeed(entrySpeed) * Time.fixedDeltaTime, maxStep);
+        position.x = Mathf.MoveTowards(position.x, targetX, step);
+        position = groundArena.Ground(position);
+        if (bodyRigidbody != null) bodyRigidbody.MovePosition(position);
+        else owner.transform.position = position;
     }
 
     private void LateUpdate()
@@ -510,12 +558,19 @@ public sealed class EnemyAI_BossFinal : MonoBehaviour, IEnemyAI
         float multiplier = state == ActionState.CrusherSurge ? 1.6f : 1f;
         float speed = owner.GetMoveSpeed(Mathf.Max(0f, data.speed) * Mathf.Max(0f, advanceSpeedMultiplier) * multiplier);
         Vector3 position = owner.transform.position;
-        // 武器のノックバックで画面外や門の奥へ押されても、その場で有効範囲へ戻す。
-        position.x = Mathf.Clamp(position.x, advanceLimit, visibleRange.xMax);
+        // 右側から進入中の車体を画面内へ瞬間移動させない。
+        position.x = Mathf.Clamp(position.x, advanceLimit, GetRightMovementLimit());
         // 通常攻撃中は左進を続け、後退は累積ダメージで怯んだ時だけ行う。
         if (position.x > advanceLimit) position.x = Mathf.Max(advanceLimit, position.x - speed * delta);
         owner.transform.position = groundArena.Ground(position);
+        if (position.x <= visibleRange.xMax) hasEnteredArena = true;
         atGate = hasGate && position.x <= advanceLimit + 0.025f;
+    }
+
+    private float GetRightMovementLimit()
+    {
+        float visibleRight = visualArena.GetMovementRect().xMax;
+        return hasEnteredArena ? visibleRight : Mathf.Max(visibleRight, entryRightLimit);
     }
 
     private void UpdateGateCrush(float delta)
@@ -530,7 +585,6 @@ public sealed class EnemyAI_BossFinal : MonoBehaviour, IEnemyAI
         gateCrushTimer = GateCrushInterval;
         if (MainDebugEnemySpawnWindow.IsDebugModeActive) return;
         gate.TakeDamage(40f);
-        StageFlowManager.Instance?.OnGateHit();
     }
 
     private void SetState(ActionState nextState)

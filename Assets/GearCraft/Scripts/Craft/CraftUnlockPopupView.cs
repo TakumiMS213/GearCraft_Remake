@@ -149,7 +149,7 @@ namespace GearCraft.Scripts.Craft
             text.fontSize = fontSize;
             text.fontStyle = fontStyle;
             text.color = Color.white;
-            text.enableWordWrapping = true;
+            text.textWrappingMode = TMPro.TextWrappingModes.Normal;
             return text;
         }
 

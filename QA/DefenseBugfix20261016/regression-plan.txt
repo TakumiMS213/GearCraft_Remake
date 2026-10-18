@@ -1,0 +1,38 @@
+防衛バグ修正・最小回帰の準備（2026-10-16）
+
+状態
+QAスクリプトの作成とC#6オフラインコンパイルだけ実施。Unity/MCPでの実行、今回セーブの退避、回帰の実測は未実施。MCP接続先0のため、修正の実画面/物理挙動を検証済みとは扱わない。測定結果ファイルは作成していない。
+前回QAは読み取りのみ。新フォルダへコピーしたのはコード、loadouts、配置と集計コード。過去playerprefs-before/editor-before/GameView/loggerの実データや測定結果はコピーしていない。source-copy-manifest.jsonに元ファイルのhashを記録。
+
+実行手順（root担当）
+1. clean Title EditでCaptureSession.cs.txtを実行。Play=false、Title未変更、必要なruntime singleton不在、退避ファイル不存在を検査する。Title以外/dirtyでは保存せずNOT_CAPTUREDを返す。8Prefsとeditor/GameView/time/loggerを現在値から保存し、全書込み後にsession-backup-ready.txtを作る。再実行で上書きしない。
+2. TitleでPlay開始。LoadBatchDefense.cs.txtを実行。81KBのBatchDefense.cs.txtをMCP既存CheckBlockedPatterns/CompileAndExecuteで読み込むため、50,000文字上限へ本文を直接貼らない。
+3. native6件を一括測定し、batch-progress.txtがCOMPLETEとなりPlay停止するまで待つ。各case結果は上書き拒否。異常/キャンセル時は原ログを保持して原因確認し、新ラベルまたは明示復旧後に再開する。
+4. Title Playを再開しAROverheatControlled.cs.txtを実行。QA複製体だけの移動試験、完了時に自動Play停止。native日次測定とは分離する。
+5. Title Playを再開。native-survival-config.csvへSteamCannon,16,mid_day4_common,77の1行を設定しNativeSurvivalBootstrap.cs.txtを実行。READYのMain/timeScale=0でBBMuzzleControlled.cs.txtを同期実行し、生成直後の実弾boundsを確認。native routeは開始しない。完了後rootがPlay停止。
+6. 全callback停止・Play=false後、RestoreSession.cs.txtを実行。native/benchmark/batch/ar-controlledのRUNNINGが残っている場合は復元を拒否する。8Prefs一致、元clean Title、GameView一覧/選択、時間とloggerを照合。今回の新バックアップ以外で復元しない。
+
+native6件（batch-cases.csv）
+EK GearCraft: seed101→77→202、wave31、前回と同じfinal_day11_melee_defense_module20、STR/ACC20、HP/門100、Repair/Barrier/Punk/Scrapあり。
+BB GearCraft/Cannon/Thrower: seed77、wave16から18まで、mid_day4_common、STR/ACC10、HP/門100、Repair/Punk/Scrapあり・Barrierなし。
+標準の食事/報酬方針、有限耐久、BOOST2上限、移動/自発jump/迎撃/dash/照準は前回botと同じ。native StageFlow/Spawner、敵AI/弾/物理を止めたり書き換えたりしない。Titleで6ゲーム秒かつ360frames進め、旧死亡/BOOST遅延処理を消化してから次caseを初期化。Punk有効化前にPlayerのSTR/ACCも初期値へ同期。
+
+EK判定
+最初の車体観測で本人とのsolid AABB重なりがないこと、車体の下端が床上にあること、以後本人が床下へ落下し続けないことをgeometry.csvで確認する。初期車体の一部が画面右外にあること自体は新方針どおり。
+geometry.csvはボス生存中の毎ゲームframeで本人/車体/床bounds・速度・攻撃回数を記録する。player_y < -20は明確な異常落下として分離。一時的なコライダー下端の侵入だけで完全床抜けとは扱わず、上端/中心と次frameの復帰も見る。出現した瞬間のFixedUpdate接触法線を記録する仕組みではない。
+当たり判定変更と撃破時間/被弾の変化は併記する。seed3件で床抜けが観測されなくても、人間の全位置や全seedで発生しないとの一般保証にはしない。
+
+BB判定
+native日次のprojectiles-first-seen.csvは最初のEditor frameの観測。生成と同一physics frameに門へ当たり消えた弾は見逃す可能性があるため、生成瞬間と明記しない。
+BBMuzzleControlled.cs.txtはpaused MainのQA複製BBでprivate LaunchCounterableProjectileを同期Invokeし、physics step前に実生成弾のBox boundsを記録する。初期位置/停止中央/停止揺れ上端/停止揺れ下端では門との水平距離>=3.849を確認（現仕様3.85のfloat許容）。意図的重なり位置では射出抑止を確認。実velocityから門方向の最短水平到達秒も記録する。
+このcontrolled probeだけはQA複製体を移動し、SyncTransformsする。native6件の位置や弾は操作しない。BBの防衛成功そのものを砲口修正の必須条件とはせず、即時門重なりの解消と迎撃可能時間を先に判定する。
+
+AR判定
+Title PlayにQA複製ARと標的を置く。複製EnemyControllerの自動Start/Updateを止め、実AI.UpdateAIとnative DOTween更新で進入/円弧/突進/復帰を比較する。攻撃/召喚タイマーはQA複製体だけ抑止し、物理接触は無効化した移動速度のcontrolled試験。通常防衛試験ではない。
+各移動の無過熱4件と、開始後0.1秒にApplyOverheat(0.3,0.55,null)を適用する4件。entryTimerまたは同じcurrentTweenのElapsed(false)進行をgame秒で割り、1→0.55→1へ変化することをframe CSVで確認する。適用/解除境界の1～2frameは更新順の影響を区別する。saw_slow等のフラグだけで速度検証済みとしない。
+突進終了でReturningへ遷移し、旧SequenceのOnKillで新しい帰還Tweenが消えないことも確認。別の3件でnative OnDeath/OnDisable/OnDestroy後の移動Tween停止を確認する。
+
+静的確認
+BatchDefense、CaptureSession、RestoreSession、AROverheatControlled、BBMuzzleControlledの5本文を、Unity既存assembly参照/C#6でコンパイルした。ARではDOTween.dll参照を明示。これは型/構文検査であり、Unity内で実行・挙動検証した証拠ではない。
+再生成はpython3 QA/DefenseBugfix20261016/build_regression.py。ボット本文に観測処理とfinish時flushだけを加え、旧QAコード/productionは編集しない。
+実測後の通常日次結果はanalyze_defense.pyで再集計可能。幾何/生成瞬間/過熱進行の合否は専用CSVも照合すること。

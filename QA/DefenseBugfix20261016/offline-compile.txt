@@ -1,0 +1,13 @@
+AR / BB / EK の変更3ファイルを既存 Unity / ゲーム / DOTween DLL に照合する構文・API確認。
+
+プロジェクトルートで実行：
+  python3 QA/DefenseBugfix20261016/compile_changed_ai.py
+
+ProjectSettings/ProjectVersion.txt の Editor と Library/ScriptAssemblies を参照する。
+macOS の Unity Hub 標準インストール位置に対応。Editor/MCP は起動・操作しない。
+出力はこの QA フォルダ内の changed-ai.compile.dll / .rsp / .log.txt / .json。
+DLL は Assets 外に置き、Unity へ読み込まない。
+JSON に正確なコンパイルコマンド・ソース hash・コンパイル中のソース不変確認を記録する。
+
+この確認だけではゲーム全体の Editor コンパイル・実行時の物理・Tween挙動を保証しない。
+root が Unity 側のコンパイルと既存バグの局所再現・native 回帰試験を行う。

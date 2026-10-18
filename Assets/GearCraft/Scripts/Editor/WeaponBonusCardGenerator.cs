@@ -172,7 +172,7 @@ public static class WeaponBonusCardGenerator
         description.fontSize = 34f;
         description.alignment = TextAlignmentOptions.Center;
         description.color = Color.white;
-        description.enableWordWrapping = true;
+        description.textWrappingMode = TMPro.TextWrappingModes.Normal;
     }
 
     private static Image EnsureImage(Transform parent, string name, Vector2 anchorMin, Vector2 anchorMax, Vector2 anchoredPosition, Vector2 sizeDelta)

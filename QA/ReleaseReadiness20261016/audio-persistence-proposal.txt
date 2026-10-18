@@ -1,0 +1,59 @@
+音量設定の再起動保存：読み取り確認と局所修正案（2026-10-16）
+状態: 提案のみ。Audio.cs、scene、Mixer、PlayerPrefsは変更していない。MCP/実機probeも未実行。
+
+現行仕様と接続
+・Assets/GearCraft/Scripts/Title/Audio.cs:14-24 のStartはMixerの現在値を読み、Slider.SetValueWithoutNotifyで表示するだけ。SetBGM/SetSEはMixer.SetFloatのみで、PlayerPrefs保存はない。各操作でDebug.Logを出す。
+・MainMixer.mixerはexposed parameter BGM/SEの2系統、開始Snapshotは両方−20 dB。共通Mixer GUIDはe630c8b2789f0c143984cafd3dfd262c。
+・Title.unity:3986-3991のAudioはactiveなTitleManagerObject。BGM/SE sliderのpersistent callbackは4555/6753のSetBGM/SetSE。
+・Main.unity:26002-26007のAudioはactiveなTransitionCanvas。slider callbackは22145/24414。ポーズOption UIから操作するがAudio本体はメニュー開閉でdisableされない。
+・CraftSpace.unity:2386-2391のAudioはactiveなAudioManager。slider callbackは7609/1437。
+・Craft.unity:328-333にもactiveなAudioがあるがslider2件はnull。このsceneでもMixer復元だけ可能な実装にする。
+・上記4sceneは同一Mixer。Title/Main/CraftSpaceの各sliderは−40〜0 dB。Title/MainはwholeNumbers=true、CraftSpaceはfalse。整数表示と連続値の違いは既存仕様で、今回独断では変更しない。
+・SE/BGM AudioSourceのMixer group接続もscene YAML上で存在する。ただし個々の動的SE全てがこのMixerへ接続されるか、音を聞く検証は別の範囲。
+・ResetRunProgress/Title帰還の初期化は音量と独立させる。現状に音量用の削除処理/既存保存キーはない。
+
+推奨する最小修正（対象Audio.csだけ）
+追加PlayerPrefsキーは2つ、型はfloat、単位を名前へ明記する。
+  GearCraft.Audio.BGM.dB.v1
+  GearCraft.Audio.SE.dB.v1
+保存値は現UIと同じ−40〜0 dB。mute専用キーやmaster volumeは追加しない。−40 dBを完全無音へ読み替える変更もしない。
+
+1. Start
+   Mixer.GetFloatで現在の初期値を取得し、キーが存在するときだけ保存値を適用する。NaN/Infinityは現在値へフォールバックし、有限値は−40〜0に収める。
+   Mixer.SetFloatを成功させてから、Mixerの実際の値をSlider.SetValueWithoutNotifyへ渡す。slider=nullでもMixer復元は行う。
+   未保存なら現在のMixer値（配布assetの既定は−20）を維持。Startだけではキーを新規作成しない。
+2. 既存SetBGM(float)/SetSE(float)の署名は保持
+   Mixer nullなら安全に戻る。受け取った値を上記範囲へ収め、Mixer.SetFloat成功後にPlayerPrefs.SetFloat。毎操作のDebug.Logは削除。
+   scene内UnityEventの再接続や新manager/assetは不要。
+3. 保存の確定
+   推奨はdirtyフラグ＋unscaled timeで0.3秒の最終操作待ち後にPlayerPrefs.Save。OnDisable、OnApplicationPause(true)、OnApplicationQuitでもdirty分を確定する。
+   Mainポーズ中はtimeScale=0なので、Time.deltaTime/WaitForSeconds依存の保存待ちは使わない。Audio自体はOption閉鎖でdisableされないため、OnDisableだけの保存では不足する。
+   即時Saveを毎slider callbackで行う実装は短いが、CraftSpaceは連続値なのでドラッグ中に多数のディスク書込みを起こす。上の小さなdebounceを推奨する。
+   保存中の例外/設定未接続は正規UIを壊さず、初期値の読み出しから保存イベントを再発火しないことを確認する。
+
+バックアップと復元（現在の実戦batchへ割り込まない）
+・既存QA/DefenseBugfix20261016の8キーbackupは変更しない。新機能の実装/最初のPlay前に、rootが追加sidecar audio-playerprefs-before.txt を1回だけ取得する。既存sidecarは上書き拒否。
+・各行はkey | exists | float値のround-trip形式（InvariantCultureのR）。復元では存在したキーはSetFloat、未存在キーはDeleteKey。その後Saveし、HasKeyとfloat値を再検証する。
+・既存8キー用RestoreSessionは未認識キーを復元しないため、新2キーの復元処理を明示的に追加/併用する必要がある。既存のint/string判定へ2キーを混ぜるとGetIntで誤退避するので避ける。
+・音量probe前のMixer BGM/SE実効値も別途保存する。probeが変えたMixer runtime値を戻し、Mixer/scene assetのファイルハッシュ不変も確認する。snapshotやassetをSaveAssetsしない。
+・実行中のnative/probe callbackがないこと、Play停止、元clean Titleを確認して復元する。追加2キーと既存8キーの両方が元に一致して初めて復元完了とする。
+
+最小の再起動相当probe（修正後に準備/実行する条件）
+A. 未保存の初回
+   追加2キーをsidecarへ退避した後に一時削除。Mixer値を既定−20へ戻して新しいAudio.Startを通し、slider/Mixerが−20でキーが勝手に作られないことを確認。
+B. UI操作から保存
+   Titleの実slider.valueでBGM−12、SE−31へ変更し、既存UnityEvent→SetBGM/SEを通す。0.3秒以上のunscaled時間を待ち、Mixer実値/PlayerPrefs float/sliderを照合。
+   同じ確認をMain pause中（timeScale0）で1回行い、保存がゲーム時間停止に依存しないことを確認。
+C. 新しいsession相当の復元
+   Play停止→Title Play再開し、新規AudioのStart後に−12/−31へ戻るか確認する。
+   EditorはMixerのruntime値を保持しうるため、再開前後にMixerを保存値と異なるセンチネル（例−3/−5）へ明示的に戻し、保存値からの復元を検出する。代案はfresh Audio instanceでStartを再実行するが、これは読込み経路検査であり実アプリ再起動と同義ではない。
+   runtimeでの二重初期化を避け、センチネル設定が新Startより前に行われた記録を残す。難しければ2段階のEditor probe＋配布Playerの再起動で確認する。
+D. scene間・null slider
+   CraftSpaceで保存値を表示でき、Craftのslider=nullでも例外なく復元できることを確認。値の小数丸め差はwholeNumbersの現行仕様と分けて記録。
+E. 終了と復元
+   フラッシュ待ちより前のPlay終了/scene破棄でもOnDisable/終了処理が保存するか確認。その後追加2キー・Mixer・既存8キー・Editor状態を復元する。
+
+範囲の限界
+・正常終了後の再起動保存を対象とする。強制kill/OS障害直前の0.3秒以内の未確定操作まで保証しない。
+・Editor内の再生成/Play再開は保存読込み経路の局所回帰。対象platformの実配布Playerを終了して起動し直す確認を置き換えない。
+・UIの最小値−40は完全無音ではない。mute UXや全SEのMixer経由化は別候補で、今回の保存修正へ自動的に含めない。

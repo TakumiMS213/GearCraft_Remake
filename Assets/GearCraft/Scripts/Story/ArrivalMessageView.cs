@@ -199,7 +199,7 @@ public class ArrivalMessageView : MonoBehaviour
         text.fontSize = 32f;
         text.color = Color.white;
         text.alignment = TextAlignmentOptions.TopLeft;
-        text.enableWordWrapping = true;
+        text.textWrappingMode = TMPro.TextWrappingModes.Normal;
         text.lineSpacing = 8f;
         return text;
     }

@@ -1,0 +1,68 @@
+R11 IC-408 序盤DPSチェックの調整候補（2026-10-16、候補Aを仮適用・実測待ち）
+
+結論
+第一候補は lv3_IC-408.asset の baseHP 8000→2800 のみ。Day3のnative補正後HPは13600→4760となる。前進speed2（実速度0.6）、門への10ダメージ/2.5秒、予告0.85秒、単純な前進は維持する。まずこの1値で代表構成と有限BOOSTの再計測を行う。
+巨体との戦闘を約40秒残したい場合の第二候補だけを併記する。全武器強化、新攻撃、回避要求、phase判断、修理必須化は提案しない。
+
+対象と前提
+設計上の代表構成はDay3朝STR/ACC各4、GearCraft、early_day3_common（Damage+2×2 / SpeedGear+ / SpeedGear、flat+6、速度係数0.765）、Punkあり、Module/Repair/Barrierなし。部品費S22/G1は前回資源モデル内。これは到達可能な代表値であり、実プレイヤーの平均取得率を測った結果ではない。
+有限BOOSTは既存主試験の最大2回、native Gearを1個ずつ実消費。主試験は日頭Gear0だが、前座回収でボス時3個になり2回使えていた。上位条件のSpeedGear+×3・Gear8持込・BOOST6を成功基準にしない。
+同seedでも戦闘による乱数消費と報酬選択が異なり、主条件はボス時STR7、補助reactive条件はSTR4。Punkは初回Start時STR4のまま。この違いを単純なBOOST効果や平均能力とみなさない。
+
+旧native実測（HP注入なし、速度/物理/攻撃は本編）
+条件                          門破壊秒   ICへ与ダメージ     残HP       本人最終HP
+主 gate_IC...seed77            31.2166    5947.833         7652.167      87
+補助 reactive_IC...seed77      31.2167    5629.880         7970.120      87
+参考 baseline BOOSTなし       31.2167    4800.932         8799.068      90
+速度型+BOOST6 seed77/101/202   各31.2167  9314.6～9967.1   3632.9～4285.4 82～90
+速度型+修理2夜/食事放棄       56.3833   13058.000          542.000      90
+
+主/補助の2BOOSTはボス出現直後と約5.6秒後。門締切までの平均DPSは主190.53、補助180.35に対して、HP13600を31.2167秒で削るには435.66が必要。速度型上位3seedも失敗し、食事を捨てた門200条件でもわずかに届かない。したがって「通常なら高級速度パーツと連続BOOST/修理で解ける」とする根拠はない。
+主/補助の後半sampleでは毎秒攻撃イベントが増え、ICのHPも減少し、melee_out_of_rangeや長い攻撃停止は記録されていない。門前で物理的に足が止まっても攻撃は届いている。初動押し出しはあるが、31秒の全時間を失っているわけではない。
+
+候補A：HPだけ 8000→2800（推奨、-65%）
+Day3 scaling_stage7 の倍率1.7より、実HP4760。必要平均DPSは152.48となり、現標準2BOOSTの180～191DPSに約15～20%の与ダメージ余裕が生まれる。
+既存の実HP減少sampleで累計4760を跨ぐ時刻：
+・主条件STR7：22.9167～23.9167秒の間。次sampleの門30。
+・補助条件STR4：24.4667～25.4667秒の間。次sampleの門30。
+・上位速度3seed：15.9～16.9秒頃のsampleで到達。門60～70が残る。
+これは変更後の討伐実測ではない。旧HP推移の閾値計算であり、sample間隔約1秒の範囲表示にとどめる。ICはHPによる攻撃phase切替がなく、死亡より前の前進・門攻撃を変えずに1値を検証できる点で、外挿より確度が高い。
+参考BOOSTなしSTR7は、累計4760が最後の約31.2秒sample付近で門0と同時になり、余裕がある成功とはいえない。人間へBOOST2回を新たな必須手順として教える意図はなく、BOOSTなし/1回の余裕も確認して採否する。上位装備ほど早く倒せ、準備不足は門の損耗として返るというDPSチェックの役割を保つ。
+変更対象候補: Assets/GearCraft/ScriptableObject/EnemyData/lv3_IC-408.asset:18 のbaseHPのみ。ドロップ・サイズ・speed・AIには触れない。
+
+候補B：約40秒の重さを残す HP8000→4000＋門ダメージ10→6
+Day3実HP6800。前進速度0.6と門攻撃間隔2.5秒/初回0.85秒を維持し、門100が耐える回数を10発→17発へ増やす。
+門の締切は理想周期では約48.7秒、旧capture60fpsで観測された実周期約2.5167秒を使うと約48.8秒。現在の31.2秒より約17.6秒長い。
+BOOST切れ後の12秒以降のHP減少から、主150.47DPS、補助145.62DPS。その速度が続くとHP6800の討伐は主約36.88秒、補助約39.25秒、門残28/22程度と推定する。
+こちらは旧試験の終了31.2秒を超える未観測区間への外挿であり、実測の討伐時刻ではない。長期戦で本人の被弾/接近位置が変わる可能性がある。2値変更になるため、単純な候補Aを先に試す。
+変更対象候補: 同assetのbaseHP4000、および EnemyAI_BossTank.cs:11 のGateAttackDamage=6だけ。速度・間隔・予告は維持。
+
+速度単独/門ダメージ単独を優先しない理由
+現HP13600を2BOOST後の実測火力で削る線形外挿は約82～86秒。門ダメージだけでその時間を作るなら10→3程度まで下げる必要があり、門100の締切は約91秒となる。前進速度だけなら門到達まで約60秒以上を与える必要があり、speed2→約0.24（実0.6→0.072、約88%低下）の水準になる。序盤の一体と長く待つ戦闘になり、「右から徐々に迫る単純なDPSチェック」に対して変更の副作用が大きい。
+
+最小の再検証案（新規実測は未実施）
+・候補AでDay3通常3wave、seed77/101/202、early_day3_common、朝STR/ACC4、HP/GATE100、持込Gear0、BOOST最大2。現在のnative生存試験と同じ有限在庫・報酬処理を使い、boss開始STR/ACCと実消費を記録する。
+・記録: IC生成HP4760、出現→撃破/門破壊秒、門残/本人残HP、BOOST回数・実Gear消費、命中/HP減少、門への実ダメージ、day report/CraftSpace帰還。舞台は60fps/fixed0.02という旧測定条件を維持する。
+・採否: 代表構成が無限BOOST/修理先取りなしで防衛できる。旧ログからの目安は約23～26秒・門20～40だが、断定的な合格タイムにはしない。上位速度構成で門到達前の数秒撃破にならないか、BOOSTなし/1回で過度に厳しくないかを確認する。
+・どの条件も購入・食事選択まで含む全行程の実プレイヤー平均ではない。人間の初見操作が成功するかは別のUXテストで確認する。
+
+根拠
+QA/DefenseBalance20261016/analysis-IC.txt / report.txt / progression.txt / ic-speed-budget.txt / sensitivity-plan.txt。
+gate_IC408_GearCraft_seed77 と reactive_IC408_GearCraft_seed77 の bosses/samples/events/initial-status/final-status/bootstrap-config。
+gate_sensitivity_IC408_GearCraft_speed6_gear8_seed77/101/202 と repair2_seed77 の同名ログ。
+今回のIC群には1hitごとの独立nativeDamageイベントCSVはなく、native HP変化sampleとbossesの差分を根拠にした。攻撃イベント数は命中数と同一視していない。
+Assets/GearCraft/Scripts/Main/EnemyController.cs:72-78 のstage補正、EnemyAI_BossTank.cs:11-14,51-74 の接近/門攻撃。
+
+併せて依頼されたEK進入の読取レビュー
+QA/ReleaseReadiness20261016/boss-regression-live.png は車体の大部分が右画面外に残り、画面内には主に前方パーツが見えている。現 EnemyAI_BossFinal.cs:131-144 はプレイヤーの右から安全spawnし、AdvanceOnGround:525-533 は通常速度（data.speed×0.3、現約0.21）しか使わない。Enteringの1.2秒は攻撃開始待ちであり、距離を進入させる処理ではない。OnDamaged:295-310 は進入中もStaggeredへ移り、GetRightMovementLimit:537-540 はhasEnteredArenaになるまで初期の遠い右端を許す。速度だけの変更では後退で進入が中断する問題が残る。
+最小案:
+1) 安全spawnと床接地は保持。!hasEnteredArenaの間だけ、初期に決めた画面内右端（visualArena.xMax、現約x3）へ約1.2～2秒を目安に接近する。時間切れで座標を直接warpしない。接触/低fps/Overheatにより実時間が延びるのは許容する。
+2) 進入の移動は各physics tickでplayer幅の1/4程度を上限にする。Updateごとの幅制限だけでは、物理tick間に複数Updateが入った合計移動を制限できない。既存Kinematic Rigidbody2D.MovePositionをFixedUpdateで行うか、physics tick単位の累積上限を持つ。深い初期重なりは従来の安全spawnで回避し、その上で物理に小さく押し出させる。
+3) 画面内到達前の通常stagger発火は保留し、被ダメージ蓄積は維持する。HP段階境界のArmorは従来通り処理し、無敵化や巨大hitの境界貫通を追加しない。Armorが入った場合はその停止後に進入を再開する。
+4) 到達したらhasEnteredArena=trueとし、以後の前進速度/門攻撃/後退上限は通常ルールへ戻す。Enteringの終了は時間だけでなく到達を条件にし、画面外で攻撃だけ始める状態を避ける。
+検証: 旧落下が起きたseed101/202、player左右位置とジャンプ中、30/60fps、同frame大量被弾のいずれでも、entry初期のbody/player非重なりとphysics毎step幅上限、床下面を割らないこと、画面への到達、到達後の通常stagger/Armor/発射口を確認する。短時間進入の採用で従来の討伐秒が変わる可能性はあるが、床落ち防止と視認性を先に確認し、武器ダメージの再補正は自動で行わない。
+
+仮適用・再検証の準備
+root採用指示により、lv3_IC-408.asset の baseHP 8000→2800 の数字1箇所だけを変更。元assetはQA/ReleaseReadiness20261016/source-before/Assets/GearCraft/ScriptableObject/EnemyData/lv3_IC-408.assetへbyte保持で退避。逆置換で元ファイルと一致すること、diff --checkを確認した。実機3seedの防衛結果で確定する仮調整で、現時点では成功を主張しない。
+QA/DefenseBugfix20261016/release2-cases.csv を新規作成。EK Gear seed101/77/202、BB Gear/Cannon/Thrower seed77、IC Gear seed77/101/202の9件。labelはgate_release2_で旧ログと分離。IC初期STR/ACC4、early_day3_common、Module0、Punk/Scrapあり、Repair/Barrierなし、HP/GATE100。元の6件planと過去結果は不変。generatorはroot担当のため実行していない。
+最新EKのFixedUpdate進入実装を再読。MovePositionとplayer幅1/4/tick上限、通常Updateの進入待ち、進入中のstagger発火保留、Armor先行判定は提案と整合し、静的ブロッカーは見つからなかった。実測では進入完了時のvelocityと次physics位置、player最低y、進入中Armorを重点確認し、通常transform駆動との切替を確認する。

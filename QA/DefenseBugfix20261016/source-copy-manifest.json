@@ -1,0 +1,56 @@
+[
+  {
+    "file": "NativeSurvivalBootstrap.cs.txt",
+    "source": "QA/DefenseBalance20261016/NativeSurvivalBootstrap.cs.txt",
+    "source_sha256": "38fbb8cf679d4fa1e6a02592b9f59bd9f5ed8e210b5943fc9649648a481f9484",
+    "copy_sha256": "983097ba210d3cac3f2342e933690c6c915b1f4e64f226eb07e963e94aa3e649"
+  },
+  {
+    "file": "ReactiveGateSurvivalRoute.cs.txt",
+    "source": "QA/DefenseBalance20261016/ReactiveGateSurvivalRoute.cs.txt",
+    "source_sha256": "cd5be87ab32620c92d9c5a985acfd21164f49a2043c445222e72d554b3e8d36c",
+    "copy_sha256": "8dbc0551bd576a5a28a232ff13c6bc74451c7b7e3a776577d8bbc25fec0263f2"
+  },
+  {
+    "file": "BatchDefense.template.cs.txt",
+    "source": "QA/DefenseBalance20261016/BatchDefense.template.cs.txt",
+    "source_sha256": "87e1cf65e130ec9c68dbebed3b09eeea854cd1cccaba0669fd8d46ab1b407e5d",
+    "copy_sha256": "fba232efb4f4891558724bf758975bbfc94f743aa35401700d62d2abda07c5c2"
+  },
+  {
+    "file": "RestoreSession.cs.txt",
+    "source": "QA/DefenseBalance20261016/RestoreSession.cs.txt",
+    "source_sha256": "11acc8ec1dd771caec13939f5621e2d27689dcacebd0b912e620962c0553029b",
+    "copy_sha256": "7ea7f159f0e721a7d3d083217b52f5b5c7c07165a721f0c09fe53cf2363f9e05"
+  },
+  {
+    "file": "LoadBatchDefense.cs.txt",
+    "source": "QA/DefenseBalance20261016/LoadBatchDefense.cs.txt",
+    "source_sha256": "a6850d1d79dbc064f6588bb3d4ede92c7da375f14d38b72eb9355212ba06dce2",
+    "copy_sha256": "3cfd07ab17ce2e23ed71bea016ac23c1b5cfc03fdbed1e6b88fde0495cfdb2f7"
+  },
+  {
+    "file": "build_batch.py",
+    "source": "QA/DefenseBalance20261016/build_batch.py",
+    "source_sha256": "30a0a7a5499d71de553a435c078de3c12c810a3ff5544140146bc677332acd22",
+    "copy_sha256": "30a0a7a5499d71de553a435c078de3c12c810a3ff5544140146bc677332acd22"
+  },
+  {
+    "file": "loadouts.csv",
+    "source": "QA/DefenseBalance20261016/loadouts.csv",
+    "source_sha256": "9901d6f57ffa7856a281af1163a6b918df0e975dc3c83387060873430cd709f0",
+    "copy_sha256": "9901d6f57ffa7856a281af1163a6b918df0e975dc3c83387060873430cd709f0"
+  },
+  {
+    "file": "loadout-placements.csv",
+    "source": "QA/DefenseBalance20261016/loadout-placements.csv",
+    "source_sha256": "f56e188685b6d2eaeadf7029e62988696b0e6f0bb192989bc4b43d679994b8c7",
+    "copy_sha256": "f56e188685b6d2eaeadf7029e62988696b0e6f0bb192989bc4b43d679994b8c7"
+  },
+  {
+    "file": "analyze_defense.py",
+    "source": "QA/DefenseBalance20261016/analyze_defense.py",
+    "source_sha256": "2e445b5328b70c5cad45dfa7111ab9edab9787f8a3f3aeb88d0e754a6a5fe563",
+    "copy_sha256": "f832f69b2e4aac017b18aac9a14337b13cc0db735ef2a8c74347d287aa09be0c"
+  }
+]

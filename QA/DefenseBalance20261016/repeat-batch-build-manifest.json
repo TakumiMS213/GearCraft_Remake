@@ -147,6 +147,8 @@
     "Generated route only: label.Contains(_grounded_) suppresses Boss_Final/Tank auto-jump; original normal jump condition retained verbatim",
     "Grounded case only: append posture metadata and posture_condition event"
   ],
-  "runtime_verification": "Pending root Unity compile and execution; no MCP used",
-  "primary_manifest_handling": "Main generator main() not called; primary runner and manifest were never written"
+  "runtime_verification": "Unity MCP CodeDom C#6 execution completed; see execution-validation.json and individual result files",
+  "primary_manifest_handling": "Main generator main() not called; primary runner and manifest were never written",
+  "completed_plan_cases": 21,
+  "runtime_validation_record": "execution-validation.json"
 }

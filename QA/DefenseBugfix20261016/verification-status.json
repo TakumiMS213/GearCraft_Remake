@@ -1,0 +1,11 @@
+{
+  "changed_production_files": [
+    "Assets/GearCraft/Scripts/EnemyAI/EnemyAI_BossSpeed.cs",
+    "Assets/GearCraft/Scripts/EnemyAI/EnemyAI_BossFinal.cs",
+    "Assets/GearCraft/Scripts/EnemyAI/EnemyAI_BossArtillery.cs"
+  ],
+  "unchanged_snapshot_files": 13,
+  "compiled_sources_match_current": true,
+  "unity_runtime_verified": false,
+  "runtime_blocker": "Unity MCP instances=0; no session state or PlayerPrefs has been modified in this bug-fix session"
+}

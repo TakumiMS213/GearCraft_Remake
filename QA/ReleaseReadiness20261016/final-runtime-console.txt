@@ -1,0 +1,2 @@
+errorCount=0,warningCount=1,logCount=1
+DOTween=ErrorsOnly

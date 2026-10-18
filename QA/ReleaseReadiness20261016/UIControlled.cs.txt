@@ -1,0 +1,169 @@
+// C#6 execute_code METHOD BODY. Run in Title Play after its entry fade; no other QA callback.
+// Tests native methods on temporary objects. No scene transition or actual purchase is made.
+// The native tutorial success path writes one metrics key, which is restored synchronously.
+// Result/progress: ui-controlled-{result,progress}.txt. Original singleton/time/nav are restored.
+const string folder = "QA/ReleaseReadiness20261016/";
+if (!Application.isPlaying || UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "Title") throw new System.Exception("Requires Title Play");
+if (!System.IO.File.Exists("QA/DefenseBugfix20261016/session-backup-ready.txt")) throw new System.Exception("Fresh session backup required");
+foreach (string f in new[] { "probe-progress.txt", "ui-controlled-progress.txt", "native-survival-progress.txt", "batch-progress.txt" })
+    if (System.IO.File.Exists(folder + f) && System.IO.File.ReadAllText(folder + f).StartsWith("RUNNING")) throw new System.Exception("Another probe is active: " + f);
+if (System.IO.File.Exists(folder + "ui-controlled-result.txt")) throw new System.Exception("Archive previous UI result before rerunning");
+var transition = UnityEngine.Object.FindFirstObjectByType<SceneTransitionManager>();
+var events = UnityEngine.EventSystems.EventSystem.current;
+if (transition == null || transition.IsLoading || events == null || GearCraft.Gallery.GalleryNavigation.IsOpen || UpgradeGridManager.Instance != null) throw new System.Exception("Title must be idle with its EventSystem and no workshop/gallery");
+var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic;
+var staticFlags = System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic;
+var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+var originalStatus = StatusManager.Instance;
+string statusBefore = originalStatus != null ? JsonUtility.ToJson(originalStatus) : null;
+var originalMaterials = MaterialManager.Instance;
+string materialsBefore = originalMaterials != null ? JsonUtility.ToJson(originalMaterials) : null;
+float timeBefore = Time.timeScale, captureBefore = Time.captureDeltaTime;
+bool navBefore = events.sendNavigationEvents;
+string metricsKey = (string)typeof(CraftTutorialMetrics).GetMethod("GetMetricsKey", staticFlags).Invoke(null, new object[] { 1 });
+bool metricsExisted = PlayerPrefs.HasKey(metricsKey);
+string metricsBefore = PlayerPrefs.GetString(metricsKey, "");
+var evidence = new System.Text.StringBuilder();
+var created = new System.Collections.Generic.List<UnityEngine.Object>();
+UnityEditor.EditorApplication.CallbackFunction tick = null;
+bool finished = false, navTouched = false;
+int checks = 0;
+System.Action<string> note = s => evidence.AppendLine(s);
+System.Action<bool, string> check = (ok, name) => { checks++; note((ok ? "PASS " : "FAIL ") + name); if (!ok) throw new System.Exception(name); };
+System.Action restoreMetrics = () => { if (metricsExisted) PlayerPrefs.SetString(metricsKey, metricsBefore); else PlayerPrefs.DeleteKey(metricsKey); PlayerPrefs.Save(); };
+System.Action<string> finish = outcome => {
+    if (finished) return; finished = true;
+    if (tick != null) UnityEditor.EditorApplication.update -= tick;
+    StatusManager.Instance = originalStatus;
+    if (navTouched && transition != null) typeof(SceneTransitionManager).GetMethod("SetInputBlockerActive", flags).Invoke(transition, new object[] { false });
+    if (events != null) events.sendNavigationEvents = navBefore;
+    foreach (var o in created) if (o != null) UnityEngine.Object.DestroyImmediate(o);
+    restoreMetrics(); Time.timeScale = timeBefore; Time.captureDeltaTime = captureBefore;
+    bool intact = object.ReferenceEquals(StatusManager.Instance, originalStatus) &&
+        (originalStatus == null || JsonUtility.ToJson(originalStatus) == statusBefore) &&
+        (originalMaterials == null || JsonUtility.ToJson(originalMaterials) == materialsBefore) &&
+        PlayerPrefs.HasKey(metricsKey) == metricsExisted && PlayerPrefs.GetString(metricsKey, "") == metricsBefore;
+    note("restored_runtime_status_materials_metrics=" + intact);
+    if (!intact) outcome = "FAIL_RESTORE";
+    System.IO.File.WriteAllText(folder + "ui-controlled-result.txt", outcome + " checks=" + checks + "\n" + evidence + "\nScope: native handler/feedback/Tween checks; no physical mouse, purchase or visual layout validation. Title Play remains open.\n");
+    System.IO.File.WriteAllText(folder + "ui-controlled-progress.txt", outcome + "\n");
+};
+System.IO.File.WriteAllText(folder + "ui-controlled-progress.txt", "RUNNING\n");
+System.IO.File.WriteAllText(folder + "ui-controlled-metrics-before.txt", metricsKey + "\n" + metricsExisted + "\n" + System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(metricsBefore)) + "\n");
+try {
+    // Common transition guard: both originally enabled and originally disabled navigation.
+    var inputBlock = typeof(SceneTransitionManager).GetMethod("SetInputBlockerActive", flags);
+    navTouched = true;
+    foreach (bool initial in new[] { true, false }) {
+        events.sendNavigationEvents = initial;
+        inputBlock.Invoke(transition, new object[] { true });
+        check(!events.sendNavigationEvents, "transition_blocks_navigation_from_" + initial);
+        inputBlock.Invoke(transition, new object[] { false });
+        check(events.sendNavigationEvents == initial, "transition_restores_navigation_to_" + initial);
+    }
+    events.sendNavigationEvents = navBefore; navTouched = false;
+    var inactive = new GameObject("QA_UIControlled_Inactive", typeof(RectTransform));
+    inactive.SetActive(false); inactive.hideFlags = HideFlags.HideAndDontSave; created.Add(inactive);
+    var grid = inactive.AddComponent<UpgradeGridUI>();
+    var drag = inactive.AddComponent<UpgradeShopItemDragHandler>();
+    var part = ScriptableObject.CreateInstance<UpgradePartSO>(); created.Add(part);
+    part.name = "QA_UIControlled_Part"; part.partName = "QA";
+    part.effects = new[] { new UpgradeEffect { type = UpgradeEffectType.DamageFlat, value = 2f } };
+    drag.Initialize(part, null, grid);
+    var pointer = new UnityEngine.EventSystems.PointerEventData(events);
+    foreach (var button in new[] { UnityEngine.EventSystems.PointerEventData.InputButton.Right, UnityEngine.EventSystems.PointerEventData.InputButton.Middle }) {
+        pointer.button = button; drag.OnBeginDrag(pointer); drag.OnDrag(pointer); drag.OnEndDrag(pointer);
+        check(!grid.IsShopDragging, "drag_ignores_" + button);
+    }
+    pointer.button = UnityEngine.EventSystems.PointerEventData.InputButton.Left;
+    pointer.position = new Vector2(100f, 100f); drag.OnBeginDrag(pointer);
+    check(grid.IsShopDragging, "left_drag_begins");
+    pointer.position = new Vector2(120f, 140f); drag.OnDrag(pointer);
+    check((Vector2)typeof(UpgradeGridUI).GetField("lastDragScreenPosition", flags).GetValue(grid) == pointer.position, "left_drag_updates");
+    foreach (var button in new[] { UnityEngine.EventSystems.PointerEventData.InputButton.Right, UnityEngine.EventSystems.PointerEventData.InputButton.Middle }) {
+        pointer.button = button; drag.OnBeginDrag(pointer); drag.OnDrag(pointer); drag.OnEndDrag(pointer);
+        check(grid.IsShopDragging, "secondary_drag_does_not_cancel_left_" + button);
+    }
+    pointer.button = UnityEngine.EventSystems.PointerEventData.InputButton.Left; drag.OnEndDrag(pointer);
+    check(!grid.IsShopDragging, "left_release_outside_grid_cancels");
+
+    // Native OnPartPlaced -> Succeed -> bodyText, with inactive isolated UI and temporary status.
+    // No Awake/Start/registration runs on this controller; no existing question buttons are touched.
+    var isolatedStatus = inactive.AddComponent<StatusManager>();
+    check(object.ReferenceEquals(StatusManager.Instance, originalStatus), "inactive_status_did_not_replace_singleton");
+    var tutorial = inactive.AddComponent<GearCraft.Scripts.Craft.CraftTutorialController>();
+    var tutorialType = tutorial.GetType();
+    // The UI children must be active for native GetComponentInChildren lookups; disable rendering only.
+    var canvasObject = new GameObject("QA_UIControlled_Canvas", typeof(RectTransform), typeof(Canvas)); created.Add(canvasObject);
+    canvasObject.hideFlags = HideFlags.HideAndDontSave;
+    var canvas = canvasObject.GetComponent<Canvas>(); canvas.enabled = false; canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+    var rect = canvasObject.GetComponent<RectTransform>(); rect.sizeDelta = new Vector2(1920f, 1080f);
+    tutorialType.GetField("canvas", flags).SetValue(tutorial, canvas);
+    tutorialType.GetField("canvasRect", flags).SetValue(tutorial, rect);
+    var fontField = tutorialType.GetField("fontAsset", flags);
+    try {
+        fontField.SetValue(tutorial, tutorialType.GetMethod("ResolveDotGothicFont", staticFlags).Invoke(null, null));
+        tutorialType.GetMethod("CreateTutorialRoot", flags).Invoke(tutorial, new object[] { canvasObject.transform });
+        foreach (var text in canvasObject.GetComponentsInChildren<TMPro.TMP_Text>(true)) text.font = (TMPro.TMP_FontAsset)fontField.GetValue(tutorial);
+        tutorialType.GetField("currentTab", flags).SetValue(tutorial, 1);
+        tutorialType.GetField("currentSteps", flags).SetValue(tutorial, CraftTutorialDataSO.CreateDefaultWeaponCustomSteps());
+        isolatedStatus.STR = 20; isolatedStatus.ACC = 20; isolatedStatus.craftWeaponDamagebuff = 20;
+        StatusManager.Instance = isolatedStatus;
+        string[] names = { "GearCraft_Sword", "SteamCannon", "RailCraft", "SteamGatling", "SteamThrower" };
+        float[] increases = { 2f, 1.6f, 2f, 0.1f, 0.048f };
+        for (int i = 0; i < names.Length; i++) {
+            var weapon = UnityEditor.AssetDatabase.LoadAssetAtPath<WeaponDataSO>("Assets/GearCraft/ScriptableObject/WeaponData/" + names[i] + ".asset");
+            if (weapon == null) throw new System.Exception("Missing weapon " + names[i]);
+            isolatedStatus.currentWeapon = weapon; isolatedStatus.bonusDamage = 0f;
+            float before = isolatedStatus.GetWeaponDamage(weapon);
+            var progress = new CraftTutorialTrackProgress { baselineCaptured = true, baselineDamage = 0f, baselineAttackSpeed = 1f };
+            tutorialType.GetField("progress", flags).SetValue(tutorial, progress);
+            isolatedStatus.bonusDamage = 2f;
+            tutorialType.GetMethod("OnPartPlaced", flags).Invoke(tutorial, new object[] { part });
+            float increase = isolatedStatus.GetWeaponDamage(weapon) - before;
+            string expected = "パーツが組み込まれ、一撃のダメージが" + increases[i].ToString("0.###") + "増えました。";
+            string displayed = ((TMPro.TMP_Text)tutorialType.GetField("bodyText", flags).GetValue(tutorial)).text;
+            check(Mathf.Abs(increase - increases[i]) < 0.0001f && progress.feedback == expected && displayed == expected, "tutorial_damage_" + names[i] + " actual=" + increase.ToString("R") + " text=" + displayed);
+        }
+        ((GameObject)tutorialType.GetField("tutorialRoot", flags).GetValue(tutorial)).SetActive(false);
+    } finally { StatusManager.Instance = originalStatus; canvasObject.SetActive(false); restoreMetrics(); }
+
+    // Native DOTween update at timeScale zero, followed by disable and destroy mid-tween.
+    Time.captureDeltaTime = 0f; Time.timeScale = 0f;
+    var buttonObject = new GameObject("QA_UIControlled_Button", typeof(RectTransform)); created.Add(buttonObject);
+    buttonObject.hideFlags = HideFlags.HideAndDontSave;
+    Vector3 originalScale = new Vector3(1.25f, 0.75f, 1f); buttonObject.transform.localScale = originalScale;
+    var scaler = buttonObject.AddComponent<ButtonScaler>();
+    var tweenField = typeof(ButtonScaler).GetField("currentTween", flags);
+    scaler.OnPointerEnter(pointer);
+    int phase = 0, phaseFrame = Time.frameCount;
+    float phaseTime = Time.unscaledTime;
+    double wallStart = UnityEditor.EditorApplication.timeSinceStartup;
+    object destroyedTween = null;
+    System.Func<object, bool> tweenActive = t => t != null && (bool)t.GetType().Assembly.GetType("DG.Tweening.TweenExtensions").GetMethod("IsActive", staticFlags).Invoke(null, new object[] { t });
+    tick = () => {
+        try {
+            if (!Application.isPlaying || UnityEngine.SceneManagement.SceneManager.GetActiveScene().handle != scene.handle) throw new System.Exception("Title Play changed during probe");
+            if (UnityEditor.EditorApplication.timeSinceStartup - wallStart > 15d) throw new System.Exception("UI probe watchdog");
+            if (phase < 2 && Time.unscaledTime - phaseTime < 0.35f) return;
+            if (phase == 0) {
+                check(Time.timeScale == 0f && (buttonObject.transform.localScale - originalScale * 1.1f).sqrMagnitude < 0.000001f, "button_grows_while_paused");
+                scaler.OnPointerExit(pointer); phase = 1; phaseTime = Time.unscaledTime; return;
+            }
+            if (phase == 1) {
+                check((buttonObject.transform.localScale - originalScale).sqrMagnitude < 0.000001f, "button_exit_restores_scale_while_paused");
+                scaler.OnPointerEnter(pointer); var disabledTween = tweenField.GetValue(scaler);
+                scaler.enabled = false;
+                check(!tweenActive(disabledTween) && tweenField.GetValue(scaler) == null && buttonObject.transform.localScale == originalScale, "button_disable_kills_tween_and_restores_scale");
+                scaler.enabled = true; scaler.OnPointerEnter(pointer);
+                destroyedTween = tweenField.GetValue(scaler);
+                UnityEngine.Object.Destroy(buttonObject); phase = 2; phaseFrame = Time.frameCount; return;
+            }
+            if (Time.frameCount <= phaseFrame) return;
+            check(buttonObject == null && !tweenActive(destroyedTween), "button_destroy_kills_live_tween");
+            finish("PASS");
+        } catch (System.Exception ex) { note(ex.ToString()); finish("FAIL"); }
+    };
+    UnityEditor.EditorApplication.update += tick;
+} catch (System.Exception ex) { note(ex.ToString()); finish("FAIL"); }
+return finished ? "UI checks finished; inspect ui-controlled-result.txt" : "UI checks scheduled; inspect ui-controlled-progress.txt (under 15 seconds; Title remains open)";

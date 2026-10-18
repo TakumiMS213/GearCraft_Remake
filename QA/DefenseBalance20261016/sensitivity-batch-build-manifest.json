@@ -1,15 +1,15 @@
 {
-  "generated_utc": "2026-10-16T03:19:23.701833+00:00",
+  "generated_utc": "2026-10-16T03:40:11.417856+00:00",
   "output": "BatchDefenseSensitivity.cs.txt",
-  "output_sha256": "c42d41c252a47a1fa092b8c8671cf45a699505d84210fd450e82477adb147da9",
+  "output_sha256": "6b0f14e3ecaad32fa5c6169e73576d5fa91087dee3a8942c13d38780981f9bf6",
   "cases": "sensitivity-cases.csv",
-  "case_count": 3,
+  "case_count": 4,
   "source_sha256": {
     "NativeSurvivalBootstrap.cs.txt": "38fbb8cf679d4fa1e6a02592b9f59bd9f5ed8e210b5943fc9649648a481f9484",
     "ReactiveGateSpeedSurvivalRoute.cs.txt": "44fd5bb67fbc00a8af1e462101a374c1ff5bb59bc6f4bc7a6d11c47c75995fa1",
     "BatchDefense.template.cs.txt": "87e1cf65e130ec9c68dbebed3b09eeea854cd1cccaba0669fd8d46ab1b407e5d",
-    "sensitivity-cases.csv": "b65d8dfe1959d861f75c21c286f02389ded0294ae20e66dde445cf5612fd5cd3",
-    "sensitivity-extra-setup.csv": "b1fb8c27d404b532920959ad3b7bc821f32d149e910d7753d8bc1597a92bde11"
+    "sensitivity-cases.csv": "2f3aaaa2a7f02658fa6744e36a5cb19c5ae90dc9e05acc7cdf40987d43c3063e",
+    "sensitivity-extra-setup.csv": "1f9dc70c84d44bb838ca7c432dc1834da31f5cda2c1c4484d5d510ec429b79b0"
   },
   "protected_unchanged_sha256": {
     "BatchDefense.cs.txt": "5f87289526665e9f6109df16674c8d249030d4b509c3189a8c123999bec57753",
@@ -20,14 +20,23 @@
     "batch-cases.csv": "7970438534bde9f5625308c83a83b31d74017097b31a0af0ba80e0753a587e55",
     "progression-cases.csv": "0f93a79d9bd86ba38001997d0de24550e3428b5a2e214144948e44cc56ec9bf5",
     "execution-cases.json": "3e0cdc4e88fcb926c41bd67080a192ae6b515068639f4db1f2a713ff61c21107",
-    "build_batch.py": "30a0a7a5499d71de553a435c078de3c12c810a3ff5544140146bc677332acd22"
+    "build_batch.py": "30a0a7a5499d71de553a435c078de3c12c810a3ff5544140146bc677332acd22",
+    "BatchDefenseRepeat.cs.txt": "045de33106f10d172f0719d376a531e7c5bb3153a8a6da495038fb1ac60b0a35",
+    "repeat-batch-build-manifest.json": "f3b9d8265a66104804f2257e06055a7de0781d02064953d4ee5b8d2d71f48e4a",
+    "repeat-cases.csv": "0f1c5ea10760aa63f5f083eb8f0d28b2926987b33c7f2d97804c137ab1caf95e",
+    "build_repeat_batch.py": "028ac949d70077cfce72608be22b7c5295d8850a6f5eec2bb4c918e9d61b4fc1"
   },
   "transformations": [
     "Same native cleanup hooks/continuous-Play handoff as main generator",
     "Generated output only: set initial Gear0->8 before native day snapshot; log initial_carry",
-    "Generated output only: validate Gear8/stats/parts/flags before route; log sensitivity_validated",
+    "Generated output only: synchronize Player STR/ACC from case row before Punk first activation",
+    "Generated output only: validate row GATE/STR/ACC and Gear8/parts/flags before route; log sensitivity_validated and bootstrap case overrides",
+    "Repair2 condition only: append prior-night repair versus meal allocation metadata; no combat behavior changes",
     "Generated output only: verify extra-setup sidecar hash"
   ],
-  "runtime_verification": "Pending root Unity compile and execution; no MCP used",
-  "primary_manifest_handling": "Main generator main() was not called; shared manifest and primary runner were never written"
+  "runtime_verification": "Unity MCP CodeDom C#6 execution completed; see execution-validation.json and individual result files",
+  "primary_manifest_handling": "Main generator main() was not called; shared manifest and primary runner were never written",
+  "completed_plan_cases": 4,
+  "runtime_validation_record": "execution-validation.json",
+  "runtime_plan_note": "Final plan newline normalization occurred after run start; runtime captured rows and final plan are identical. See sensitivity-plan-runtime-verification.json."
 }

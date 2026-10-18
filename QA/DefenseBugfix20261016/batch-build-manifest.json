@@ -1,0 +1,19 @@
+{
+  "generated_utc": "2026-10-16T15:39:36.647975+00:00",
+  "output": "BatchRelease3.cs.txt",
+  "output_sha256": "2de268abc1f02305f601cfb0ce686b9074ed4d2258d19e3a4d88cf5a008fe6fa",
+  "cases": "release3-cases.csv",
+  "cases_sha256": "32e0d8f8e46221bca2a3df095636808b2302d6c4b27127c704774486f7f39ca6",
+  "case_count": 3,
+  "cases_created": false,
+  "source_sha256": {
+    "NativeSurvivalBootstrap.cs.txt": "983097ba210d3cac3f2342e933690c6c915b1f4e64f226eb07e963e94aa3e649",
+    "RegressionSurvivalRoute.cs.txt": "dcb8685669a8bbd3b78ea0f32c866318bac7134bc672fc5327fe7aa20b512160"
+  },
+  "transformations": [
+    "Bootstrap: expose readyCheck removal hook only",
+    "Route: expose native finish callback only",
+    "Route: replace one isPlaying=false with timeScale=0; all native cleanup retained"
+  ],
+  "runtime_verification": "Pending Unity compilation and execution by root"
+}

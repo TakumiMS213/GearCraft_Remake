@@ -36,6 +36,7 @@ public class EnemyAI_BossSpeed : MonoBehaviour, IEnemyAI
 
     public void Initialize(EnemyController owner, EnemyDataSO data)
     {
+        StopTweens();
         this.owner = owner;
         this.data = data;
         runtimeMaxHp = owner != null ? owner.HP : data.baseHP;
@@ -60,6 +61,11 @@ public class EnemyAI_BossSpeed : MonoBehaviour, IEnemyAI
     {
         if (owner == null || owner.HP <= 0f) return;
 
+        // 移動だけに減速を反映し、飛行中の付与・解除でも現在の経路を再作成しない。
+        float movementSpeedMultiplier = owner.GetMoveSpeed(1f);
+        if (currentTween != null && currentTween.IsActive())
+            currentTween.timeScale = movementSpeedMultiplier;
+
         Vector3 position = owner.transform.position;
         Vector3 boundedPosition = arena.Clamp(position);
         // カメラ変更や外部のノックバックで範囲外に出た場合も、実行中のTweenを中断して復帰する。
@@ -73,7 +79,7 @@ public class EnemyAI_BossSpeed : MonoBehaviour, IEnemyAI
 
         if (movementState == MovementState.Entering)
         {
-            entryTimer += Time.deltaTime;
+            entryTimer += Time.deltaTime * movementSpeedMultiplier;
             owner.transform.position = arena.Clamp(Vector3.Lerp(entryStart, GetHomePosition(), entryTimer / EntryDuration));
             if (entryTimer >= EntryDuration) movementState = MovementState.Combat;
             return;
@@ -269,18 +275,29 @@ public class EnemyAI_BossSpeed : MonoBehaviour, IEnemyAI
         sequence.AppendInterval(0.2f);
         sequence.Append(CreateBoundedMove(chargeTarget, duration, Ease.InQuad));
         sequence.OnComplete(StartReturn);
-        currentTween = sequence;
+        SetMovementTween(sequence);
     }
 
     private void StartReturn()
     {
         movementState = MovementState.Returning;
-        currentTween = CreateBoundedMove(GetHomePosition(), ReturnDuration, Ease.OutSine)
+        SetMovementTween(CreateBoundedMove(GetHomePosition(), ReturnDuration, Ease.OutSine)
             .OnComplete(() =>
             {
                 movementState = MovementState.Combat;
                 currentTween = null;
-            });
+            }));
+    }
+
+    private void SetMovementTween(Tween tween)
+    {
+        currentTween = tween;
+        tween.timeScale = owner.GetMoveSpeed(1f);
+        // 突進完了で新しい復帰Tweenへ切り替わった場合、その参照を消さない。
+        tween.OnKill(() =>
+        {
+            if (currentTween == tween) currentTween = null;
+        });
     }
 
     private Tween CreateBoundedMove(Vector3 target, float duration, Ease ease)
@@ -310,7 +327,7 @@ public class EnemyAI_BossSpeed : MonoBehaviour, IEnemyAI
         float turn = Random.value > 0.5f ? -180f : 180f;
         float duration = Mathf.Max(0.25f, data.circleDuration * (phase == 2 ? 0.4f : phase == 1 ? 0.6f : 1f));
 
-        currentTween = DOVirtual.Float(0f, 1f, duration, t =>
+        SetMovementTween(DOVirtual.Float(0f, 1f, duration, t =>
         {
             if (owner == null || owner.HP <= 0f) return;
             float angle = (startAngle + turn * t) * Mathf.Deg2Rad;
@@ -318,7 +335,7 @@ public class EnemyAI_BossSpeed : MonoBehaviour, IEnemyAI
             float currentRadius = Mathf.Lerp(startRadius, radius, t);
             Vector3 offset = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0f) * currentRadius;
             owner.transform.position = arena.Clamp(center + offset);
-        }).SetEase(Ease.InOutSine);
+        }).SetEase(Ease.InOutSine));
     }
 
     private Vector3 GetHomePosition()

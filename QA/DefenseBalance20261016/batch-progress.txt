@@ -1,1 +1,1 @@
-RUNNING 20261016-032502-661 case=gate_AR227_RailCraft_seed202 completed=13/21 state=3 wall=541.6
+COMPLETE all_cases_finished completed=4/4 skipped=0

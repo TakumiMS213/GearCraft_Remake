@@ -10,8 +10,8 @@ foreach(string bGuardName in new[]{"batch-progress.txt","native-survival-progres
 }
 if(System.IO.File.Exists(bFolder+"cancel-native-survival.txt")||System.IO.File.Exists(bFolder+"cancel-defense-batch.txt"))throw new System.Exception("Cancellation sentinel exists; review before starting");
 System.Func<string,string> bHash=bPath=>{using(var bSha=System.Security.Cryptography.SHA256.Create()){return System.BitConverter.ToString(bSha.ComputeHash(System.IO.File.ReadAllBytes(bPath))).Replace("-","").ToLowerInvariant();}};
-if(bHash(bFolder+"NativeSurvivalBootstrap.cs.txt")!="38fbb8cf679d4fa1e6a02592b9f59bd9f5ed8e210b5943fc9649648a481f9484"||bHash(bFolder+"ReactiveGateSpeedSurvivalRoute.cs.txt")!="44fd5bb67fbc00a8af1e462101a374c1ff5bb59bc6f4bc7a6d11c47c75995fa1"||bHash(bFolder+bPlanFile)!="b65d8dfe1959d861f75c21c286f02389ded0294ae20e66dde445cf5612fd5cd3")throw new System.Exception("Batch source/plan changed; rerun build_sensitivity_batch.py before execution");
-if(bHash(bFolder+"sensitivity-extra-setup.csv")!="b1fb8c27d404b532920959ad3b7bc821f32d149e910d7753d8bc1597a92bde11")throw new System.Exception("Sensitivity extra setup changed; regenerate the sensitivity runner");
+if(bHash(bFolder+"NativeSurvivalBootstrap.cs.txt")!="38fbb8cf679d4fa1e6a02592b9f59bd9f5ed8e210b5943fc9649648a481f9484"||bHash(bFolder+"ReactiveGateSpeedSurvivalRoute.cs.txt")!="44fd5bb67fbc00a8af1e462101a374c1ff5bb59bc6f4bc7a6d11c47c75995fa1"||bHash(bFolder+bPlanFile)!="2f3aaaa2a7f02658fa6744e36a5cb19c5ae90dc9e05acc7cdf40987d43c3063e")throw new System.Exception("Batch source/plan changed; rerun build_sensitivity_batch.py before execution");
+if(bHash(bFolder+"sensitivity-extra-setup.csv")!="1f9dc70c84d44bb838ca7c432dc1834da31f5cda2c1c4484d5d510ec429b79b0")throw new System.Exception("Sensitivity extra setup changed; regenerate the sensitivity runner");
 var bPlanLines=System.IO.File.ReadAllLines(bFolder+bPlanFile).Where(bLine=>!string.IsNullOrWhiteSpace(bLine)&&!bLine.TrimStart().StartsWith("#")).ToArray();
 if(bPlanLines.Length<2||bPlanLines[0].Trim()!="label,weapon,start_stage,profile,seed,STR,ACC,moduleDamage,repair,barrier,punk,scrap_module,initial_hp,initial_gate")throw new System.Exception("Invalid batch case header");
 var bHeader=bPlanLines[0].Split(',');
@@ -223,6 +223,7 @@ System.IO.File.WriteAllText(folder+label+"-initial-status.json",JsonUtility.ToJs
 if(System.IO.File.Exists(folder+"native-survival-bootstrap-config-used.txt"))System.IO.File.Copy(folder+"native-survival-bootstrap-config-used.txt",folder+label+"-bootstrap-config.txt",true);
 if(MaterialManager.Instance!=null)System.IO.File.WriteAllText(folder+label+"-initial-materials.json",JsonUtility.ToJson(MaterialManager.Instance,true));
 System.IO.File.WriteAllText(folder+label+"-meta.txt","One native day from caller-provided start/build. Native StageFlowManager/EnemySpawner remain enabled and unchanged. Native HP/GATE persist; no invulnerability, healing injection, enemy cleanup, artificial spawn replay, or wave resets. Native reward Buttons are selected by fixed policy: HP healing while HP <= 60; gate repair while GATE <= min(100, half initial GATE); then matching attack stat/conversion and target-weapon combat effects; otherwise first offered button. Crafted/upgraded initial build is not augmented through later craft/shop actions. Native rewards may add stats/effects/materials. The target weapon is re-equipped through EquipWeapon after weapon-grant rewards. Initial parts come from loadouts.csv plus validated saved placements; RecalculateUpgradeEffects applies native effects and retains them across re-equips. Actual native spread/muzzle/speed/line/projectile configuration/recoil methods are called, including native double-shot branch. Cooldown uses the native private timer and one CoolTimeUpdate call after each game frame including blocked/no-target frames. shots counts projectiles, attack_events counts attacks. Bot aim/movement and attacks derive from UpgradeCombatBenchmark.cs.txt including atan2-asin(muzzleOffset.y/distance) correction; native projectile/AI/physics are used. Gate-aware reactive policy retains player interception first and adds visible damageable projectiles predicted to meet Gate bounds within 1.2 seconds when no player interception target was chosen. Dash remains limited to player threats. Current-velocity prediction does not guarantee time to counter a projectile spawned overlapping the gate. Reactive policy reads visible projectile position/velocity every 0.2 seconds: shoot interceptable projectiles with native attacks; dodge other threatening bullets/bombs using native StartDash with normal duration/speed and wall limits. BOOST requires allow-boost.txt=true, consumes existing Gear, and is limited to six uses with a 5.5 second gap. This affordability sensitivity uses caller-provided ic_speed_budget parts and initial Gear8; it is not an observed-average build. No Gear replenishment during combat, invulnerability or direct projectile damage/removal. Native auto-barrier maintenance is invoked because PlayerController.Update input handling is disabled. Stop after native day-end Continue reaches CraftSpace, HP/GATE depletion, Ending scene, 900 game seconds or 300 wall seconds. This is boss-day survival evidence, not an acquisition-to-ED playthrough or human playability proof. Additional boss/wave CSVs record start/end HP/GATE and observed net damage/healing; per-second samples include input suppression, target, positions and native enemy state. Damage/healing totals are frame-to-frame net changes, so same-frame healing and damage cannot be separated. Enemy despawns whose death was not observed are not counted as kills. Root restores PlayerPrefs after Play stops.\n");
+if(label.Contains("_repair2_"))System.IO.File.AppendAllText(folder+label+"-meta.txt","Repair allocation sensitivity: two prior dorm repairs (+50 Gate each) instead of two meals; initial Gate200, STR1/ACC1, HP100, ic_speed_budget, Gear8 and BOOST budget6. This is a constructed arrival state and opportunity-cost comparison, not an observed-average full run. RepairModule remains disabled.\n");
 System.Action<string,string> record=(eventName,details)=>{
  int stageNow=StageCounter.Instance!=null?StageCounter.Instance.StageCount:lastStage;
  string currentName=status!=null&&status.currentWeapon!=null?status.currentWeapon.weaponName:"";
@@ -664,12 +665,14 @@ bTick=()=>{
    bRuntimeStatus.STR=int.Parse(bCurrent["STR"]);bRuntimeStatus.ACC=int.Parse(bCurrent["ACC"]);
    bRuntimeStatus.HP=int.Parse(bCurrent["initial_hp"]);bRuntimeStatus.GATE=float.Parse(bCurrent["initial_gate"],System.Globalization.CultureInfo.InvariantCulture);
    bRuntimeStatus.module_repair=bCurrent["repair"]=="1";bRuntimeStatus.module_barrier=bCurrent["barrier"]=="1";bRuntimeStatus.module_scrap=bCurrent["scrap_module"]=="1";bRuntimeStatus.punkDrive=bCurrent["punk"]=="1";
+   // PunkDrive.Start caches PlayerController.STR; synchronize the row overrides before first activation.
+   bRuntimePlayer.STR=bRuntimeStatus.STR;bRuntimePlayer.ACC=bRuntimeStatus.ACC;
    if(bRuntimePlayer.punkdrive!=null)bRuntimePlayer.punkdrive.SetActive(bRuntimeStatus.punkDrive);
    // Initial carry is prior-day inventory, not material gained during today's combat.
    var bSensitivityMaterials=MaterialManager.Instance;
    if(bSensitivityMaterials==null||Time.timeScale!=0f||bRuntimeFlow.IsStageActive||StageCounter.Instance==null||StageCounter.Instance.StageCount!=7)
     throw new System.Exception("Sensitivity initial carry requires paused pre-battle Main wave7");
-   if(bCurrent["profile"]!="ic_speed_budget"||bCurrent["weapon"]!="GearCraft"||bCurrent["STR"]!="4"||bCurrent["ACC"]!="4")
+   if(bCurrent["profile"]!="ic_speed_budget"||bCurrent["weapon"]!="GearCraft")
     throw new System.Exception("Unexpected sensitivity case setup");
    int bSensitivityGearBefore=bSensitivityMaterials.GetMaterial(MaterialManager.MaterialType.Gear);
    if(bSensitivityGearBefore!=0)throw new System.Exception("Expected cleared initial Gear; refusing duplicate sensitivity carry");
@@ -678,12 +681,15 @@ bTick=()=>{
    var bSnapshot=typeof(StageFlowManager).GetMethod("CaptureDayStartSnapshot",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic);
    if(bSnapshot==null)throw new System.Exception("Native day snapshot method missing");bSnapshot.Invoke(bRuntimeFlow,null);
    if(System.IO.Directory.GetFiles(bFolder,bCurrentLabel+"-*").Length>0)throw new System.Exception("Case artifacts appeared before route; refusing overwrite");
-   if(bSensitivityMaterials.GetMaterial(MaterialManager.MaterialType.Gear)!=8||bRuntimeStatus.HP!=100||Mathf.Abs(bRuntimeStatus.GATE-100f)>.001f||
-      bRuntimeStatus.STR!=4||bRuntimeStatus.ACC!=4||bRuntimeStatus.craftWeaponDamagebuff!=0||
+   if(bSensitivityMaterials.GetMaterial(MaterialManager.MaterialType.Gear)!=8||bRuntimeStatus.HP!=int.Parse(bCurrent["initial_hp"])||
+      Mathf.Abs(bRuntimeStatus.GATE-float.Parse(bCurrent["initial_gate"],System.Globalization.CultureInfo.InvariantCulture))>.001f||
+      bRuntimeStatus.STR!=int.Parse(bCurrent["STR"])||bRuntimeStatus.ACC!=int.Parse(bCurrent["ACC"])||bRuntimeStatus.craftWeaponDamagebuff!=0||
+      bRuntimePlayer.STR!=bRuntimeStatus.STR||bRuntimePlayer.ACC!=bRuntimeStatus.ACC||
       Mathf.Abs(bRuntimeStatus.bonusDamage-1f)>.0001f||Mathf.Abs(bRuntimeStatus.attackSpeedMult-.5527125f)>.00001f||
       bRuntimeStatus.module_repair||bRuntimeStatus.module_barrier||!bRuntimeStatus.punkDrive||!bRuntimeStatus.module_scrap)
     throw new System.Exception("Sensitivity initial stats/parts/materials failed validation before route");
-   bRecord("sensitivity_validated","profile=ic_speed_budget;Gear=8;flat=1;speed=.5527125;HP=100;gate=100;STR=4;ACC=4;module=0;BOOST budget6");
+   bRecord("sensitivity_validated","profile=ic_speed_budget;Gear=8;flat=1;speed=.5527125;HP="+bCurrent["initial_hp"]+";gate="+bCurrent["initial_gate"]+";STR="+bCurrent["STR"]+";ACC="+bCurrent["ACC"]+";module=0;BOOST budget6;player_stat_cache_synced_before_Punk_activation");
+   System.IO.File.AppendAllText(bFolder+"native-survival-bootstrap-config-used.txt","case_override_STR="+bCurrent["STR"]+"\ncase_override_ACC="+bCurrent["ACC"]+"\ncase_override_GATE="+bCurrent["initial_gate"]+"\ncase_override_initial_gear=8\ncase_override_hit_damage="+bRuntimeStatus.GetWeaponDamage(bRuntimeStatus.currentWeapon).ToString("R",System.Globalization.CultureInfo.InvariantCulture)+"\n");
    bState=3;bPhaseAt=bNow;bRecord("route_invoked",bRunRoute());return;
   }
   if(bState==3){

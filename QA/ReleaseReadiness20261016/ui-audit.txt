@@ -1,0 +1,120 @@
+UI / 入力・素材消費・遷移のリリース前監査（2026-10-16）
+
+対象: Craft、WeaponCustom（パーツショップ／配置）、チュートリアル、Mainメニュー、共通シーン遷移。
+方法: 制作コード、実アセット、導入済みuGUI実装を読み取り。MCP・実画面操作は実施していない。
+以下の行番号は監査開始時のコードを基準とする。修正済み3ファイルの元ソースは source-before/Assets/... に退避した。
+目的→操作→結果のチュートリアル構成、既存ハイライト、会話調、配置は変更しない。
+
+1. P1 やり直し／タイトル復帰確定後、復元・初期化済みの状態を旧戦闘が変更できる
+根拠:
+  Assets/GearCraft/Scripts/Main/PauseManager.cs:134-139,295-307
+    確定時に Time.timeScale=1 / isPaused=false にしてからスナップショット復元または初期化し、遷移を要求。
+  Assets/GearCraft/Scripts/SceneTransitionManager.cs:85-107
+    フェード＋ローディング待機は実ロードより前。既定値では約2～2.5秒ある。
+  Assets/GearCraft/Scripts/Main/StageFlowManager.cs:345-359
+    メニュー経由の復元は activeEnemies.Clear / IsStageActive=false で、既に実在する敵・弾を止めない。
+  Assets/GearCraft/Scripts/Main/PlayerController.cs:678-710 / Main/GateManager.cs:108-118
+    この待機中の旧プレイヤー／門も共有Statusへダメージを書き込める。
+  PauseManager.cs:58-124
+    leavingScene を確認せず、待機中にTab/Escapeで再ポーズ／再開も可能。
+トリガー:
+  弾が接近する戦闘中にポーズ→「この日をやり直す」→確定。復元したHP/門が実ロード前に再被弾し得る。
+  タイトル復帰でも、初期化した進行を旧戦闘の死亡・報酬・素材取得などが再変更する余地がある。
+最小修正:
+  確定～実ロードを timeScale=0 のままにし、leavingScene で全メニュー入口を拒否。
+  共通SceneTransitionはunscaledでフェードを進め、新シーンのsceneLoadedでtimeScale=1へ戻す（旧Mainの1フレーム再開も防ぐ）。
+状態:
+  PauseManagerのみ修正済み。Title初期化前には旧Player.CancelTemporaryCombatEffectsを呼び、遅れたBOOST解除による上書きを防ぐ。
+  共通SceneTransition側はroot担当。StageFlow/戦闘コードには本担当から変更していない。
+テスト案:
+  近傍に敵・弾がある状態でRetry/Titleをそれぞれ確定。待機中にTab/EscapeとResume/Pause/Back/Inventory操作を反復。
+  timeScale=0・復元HP/門/素材が不変・二重復元なし、新シーンでtimeScale=1を確認。
+  確定前の「やめる」では既存メニューへ戻り、通常Resumeが動くことも確認。
+
+2. P2 ローディングの遮蔽がキーボード決定・選択移動を止めない
+根拠:
+  Assets/GearCraft/Scripts/SceneTransitionManager.cs:227-234
+    入力遮断は fadeImage.raycastTarget と内部boolの変更のみ。EventSystemの選択・navigation/submitは制限しない。
+  Library/PackageCache/com.unity.ugui@cec3688a7c38/Runtime/UGUI/EventSystem/InputModules/StandaloneInputModule.cs:307-313,469-476
+    Submitは画面のraycast結果に関係なく currentSelectedGameObject に送られる。
+  Assets/GearCraft/Scenes/Craft.unity:1821-1822
+    sendNavigationEvents=1。Craftの通常ボタンにもAutomatic navigationが設定されている。
+  Assets/GearCraft/Scripts/Craft/CraftTabController.cs:128-131
+    「閉じる」はチュートリアル停止と遷移要求のみで、作業用Selectableの操作は止めない。
+  Assets/GearCraft/Scripts/Craft/CraftManager.cs:325-357 / Upgrade/UpgradeShopManager.cs:67以降
+    作成・品揃え更新には遷移中の決定拒否がない。
+トリガー:
+  Craftの「閉じる」を押した後、フェード／ロード待機中に方向キーで作業ボタンへ選択を移してSubmit。
+  pointerが遮蔽されても、選択された背面UIの操作や素材消費が可能な構造。具体的なキー列は実画面で未確認。
+最小修正:
+  遷移開始～入場フェード完了の間、共通EventSystemのnavigation/submitを止め、元の設定と有効な選択を安全に復元。
+  複数のシーン遷移管理者や途中無効化で元の設定を誤復元しないよう所有範囲を限定。
+状態: rootへ共有済み。SceneTransitionはroot所有、本担当は未変更。
+テスト案:
+  Craft/WeaponCustomの選択を残して遷移し、方向キー・Enter・Spaceを連打して作成数/素材/品揃えが変わらないこと。
+  入場フェード完了後にキーボード操作が戻ること。元からnavigation無効なら勝手に有効化されないこと。
+
+3. P2 右・中ボタンのドラッグでショップ購入が成立する
+根拠:
+  Assets/GearCraft/Scripts/Upgrade/UpgradeShopItemDragHandler.cs:18-52（修正前）
+    OnBeginDrag/OnDrag/OnEndDragがeventData.buttonを確認しない。
+  Library/PackageCache/com.unity.ugui@cec3688a7c38/Runtime/UGUI/EventSystem/InputModules/StandaloneInputModule.cs:581-585
+    uGUIは右・中ボタンにもProcessDragを実行する。左ボタン専用イベントではない。
+  Assets/GearCraft/Scripts/Upgrade/UpgradeGridUI.cs:407,431-459
+    右クリックは回転と案内する一方、EndShopDragは有効なマスなら購入し素材を消費。
+トリガー:
+  購入可能なパーツを右または中ボタンでグリッドへドラッグして離す。左ボタンによる購入操作をしていなくても購入になる。
+最小修正・状態:
+  DragHandlerの3入口を左ボタンだけに限定して修正済み。
+  GridUI.Updateの右クリック/R回転には変更なし。右のEndDragで左ドラッグを取り消さないため、終了入口も先頭で拒否。
+テスト案:
+  右／中ドラッグでpreview・購入・素材消費がないこと。
+  左ドラッグ中の右クリック/Rで回転し、左のreleaseで1回だけ購入できること。
+  グリッド外release／タブ離脱はキャンセルされ、素材が減らないこと。
+
+4. P2 強化チュートリアルの結果が武器別の実ダメージと異なる
+根拠:
+  Assets/GearCraft/Scripts/Craft/CraftTutorialController.cs:629-631（修正前）
+    rawな bonusDamage の増分を「一撃のダメージがX増えました」と表示。
+  Assets/GearCraft/Scripts/StatusManager.cs:175-184 / Data/WeaponDataSO.cs:47-50
+    実際のダメージは GetScaledFlatDamageBonus で武器別倍率を適用。
+  Assets/GearCraft/ScriptableObject/WeaponData/SteamCannon.asset:21 は0.8、SteamGatling.asset:21は0.05、SteamThrower.asset:22は0.024。
+トリガー:
+  これらの武器で未習得の強化チュートリアルを実行し、DamageFlat+2を配置。
+  旧表示は全て+2だが、実ダメージ増分はCannon+1.6/Gatling+0.1/Thrower+0.048。
+最小修正・状態:
+  既存 WeaponDataSO.GetScaledFlatDamageBonus(補正の増分) で結果を表示するよう修正済み。戦闘の計算式は変更なし。
+  小数は最大3桁とし0.048を丸め落とさない。武器不明時は「攻撃力の補正」としてraw値の意味を明示。
+テスト案:
+  +2パーツ配置時の結果文を3武器および倍率1の武器で確認し、StatusManager.GetWeaponDamageの前後差と比較。
+  攻撃速度のみのパーツ、複合パーツ、途中休止→再開でも課題の進行条件が変わらないこと。
+
+ローカル検証:
+  許可された3ファイルの git diff --check: PASS。
+  Unity 6000.0.67f1付属cscと既存Library/ScriptAssembliesを使った3ファイルの局所コンパイル: exit 0。
+  ログ: /private/tmp/gearcraft-ui-readiness-20261016/ui.compile.log.txt
+  コマンド・ソースハッシュ: /private/tmp/gearcraft-ui-readiness-20261016/ui.compile.json
+  出力DLLはAssets外。Unityへ導入・実行していない。
+  既存のTMP enableWordWrapping非推奨警告、Inspector代入対象actionConfirmTextのCS0649警告が残る。今回のコンパイルエラーなし。
+  続いてUnity実Bee応答ファイルを用いAssembly-CSharp全146ソースをcompile: exit 0、実行中ソース変化なし。
+  rootのGallery用OnDisable解除修正後に再実行済み。最終ログ/全ソースSHA/コマンドは同フォルダのoffline-compile.log.txt / offline-compile.json / offline-compile.rsp。
+  全体コンパイルではTMP非推奨警告7件のみ。DLLは/private/tmpに出力しUnityには導入していない。
+  実操作・シーン遷移の確認はrootのMCP検証待ち。部分コンパイルを動作確認とは扱わない。
+
+採用しなかった候補:
+  同一素材型を重複列挙したcostに対するCanAfford/SpendCostsの不整合などは、現アセットでの発生条件を確定していないため上位不具合には含めない。
+  二重SubmitはInputManagerに複数Submit定義があるだけでは成立しないため不具合と断定しない。
+  CraftのpendingCraftRecipeガードと素材変更通知は確認済み。演出キャンセル時の結果確定は既存仕様として保持。
+
+追加の独立レビュー（rootのSceneTransitionManager / ButtonScaler変更）:
+  通常の単一シーン遷移で、新たな阻害要因は見つからない。
+  SceneTransitionManagerはAwake時にEventSystemが未登録でもStartで再遮断し、元のsendNavigationEvents値を保持する。
+  OnDestroyで旧EventSystemの設定を復元する。元がfalseの場合もfalseを保つ。
+  時間の再開はSingleのsceneLoadedで行い、旧MainのLoadScene要求～完了の間を再開させない。
+  フェードはunscaledかつSetLinkで管理者破棄に追従し、破棄後の解除callbackが残る経路を抑えている。
+  ButtonScalerはAwakeで初期scaleを捕捉し、unscaledで拡縮、OnDisableでTween Kill/参照クリア/scale復元。
+  通常のGameObject・Component破棄でもOnDisableが通るため、実行中Tweenのターゲット破棄に対応する。
+  現DOTweenSettingsはdefaultRecyclable=0。終了済みTween参照が別Tweenへ再利用される懸念は現設定では該当しない。
+  複数のTransitionManagerが同じEventSystemを同時遮断する一般的な所有カウントはない。通常の単一遷移範囲で評価し、任意の重複管理者まで安全と断定しない。
+  Title Play用UIControlled.cs.txtを準備しC#6局所コンパイルPASS。MCP実行はroot担当。
+  検証範囲はnative handler/結果文/API差分/Tween実進行。実マウス操作、素材を消費する購入、見た目の配置確認は含まない。

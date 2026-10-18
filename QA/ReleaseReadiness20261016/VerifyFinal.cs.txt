@@ -1,0 +1,33 @@
+if(Application.isPlaying||UnityEditor.EditorApplication.isCompiling)throw new System.Exception("Editor is busy");
+string folder="QA/ReleaseReadiness20261016/",backup="QA/DefenseBugfix20261016/";
+var flags=System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.NonPublic;
+int prefs=0;
+foreach(var row in System.IO.File.ReadAllLines(backup+"playerprefs-before.txt")){
+ if(string.IsNullOrWhiteSpace(row))continue;
+ var c=row.Split('|');bool existed=bool.Parse(c[1]);
+ if(PlayerPrefs.HasKey(c[0])!=existed)throw new System.Exception("Pref existence mismatch: "+c[0]);
+ if(existed){bool isText=c[0].Contains(".Metrics.")||c[0].Contains("Gallery.Progress");string actual=isText?System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(PlayerPrefs.GetString(c[0]))):PlayerPrefs.GetInt(c[0]).ToString();if(actual!=c[2])throw new System.Exception("Pref value mismatch: "+c[0]);}prefs++;
+}
+var editor=System.IO.File.ReadAllLines(backup+"editor-before.txt");
+var scene=UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+if(scene.path!=editor[0]||scene.isDirty)throw new System.Exception("Scene differs from original");
+if(QualitySettings.vSyncCount!=int.Parse(editor[1])||Application.targetFrameRate!=int.Parse(editor[2])||Application.runInBackground!=bool.Parse(editor[3])||Time.captureDeltaTime!=float.Parse(editor[4],System.Globalization.CultureInfo.InvariantCulture)||Mathf.Abs(Time.fixedDeltaTime-float.Parse(editor[5],System.Globalization.CultureInfo.InvariantCulture))>0.00000001f||Time.timeScale!=float.Parse(editor[6],System.Globalization.CultureInfo.InvariantCulture))throw new System.Exception("Time/Editor setting mismatch");
+if(Debug.unityLogger.logEnabled!=bool.Parse(System.IO.File.ReadAllText(backup+"logger-enabled-before.txt").Trim())||(int)Debug.unityLogger.filterLogType!=int.Parse(System.IO.File.ReadAllText(backup+"logger-before.txt").Trim()))throw new System.Exception("Logger mismatch");
+DG.Tweening.DOTween.logBehaviour=(DG.Tweening.LogBehaviour)int.Parse(System.IO.File.ReadAllText(folder+"dotween-log-before.txt"));
+var assembly=typeof(UnityEditor.Editor).Assembly;var viewType=assembly.GetType("UnityEditor.GameView");var view=Resources.FindObjectsOfTypeAll(viewType).FirstOrDefault();var vb=System.IO.File.ReadAllLines(backup+"gameview-before.txt");
+int viewIndex=(int)viewType.GetProperty("selectedSizeIndex",flags).GetValue(view,null);
+if(viewIndex!=int.Parse(vb[0]))throw new System.Exception("GameView index mismatch");
+var sizesType=assembly.GetType("UnityEditor.GameViewSizes");var sizes=typeof(UnityEditor.ScriptableSingleton<>).MakeGenericType(sizesType).GetProperty("instance",flags).GetValue(null,null);var group=sizesType.GetProperty("currentGroup",flags).GetValue(sizes,null);
+var labels=(string[])group.GetType().GetMethod("GetDisplayTexts",flags).Invoke(group,null);if(!labels.SequenceEqual(vb.Skip(1)))throw new System.Exception("GameView sizes mismatch");
+foreach(var name in new[]{"batch-progress.txt","native-survival-progress.txt","ar-controlled-progress.txt"})if(System.IO.File.Exists(backup+name)&&System.IO.File.ReadAllText(backup+name).StartsWith("RUNNING"))throw new System.Exception("QA still running: "+name);
+foreach(var name in new[]{"probe-progress.txt","ui-controlled-progress.txt"})if(System.IO.File.ReadAllText(folder+name).StartsWith("RUNNING"))throw new System.Exception("QA still running: "+name);
+var manager=UnityEditor.Unsupported.GetSerializedAssetInterfaceSingleton("TimeManager");
+var timeCount=new UnityEditor.SerializedObject(manager).FindProperty("Fixed Timestep.m_Count").longValue;
+if(timeCount!=2822399L||Resources.FindObjectsOfTypeAll(manager.GetType()).Length!=1)throw new System.Exception("TimeManager not restored");
+var report=UnityEditor.Build.Reporting.BuildReport.GetLatestReport();
+if(report.summary.result!=UnityEditor.Build.Reporting.BuildResult.Succeeded||report.summary.totalErrors!=0||(report.summary.options&UnityEditor.BuildOptions.Development)!=0)throw new System.Exception("Release build was not clean");
+var build=new {result=report.summary.result.ToString(),errors=report.summary.totalErrors,warnings=report.summary.totalWarnings,platform=report.summary.platform.ToString(),options=report.summary.options.ToString(),output=report.summary.outputPath,size=report.summary.totalSize,duration=report.summary.totalTime.TotalSeconds,development=false,incremental=true,known_shader_warnings_remain_in_previous_full_compile=true};
+System.IO.File.WriteAllText(folder+"macos-release-build.json",Newtonsoft.Json.JsonConvert.SerializeObject(build,Newtonsoft.Json.Formatting.Indented));
+var result=new {utc=System.DateTime.UtcNow.ToString("O"),prefs_verified=prefs,play=false,scene=scene.path,scene_dirty=scene.isDirty,gameview_index=viewIndex,gameview_sizes_restored=true,time_and_logger_restored=true,time_manager_count=timeCount,fixed_step_before=editor[5],fixed_step_after=Time.fixedDeltaTime.ToString("R"),fixed_step_restore_basis="Original serialized 2822399 ticks; getter float round-trip differs by less than one tick",dotween_log=DG.Tweening.DOTween.logBehaviour.ToString(),qa_callbacks_running=false,build=build};
+System.IO.File.WriteAllText(folder+"final-editor-verification.json",Newtonsoft.Json.JsonConvert.SerializeObject(result,Newtonsoft.Json.Formatting.Indented));
+return result;

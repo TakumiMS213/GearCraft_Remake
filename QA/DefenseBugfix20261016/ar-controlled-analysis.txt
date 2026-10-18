@@ -1,0 +1,93 @@
+AR-227 過熱減速・解除の記録解析（2026-10-18）
+
+結論: 進入、円弧巡回、Chargingシーケンス、復帰の4ケースで、実進行量/ゲーム秒が通常約1 → 過熱中約0.55 → 解除後約1へ変化した。
+本判定はCSVのentry_timer/tween_elapsed差分から算出した。saw_slow/saw_recoveryやtimeScale設定値だけで減速を判定していない。
+Chargingの熱付与区間は予備動作中であり、後半の飛び込み区間での途中付与を実測したとは扱わない。
+
+入力:
+  ar-controlled.csv: フレームごとのネイティブ進行量・座標。
+  ar-controlled-results.csv: 8移動ケース＋3寿命チェック、計11件。
+  AROverheatControlled.cs.txt: Title内のQAクローン。通常DOTween更新、手動UpdateAI、60ゲームfps、過熱0.3秒/倍率0.55。
+  敵物理・召喚・通常攻撃は隔離されているため、通常戦闘中の勝敗・処理負荷の検証ではない。
+
+算出・除外方法:
+  隣接行(a,b)の増分を用い、進入はb.entry_timer-a.entry_timer、Tween移動はb.tween_elapsed-a.tween_elapsedを採用。
+  区間の速度比 = 進行量の増分合計 / b.delta_timeの合計。進行時計の単位は秒なので通常値は1。
+  比較ペアとその前後各1行の計4行でmode/state/tween_id/熱段階がすべて一致する区間だけ採用。
+  これにより過熱付与/解除、状態遷移、Tween切替を跨ぐペア、およびその隣接ペアを除外。
+  ケース先頭・末尾、移動時計なし、非有限値、逆行、dt<=0、elapsed_game差とdtの差>0.00001秒も除外。
+  特にDOTween更新とUpdateAIによるtimeScale変更の同フレーム順序の影響を、境界フレームで判定しない。
+  曲線移動/イージング/シーケンス内待機があるため、異なる経路時点のXY速度を単純比較して倍率を求めない。
+
+過熱ケースの実進行量（case / mode / state / phase / 有効ペア数 / ゲーム時刻範囲 / 進行秒毎ゲーム秒）:
+  4 / Entering / Entering / before / n=3 / 0.050000〜0.083333s / 0.999999964
+  4 / Entering / Entering / heated / n=15 / 0.150000〜0.383333s / 0.550000312
+  4 / Entering / Entering / after / n=56 / 0.450000〜1.366667s / 0.999999479
+  5 / Arc / Combat / before / n=3 / 0.050000〜0.083333s / 0.999999964
+  5 / Arc / Combat / heated / n=15 / 0.150000〜0.383333s / 0.550000240
+  5 / Arc / Combat / after / n=71 / 0.450000〜1.616667s / 0.999999330
+  6 / Charging / Charging / before / n=2 / 0.050000〜0.066667s / 0.999999997
+  6 / Charging / Charging / heated / n=15 / 0.133334〜0.366667s / 0.550000280
+  6 / Charging / Charging / after / n=96 / 0.433333〜2.016667s / 0.999999296
+  6 / Charging / Returning / after / n=46 / 2.083334〜2.833334s / 0.999999830
+  7 / Returning / Returning / before / n=2 / 0.050000〜0.066667s / 0.999999997
+  7 / Returning / Returning / heated / n=15 / 0.133333〜0.366667s / 0.550000280
+  7 / Returning / Returning / after / n=30 / 0.433333〜0.916667s / 0.999999838
+
+同じ移動の付与前を1とした比（過熱中 / 解除後）:
+  Entering: 0.550000332 / 0.999999515 (PASS)
+  Arc: 0.550000260 / 0.999999366 (PASS)
+  Charging: 0.550000282 / 0.999999299 (PASS)
+  Returning: 0.550000282 / 0.999999841 (PASS)
+
+無過熱の対照ケース（進行秒毎ゲーム秒）:
+  case=0 Entering/Entering: 0.999999562, n=72
+  case=1 Arc/Combat: 0.999999464, n=87
+  case=2 Charging/Charging: 0.999999363, n=111
+  case=2 Charging/Returning: 0.999999830, n=46
+  case=3 Returning/Returning: 0.999999826, n=45
+
+進入の実座標による追加照合:
+  before: XY移動距離/ゲーム秒 = 2.484666876
+  heated: XY移動距離/ゲーム秒 = 1.366567532
+  after: XY移動距離/ゲーム秒 = 2.484665854
+  座標からの過熱/通常比=0.550000302、解除後/通常比=0.999999589。時計だけでなく実位置の進行も一致。
+
+全体の完了時間（無過熱 → 過熱、差）:
+  Entering: 1.2666666 → 1.4000001秒、差 +0.1333335秒
+  Arc: 1.5166666 → 1.6499996秒、差 +0.1333330秒
+  Charging: 2.7333334 → 2.8666668秒、差 +0.1333334秒
+  Returning: 0.8166666 → 0.9499998秒、差 +0.1333332秒
+  0.3秒×(1−0.55)=0.135秒の進行遅延と、約0.133333秒（8フレーム）の完了差は60fpsの観測分解能内で整合。
+
+Chargingの範囲・限定:
+  case6で過熱付与はelapsed_game=0.100000381、解除は0.400000572秒。解除行のtween_elapsedは0.265000075秒。
+  本編のCharging Sequenceは予備移動0.3秒→待機0.2秒→飛び込み移動（EnemyAI_BossSpeed.cs:273-277）。
+  したがって今回、実際に過熱下で観測した位置移動は予備移動。Sequence進行の0.55倍は実証済みだが、飛び込み開始後の途中付与は未測定。
+  同一SequenceにtimeScaleを適用する実装で飛び込みにも減速が及ぶと読めることと、今回の測定範囲は区別する。
+  case6はその後Returningへ自然遷移し、別Tweenの進行速度も0.999999830を記録。切替ペアは速度比計算から除外した。
+
+寿命チェック:
+  case=8 DeathCleanup: result=passed, cleanup_ok=True, Native lifecycle; active-before=True
+  case=9 DisableCleanup: result=passed, cleanup_ok=True, Native lifecycle; active-before=True
+  case=10 DestroyCleanup: result=passed, cleanup_ok=True, Native lifecycle; active-before=True
+  3件とも実行中Tweenがあった状態から、native OnDeath / 非アクティブ化 / AI破棄後にTween停止を同期確認。
+  これらのpassed値は寿命チェックの結果として扱い、移動速度比の証明には使用していない。
+
+採用・除外数（8移動ケースのみ）:
+  case=0: rows=76, accepted_pairs=72, excluded={'case_edge': 2, 'state_tween_heat_boundary': 1}
+  case=1: rows=91, accepted_pairs=87, excluded={'case_edge': 2, 'state_tween_heat_boundary': 1}
+  case=2: rows=164, accepted_pairs=157, excluded={'case_edge': 2, 'state_tween_heat_boundary': 4}
+  case=3: rows=49, accepted_pairs=45, excluded={'case_edge': 2, 'state_tween_heat_boundary': 1}
+  case=4: rows=84, accepted_pairs=74, excluded={'case_edge': 2, 'state_tween_heat_boundary': 7}
+  case=5: rows=99, accepted_pairs=89, excluded={'case_edge': 2, 'state_tween_heat_boundary': 7}
+  case=6: rows=172, accepted_pairs=159, excluded={'case_edge': 2, 'state_tween_heat_boundary': 10}
+  case=7: rows=57, accepted_pairs=47, excluded={'case_edge': 2, 'state_tween_heat_boundary': 7}
+
+ファイルSHA256（入力同一性）:
+  ar-controlled.csv 4ca4f8276af57784e283dfdfeb167d54042834e2bcfea4c517fa743859c2234e
+  ar-controlled-results.csv c0550e1f1a5e9346b21cdec412841daa8bdbf7a94915791c5ce50296b326f02a
+  AROverheatControlled.cs.txt b1d20d173874a19f0675a29d96a01265ff466f3dec1884b74884d57793637133
+
+総合判定: PASS（上記範囲で進行速度1→0.55→1、対照・復帰・寿命チェックに不一致なし）
+制作コード・MCP・測定CSVは変更していない。本ファイルは保存済み記録の解析のみ。

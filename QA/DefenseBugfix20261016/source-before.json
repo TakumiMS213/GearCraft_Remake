@@ -1,0 +1,18 @@
+{
+  "Assets/GearCraft/Scripts/EnemyAI/EnemyAI_BossSpeed.cs": "6ef96c0dd05ada9ec18191f6e4df59d5cb7ce5188c08fe5301af5d37a35bddd2",
+  "Assets/GearCraft/Scripts/EnemyAI/EnemyAI_Circle.cs": "12aa11c0563f1b42be337ef0c6a88a1e235e00f9adcc2c3fe1ae368baa468568",
+  "Assets/GearCraft/Scripts/EnemyAI/FinalBossWeaponPorts.cs": "e2280fb0c27eca112b56134f0cdd913458d227bd1e0d7e64044b6efc60e09a65",
+  "Assets/GearCraft/Scripts/EnemyAI/IEnemyAI.cs": "74dea3eea3a145f136aeac0c126882bbc2e0ad8af515e0dd522e0c1d874b9e52",
+  "Assets/GearCraft/Scripts/EnemyAI/EnemyAI_BossFinal.cs": "de1a08ce4c45a0cc5445d46a82c82724f3dccbc40f8c15f7cc116f6b1106e8e4",
+  "Assets/GearCraft/Scripts/EnemyAI/EnemyAI_Straight.cs": "97aae008a8655b7b2ac74f78f75d0bba3e9f776a92468d18340260a77c34130b",
+  "Assets/GearCraft/Scripts/EnemyAI/EnemyAI_Charger.cs": "d970900afecda8e8b47a90b83c4d0acd701d4dea01bf1eb528e97210b01b296f",
+  "Assets/GearCraft/Scripts/EnemyAI/BossArena.cs": "262233bc8d91aa6465f3b43d10bdebcada595a94adf4111f4a4e8c4744824c95",
+  "Assets/GearCraft/Scripts/EnemyAI/EnemyAI_Sniper.cs": "cb47052aa5cf2d596d6c54e1ed72fbc7f25b6c9395cc252ac382b78b7952376e",
+  "Assets/GearCraft/Scripts/EnemyAI/EnemyAI_Bomber.cs": "f1e37bcc186fe8b2c696929dac2937cd1a453a1894f25112297e5b3ac39c6b77",
+  "Assets/GearCraft/Scripts/EnemyAI/FinalBossMissile.cs": "f457fc441914b9bf01d5bee209f25192e6f3328a4c43b91a2df2b093fa23aefb",
+  "Assets/GearCraft/Scripts/EnemyAI/EnemyAI_BossArtillery.cs": "d995c71e28235adfa00c252aa377826096a98fd8e2b54801bf3cb6d30f7d8ee2",
+  "Assets/GearCraft/Scripts/EnemyAI/EnemyAI_BossTank.cs": "3b5f8158c950186e8fe94bf2551a1809fc863c9279e6e3e21349b32e9e59411e",
+  "Assets/GearCraft/Scripts/Main/EnemyController.cs": "f112467871be7d72c493f500134f10d7563fd8a6cc70c5b0e63496a39e022f95",
+  "Assets/GearCraft/Scripts/Main/PlayerController.cs": "14524c06d8b085a03bccec97e7e32537e4cce44f7fed35c06c4d7f4c28f6bc81",
+  "Assets/GearCraft/Scripts/Main/EnemySpawner.cs": "36ebac657187d1a78093223410a171dfe861487333ccdf4b24d65f253763b5e5"
+}

@@ -1,0 +1,16 @@
+SteamCannon,31,final_day11_ranged_fitted_speed_defense_module20,202
+day=11
+boss_kills=3
+HP=100
+GATE=100
+flat_damage=12
+attack_speed=0.1397978
+module_damage=20
+parts=Damage+2;Damage+2;Damage+2;Damage+2;SpeedGear;SpeedGear;SpeedGear;SpeedGear;SpeedGear;SpeedGear+;SpeedGear+;SpeedGear++;SpeedGear++;SpeedGear++;SpeedGear++;SpeedGear++;TwinBarrel
+placements=final_day11_ranged_fitted_speed_defense_module20:Damage+2:0:0:0;final_day11_ranged_fitted_speed_defense_module20:Damage+2:2:0:0;final_day11_ranged_fitted_speed_defense_module20:Damage+2:4:0:0;final_day11_ranged_fitted_speed_defense_module20:Damage+2:0:1:0;final_day11_ranged_fitted_speed_defense_module20:SpeedGear++:2:1:0;final_day11_ranged_fitted_speed_defense_module20:SpeedGear++:3:1:0;final_day11_ranged_fitted_speed_defense_module20:SpeedGear++:4:1:0;final_day11_ranged_fitted_speed_defense_module20:SpeedGear++:5:1:0;final_day11_ranged_fitted_speed_defense_module20:SpeedGear++:0:2:0;final_day11_ranged_fitted_speed_defense_module20:SpeedGear+:1:2:0;final_day11_ranged_fitted_speed_defense_module20:SpeedGear+:2:3:0;final_day11_ranged_fitted_speed_defense_module20:SpeedGear:3:3:0;final_day11_ranged_fitted_speed_defense_module20:SpeedGear:4:3:0;final_day11_ranged_fitted_speed_defense_module20:SpeedGear:5:3:0;final_day11_ranged_fitted_speed_defense_module20:TwinBarrel:0:4:0;final_day11_ranged_fitted_speed_defense_module20:SpeedGear:0:5:1;final_day11_ranged_fitted_speed_defense_module20:SpeedGear:2:5:1
+double_shot=True
+spread_modifier=0
+ricochet=0
+bullet_size=1
+initial_hit_damage=102.6
+asset=Assets/GearCraft/ScriptableObject/WeaponData/SteamCannon.asset

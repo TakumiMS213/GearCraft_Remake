@@ -1,0 +1,38 @@
+BB-413 強弾発射位置修正: 局所検証（2026-10-16）
+
+変更ファイル: Assets/GearCraft/Scripts/EnemyAI/EnemyAI_BossArtillery.cs のみ。
+目的: 本体の停止位置を、弾の実幅・Collider offset・門右端・弾速から求める。発射位置は本体左の砲口を維持し、急な位置補正を加えない。
+通常16:9で、弾左端と門右端の間に bulletSpeed*0.75 + 0.1 world を残す。予告0.6秒は別。0.1は接触境界の余白であり、無敵や当たり判定縮小は行わない。
+
+根拠寸法:
+Main gate: position.x=-7.438, scale.x=3, Box offset.x=-0.21822691, size.x=0.5635462。
+BB body: scale.x=6, Box offset.x=-0.06999564, size.x=1.6091504。
+HeavyShot: scale.x=1.5, Box offset.x=0, size.x=1、bulletSpeed=5。
+gate right=-7.24736143; BB left offset=-5.24742504
+旧 stop=-0.75345790 では弾左端=-7.65088294、門右端より内側=0.40352151。
+
+数値検証（Box offset と負 scale も確認）:
+offset, scale, stop_origin_x, projectile_left_x, gate_gap, shortest_horizontal_travel_seconds, gap_to_boss_body
+0.00000000,1.50000000,3.50006361,-3.39736143,3.85000000,0.77000000,0.15000000
+0.40000000,1.50000000,3.50006361,-3.39736143,3.85000000,0.77000000,0.15000000
+-0.40000000,1.50000000,3.50006361,-3.39736143,3.85000000,0.77000000,0.15000000
+0.40000000,-1.50000000,3.50006361,-3.39736143,3.85000000,0.77000000,0.15000000
+
+安全側の計算: 照準が斜めなら水平速度は弾速以下なので、この水平距離から得られる時間より門への到達は早まらない。弾は予告中も本体とともに前進するが、MoveTowards の到達目標が上記停止位置なので越えない。
+物理同期: 本体砲口は BossArena の初期 bodyMin と現 Transform を用いる。門は BoxCollider の現 TransformPoint/TransformVector から右端を求め、物理更新前の古い bounds を使わない。弾も Instantiate と同じ root scale / identity rotation を使って左右端を算出する。
+限界: 必要距離が画面内移動範囲を超える狭画面では、本体を画面内に保つため停止位置を右端へ clamp する。この場合0.75秒の保証はない。生成弾左端が門右端+0.1以下なら発射を見送り、門の中や裏への生成を防ぐ。通常Main16:9は safeStop≈3.500064 < rectMax≈4.321411 で条件を満たす。
+
+既存挙動の保存:
+LateUpdate: 本文一致 PASS
+OnAttack: 本文一致 PASS
+UpdateSummon: 本文一致 PASS
+OnDeath: 本文一致 PASS
+HP段階30/60%、上下振幅/周期、MoveTowards速度係数、攻撃間隔の段階補正、強弾の速度/寿命/威力/耐久、召喚内容/周期/上限はいずれも変更なし。
+git diff --check（所有ファイル）PASS。Unity compile / native発射実測はrootと別担当が実施するため、この記録は静的幾何と差分確認の範囲。
+
+検証用 private helper:
+GetAdvanceLimit(Rect movementRect)
+GetCounterableProjectileSpawnPosition(GameObject prefab)
+GetProjectileHorizontalOffsets(GameObject prefab, out float left, out float right)
+GetGateRightEdge(Collider2D gate)
+LaunchCounterableProjectile() は従来名・引数を維持。

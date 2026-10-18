@@ -1,0 +1,29 @@
+{
+  "utc": "2026-10-18T06:31:38.7739260Z",
+  "prefs_verified": 8,
+  "play": false,
+  "scene": "Assets/GearCraft/Scenes/Title.unity",
+  "scene_dirty": false,
+  "gameview_index": 3,
+  "gameview_sizes_restored": true,
+  "time_and_logger_restored": true,
+  "time_manager_count": 2822399,
+  "fixed_step_before": "0.0199999865",
+  "fixed_step_after": "0.0199999921",
+  "fixed_step_restore_basis": "Original serialized 2822399 ticks; getter float round-trip differs by less than one tick",
+  "dotween_log": "ErrorsOnly",
+  "qa_callbacks_running": false,
+  "build": {
+    "result": "Succeeded",
+    "errors": 0,
+    "warnings": 0,
+    "platform": "StandaloneOSX",
+    "options": "ForceOptimizeScriptCompilation, Il2CPP, CompressTextures, StripDebugSymbols, ShaderLivelinkSupport, DetailedBuildReport",
+    "output": "/private/tmp/GearCraftReleaseCheck20261018/Verified/GearCraft.app",
+    "size": 201097753,
+    "duration": 5.2874162999999994,
+    "development": false,
+    "incremental": true,
+    "known_shader_warnings_remain_in_previous_full_compile": true
+  }
+}

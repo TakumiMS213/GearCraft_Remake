@@ -1,28 +1,32 @@
 {
-  "state": "running_AR_EK_repeats",
-  "measured_cases": 0,
+  "state": "complete",
+  "measured_cases": 39,
   "prepared_primary_cases": 14,
-  "scene_at_last_successful_observation": "Main Play, bootstrap READY, timeScale=0",
+  "scene_at_last_successful_observation": "Title Edit, clean; original Full HD and runtime settings restored",
   "backup_files": [
     "playerprefs-before.txt",
     "editor-before.txt",
     "gameview-before.txt",
     "logger-before.txt"
   ],
-  "runtime_validation": "Primary14 completed; repeat21 C#6 compiled and launched; sensitivity3 pending",
-  "next_steps": [
-    "Finish AR/EK repeats and grounded posture probe",
-    "Run IC speed/Gear8/BOOST6 sensitivity 3 seeds",
-    "Summarize physics anomaly separately from weapon performance",
-    "Restore and verify original Prefs8 and Editor/view settings"
-  ],
+  "runtime_validation": "Main14 + repeat21 + sensitivity4 complete in Unity; per-case records retained",
+  "next_steps": [],
   "production_changes": 0,
   "measured_primary_cases": 14,
   "primary_defense_successes": 9,
   "primary_invalid_cases": 0,
   "prepared_repeat_cases": 21,
-  "prepared_IC_sensitivity_cases": 3,
   "source_changes": 0,
-  "last_update_utc": "2026-10-16T03:30:47.417069+00:00",
-  "pending_restoration": true
+  "last_update_utc": "2026-10-16T03:47:57.259153+00:00",
+  "pending_restoration": false,
+  "measured_repeat_cases": 20,
+  "measured_posture_cases": 1,
+  "measured_IC_sensitivity_cases": 4,
+  "main_and_followup_trials": 39,
+  "normal_defense_successes": 29,
+  "normal_defense_failures": 9,
+  "abnormal_fall_failures": 1,
+  "final_report": "report.txt",
+  "completed_utc": "2026-10-16T03:46:01.002205+00:00",
+  "final_report_review": "Independent factual review passed; no production changes"
 }

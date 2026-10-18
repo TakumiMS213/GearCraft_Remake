@@ -1,0 +1,25 @@
+PASS checks=21
+PASS transition_blocks_navigation_from_True
+PASS transition_restores_navigation_to_True
+PASS transition_blocks_navigation_from_False
+PASS transition_restores_navigation_to_False
+PASS drag_ignores_Right
+PASS drag_ignores_Middle
+PASS left_drag_begins
+PASS left_drag_updates
+PASS secondary_drag_does_not_cancel_left_Right
+PASS secondary_drag_does_not_cancel_left_Middle
+PASS left_release_outside_grid_cancels
+PASS inactive_status_did_not_replace_singleton
+PASS tutorial_damage_GearCraft_Sword actual=2 text=パーツが組み込まれ、一撃のダメージが2増えました。
+PASS tutorial_damage_SteamCannon actual=1.59999847 text=パーツが組み込まれ、一撃のダメージが1.6増えました。
+PASS tutorial_damage_RailCraft actual=2 text=パーツが組み込まれ、一撃のダメージが2増えました。
+PASS tutorial_damage_SteamGatling actual=0.100000381 text=パーツが組み込まれ、一撃のダメージが0.1増えました。
+PASS tutorial_damage_SteamThrower actual=0.04799986 text=パーツが組み込まれ、一撃のダメージが0.048増えました。
+PASS button_grows_while_paused
+PASS button_exit_restores_scale_while_paused
+PASS button_disable_kills_tween_and_restores_scale
+PASS button_destroy_kills_live_tween
+restored_runtime_status_materials_metrics=True
+
+Scope: native handler/feedback/Tween checks; no physical mouse, purchase or visual layout validation. Title Play remains open.

@@ -1,0 +1,4 @@
+UTC=2026-10-16T06:11:42.3581470Z
+keys=8
+scene=Assets/GearCraft/Scenes/Title.unity
+source=current_session_native_PlayerPrefs

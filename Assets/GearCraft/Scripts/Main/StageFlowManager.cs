@@ -57,7 +57,8 @@ public class StageFlowManager : MonoBehaviour
 
     public bool IsStageActive { get; private set; }
     public int EnemyScalingStage { get; private set; } = 1;
-    public bool IsBlockingGameplayUI => isOpeningNoticeShowing || isCollectingRemainingMaterials ||
+    public bool IsBlockingGameplayUI => dayRetryTriggered || EndingManager.IsLoadingEnding ||
+        isOpeningNoticeShowing || isCollectingRemainingMaterials ||
         (bonusCardsManager != null && bonusCardsManager.IsChoosingReward) ||
         (restResultReportUI != null && restResultReportUI.IsShowing);
     public static bool IsPlayerInputBlocked => Time.timeScale <= 0f ||
@@ -135,8 +136,13 @@ public class StageFlowManager : MonoBehaviour
             openingNoticeRoot.SetActive(false);
         }
 
-        await ShowDayAsync();
-        StartNextStage();
+        var startToken = this.GetCancellationTokenOnDestroy();
+        try
+        {
+            await ShowDayAsync(startToken);
+            StartNextStage();
+        }
+        catch (OperationCanceledException) when (startToken.IsCancellationRequested) { }
     }
 
     private int GetStageFromCounter()
@@ -344,11 +350,13 @@ public class StageFlowManager : MonoBehaviour
 
     public void RestoreDayStartSnapshot()
     {
-        if (dayStartSnapshot == null)
+        if (dayStartSnapshot == null || EndingManager.IsLoadingEnding)
         {
             return;
         }
 
+        dayRetryTriggered = true;
+        FindFirstObjectByType<PlayerController>()?.CancelTemporaryCombatEffects();
         dayStartSnapshot.Restore();
         ResetRestResultStats();
         activeEnemies.Clear();
@@ -361,7 +369,7 @@ public class StageFlowManager : MonoBehaviour
 
     public void RetryDayAfterPlayerDeath()
     {
-        if (dayRetryTriggered)
+        if (dayRetryTriggered || EndingManager.IsLoadingEnding)
         {
             return;
         }
@@ -382,6 +390,7 @@ public class StageFlowManager : MonoBehaviour
 
     private void StartNextStage()
     {
+        if (dayRetryTriggered || EndingManager.IsLoadingEnding) return;
         if (StatusManager.Instance != null)
             StatusManager.Instance.DormTasks.hasStartedFirstDay = true;
         activeEnemies.RemoveAll(enemy => enemy == null);
@@ -500,7 +509,7 @@ public class StageFlowManager : MonoBehaviour
         PlayerPrefs.Save();
     }
 
-    private async UniTask ShowDayAsync()
+    private async UniTask ShowDayAsync(CancellationToken cancellationToken)
     {
         if (stageNumText == null)
         {
@@ -510,7 +519,7 @@ public class StageFlowManager : MonoBehaviour
         int day = ((Mathf.Max(1, currentStage) - 1) / 3) + 1;
         stageNumText.text = $"Day{day}";
         stageNumText.alpha = 1f;
-        await UniTask.Delay(TimeSpan.FromSeconds(dayDisplaySeconds));
+        await UniTask.Delay(TimeSpan.FromSeconds(dayDisplaySeconds), cancellationToken: cancellationToken);
         stageNumText.text = "";
     }
 
@@ -545,7 +554,12 @@ public class StageFlowManager : MonoBehaviour
         }
 
         perfectUI.SetActive(true);
-        await UniTask.Delay(TimeSpan.FromSeconds(2f));
+        var token = this.GetCancellationTokenOnDestroy();
+        try
+        {
+            await UniTask.Delay(TimeSpan.FromSeconds(2f), cancellationToken: token);
+        }
+        catch (OperationCanceledException) when (token.IsCancellationRequested) { return; }
         if (perfectUI != null)
         {
             perfectUI.SetActive(false);

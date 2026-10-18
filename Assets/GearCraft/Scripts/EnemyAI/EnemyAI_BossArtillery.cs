@@ -9,10 +9,13 @@ public class EnemyAI_BossArtillery : MonoBehaviour, IEnemyAI
     private const float SwayAmplitude = 1.1f;
     private const float SwayPeriod = 4f;
     private const float AttackWindup = 0.6f;
+    private const float ProjectileReactionTime = 0.75f;
+    private const float ProjectileGateClearance = 0.1f;
     private EnemyController owner;
     private EnemyDataSO data;
     private Transform playerTarget;
     private BossArena arena;
+    private Collider2D gateCollider;
     private SpriteRenderer sprite;
     private Color originalColor;
     private float elapsed;
@@ -48,8 +51,8 @@ public class EnemyAI_BossArtillery : MonoBehaviour, IEnemyAI
         elapsed += Time.deltaTime;
         Rect rect = arena.GetMovementRect();
         Vector3 position = owner.transform.position;
-        // 画面左側へ消えず、プレイヤーに迫った位置で攻撃を続ける。
-        float advanceLimit = Mathf.Lerp(rect.xMin, rect.xMax, 0.35f);
+        // 本体だけでなく、発射した強弾にも門までの迎撃距離を残す。
+        float advanceLimit = GetAdvanceLimit(rect);
         position.x = Mathf.MoveTowards(position.x, advanceLimit,
             owner.GetMoveSpeed(data.speed) * 0.3f * Time.deltaTime);
         float centerY = Mathf.Lerp(rect.yMin, rect.yMax, 0.6f);
@@ -93,13 +96,18 @@ public class EnemyAI_BossArtillery : MonoBehaviour, IEnemyAI
 
     private void LaunchCounterableProjectile()
     {
-        if (playerTarget == null || data.bulletPrefabs == null || data.bulletPrefabs.Length == 0) return;
-        GameObject prefab = data.bulletPrefabs[0];
+        if (playerTarget == null) return;
+        GameObject prefab = GetCounterableProjectilePrefab();
         if (prefab == null) return;
         // 本体の中から発射すると迎撃弾がボスに遮られるため、左の砲口から発射する。
-        BoxCollider2D projectileBody = prefab.GetComponent<BoxCollider2D>();
-        float halfWidth = projectileBody != null ? projectileBody.size.x * Mathf.Abs(prefab.transform.localScale.x) * 0.5f : 0.5f;
-        Vector3 spawnPosition = arena.GetLeftMuzzlePosition(halfWidth);
+        Vector3 spawnPosition = GetCounterableProjectileSpawnPosition(prefab);
+        float projectileLeft;
+        float projectileRight;
+        GetProjectileHorizontalOffsets(prefab, out projectileLeft, out projectileRight);
+        Collider2D gate = GetGateCollider();
+        // 狭い画面や外力で距離を確保できない場合も、門の中・裏へ弾を生成しない。
+        if (gate != null && spawnPosition.x + projectileLeft <=
+            GetGateRightEdge(gate) + ProjectileGateClearance) return;
         GameObject projectile = Instantiate(prefab, spawnPosition, Quaternion.identity);
         Rigidbody2D rb = projectile.GetComponent<Rigidbody2D>();
         if (rb != null)
@@ -109,6 +117,78 @@ public class EnemyAI_BossArtillery : MonoBehaviour, IEnemyAI
             rb.linearVelocity = (Vector2)(playerTarget.position - spawnPosition).normalized * data.bulletSpeed;
         }
         Destroy(projectile, 8f);
+    }
+
+    private float GetAdvanceLimit(Rect movementRect)
+    {
+        float limit = Mathf.Lerp(movementRect.xMin, movementRect.xMax, 0.35f);
+        GameObject prefab = GetCounterableProjectilePrefab();
+        Collider2D gate = GetGateCollider();
+        if (prefab != null && gate != null)
+        {
+            float projectileLeft;
+            float projectileRight;
+            GetProjectileHorizontalOffsets(prefab, out projectileLeft, out projectileRight);
+            // BossArena の初期本体オフセットと現 Transform を使い、物理同期前でも一致させる。
+            float muzzleOffset = GetCounterableProjectileSpawnPosition(prefab).x - owner.transform.position.x;
+            float travelDistance = Mathf.Abs(data.bulletSpeed) * ProjectileReactionTime;
+            float safeLimit = GetGateRightEdge(gate) + ProjectileGateClearance + travelDistance -
+                muzzleOffset - projectileLeft;
+            limit = Mathf.Max(limit, safeLimit);
+        }
+        // 必要距離より画面が狭い場合は、本体の画面内制約を優先する。
+        return Mathf.Clamp(limit, movementRect.xMin, movementRect.xMax);
+    }
+
+    private Vector3 GetCounterableProjectileSpawnPosition(GameObject prefab)
+    {
+        float projectileLeft;
+        float projectileRight;
+        GetProjectileHorizontalOffsets(prefab, out projectileLeft, out projectileRight);
+        // 右端を本体の左へ出す。Collider の中心が原点からずれた弾にも対応する。
+        return arena.GetLeftMuzzlePosition(projectileRight);
+    }
+
+    private static void GetProjectileHorizontalOffsets(GameObject prefab, out float left, out float right)
+    {
+        BoxCollider2D body = prefab.GetComponent<BoxCollider2D>();
+        if (body == null)
+        {
+            left = -0.5f;
+            right = 0.5f;
+            return;
+        }
+        float scale = prefab.transform.localScale.x;
+        float center = body.offset.x * scale;
+        float halfWidth = body.size.x * Mathf.Abs(scale) * 0.5f;
+        left = center - halfWidth;
+        right = center + halfWidth;
+    }
+
+    private GameObject GetCounterableProjectilePrefab()
+    {
+        return data != null && data.bulletPrefabs != null && data.bulletPrefabs.Length > 0 ?
+            data.bulletPrefabs[0] : null;
+    }
+
+    private Collider2D GetGateCollider()
+    {
+        if (gateCollider == null && GateManager.Instance != null)
+            gateCollider = GateManager.Instance.GetComponent<Collider2D>();
+        return gateCollider != null && gateCollider.enabled && gateCollider.gameObject.activeInHierarchy ?
+            gateCollider : null;
+    }
+
+    private static float GetGateRightEdge(Collider2D gate)
+    {
+        BoxCollider2D box = gate as BoxCollider2D;
+        if (box == null) return gate.bounds.max.x;
+        // Main の門は BoxCollider。Transform 移動直後でも古い physics bounds を参照しない。
+        Transform gateTransform = box.transform;
+        float center = gateTransform.TransformPoint(box.offset).x;
+        float extentX = Mathf.Abs(gateTransform.TransformVector(Vector3.right * box.size.x * 0.5f).x);
+        float extentY = Mathf.Abs(gateTransform.TransformVector(Vector3.up * box.size.y * 0.5f).x);
+        return center + extentX + extentY;
     }
 
     private void UpdateSummon()

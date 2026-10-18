@@ -1,0 +1,17 @@
+result=native_day_cleared_and_dorm_reached
+start_hp=100
+start_gate=100
+end_hp=92
+end_gate=40
+start_stage=7
+last_stage=10
+completed_native_waves=3
+rewards_selected=2
+game_seconds=197.300
+wall_seconds=12.823
+shots=102
+attack_events=102
+player_damage=8.00
+gate_damage=60.00
+player_healed=0.00
+gate_healed=0.00

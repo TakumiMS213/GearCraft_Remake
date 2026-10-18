@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using DG.Tweening;
@@ -35,8 +36,29 @@ public class SceneTransitionManager : MonoBehaviour
 
     private bool isLoading;
     private bool isInputBlocked;
+    private EventSystem blockedEventSystem;
+    private bool previousNavigationEvents;
 
     public bool IsLoading => isLoading || isInputBlocked;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetRuntimeState()
+    {
+        pendingEnterTransition = false;
+        pendingTip = null;
+        SceneManager.sceneLoaded -= ResumeAfterSceneLoad;
+    }
+
+    private void Start()
+    {
+        // EventSystemのAwakeが後でも、最初の入力処理より前に遷移中の決定操作を止める。
+        if (IsLoading) BlockNavigation();
+    }
+
+    private void OnDestroy()
+    {
+        RestoreNavigation();
+    }
 
     private void Awake()
     {
@@ -79,7 +101,7 @@ public class SceneTransitionManager : MonoBehaviour
 
         pendingEnterTransition = true;
         pendingTip = null;
-        SceneManager.LoadScene(nextSceneName);
+        LoadSceneAndResume(nextSceneName);
     }
 
     private IEnumerator LoadSceneRoutine(string nextSceneName)
@@ -104,7 +126,22 @@ public class SceneTransitionManager : MonoBehaviour
 
         pendingEnterTransition = true;
         pendingTip = tip;
+        LoadSceneAndResume(nextSceneName);
+    }
+
+    private static void LoadSceneAndResume(string nextSceneName)
+    {
+        // LoadSceneは次のフレームに完了する。旧Mainを先に再開させない。
+        SceneManager.sceneLoaded -= ResumeAfterSceneLoad;
+        SceneManager.sceneLoaded += ResumeAfterSceneLoad;
         SceneManager.LoadScene(nextSceneName);
+    }
+
+    private static void ResumeAfterSceneLoad(Scene scene, LoadSceneMode mode)
+    {
+        if (mode != LoadSceneMode.Single) return;
+        SceneManager.sceneLoaded -= ResumeAfterSceneLoad;
+        Time.timeScale = 1f;
     }
 
     private void ResolveFadeImages()
@@ -170,9 +207,9 @@ public class SceneTransitionManager : MonoBehaviour
             return;
         }
 
-        Tween fadeTween = fadeImage?.DOFade(alpha, duration).SetUpdate(true);
-        LoadfadeImage?.DOFade(alpha, duration).SetUpdate(true);
-        loadingTipText?.DOFade(alpha, duration).SetUpdate(true);
+        Tween fadeTween = fadeImage?.DOFade(alpha, duration).SetUpdate(true).SetLink(gameObject);
+        LoadfadeImage?.DOFade(alpha, duration).SetUpdate(true).SetLink(gameObject);
+        loadingTipText?.DOFade(alpha, duration).SetUpdate(true).SetLink(gameObject);
 
         if (!blocksInput)
         {
@@ -227,10 +264,29 @@ public class SceneTransitionManager : MonoBehaviour
     private void SetInputBlockerActive(bool active)
     {
         isInputBlocked = active;
+        if (active) BlockNavigation();
+        else RestoreNavigation();
         if (fadeImage != null)
         {
             fadeImage.raycastTarget = active;
         }
+    }
+
+    private void BlockNavigation()
+    {
+        EventSystem current = EventSystem.current;
+        if (current == null || current == blockedEventSystem) return;
+        RestoreNavigation();
+        blockedEventSystem = current;
+        previousNavigationEvents = current.sendNavigationEvents;
+        current.sendNavigationEvents = false;
+    }
+
+    private void RestoreNavigation()
+    {
+        if (blockedEventSystem != null)
+            blockedEventSystem.sendNavigationEvents = previousNavigationEvents;
+        blockedEventSystem = null;
     }
 
     private void SetLoadingRootActive(bool active)

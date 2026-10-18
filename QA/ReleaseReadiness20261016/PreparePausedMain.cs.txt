@@ -1,0 +1,82 @@
+// C#6 execute_code method body. Title Play only; changes runtime state and existing backed-up prefs only.
+// Input: native-survival-config.csv contains one row: weapon,startStage,profile(loadouts.csv ID),seed.
+// Example: RailCraft,19,late,77
+// Wait for native-survival-bootstrap-progress.txt to say READY, then execute NativeSurvivalRoute.cs.txt.
+const string folder="QA/ReleaseReadiness20261016/";
+const string backupFolder="QA/DefenseBugfix20261016/";
+if(!System.IO.File.Exists(backupFolder+"session-backup-ready.txt"))throw new System.Exception("Fresh session backup required");
+if(System.IO.File.Exists(folder+"probe-progress.txt")&&System.IO.File.ReadAllText(folder+"probe-progress.txt").StartsWith("RUNNING"))throw new System.Exception("A local probe is running");
+if(!Application.isPlaying||UnityEngine.SceneManagement.SceneManager.GetActiveScene().name!="Title")throw new System.Exception("Bootstrap requires Title in Play mode");
+foreach(string name in new[]{"benchmark-progress.txt","native-survival-progress.txt"})if(System.IO.File.Exists(folder+name)&&System.IO.File.ReadAllText(folder+name).StartsWith("RUNNING"))throw new System.Exception("Another benchmark is still running: "+name);
+if(MainDebugEnemySpawnWindow.IsDebugModeActive)throw new System.Exception("Disable enemy debug mode before the survival test");
+var lines=System.IO.File.ReadAllLines(folder+"native-survival-config.csv").Where(line=>!string.IsNullOrWhiteSpace(line)&&!line.TrimStart().StartsWith("#")&&!line.TrimStart().StartsWith("weapon,")).ToArray();
+if(lines.Length!=1)throw new System.Exception("Expected exactly one config row: weapon,startStage,profile,seed");
+var fields=lines[0].Split(',').Select(value=>value.Trim()).ToArray();if(fields.Length!=4)throw new System.Exception("Expected four config columns");
+string weaponName=fields[0],profile=fields[2];int stage=int.Parse(fields[1]),seed=int.Parse(fields[3]);
+if(!new[]{"GearCraft","SteamCannon","SteamThrower","RailCraft","SteamGatling"}.Contains(weaponName))throw new System.Exception("Unknown workshop weapon: "+weaponName);
+var loadoutLines=System.IO.File.ReadAllLines(folder+"loadouts.csv").Where(line=>!string.IsNullOrWhiteSpace(line)&&!line.TrimStart().StartsWith("#")&&!line.TrimStart().StartsWith("profile,")).Select(line=>line.Split(',')).Where(row=>row.Length==3&&row[0].Trim()==profile).ToArray();
+if(loadoutLines.Length!=1)throw new System.Exception("Expected exactly one matching loadout: "+profile);
+int moduleDamage=int.Parse(loadoutLines[0][2],System.Globalization.CultureInfo.InvariantCulture);
+var partNames=loadoutLines[0][1].Split(';').Where(name=>!string.IsNullOrWhiteSpace(name)).Select(name=>name.Trim()).OrderBy(name=>name).ToArray();
+var placementLines=System.IO.File.ReadAllLines(folder+"loadout-placements.csv").Where(line=>!string.IsNullOrWhiteSpace(line)&&!line.TrimStart().StartsWith("#")&&!line.TrimStart().StartsWith("profile,")).Select(line=>line.Split(',')).Where(row=>row.Length==5&&row[0].Trim()==profile).ToArray();
+if(!partNames.SequenceEqual(placementLines.Select(row=>row[1].Trim()).OrderBy(name=>name).ToArray()))throw new System.Exception("Placement assets/counts do not exactly match loadout "+profile);
+var placements=new System.Collections.Generic.List<StatusManager.SavedUpgradePartPlacement>();
+foreach(var placementRow in placementLines){
+ string assetName=placementRow[1].Trim();var part=UnityEditor.AssetDatabase.LoadAssetAtPath<UpgradePartSO>("Assets/GearCraft/ScriptableObject/UpgradeParts/"+assetName+".asset");
+ if(part==null)throw new System.Exception("Upgrade part asset missing: "+assetName);
+ var placement=new StatusManager.SavedUpgradePartPlacement();placement.partData=part;placement.gridX=int.Parse(placementRow[2]);placement.gridY=int.Parse(placementRow[3]);placement.rotation=int.Parse(placementRow[4]);placement.inventoryIndex=placements.Count;placements.Add(placement);
+}
+var stageConfig=UnityEditor.AssetDatabase.LoadAssetAtPath<StageGeneratorSO>("Assets/GearCraft/ScriptableObject/StageGeneratorConfig/StageGeneratorConfig.asset");
+if(stageConfig==null||stage<1||stage>stageConfig.totalStages)throw new System.Exception("Stage is outside configured campaign");
+string weaponAsset=weaponName=="GearCraft"?"GearCraft_Sword":weaponName;
+var target=UnityEditor.AssetDatabase.LoadAssetAtPath<WeaponDataSO>("Assets/GearCraft/ScriptableObject/WeaponData/"+weaponAsset+".asset");
+var axe=UnityEditor.AssetDatabase.LoadAssetAtPath<WeaponDataSO>("Assets/GearCraft/ScriptableObject/WeaponData/GearCraft_Axe.asset");
+var status=StatusManager.Instance;var materials=MaterialManager.Instance;
+if(status==null||materials==null||target==null||(weaponName=="GearCraft"&&axe==null))throw new System.Exception("Title managers or target weapon assets missing");
+string[] backup=System.IO.File.ReadAllLines(backupFolder+"playerprefs-before.txt");
+var backupKeys=new System.Collections.Generic.HashSet<string>();
+foreach(string line in backup){if(string.IsNullOrWhiteSpace(line))continue;var c=line.Split('|');if(c.Length!=3)throw new System.Exception("Invalid backup row");bool.Parse(c[1]);backupKeys.Add(c[0]);if(c[1]=="True"){if(c[0].Contains(".Metrics.")||c[0].Contains("Gallery.Progress"))System.Convert.FromBase64String(c[2]);else int.Parse(c[2]);}}
+if(!backupKeys.Contains("GearCraft.Gallery.Progress.v1")||!backupKeys.Contains("GearCraft.Main.OpeningNotice.Seen.v1"))throw new System.Exception("Backup does not cover the prefs touched by bootstrap");
+float beforeScale=Time.timeScale,beforeCapture=Time.captureDeltaTime;int beforeVsync=QualitySettings.vSyncCount,beforeTarget=Application.targetFrameRate;bool beforeBackground=Application.runInBackground;
+var invariant=System.Globalization.CultureInfo.InvariantCulture;
+System.IO.File.WriteAllText(folder+"native-survival-bootstrap-time-before.txt",status.GetInstanceID()+"|"+beforeScale.ToString("R",invariant)+"|"+beforeCapture.ToString("R",invariant)+"|"+beforeVsync+"|"+beforeTarget+"|"+beforeBackground+"\n");
+System.Action restoreOnFailure=()=>{
+ // Root restores PlayerPrefs from this session backup after failure; avoid persistent cross-case callbacks.
+ System.IO.File.WriteAllText(folder+"native-survival-bootstrap-restore-pending.txt","Bootstrap failed; root must restore PlayerPrefs/editor backup after Play stops.\n");
+ Time.timeScale=beforeScale;Time.captureDeltaTime=beforeCapture;QualitySettings.vSyncCount=beforeVsync;Application.targetFrameRate=beforeTarget;Application.runInBackground=beforeBackground;
+};
+UnityEditor.EditorApplication.CallbackFunction readyCheck=null;double requestedAt=UnityEditor.EditorApplication.timeSinceStartup;
+try{
+ // ResetRunProgress's DormTasks/CraftTutorialRunProgress resets are memory-only. InitializeWeapons may
+ // update GalleryProgress.SaveKey, which is already in the existing backup; no new pref keys are used.
+ status.ResetRunProgress();materials.ClearAllMaterials();
+ status.AcquireWeapon(target);if(weaponName=="GearCraft")status.AcquireWeapon(axe);status.EquipWeapon(target);
+ int day=(stage-1)/3+1;
+ status.STR=status.ACC=2*(day-1);status.craftWeaponDamagebuff=moduleDamage;
+ status.ownedUpgradeParts=placements.Select(placement=>placement.partData).ToList();status.savedUpgradePartPlacements=placements;
+ status.RecalculateUpgradeEffects();
+ status.HP=100;status.GATE=100f;status.SAN=100;
+ status.bossKillCount=stageConfig.bossStages.Count(bossStage=>bossStage<stage);
+ // ResetRunProgress disables modules/Punk/weapon-specific cards. Validated saved placements above preserve the same part effects after native EquipWeapon calls.
+ var counter=StageCounter.Instance;if(counter==null)counter=new GameObject("QA_NativeSurvival_StageCounter").AddComponent<StageCounter>();counter.StageCount=stage;
+ PlayerPrefs.SetInt("GearCraft.Main.OpeningNotice.Seen.v1",1);PlayerPrefs.Save();
+ System.IO.File.WriteAllText(folder+"native-survival-bootstrap-config-used.txt",lines[0]+"\nday="+day+"\nboss_kills="+status.bossKillCount+"\nHP=100\nGATE=100\nflat_damage="+status.bonusDamage.ToString("R",invariant)+"\nattack_speed="+status.attackSpeedMult.ToString("R",invariant)+"\nmodule_damage="+status.craftWeaponDamagebuff+"\nparts="+string.Join(";",partNames)+"\nplacements="+string.Join(";",placementLines.Select(row=>string.Join(":",row)).ToArray())+"\ndouble_shot="+status.hasBulletDouble+"\nspread_modifier="+status.spreadModifier.ToString("R",invariant)+"\nricochet="+status.ricochetCount+"\nbullet_size="+status.bulletSizeMult.ToString("R",invariant)+"\ninitial_hit_damage="+status.GetWeaponDamage(target).ToString("R",invariant)+"\nasset="+UnityEditor.AssetDatabase.GetAssetPath(target)+"\n");
+ System.IO.File.WriteAllText(folder+"native-survival-bootstrap-progress.txt","LOADING "+lines[0]+"\n");
+ UnityEngine.Random.InitState(seed);Time.timeScale=0f;
+ readyCheck=()=>{
+  try{
+   if(!Application.isPlaying)throw new System.Exception("Play stopped before bootstrap became ready");
+   if(UnityEditor.EditorApplication.timeSinceStartup-requestedAt>30)throw new System.Exception("Native Main initialization exceeded 30 wall seconds");
+   if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name!="Main")return;
+   var player=UnityEngine.Object.FindFirstObjectByType<PlayerController>();var flow=StageFlowManager.Instance;
+   if(player==null||player.runtimeStatus!=status||flow==null||flow.EnemyScalingStage!=stage||player.armRotation==null)return;
+   var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
+   if(typeof(StageFlowManager).GetField("dayStartSnapshot",flags).GetValue(flow)==null)return;
+   UnityEditor.EditorApplication.update-=readyCheck;
+   System.IO.File.WriteAllText(folder+"native-survival-bootstrap-progress.txt","READY "+lines[0]+" Main native Start complete; timeScale="+Time.timeScale+"; run NativeSurvivalRoute.cs.txt\n");
+  }catch(System.Exception ex){UnityEditor.EditorApplication.update-=readyCheck;restoreOnFailure();System.IO.File.WriteAllText(folder+"native-survival-bootstrap-progress.txt","FAILED "+ex+"\n");UnityEditor.EditorApplication.isPlaying=false;}
+ };
+ UnityEditor.EditorApplication.update+=readyCheck;
+ UnityEngine.SceneManagement.SceneManager.LoadScene("Main",UnityEngine.SceneManagement.LoadSceneMode.Single);
+}catch(System.Exception ex){if(readyCheck!=null)UnityEditor.EditorApplication.update-=readyCheck;restoreOnFailure();System.IO.File.WriteAllText(folder+"native-survival-bootstrap-progress.txt","FAILED "+ex+"\n");UnityEditor.EditorApplication.isPlaying=false;throw;}
+return "Loading paused Main for native survival: "+lines[0]+"; inspect native-survival-bootstrap-progress.txt for READY";

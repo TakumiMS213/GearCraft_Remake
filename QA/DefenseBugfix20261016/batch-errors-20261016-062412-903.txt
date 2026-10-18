@@ -1,0 +1,2 @@
+System.Exception: Unexpected native termination: no_game_frames_30s
+  at MCPDynamicCode+<Execute>c__AnonStorey1.<>m__5 () [0x00a20] in <f59304598e074767bfecdca2832fc528>:0 

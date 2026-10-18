@@ -28,7 +28,6 @@ public class PunkDriveManager : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        Debug.Log("PunkDriveManager detected collision with: " + other.gameObject.name);
         if(!gameObject.activeSelf) return;
         if (other.CompareTag("Enemy"))
         {

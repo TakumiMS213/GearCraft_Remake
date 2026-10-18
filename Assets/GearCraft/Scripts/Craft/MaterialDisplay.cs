@@ -208,7 +208,7 @@ public class MaterialDisplay : MonoBehaviour
         costText.fontSize = 26f;
         costText.alignment = TextAlignmentOptions.Center;
         costText.richText = true;
-        costText.enableWordWrapping = false;
+        costText.textWrappingMode = TMPro.TextWrappingModes.NoWrap;
     }
 
     private void HideLegacyCostTexts()

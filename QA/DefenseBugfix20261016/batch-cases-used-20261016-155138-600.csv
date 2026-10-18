@@ -1,0 +1,4 @@
+label,weapon,start_stage,profile,seed,STR,ACC,moduleDamage,repair,barrier,punk,scrap_module,initial_hp,initial_gate
+gate_release3_IC408_GearCraft_seed77,GearCraft,7,early_day3_common,77,4,4,0,0,0,1,1,100,100
+gate_release3_IC408_GearCraft_seed101,GearCraft,7,early_day3_common,101,4,4,0,0,0,1,1,100,100
+gate_release3_IC408_GearCraft_seed202,GearCraft,7,early_day3_common,202,4,4,0,0,0,1,1,100,100

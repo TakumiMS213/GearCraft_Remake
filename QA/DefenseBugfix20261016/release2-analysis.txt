@@ -1,0 +1,81 @@
+Release 2：ボス9条件の実測結果（2026-10-16）
+
+対象と結論
+  batch 20261016-063751-266、release2-cases.csv にある gate_release2_* の9件のみを集計した。
+  batch-progress.txt は COMPLETE all_cases_finished completed=9/9 skipped=0。
+  ICは3seedすべて22.63～24.62秒で討伐し、門30～40を残して宿舎へ帰還した。
+  EKは3seedすべて約1.2秒で通常の画面内位置へ進入し、プレイヤーとの継続的な重なりや床抜け落下は記録されなかった。ただし近接ボットは77.73～89.37秒で本人死亡し、討伐は未達成。
+  BBは3武器すべて終了時の門100。Cannonは討伐・宿舎帰還、GearCraftとThrowerは本人死亡だった。
+  別件としてICの出現直後に、3seed共通の約1.1秒の本体重なりとプレイヤーの床への沈み込みが残る。難度調整の成功と、出現位置の不具合候補は分ける。
+
+計測範囲と限界
+  初期装備・ステータスを与えた「ボスが出る一日」のネイティブ進行試験。初日から装備を取得した通しプレイ、人間の平均成功率、最適操作の証明ではない。
+  StageFlow/Spawner/敵AI/物理/ダメージ/報酬選択/宿舎遷移を本編で実行。戦闘中のHP・門の補充、無敵付与、敵への直接ダメージ注入はない。
+  ボットは0.2秒間隔で迎撃・通常ダッシュを判断し、所持歯車を消費するBOOSTを最大2回使う。全9件で実消費2回を確認した。EKの自動バリアも本編のUpdateAutoBarrierを呼ぶ。完全回避ではなく、操作・射線・報酬選択にボット固有の制約がある。
+  時間表は bosses.csv の出現から討伐/本人死亡までの game seconds。日全体のgame_secondsには演出・UI待機が入り、通常プレイのクリアタイムとして扱わない。
+  player_damage/healed はフレーム間の純増減。ヒットと回復が同じフレームに重なる分は分離できず、攻撃元別のダメージ内訳はこのログだけでは断定しない。
+  geometry.csv はゲームフレームごとの観測。autoSyncTransforms=falseのため、初回boundsはTransformより古い場合がある。最初の観測をInstantiate直後の正確な座標と同一視しない。重なりはX/Y両軸が正の時だけ判定した。
+  floor_depthは水平方向に重なるGround collider上端とactorのbounds下端の差であり、接触点やソルバー内部の侵入量の直接計測ではない。
+
+IC-408：基礎HP2800（当日倍率込み実HP4760）
+  条件：start_stage7、early_day3_common、初期STR/ACC4/4、flat damage6、攻撃間隔倍率0.765、追加工房ダメージ0、Punkあり、repair/barrierなし、初期HP/門100/100。
+  seed | ボス時STR/ACC | 討伐秒 | 終了HP | 門残 | ボス中攻撃回数 | 結果
+    77 | 7/4           | 23.183 | 87     | 40   | 70             | 討伐、当日3wave完了、宿舎帰還
+   101 | 8/4           | 22.633 | 87     | 40   | 68             | 同上
+   202 | 4/4           | 24.617 | 90     | 30   | 73             | 同上
+  ボス開始時HPは77/101が97、202が100。ボス中のHP純減は各10。ボス開始時の門は全100で、門純減60/60/70。
+  77はSTR+3、101はSTR+3とSTR+1、202はSTRが増えず斧サイズの報酬を選択した。初期STR4をボス時も共通だったとは扱わない。
+  BOOST消費：77は歯車3→2→1、101は2→1→0、202は6→5→4。追加歯車の持ち込みなし。
+  以前の実HP13600条件では同じ標準装備の門が31.217秒で破壊された。今回の3件は新HPで実際に防衛できた証拠であり、旧HP推移からの予測値ではない。未強化・BOOSTなし・他武器・他画面比率までの保証ではない。
+
+  出現位置に残る観測：
+    全seedで初回Transformは本体x2.1594、player x約6.2。最初のboundsは旧位置で一致しないが、次の物理更新以後に本体とplayerの2D bounds overlapを67/67/68フレーム観測。
+    重なり区間：77は出現+0.017～1.117秒、101は+0.017～1.117秒、202は+0.017～1.133秒。
+    player Transform minYは3件とも-4.427877、通常地上の約-3.822271から約0.606沈む。floor_depth最大0.590607、その後地上へ復帰する。
+    継続落下ではないが、出現時の本体重なり/押し込み候補が残る。HP調整では解決しない。
+
+EK-9：進入と生存を別評価
+  条件：start_stage31、final_day11_melee_defense_module20、STR/ACC20/20、flat12、攻撃間隔倍率0.13807191、工房ダメージ+20、repair/barrier/Punkあり。実ボスHP147600。
+  seed | 生存秒※ | 終了HP | 門残 | 敵残HP | 敵への観測HP減 | 結果
+   101 | 87.700  | -8     | 100  | 46238  | 101362         | 本人死亡
+    77 | 89.367  | -8     | 100  | 44296  | 103304         | 本人死亡
+   202 | 77.733  | -13    | 100  | 54552  | 93048          | 本人死亡
+  ※出現から本人死亡までであり、討伐秒ではない。各BOOST2回。ダッシュは8/4/4回、迎撃対象選択8/10/6回。敵残HPが正なので討伐/ED成功には数えない。
+  samplesでは通常攻撃・ミサイル・突進・装甲遷移・Crossfireを観測。77ではCombinedVolleyも記録。1秒サンプルで見えない短い状態を「発動しなかった」とはしない。
+
+  進入/床の観測：
+    seed | 初回本体X | X<=3.1到達秒 | 最小player Y | 最大floor_depth | 2D本体重なりフレーム
+     101 | 11.04945 | 1.233        | -4.011825    | 0.174555        | 0 / 5262
+      77 | 11.03774 | 1.233        | -3.837933    | 0.000663        | 0 / 5362
+     202 | 11.05635 | 1.233        | -4.005210    | 0.167939        | 0 / 4664
+    約1.2秒時点でX3.1069へ到達し、その後は約0.0035/60fpsの通常前進へ移った。X<=3.0は3件とも約1.717秒。
+    初回のX軸bounds overlapは全0。以後もX/Y同時重なり0で、旧試験の床下へ継続落下する症状は再現しなかった。本体floor_depthは常に約-0.020（床から0.02上）。
+    101/202には瞬間的なplayerの床方向の沈み込みがあるため「一切めり込まない」とは書かない。静止した人間、ダッシュ中、狭画面、別の初期player位置を網羅した試験ではない。
+    旧gate_fix試験の「床落ちは直ったが100秒後もX9～10で大半が画面外」という結果と区別する。今回の進入はTransform推移で確認した。
+
+BB-413：停止位置変更後
+  条件：start_stage16、mid_day4_common、初期STR/ACC10/10、flat9、攻撃間隔倍率0.58522499、工房加算0、repair/Punkあり、barrierなし。実ボスHP13000。
+  武器        | ボス時STR/ACC | 討伐/死亡秒 | ボス開始HP | 終了HP | 門残 | 敵残HP   | 結果
+  GearCraft   | 10/10         | 15.700      | 100        | -25    | 100  | 7007     | 本人死亡
+  SteamCannon | 10/11         | 47.567      | 100        | 100    | 100  | -67      | 討伐、当日3wave完了、宿舎帰還
+  SteamThrower| 12/10         | 47.550      | 97         | -23    | 100  | 9590.854 | 本人死亡
+  本体は3件ともX4.3214から通常前進してX3.500063で停止した。瞬時に停止点へワープした記録ではない。Throwerは過熱による移動遅延があり、停止点への到達が遅い。
+  Cannonの迎撃対象選択は22回、Throwerは35回。これは迎撃成功数ではない。Gearは0回だが通常近接が敵弾に当たった可能性はあるため、「迎撃しなかった」とは断言できない。
+  全件門100を保持し、以前のGear/Cannonで約10.5秒に門が壊れる結果とは異なる。本人死亡と門破壊を分ける。
+  ThrowerはSlipOverheatとSTR+2、CannonはACC+1とGiantShot、Gearは歯車とAxeSizeを選択。武器以外が完全一致するDPS比較でも、人間の攻略可否の断定でもない。
+
+  BB弾観測の制限（重要）：
+    全3件のprojectiles-first-seen.csvはヘッダのみ。GeometryObserver.fragment.cs.txt:32はEnemyBulletControllerしか探索していないが、BB-413_HeavyShot.prefab:176のスクリプトはEnemyProjectileDamageable（guid 4dd1354bef7964e8e851bc7e1ba54451）。測定対象型が異なる。
+    この空CSVは「発射なし」「生成重なりゼロ」「迎撃猶予0.75秒」の実測証明には使えない。正確な発射直後bounds/門gapは別の同期BBMuzzleControlled probeで確認する必要がある。今回の結果から言えるのは、停止位置と、迎撃を含む本編戦闘で終了まで門100だったこと。
+
+データの整合・除外
+  release2-cases.csv と batch-cases-used-20261016-063751-266.csv の9条件を対象とし、各結果ファイルのstart HP/GATE=100/100、初期STR/ACC/module/装備効果、ボス実HP、ボス終了行、finished行を照合した。
+  各caseの HP末尾 = HP初期 - 観測純減 + 観測純回復、門も同式で一致。初期装備効果は最終statusに保持され、報酬によるSTR/ACC変化を上の表へ反映した。
+  batch-events-20261016-063751-266.csv は9件のcase_completeとbatch_completeを記録。case間はTitleで6 game seconds以上待機している。
+  gate_fix_*、batch 20261016-062412-903、およびそのno_game_frames_30sで中断した試行は本集計へ含めていない。過去のinvalid-batch-attempt1、旧床落ち/旧画面外停滞の結果とも混在させていない。
+  9件終了は確認したが、PlayerPrefs/Editor/GameViewの最終復元は本解析の実施範囲外。batch-restore-pending.txtの指示どおりrootの復元確認を別記録で確認する必要がある。
+
+主な根拠ファイル
+  同フォルダ release2-cases.csv、batch-cases-used-20261016-063751-266.csv、batch-events-20261016-063751-266.csv。
+  各 gate_release2_*-result.txt / bosses.csv / geometry.csv / events.csv / samples.csv / initial-status.json / final-status.json / meta.txt。
+  制限の根拠：GeometryObserver.fragment.cs.txt、RegressionSurvivalRoute.cs.txt、Assets/GearCraft/ScriptableObject/Prehubs/Enemy/BB-413_HeavyShot.prefab。
