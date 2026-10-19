@@ -1,0 +1,19 @@
+FirstTimeUIVisual.cs.txt — first-day UI visual probe
+
+Use after any batch has finished and Play has stopped. Open clean Title and start a NEW Play session. Select existing Full HD (1920x1080), index 3; set captureDeltaTime to 0 and timeScale to 1 before executing. Do not use the previous Main runtime or change progress to simulate a fresh run. Require current canonical session 20261018-070128-095-8360bc7954e64d94aff83f6784baf9fb and no running QA callbacks.
+
+Root executes the method body via Unity MCP; this agent has not executed it. Offline C#6 compile against current Assembly-CSharp and Unity assemblies passed with no output (FirstTimeUIVisual.compile.log).
+
+Sequence:
+1. Wait for Title loading/camera to settle, retaining original selection. Capture baseline GAMESTART.
+2. Raycast screen center of StartButton through the active EventSystem. Require the top hit is a GraphicRaycaster result belonging to that button. Send pointer-enter and check CanvasRenderer color equals native highlightedColor and differs from baseline, then capture.
+3. Raycast SettingButton and send enter/down/up/click. Button.OnPointerClick invokes existing native onClick once. Capture open SettingPanel. Close through HideSetting, confirm hidden.
+4. Restore Title's input module/navigation state BEFORE clicking StartButton so SceneTransitionManager can capture and block native navigation normally. Click GAMESTART through the same raycast/pointer path. Capture Story; do not call private story/page methods.
+5. Wait native auto progression: OpeningStory 5 x (4+0.7) seconds, arrival 2 x roughly (4+camera/fade) seconds, camera restoration and scene fades. Both arrival flags must clear, camera must settle and FirstBedGuideArrow must be visible.
+6. Capture two bed-arrow frames. Check first-day preparation and task text, visible sprite, left-center anchor, on-screen bounds and a measurable horizontal sway. Stop the callback in CraftSpace Play; do not sleep or advance the day.
+
+Expected runtime: about 45–60 seconds; real-wall watchdog 150 seconds and per-PNG deadline 15 seconds. A stopped/paused Play aborts. Progress is ui-visual-progress.txt; each run uses a unique ui-visual-TIMESTAMP-GUID directory, never overwriting screenshots. ScreenCapture.CaptureScreenshot is asynchronous; the next action waits for a complete PNG IEND plus a 1920x1080 IHDR. No Camera.Render, CaptureScreenshotAsTexture, new RenderTexture, asset writes, private tutorial progress changes, direct scene loads or direct Button.onClick.Invoke are used.
+
+This is EventSystem handler / render validation, not physical OS mouse or keyboard automation. Title InputModule is temporarily disabled to prevent the real cursor from overwriting synthetic hover; selection is retained, and input/navigation is restored on either success or failure. Later scenes retain their normal input. Do not interact with the running probe. Story / arrival still read actual mouse input, so external clicks would shorten their normal waits.
+
+Persistent keys are not intentionally changed by the probe. Native default-weapon registration may update gallery data. The existing fresh canonical 16-key backup already covers this; no legacy backup is imported. After inspection, stop Play and use RestoreCanonicalSession.cs.txt followed by VerifyCanonicalSession.cs.txt. Screenshot output is kept. This probe does not prove crafting tutorial mastery, first-time save state, controller accessibility or bed keyboard input. Its first-time scope is a fresh runtime's first-day task and arrival guidance. Parent must inspect the PNGs to assess visual appearance; numerical checks alone are not a UX verdict.

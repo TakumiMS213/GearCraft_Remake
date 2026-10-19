@@ -1,0 +1,2 @@
+stage,scaling_stage,result,start_game_seconds,end_game_seconds,wave_seconds,start_hp,start_gate,end_hp,end_gate,player_damage,gate_damage,player_healed,gate_healed,attack_events
+"31","31","batch_stopped_batch_wall_timeout","1.21666622","16.5","15.2833328","100","100","97","100","3","0","0","0","210"

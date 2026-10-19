@@ -1,0 +1,14 @@
+{
+  "signature": {
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": "--prepared:/private/tmp/GearCraftReleaseFinalization20261018/GearCraft.app/Contents/PlugIns/lib_burst_generated.bundle\n--validated:/private/tmp/GearCraftReleaseFinalization20261018/GearCraft.app/Contents/PlugIns/lib_burst_generated.bundle\n--prepared:/private/tmp/GearCraftReleaseFinalization20261018/GearCraft.app/Contents/Frameworks/libMonoPosixHelper.dylib\n--validated:/private/tmp/GearCraftReleaseFinalization20261018/GearCraft.app/Contents/Frameworks/libMonoPosixHelper.dylib\n--prepared:/private/tmp/GearCraftReleaseFinalization20261018/GearCraft.app/Contents/Frameworks/libmono-native.dylib\n--validated:/private/tmp/GearCraftReleaseFinalization20261018/GearCraft.app/Contents/Frameworks/libmono-native.dylib\n--prepared:/private/tmp/GearCraftReleaseFinalization20261018/GearCraft.app/Contents/Frameworks/UnityPlayer.dylib\n--validated:/private/tmp/GearCraftReleaseFinalization20261018/GearCraft.app/Contents/Frameworks/UnityPlayer.dylib\n--prepared:/private/tmp/GearCraftReleaseFinalization20261018/GearCraft.app/Contents/Frameworks/libmonobdwgc-2.0.dylib\n--validated:/private/tmp/GearCraftReleaseFinalization20261018/GearCraft.app/Contents/Frameworks/libmonobdwgc-2.0.dylib\n/private/tmp/GearCraftReleaseFinalization20261018/GearCraft.app: valid on disk\n/private/tmp/GearCraftReleaseFinalization20261018/GearCraft.app: satisfies its Designated Requirement"
+  },
+  "architectures": {
+    "exit_code": 0,
+    "stdout": "x86_64 arm64",
+    "stderr": ""
+  },
+  "managed_sha256": "0e5476714c94f8f725534cb53d0bb51ae3f8e83794b264a9181450ff4630fe96",
+  "scope": "Local signature integrity and architectures only; no Developer ID, notarization, or Gatekeeper approval."
+}

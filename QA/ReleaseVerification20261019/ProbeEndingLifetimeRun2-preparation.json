@@ -1,0 +1,17 @@
+{
+  "prepared_utc": "2026-10-19T01:10:52.597872+00:00",
+  "runtime_executed": false,
+  "production_modified": false,
+  "original_result_preserved": true,
+  "reason": "First attempt judged Tween active about 3ms after Destroy; Editor.update can observe null before a subsequent native DOTween PlayerLoop update. This is a hypothesis, not proven product defect.",
+  "changed_condition": "Wait >=3 Time.frameCount advances and >=0.05 unscaled seconds after Destroy request before asserting inactive. Monitor same relevant logs throughout.",
+  "new_label": "ending-lifetime-run2",
+  "body_sha256": "71f88c5c6c521a74bfd508eda980a2580a0b1a12d053aae124c118ccaeddd6bf",
+  "unchanged": "5 cases, native calls, native DOTween timing, 20sec watchdog, cleanup, Pending0, Gallery key/Title transition guards",
+  "static_compile": {
+    "language": "C#6",
+    "errors": 0,
+    "warnings": 0,
+    "exit_code": 0
+  }
+}

@@ -1,0 +1,10 @@
+PASS
+enabled_systems=3
+manual_simulated_seconds_per_prefab=20
+velocity_errors=0
+other_errors=0
+Assets/GearCraft/Paticles/SteamThrowerAttack.prefab / QA_SteamThrowerAttack modes=TwoConstants,TwoConstants,TwoConstants z=0..0
+Assets/GearCraft/Paticles/SteamThrowerAttack.prefab / SteamGrayParticles modes=TwoConstants,TwoConstants,TwoConstants z=0..0
+Assets/GearCraft/Paticles/SteamThrowerOverheatSparks.prefab / QA_SteamThrowerOverheatSparks modes=TwoConstants,TwoConstants,TwoConstants z=0..0
+
+Runtime clones destroyed; timeScale restored. Not a native 20-second weapon firing test.

@@ -1,0 +1,1512 @@
+{
+  "utc": "2026-10-19T01:20:46.878865+00:00",
+  "app": "/private/tmp/GearCraftReleaseVerification20261019/GearCraft.app",
+  "app_started": false,
+  "playerprefs_accessed": false,
+  "writes": [
+    "/Users/sora/Desktop/Unity/GearCraft_Remake/QA/ReleaseVerification20261019/macos-package-verification.json"
+  ],
+  "scope": "Local artifact/source integrity only. Ad-hoc signature validity is not Developer ID signing, notarization, Gatekeeper acceptance, app launch, rendered layout, or R22 resolution.",
+  "errors": [
+    "Managed native method markers unverified or mismatched"
+  ],
+  "warnings": [],
+  "source_manifest": {
+    "path": "/Users/sora/Desktop/Unity/GearCraft_Remake/QA/ReleaseVerification20261019/source-build-manifest.json",
+    "sha256": "06431ca22b38c45f14b5cf82b4777efa6d1c83ce160df23cec02b3c9ab0f223f",
+    "expected_count": 17,
+    "actual_count": 17,
+    "before": [
+      {
+        "path": "Assets/GearCraft/Paticles/SteamThrowerAttack.prefab",
+        "expected_sha256": "6d2da51aecc12fe3960119c2763619f7f7a4ae23a77a728460ba24d9154e81fa",
+        "actual_sha256": "6d2da51aecc12fe3960119c2763619f7f7a4ae23a77a728460ba24d9154e81fa",
+        "matches": true
+      },
+      {
+        "path": "Assets/GearCraft/Paticles/SteamThrowerOverheatSparks.prefab",
+        "expected_sha256": "d9f4aca1fa010674d195c85e7aef4682123fa7fd69b86dafbdadc64292353744",
+        "actual_sha256": "d9f4aca1fa010674d195c85e7aef4682123fa7fd69b86dafbdadc64292353744",
+        "matches": true
+      },
+      {
+        "path": "Assets/GearCraft/Scenes/Title.unity",
+        "expected_sha256": "d0c96afd9faf27cbf4227da67aefcf25b3c667dc23534f52be42bacc0b584831",
+        "actual_sha256": "d0c96afd9faf27cbf4227da67aefcf25b3c667dc23534f52be42bacc0b584831",
+        "matches": true
+      },
+      {
+        "path": "Assets/GearCraft/ScriptableObject/Story/CraftSpaceArrivalMessage.asset",
+        "expected_sha256": "7c3ca6edfd1cb37a96a9bbe346efd8da2ab80ef57e7e496f42d776e8396cfa2d",
+        "actual_sha256": "7c3ca6edfd1cb37a96a9bbe346efd8da2ab80ef57e7e496f42d776e8396cfa2d",
+        "matches": true
+      },
+      {
+        "path": "Assets/GearCraft/Scripts/Craft/CraftTutorialController.cs",
+        "expected_sha256": "ae81c8875c0b7020af5d55ecfa5d9cd080461ae07a039a94451ae2ee39c25d84",
+        "actual_sha256": "ae81c8875c0b7020af5d55ecfa5d9cd080461ae07a039a94451ae2ee39c25d84",
+        "matches": true
+      },
+      {
+        "path": "Assets/GearCraft/Scripts/Ending/EndingManager.cs",
+        "expected_sha256": "17d073827d7bd2f4c3f04ad350ce07a96633d92a2bbeb05b7ccd6a96a2c9b854",
+        "actual_sha256": "17d073827d7bd2f4c3f04ad350ce07a96633d92a2bbeb05b7ccd6a96a2c9b854",
+        "matches": true
+      },
+      {
+        "path": "Assets/GearCraft/Scripts/Main/PlayerAttackCadence.cs",
+        "expected_sha256": "4fafff854f2b66a08534f197e23580a9c76c9fadc57d51d2e0d364a9cf9955f8",
+        "actual_sha256": "4fafff854f2b66a08534f197e23580a9c76c9fadc57d51d2e0d364a9cf9955f8",
+        "matches": true
+      },
+      {
+        "path": "Assets/GearCraft/Scripts/Main/PlayerAttackCadence.cs.meta",
+        "expected_sha256": "92eab6f52e8a424ee9890bdbc7bbec67aaa3d326e9a6efd38fb6e4480ba9452a",
+        "actual_sha256": "92eab6f52e8a424ee9890bdbc7bbec67aaa3d326e9a6efd38fb6e4480ba9452a",
+        "matches": true
+      },
+      {
+        "path": "Assets/GearCraft/Scripts/Main/PlayerController.cs",
+        "expected_sha256": "7d77c90e3b7ddf34c8eef0c0f25cf7a679f21d94b816e179c155b5e4b3652daf",
+        "actual_sha256": "7d77c90e3b7ddf34c8eef0c0f25cf7a679f21d94b816e179c155b5e4b3652daf",
+        "matches": true
+      },
+      {
+        "path": "Assets/GearCraft/Scripts/Title/Audio.cs",
+        "expected_sha256": "174402e5742e85f9a4618e18628e8239fade79f66190a21dbe801052da365fa5",
+        "actual_sha256": "174402e5742e85f9a4618e18628e8239fade79f66190a21dbe801052da365fa5",
+        "matches": true
+      },
+      {
+        "path": "Assets/GearCraft/Scripts/UI/InventoryUI.cs",
+        "expected_sha256": "ac96b1350fbea1cb74f3fbad70d970bcf5011f0a8c49c7d1bd83e69edd6aa067",
+        "actual_sha256": "ac96b1350fbea1cb74f3fbad70d970bcf5011f0a8c49c7d1bd83e69edd6aa067",
+        "matches": true
+      },
+      {
+        "path": "Packages/manifest.json",
+        "expected_sha256": "9128b5455c9f2e470340ca65cb348e5b17a37e291554b8ef05cb7fe5f55aeab2",
+        "actual_sha256": "9128b5455c9f2e470340ca65cb348e5b17a37e291554b8ef05cb7fe5f55aeab2",
+        "matches": true
+      },
+      {
+        "path": "Packages/packages-lock.json",
+        "expected_sha256": "17d59a7c0d72575131c13b4ff0e31b460d5acf98f644897a318226dcd9a5dbc7",
+        "actual_sha256": "17d59a7c0d72575131c13b4ff0e31b460d5acf98f644897a318226dcd9a5dbc7",
+        "matches": true
+      },
+      {
+        "path": "ProjectSettings/EditorBuildSettings.asset",
+        "expected_sha256": "c99bfced7a5e4fbd10c6e69439fcbe022d9681923423fb22b659853b2b2fb750",
+        "actual_sha256": "c99bfced7a5e4fbd10c6e69439fcbe022d9681923423fb22b659853b2b2fb750",
+        "matches": true
+      },
+      {
+        "path": "ProjectSettings/ProjectSettings.asset",
+        "expected_sha256": "7b5dd1ece84ecc4fbd30e530f2da60d21f1c827d609b1f8d0815cac1383287ca",
+        "actual_sha256": "7b5dd1ece84ecc4fbd30e530f2da60d21f1c827d609b1f8d0815cac1383287ca",
+        "matches": true
+      },
+      {
+        "path": "ProjectSettings/ProjectVersion.txt",
+        "expected_sha256": "5b25df62f578207e47336381b31e771ef10e3fe72bb138d4c8e8986c08f9978b",
+        "actual_sha256": "5b25df62f578207e47336381b31e771ef10e3fe72bb138d4c8e8986c08f9978b",
+        "matches": true
+      },
+      {
+        "path": "Assets/GearCraft/Scenes/Ending.unity",
+        "expected_sha256": "75df63df0e74668dc0bc1a15e37f3cad5b5c0b94a0b8246c7a7e1c1b10a0ce8c",
+        "actual_sha256": "75df63df0e74668dc0bc1a15e37f3cad5b5c0b94a0b8246c7a7e1c1b10a0ce8c",
+        "matches": true
+      }
+    ],
+    "after": [
+      {
+        "path": "Assets/GearCraft/Paticles/SteamThrowerAttack.prefab",
+        "expected_sha256": "6d2da51aecc12fe3960119c2763619f7f7a4ae23a77a728460ba24d9154e81fa",
+        "actual_sha256": "6d2da51aecc12fe3960119c2763619f7f7a4ae23a77a728460ba24d9154e81fa",
+        "matches": true
+      },
+      {
+        "path": "Assets/GearCraft/Paticles/SteamThrowerOverheatSparks.prefab",
+        "expected_sha256": "d9f4aca1fa010674d195c85e7aef4682123fa7fd69b86dafbdadc64292353744",
+        "actual_sha256": "d9f4aca1fa010674d195c85e7aef4682123fa7fd69b86dafbdadc64292353744",
+        "matches": true
+      },
+      {
+        "path": "Assets/GearCraft/Scenes/Title.unity",
+        "expected_sha256": "d0c96afd9faf27cbf4227da67aefcf25b3c667dc23534f52be42bacc0b584831",
+        "actual_sha256": "d0c96afd9faf27cbf4227da67aefcf25b3c667dc23534f52be42bacc0b584831",
+        "matches": true
+      },
+      {
+        "path": "Assets/GearCraft/ScriptableObject/Story/CraftSpaceArrivalMessage.asset",
+        "expected_sha256": "7c3ca6edfd1cb37a96a9bbe346efd8da2ab80ef57e7e496f42d776e8396cfa2d",
+        "actual_sha256": "7c3ca6edfd1cb37a96a9bbe346efd8da2ab80ef57e7e496f42d776e8396cfa2d",
+        "matches": true
+      },
+      {
+        "path": "Assets/GearCraft/Scripts/Craft/CraftTutorialController.cs",
+        "expected_sha256": "ae81c8875c0b7020af5d55ecfa5d9cd080461ae07a039a94451ae2ee39c25d84",
+        "actual_sha256": "ae81c8875c0b7020af5d55ecfa5d9cd080461ae07a039a94451ae2ee39c25d84",
+        "matches": true
+      },
+      {
+        "path": "Assets/GearCraft/Scripts/Ending/EndingManager.cs",
+        "expected_sha256": "17d073827d7bd2f4c3f04ad350ce07a96633d92a2bbeb05b7ccd6a96a2c9b854",
+        "actual_sha256": "17d073827d7bd2f4c3f04ad350ce07a96633d92a2bbeb05b7ccd6a96a2c9b854",
+        "matches": true
+      },
+      {
+        "path": "Assets/GearCraft/Scripts/Main/PlayerAttackCadence.cs",
+        "expected_sha256": "4fafff854f2b66a08534f197e23580a9c76c9fadc57d51d2e0d364a9cf9955f8",
+        "actual_sha256": "4fafff854f2b66a08534f197e23580a9c76c9fadc57d51d2e0d364a9cf9955f8",
+        "matches": true
+      },
+      {
+        "path": "Assets/GearCraft/Scripts/Main/PlayerAttackCadence.cs.meta",
+        "expected_sha256": "92eab6f52e8a424ee9890bdbc7bbec67aaa3d326e9a6efd38fb6e4480ba9452a",
+        "actual_sha256": "92eab6f52e8a424ee9890bdbc7bbec67aaa3d326e9a6efd38fb6e4480ba9452a",
+        "matches": true
+      },
+      {
+        "path": "Assets/GearCraft/Scripts/Main/PlayerController.cs",
+        "expected_sha256": "7d77c90e3b7ddf34c8eef0c0f25cf7a679f21d94b816e179c155b5e4b3652daf",
+        "actual_sha256": "7d77c90e3b7ddf34c8eef0c0f25cf7a679f21d94b816e179c155b5e4b3652daf",
+        "matches": true
+      },
+      {
+        "path": "Assets/GearCraft/Scripts/Title/Audio.cs",
+        "expected_sha256": "174402e5742e85f9a4618e18628e8239fade79f66190a21dbe801052da365fa5",
+        "actual_sha256": "174402e5742e85f9a4618e18628e8239fade79f66190a21dbe801052da365fa5",
+        "matches": true
+      },
+      {
+        "path": "Assets/GearCraft/Scripts/UI/InventoryUI.cs",
+        "expected_sha256": "ac96b1350fbea1cb74f3fbad70d970bcf5011f0a8c49c7d1bd83e69edd6aa067",
+        "actual_sha256": "ac96b1350fbea1cb74f3fbad70d970bcf5011f0a8c49c7d1bd83e69edd6aa067",
+        "matches": true
+      },
+      {
+        "path": "Packages/manifest.json",
+        "expected_sha256": "9128b5455c9f2e470340ca65cb348e5b17a37e291554b8ef05cb7fe5f55aeab2",
+        "actual_sha256": "9128b5455c9f2e470340ca65cb348e5b17a37e291554b8ef05cb7fe5f55aeab2",
+        "matches": true
+      },
+      {
+        "path": "Packages/packages-lock.json",
+        "expected_sha256": "17d59a7c0d72575131c13b4ff0e31b460d5acf98f644897a318226dcd9a5dbc7",
+        "actual_sha256": "17d59a7c0d72575131c13b4ff0e31b460d5acf98f644897a318226dcd9a5dbc7",
+        "matches": true
+      },
+      {
+        "path": "ProjectSettings/EditorBuildSettings.asset",
+        "expected_sha256": "c99bfced7a5e4fbd10c6e69439fcbe022d9681923423fb22b659853b2b2fb750",
+        "actual_sha256": "c99bfced7a5e4fbd10c6e69439fcbe022d9681923423fb22b659853b2b2fb750",
+        "matches": true
+      },
+      {
+        "path": "ProjectSettings/ProjectSettings.asset",
+        "expected_sha256": "7b5dd1ece84ecc4fbd30e530f2da60d21f1c827d609b1f8d0815cac1383287ca",
+        "actual_sha256": "7b5dd1ece84ecc4fbd30e530f2da60d21f1c827d609b1f8d0815cac1383287ca",
+        "matches": true
+      },
+      {
+        "path": "ProjectSettings/ProjectVersion.txt",
+        "expected_sha256": "5b25df62f578207e47336381b31e771ef10e3fe72bb138d4c8e8986c08f9978b",
+        "actual_sha256": "5b25df62f578207e47336381b31e771ef10e3fe72bb138d4c8e8986c08f9978b",
+        "matches": true
+      },
+      {
+        "path": "Assets/GearCraft/Scenes/Ending.unity",
+        "expected_sha256": "75df63df0e74668dc0bc1a15e37f3cad5b5c0b94a0b8246c7a7e1c1b10a0ce8c",
+        "actual_sha256": "75df63df0e74668dc0bc1a15e37f3cad5b5c0b94a0b8246c7a7e1c1b10a0ce8c",
+        "matches": true
+      }
+    ],
+    "manifest_file_unchanged": true
+  },
+  "Info_plist": {
+    "CFBundleIdentifier": "com.DefaultCompany.2D-URP",
+    "CFBundleExecutable": "GearCraft_Remake",
+    "CFBundleName": "GearCraft_Remake",
+    "CFBundleShortVersionString": "1.0",
+    "CFBundleVersion": "0",
+    "LSMinimumSystemVersion": "11.0",
+    "NSHighResolutionCapable": null
+  },
+  "signature_verify": {
+    "argv": [
+      "/usr/bin/codesign",
+      "--verify",
+      "--deep",
+      "--strict",
+      "--verbose=2",
+      "/private/tmp/GearCraftReleaseVerification20261019/GearCraft.app"
+    ],
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": "--prepared:/private/tmp/GearCraftReleaseVerification20261019/GearCraft.app/Contents/PlugIns/lib_burst_generated.bundle\n--validated:/private/tmp/GearCraftReleaseVerification20261019/GearCraft.app/Contents/PlugIns/lib_burst_generated.bundle\n--prepared:/private/tmp/GearCraftReleaseVerification20261019/GearCraft.app/Contents/Frameworks/libMonoPosixHelper.dylib\n--validated:/private/tmp/GearCraftReleaseVerification20261019/GearCraft.app/Contents/Frameworks/libMonoPosixHelper.dylib\n--prepared:/private/tmp/GearCraftReleaseVerification20261019/GearCraft.app/Contents/Frameworks/libmono-native.dylib\n--validated:/private/tmp/GearCraftReleaseVerification20261019/GearCraft.app/Contents/Frameworks/libmono-native.dylib\n--prepared:/private/tmp/GearCraftReleaseVerification20261019/GearCraft.app/Contents/Frameworks/libmonobdwgc-2.0.dylib\n--validated:/private/tmp/GearCraftReleaseVerification20261019/GearCraft.app/Contents/Frameworks/libmonobdwgc-2.0.dylib\n--prepared:/private/tmp/GearCraftReleaseVerification20261019/GearCraft.app/Contents/Frameworks/UnityPlayer.dylib\n--validated:/private/tmp/GearCraftReleaseVerification20261019/GearCraft.app/Contents/Frameworks/UnityPlayer.dylib\n/private/tmp/GearCraftReleaseVerification20261019/GearCraft.app: valid on disk\n/private/tmp/GearCraftReleaseVerification20261019/GearCraft.app: satisfies its Designated Requirement"
+  },
+  "signature_details": {
+    "argv": [
+      "/usr/bin/codesign",
+      "-dv",
+      "--verbose=4",
+      "/private/tmp/GearCraftReleaseVerification20261019/GearCraft.app"
+    ],
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": "Executable=/private/tmp/GearCraftReleaseVerification20261019/GearCraft.app/Contents/MacOS/GearCraft_Remake\nIdentifier=com.DefaultCompany.2D-URP\nFormat=app bundle with Mach-O universal (x86_64 arm64)\nCodeDirectory v=20400 size=626 flags=0x2(adhoc) hashes=13+3 location=embedded\nVersionPlatform=1\nVersionMin=720896\nVersionSDK=852224\nHash type=sha256 size=32\nCandidateCDHash sha256=dad906f7e595d50d5c929ffe763b59008a85d0a7\nCandidateCDHashFull sha256=dad906f7e595d50d5c929ffe763b59008a85d0a7838b975c82a811da02bdc83c\nHash choices=sha256\nCMSDigest=dad906f7e595d50d5c929ffe763b59008a85d0a7838b975c82a811da02bdc83c\nCMSDigestType=2\nExecutable Segment base=0\nExecutable Segment limit=16384\nExecutable Segment flags=0x1\nPage size=4096\nCDHash=dad906f7e595d50d5c929ffe763b59008a85d0a7\nSignature=adhoc\nInfo.plist entries=17\nTeamIdentifier=not set\nSealed Resources version=2 rules=13 files=202\nInternal requirements count=0 size=12"
+  },
+  "signature_classification": {
+    "ad_hoc_marker": true,
+    "notarization_checked": false,
+    "Developer_ID_verified": false
+  },
+  "architectures": [
+    {
+      "path": "Contents/MacOS/GearCraft_Remake",
+      "exists": true,
+      "file": {
+        "argv": [
+          "/usr/bin/file",
+          "-b",
+          "/private/tmp/GearCraftReleaseVerification20261019/GearCraft.app/Contents/MacOS/GearCraft_Remake"
+        ],
+        "exit_code": 0,
+        "stdout": "Mach-O universal binary with 2 architectures: [x86_64:Mach-O 64-bit executable x86_64] [arm64:Mach-O 64-bit executable arm64]\n/private/tmp/GearCraftReleaseVerification20261019/GearCraft.app/Contents/MacOS/GearCraft_Remake (for architecture x86_64):\tMach-O 64-bit executable x86_64\n/private/tmp/GearCraftReleaseVerification20261019/GearCraft.app/Contents/MacOS/GearCraft_Remake (for architecture arm64):\tMach-O 64-bit executable arm64",
+        "stderr": ""
+      },
+      "lipo": {
+        "argv": [
+          "/usr/bin/lipo",
+          "-archs",
+          "/private/tmp/GearCraftReleaseVerification20261019/GearCraft.app/Contents/MacOS/GearCraft_Remake"
+        ],
+        "exit_code": 0,
+        "stdout": "x86_64 arm64",
+        "stderr": ""
+      },
+      "arm64_and_x86_64": true
+    },
+    {
+      "path": "Contents/Frameworks/UnityPlayer.dylib",
+      "exists": true,
+      "file": {
+        "argv": [
+          "/usr/bin/file",
+          "-b",
+          "/private/tmp/GearCraftReleaseVerification20261019/GearCraft.app/Contents/Frameworks/UnityPlayer.dylib"
+        ],
+        "exit_code": 0,
+        "stdout": "Mach-O universal binary with 2 architectures: [x86_64:Mach-O 64-bit dynamically linked shared library x86_64] [arm64]\n/private/tmp/GearCraftReleaseVerification20261019/GearCraft.app/Contents/Frameworks/UnityPlayer.dylib (for architecture x86_64):\tMach-O 64-bit dynamically linked shared library x86_64\n/private/tmp/GearCraftReleaseVerification20261019/GearCraft.app/Contents/Frameworks/UnityPlayer.dylib (for architecture arm64):\tMach-O 64-bit dynamically linked shared library arm64",
+        "stderr": ""
+      },
+      "lipo": {
+        "argv": [
+          "/usr/bin/lipo",
+          "-archs",
+          "/private/tmp/GearCraftReleaseVerification20261019/GearCraft.app/Contents/Frameworks/UnityPlayer.dylib"
+        ],
+        "exit_code": 0,
+        "stdout": "x86_64 arm64",
+        "stderr": ""
+      },
+      "arm64_and_x86_64": true
+    },
+    {
+      "path": "Contents/Frameworks/libmonobdwgc-2.0.dylib",
+      "exists": true,
+      "file": {
+        "argv": [
+          "/usr/bin/file",
+          "-b",
+          "/private/tmp/GearCraftReleaseVerification20261019/GearCraft.app/Contents/Frameworks/libmonobdwgc-2.0.dylib"
+        ],
+        "exit_code": 0,
+        "stdout": "Mach-O universal binary with 2 architectures: [x86_64:Mach-O 64-bit dynamically linked shared library x86_64] [arm64]\n/private/tmp/GearCraftReleaseVerification20261019/GearCraft.app/Contents/Frameworks/libmonobdwgc-2.0.dylib (for architecture x86_64):\tMach-O 64-bit dynamically linked shared library x86_64\n/private/tmp/GearCraftReleaseVerification20261019/GearCraft.app/Contents/Frameworks/libmonobdwgc-2.0.dylib (for architecture arm64):\tMach-O 64-bit dynamically linked shared library arm64",
+        "stderr": ""
+      },
+      "lipo": {
+        "argv": [
+          "/usr/bin/lipo",
+          "-archs",
+          "/private/tmp/GearCraftReleaseVerification20261019/GearCraft.app/Contents/Frameworks/libmonobdwgc-2.0.dylib"
+        ],
+        "exit_code": 0,
+        "stdout": "x86_64 arm64",
+        "stderr": ""
+      },
+      "arm64_and_x86_64": true
+    }
+  ],
+  "runtime_evidence": {
+    "mono_runtime_library_exists": true,
+    "managed_game_assembly_exists": true,
+    "il2cpp_artifacts_found": [],
+    "classification": "MONO_PACKAGE_EVIDENCE",
+    "note": "Observed files take precedence over BuildReport backend/options labels. App has not been launched by this checker."
+  },
+  "managed_markers": {
+    "status": "MARKER_MISMATCH",
+    "checks": {
+      "Ending.Start.links_owner": false,
+      "Ending.ShowEndingAsync.links_owner": false,
+      "Ending.FadeOut.links_owner": false,
+      "Ending.FadeOut.destroy_token": true,
+      "Ending.FadeOut.suppresses_cancel_throw": true,
+      "Ending.FadeOut.post_wait_token_query": true,
+      "Audio.native_float_restore": true,
+      "Audio.native_float_write": true,
+      "Audio.native_save": true,
+      "Audio.unscaled_clock": true,
+      "Audio.BGM.key": true,
+      "Audio.SE.key": true,
+      "Cadence.type": true,
+      "Cadence.automatic_interval": true,
+      "Controller.shared_input_to_cadence": true
+    },
+    "call_sites": [
+      [
+        "EndingManager",
+        "System.Void EndingManager::ResetRuntimeState()",
+        "System.Void EndingManager::set_PendingEndingNum(System.Int32)",
+        1
+      ],
+      [
+        "EndingManager",
+        "System.Void EndingManager::ResetRuntimeState()",
+        "System.Void EndingManager::set_IsLoadingEnding(System.Boolean)",
+        7
+      ],
+      [
+        "EndingManager",
+        "System.Void EndingManager::Awake()",
+        "System.Void EndingManager::set_IsLoadingEnding(System.Boolean)",
+        1
+      ],
+      [
+        "EndingManager",
+        "System.Void EndingManager::Awake()",
+        "System.Int32 EndingManager::get_PendingEndingNum()",
+        6
+      ],
+      [
+        "EndingManager",
+        "System.Void EndingManager::Awake()",
+        "System.Int32 EndingManager::get_PendingEndingNum()",
+        14
+      ],
+      [
+        "EndingManager",
+        "System.Void EndingManager::Awake()",
+        "System.Boolean GearCraft.Gallery.GalleryProgress::get_IsUnlocked()",
+        33
+      ],
+      [
+        "EndingManager",
+        "System.Void EndingManager::Awake()",
+        "System.Int32 EndingManager::get_PendingEndingNum()",
+        52
+      ],
+      [
+        "EndingManager",
+        "System.Void EndingManager::Awake()",
+        "System.Void GearCraft.Gallery.GalleryProgress::RecordEnding(System.Int32)",
+        57
+      ],
+      [
+        "EndingManager",
+        "System.Void EndingManager::Awake()",
+        "System.Void EndingManager::SetObjectActive(UnityEngine.GameObject,System.Boolean)",
+        70
+      ],
+      [
+        "EndingManager",
+        "System.Void EndingManager::Awake()",
+        "System.Void EndingManager::SetObjectActive(UnityEngine.GameObject,System.Boolean)",
+        83
+      ],
+      [
+        "EndingManager",
+        "System.Void EndingManager::Awake()",
+        "System.Void EndingManager::SetObjectActive(UnityEngine.GameObject,System.Boolean)",
+        96
+      ],
+      [
+        "EndingManager",
+        "System.Void EndingManager::Awake()",
+        "System.Boolean UnityEngine.Object::op_Inequality(UnityEngine.Object,UnityEngine.Object)",
+        108
+      ],
+      [
+        "EndingManager",
+        "System.Void EndingManager::Awake()",
+        "System.Void EndingManager::SetAlpha(UnityEngine.UI.Image,System.Single)",
+        127
+      ],
+      [
+        "EndingManager",
+        "System.Void EndingManager::Start()",
+        "System.Runtime.CompilerServices.AsyncVoidMethodBuilder System.Runtime.CompilerServices.AsyncVoidMethodBuilder::Create()",
+        2
+      ],
+      [
+        "EndingManager",
+        "System.Void EndingManager::Start()",
+        "System.Void System.Runtime.CompilerServices.AsyncVoidMethodBuilder::Start<EndingManager/<Start>d__22>(!!0&)",
+        37
+      ],
+      [
+        "EndingManager",
+        "System.Void EndingManager::LoadEndingScene(System.Int32)",
+        "System.Boolean EndingManager::get_IsLoadingEnding()",
+        0
+      ],
+      [
+        "EndingManager",
+        "System.Void EndingManager::LoadEndingScene(System.Int32)",
+        "System.Void EndingManager::set_IsLoadingEnding(System.Boolean)",
+        17
+      ],
+      [
+        "EndingManager",
+        "System.Void EndingManager::LoadEndingScene(System.Int32)",
+        "System.Void EndingManager::set_PendingEndingNum(System.Int32)",
+        23
+      ],
+      [
+        "EndingManager",
+        "System.Void EndingManager::LoadEndingScene(System.Int32)",
+        "System.Void UnityEngine.Time::set_timeScale(System.Single)",
+        33
+      ],
+      [
+        "EndingManager",
+        "System.Void EndingManager::LoadEndingScene(System.Int32)",
+        "System.Void SceneTransitionManager::LoadSceneWithTransition(System.String)",
+        43
+      ],
+      [
+        "EndingManager",
+        "Cysharp.Threading.Tasks.UniTask EndingManager::ShowEndingAsync(System.Int32)",
+        "Cysharp.Threading.Tasks.CompilerServices.AsyncUniTaskMethodBuilder Cysharp.Threading.Tasks.CompilerServices.AsyncUniTaskMethodBuilder::Create()",
+        2
+      ],
+      [
+        "EndingManager",
+        "Cysharp.Threading.Tasks.UniTask EndingManager::ShowEndingAsync(System.Int32)",
+        "System.Void Cysharp.Threading.Tasks.CompilerServices.AsyncUniTaskMethodBuilder::Start<EndingManager/<ShowEndingAsync>d__25>(!!0&)",
+        45
+      ],
+      [
+        "EndingManager",
+        "Cysharp.Threading.Tasks.UniTask EndingManager::ShowEndingAsync(System.Int32)",
+        "Cysharp.Threading.Tasks.UniTask Cysharp.Threading.Tasks.CompilerServices.AsyncUniTaskMethodBuilder::get_Task()",
+        57
+      ],
+      [
+        "EndingManager",
+        "Cysharp.Threading.Tasks.UniTask EndingManager::FadeOutAndLoadScene(System.String)",
+        "Cysharp.Threading.Tasks.CompilerServices.AsyncUniTaskMethodBuilder Cysharp.Threading.Tasks.CompilerServices.AsyncUniTaskMethodBuilder::Create()",
+        2
+      ],
+      [
+        "EndingManager",
+        "Cysharp.Threading.Tasks.UniTask EndingManager::FadeOutAndLoadScene(System.String)",
+        "System.Void Cysharp.Threading.Tasks.CompilerServices.AsyncUniTaskMethodBuilder::Start<EndingManager/<FadeOutAndLoadScene>d__26>(!!0&)",
+        45
+      ],
+      [
+        "EndingManager",
+        "Cysharp.Threading.Tasks.UniTask EndingManager::FadeOutAndLoadScene(System.String)",
+        "Cysharp.Threading.Tasks.UniTask Cysharp.Threading.Tasks.CompilerServices.AsyncUniTaskMethodBuilder::get_Task()",
+        57
+      ],
+      [
+        "EndingManager",
+        "System.Void EndingManager::SetAlpha(UnityEngine.UI.Image,System.Single)",
+        "System.Boolean UnityEngine.Object::op_Equality(UnityEngine.Object,UnityEngine.Object)",
+        2
+      ],
+      [
+        "EndingManager",
+        "System.Void EndingManager::SetAlpha(UnityEngine.UI.Image,System.Single)",
+        "UnityEngine.Color UnityEngine.UI.Graphic::get_color()",
+        11
+      ],
+      [
+        "EndingManager",
+        "System.Void EndingManager::SetAlpha(UnityEngine.UI.Image,System.Single)",
+        "System.Void UnityEngine.UI.Graphic::set_color(UnityEngine.Color)",
+        27
+      ],
+      [
+        "EndingManager",
+        "System.Void EndingManager::SetObjectActive(UnityEngine.GameObject,System.Boolean)",
+        "System.Boolean UnityEngine.Object::op_Equality(UnityEngine.Object,UnityEngine.Object)",
+        2
+      ],
+      [
+        "EndingManager",
+        "System.Void EndingManager::SetObjectActive(UnityEngine.GameObject,System.Boolean)",
+        "!!0 UnityEngine.GameObject::GetComponent<UnityEngine.UI.Image>()",
+        14
+      ],
+      [
+        "EndingManager",
+        "System.Void EndingManager::SetObjectActive(UnityEngine.GameObject,System.Boolean)",
+        "System.Boolean UnityEngine.Object::op_Inequality(UnityEngine.Object,UnityEngine.Object)",
+        22
+      ],
+      [
+        "EndingManager",
+        "System.Void EndingManager::SetObjectActive(UnityEngine.GameObject,System.Boolean)",
+        "System.Void EndingManager::SetAlpha(UnityEngine.UI.Image,System.Single)",
+        36
+      ],
+      [
+        "EndingManager",
+        "System.Void EndingManager::SetObjectActive(UnityEngine.GameObject,System.Boolean)",
+        "System.Void UnityEngine.GameObject::SetActive(System.Boolean)",
+        43
+      ],
+      [
+        "EndingManager",
+        "System.Void EndingManager::SetGameObjectAlpha(UnityEngine.GameObject,System.Single)",
+        "System.Boolean UnityEngine.Object::op_Equality(UnityEngine.Object,UnityEngine.Object)",
+        2
+      ],
+      [
+        "EndingManager",
+        "System.Void EndingManager::SetGameObjectAlpha(UnityEngine.GameObject,System.Single)",
+        "!!0 UnityEngine.GameObject::GetComponent<UnityEngine.UI.Image>()",
+        11
+      ],
+      [
+        "EndingManager",
+        "System.Void EndingManager::SetGameObjectAlpha(UnityEngine.GameObject,System.Single)",
+        "System.Boolean UnityEngine.Object::op_Inequality(UnityEngine.Object,UnityEngine.Object)",
+        19
+      ],
+      [
+        "EndingManager",
+        "System.Void EndingManager::SetGameObjectAlpha(UnityEngine.GameObject,System.Single)",
+        "System.Void EndingManager::SetAlpha(UnityEngine.UI.Image,System.Single)",
+        29
+      ],
+      [
+        "EndingManager",
+        "System.Void EndingManager::HideAllEndingImages()",
+        "System.Void EndingManager::SetObjectActive(UnityEngine.GameObject,System.Boolean)",
+        8
+      ],
+      [
+        "EndingManager",
+        "System.Void EndingManager::HideAllEndingImages()",
+        "System.Void EndingManager::SetObjectActive(UnityEngine.GameObject,System.Boolean)",
+        21
+      ],
+      [
+        "EndingManager",
+        "System.Void EndingManager::HideAllEndingImages()",
+        "System.Void EndingManager::SetObjectActive(UnityEngine.GameObject,System.Boolean)",
+        34
+      ],
+      [
+        "EndingManager",
+        "System.Void EndingManager::.ctor()",
+        "System.Void UnityEngine.MonoBehaviour::.ctor()",
+        12
+      ],
+      [
+        "EndingManager/SequenceItem",
+        "System.Void EndingManager/SequenceItem::.ctor()",
+        "System.Void System.Object::.ctor()",
+        1
+      ],
+      [
+        "EndingManager/<FadeOutAndLoadScene>d__26",
+        "System.Void EndingManager/<FadeOutAndLoadScene>d__26::MoveNext()",
+        "System.Threading.CancellationToken Cysharp.Threading.Tasks.UniTaskCancellationExtensions::GetCancellationTokenOnDestroy(UnityEngine.MonoBehaviour)",
+        29
+      ],
+      [
+        "EndingManager/<FadeOutAndLoadScene>d__26",
+        "System.Void EndingManager/<FadeOutAndLoadScene>d__26::MoveNext()",
+        "System.Void EndingManager::SetGameObjectAlpha(UnityEngine.GameObject,System.Single)",
+        51
+      ],
+      [
+        "EndingManager/<FadeOutAndLoadScene>d__26",
+        "System.Void EndingManager/<FadeOutAndLoadScene>d__26::MoveNext()",
+        "System.Void EndingManager::SetGameObjectAlpha(UnityEngine.GameObject,System.Single)",
+        68
+      ],
+      [
+        "EndingManager/<FadeOutAndLoadScene>d__26",
+        "System.Void EndingManager/<FadeOutAndLoadScene>d__26::MoveNext()",
+        "System.Void EndingManager::SetGameObjectAlpha(UnityEngine.GameObject,System.Single)",
+        85
+      ],
+      [
+        "EndingManager/<FadeOutAndLoadScene>d__26",
+        "System.Void EndingManager/<FadeOutAndLoadScene>d__26::MoveNext()",
+        "Cysharp.Threading.Tasks.UniTask Cysharp.Threading.Tasks.UniTask::Delay(System.Int32,System.Boolean,Cysharp.Threading.Tasks.PlayerLoopTiming,System.Threading.CancellationToken,System.Boolean)",
+        112
+      ],
+      [
+        "EndingManager/<FadeOutAndLoadScene>d__26",
+        "System.Void EndingManager/<FadeOutAndLoadScene>d__26::MoveNext()",
+        "Cysharp.Threading.Tasks.UniTask`1<System.Boolean> Cysharp.Threading.Tasks.UniTask::SuppressCancellationThrow()",
+        120
+      ],
+      [
+        "EndingManager/<FadeOutAndLoadScene>d__26",
+        "System.Void EndingManager/<FadeOutAndLoadScene>d__26::MoveNext()",
+        "Cysharp.Threading.Tasks.UniTask`1/Awaiter<!0> Cysharp.Threading.Tasks.UniTask`1<System.Boolean>::GetAwaiter()",
+        129
+      ],
+      [
+        "EndingManager/<FadeOutAndLoadScene>d__26",
+        "System.Void EndingManager/<FadeOutAndLoadScene>d__26::MoveNext()",
+        "System.Boolean Cysharp.Threading.Tasks.UniTask`1/Awaiter<System.Boolean>::get_IsCompleted()",
+        137
+      ],
+      [
+        "EndingManager/<FadeOutAndLoadScene>d__26",
+        "System.Void EndingManager/<FadeOutAndLoadScene>d__26::MoveNext()",
+        "System.Void Cysharp.Threading.Tasks.CompilerServices.AsyncUniTaskMethodBuilder::AwaitUnsafeOnCompleted<Cysharp.Threading.Tasks.UniTask`1/Awaiter<System.Boolean>,EndingManager/<FadeOutAndLoadScene>d__26>(!!0&,!!1&)",
+        169
+      ],
+      [
+        "EndingManager/<FadeOutAndLoadScene>d__26",
+        "System.Void EndingManager/<FadeOutAndLoadScene>d__26::MoveNext()",
+        "!0 Cysharp.Threading.Tasks.UniTask`1/Awaiter<System.Boolean>::GetResult()",
+        209
+      ],
+      [
+        "EndingManager/<FadeOutAndLoadScene>d__26",
+        "System.Void EndingManager/<FadeOutAndLoadScene>d__26::MoveNext()",
+        "System.Boolean UnityEngine.Object::op_Inequality(UnityEngine.Object,UnityEngine.Object)",
+        228
+      ],
+      [
+        "EndingManager/<FadeOutAndLoadScene>d__26",
+        "System.Void EndingManager/<FadeOutAndLoadScene>d__26::MoveNext()",
+        "DG.Tweening.Core.TweenerCore`3<UnityEngine.Color,UnityEngine.Color,DG.Tweening.Plugins.Options.ColorOptions> DG.Tweening.DOTweenModuleUI::DOFade(UnityEngine.UI.Image,System.Single,System.Single)",
+        255
+      ],
+      [
+        "EndingManager/<FadeOutAndLoadScene>d__26",
+        "System.Void EndingManager/<FadeOutAndLoadScene>d__26::MoveNext()",
+        "!!0 DG.Tweening.TweenSettingsExtensions::SetEase<DG.Tweening.Core.TweenerCore`3<UnityEngine.Color,UnityEngine.Color,DG.Tweening.Plugins.Options.ColorOptions>>(!!0,DG.Tweening.Ease)",
+        261
+      ],
+      [
+        "EndingManager/<FadeOutAndLoadScene>d__26",
+        "System.Void EndingManager/<FadeOutAndLoadScene>d__26::MoveNext()",
+        "UnityEngine.GameObject UnityEngine.Component::get_gameObject()",
+        267
+      ],
+      [
+        "EndingManager/<FadeOutAndLoadScene>d__26",
+        "System.Void EndingManager/<FadeOutAndLoadScene>d__26::MoveNext()",
+        "!!0 DG.Tweening.TweenSettingsExtensions::SetLink<DG.Tweening.Core.TweenerCore`3<UnityEngine.Color,UnityEngine.Color,DG.Tweening.Plugins.Options.ColorOptions>>(!!0,UnityEngine.GameObject,DG.Tweening.LinkBehaviour)",
+        273
+      ],
+      [
+        "EndingManager/<FadeOutAndLoadScene>d__26",
+        "System.Void EndingManager/<FadeOutAndLoadScene>d__26::MoveNext()",
+        "System.Threading.Tasks.Task DG.Tweening.DOTweenModuleUnityVersion::AsyncWaitForCompletion(DG.Tweening.Tween)",
+        278
+      ],
+      [
+        "EndingManager/<FadeOutAndLoadScene>d__26",
+        "System.Void EndingManager/<FadeOutAndLoadScene>d__26::MoveNext()",
+        "System.Runtime.CompilerServices.TaskAwaiter System.Threading.Tasks.Task::GetAwaiter()",
+        283
+      ],
+      [
+        "EndingManager/<FadeOutAndLoadScene>d__26",
+        "System.Void EndingManager/<FadeOutAndLoadScene>d__26::MoveNext()",
+        "System.Boolean System.Runtime.CompilerServices.TaskAwaiter::get_IsCompleted()",
+        292
+      ],
+      [
+        "EndingManager/<FadeOutAndLoadScene>d__26",
+        "System.Void EndingManager/<FadeOutAndLoadScene>d__26::MoveNext()",
+        "System.Void Cysharp.Threading.Tasks.CompilerServices.AsyncUniTaskMethodBuilder::AwaitUnsafeOnCompleted<System.Runtime.CompilerServices.TaskAwaiter,EndingManager/<FadeOutAndLoadScene>d__26>(!!0&,!!1&)",
+        325
+      ],
+      [
+        "EndingManager/<FadeOutAndLoadScene>d__26",
+        "System.Void EndingManager/<FadeOutAndLoadScene>d__26::MoveNext()",
+        "System.Void System.Runtime.CompilerServices.TaskAwaiter::GetResult()",
+        366
+      ],
+      [
+        "EndingManager/<FadeOutAndLoadScene>d__26",
+        "System.Void EndingManager/<FadeOutAndLoadScene>d__26::MoveNext()",
+        "System.Boolean System.Threading.CancellationToken::get_IsCancellationRequested()",
+        377
+      ],
+      [
+        "EndingManager/<FadeOutAndLoadScene>d__26",
+        "System.Void EndingManager/<FadeOutAndLoadScene>d__26::MoveNext()",
+        "System.Void SceneTransitionManager::LoadSceneWithTransition(System.String)",
+        392
+      ],
+      [
+        "EndingManager/<FadeOutAndLoadScene>d__26",
+        "System.Void EndingManager/<FadeOutAndLoadScene>d__26::MoveNext()",
+        "System.Void Cysharp.Threading.Tasks.CompilerServices.AsyncUniTaskMethodBuilder::SetException(System.Exception)",
+        429
+      ],
+      [
+        "EndingManager/<FadeOutAndLoadScene>d__26",
+        "System.Void EndingManager/<FadeOutAndLoadScene>d__26::MoveNext()",
+        "System.Void Cysharp.Threading.Tasks.CompilerServices.AsyncUniTaskMethodBuilder::SetResult()",
+        462
+      ],
+      [
+        "EndingManager/<FadeOutAndLoadScene>d__26",
+        "System.Void EndingManager/<FadeOutAndLoadScene>d__26::SetStateMachine(System.Runtime.CompilerServices.IAsyncStateMachine)",
+        "System.Void Cysharp.Threading.Tasks.CompilerServices.AsyncUniTaskMethodBuilder::SetStateMachine(System.Runtime.CompilerServices.IAsyncStateMachine)",
+        7
+      ],
+      [
+        "EndingManager/<ShowEndingAsync>d__25",
+        "System.Void EndingManager/<ShowEndingAsync>d__25::MoveNext()",
+        "System.Boolean UnityEngine.Object::op_Implicit(UnityEngine.Object)",
+        88
+      ],
+      [
+        "EndingManager/<ShowEndingAsync>d__25",
+        "System.Void EndingManager/<ShowEndingAsync>d__25::MoveNext()",
+        "System.Void EndingManager::SetObjectActive(UnityEngine.GameObject,System.Boolean)",
+        108
+      ],
+      [
+        "EndingManager/<ShowEndingAsync>d__25",
+        "System.Void EndingManager/<ShowEndingAsync>d__25::MoveNext()",
+        "System.Void EndingManager::SetObjectActive(UnityEngine.GameObject,System.Boolean)",
+        121
+      ],
+      [
+        "EndingManager/<ShowEndingAsync>d__25",
+        "System.Void EndingManager/<ShowEndingAsync>d__25::MoveNext()",
+        "System.Void EndingManager::SetObjectActive(UnityEngine.GameObject,System.Boolean)",
+        134
+      ],
+      [
+        "EndingManager/<ShowEndingAsync>d__25",
+        "System.Void EndingManager/<ShowEndingAsync>d__25::MoveNext()",
+        "!!0 UnityEngine.GameObject::GetComponent<UnityEngine.UI.Image>()",
+        140
+      ],
+      [
+        "EndingManager/<ShowEndingAsync>d__25",
+        "System.Void EndingManager/<ShowEndingAsync>d__25::MoveNext()",
+        "System.Boolean UnityEngine.Object::op_Inequality(UnityEngine.Object,UnityEngine.Object)",
+        148
+      ],
+      [
+        "EndingManager/<ShowEndingAsync>d__25",
+        "System.Void EndingManager/<ShowEndingAsync>d__25::MoveNext()",
+        "System.Void UnityEngine.GameObject::SetActive(System.Boolean)",
+        160
+      ],
+      [
+        "EndingManager/<ShowEndingAsync>d__25",
+        "System.Void EndingManager/<ShowEndingAsync>d__25::MoveNext()",
+        "DG.Tweening.Core.TweenerCore`3<UnityEngine.Color,UnityEngine.Color,DG.Tweening.Plugins.Options.ColorOptions> DG.Tweening.DOTweenModuleUI::DOFade(UnityEngine.UI.Image,System.Single,System.Single)",
+        177
+      ],
+      [
+        "EndingManager/<ShowEndingAsync>d__25",
+        "System.Void EndingManager/<ShowEndingAsync>d__25::MoveNext()",
+        "!!0 DG.Tweening.TweenSettingsExtensions::SetEase<DG.Tweening.Core.TweenerCore`3<UnityEngine.Color,UnityEngine.Color,DG.Tweening.Plugins.Options.ColorOptions>>(!!0,DG.Tweening.Ease)",
+        183
+      ],
+      [
+        "EndingManager/<ShowEndingAsync>d__25",
+        "System.Void EndingManager/<ShowEndingAsync>d__25::MoveNext()",
+        "UnityEngine.GameObject UnityEngine.Component::get_gameObject()",
+        189
+      ],
+      [
+        "EndingManager/<ShowEndingAsync>d__25",
+        "System.Void EndingManager/<ShowEndingAsync>d__25::MoveNext()",
+        "!!0 DG.Tweening.TweenSettingsExtensions::SetLink<DG.Tweening.Core.TweenerCore`3<UnityEngine.Color,UnityEngine.Color,DG.Tweening.Plugins.Options.ColorOptions>>(!!0,UnityEngine.GameObject,DG.Tweening.LinkBehaviour)",
+        195
+      ],
+      [
+        "EndingManager/<ShowEndingAsync>d__25",
+        "System.Void EndingManager/<ShowEndingAsync>d__25::MoveNext()",
+        "System.Threading.Tasks.Task DG.Tweening.DOTweenModuleUnityVersion::AsyncWaitForCompletion(DG.Tweening.Tween)",
+        200
+      ],
+      [
+        "EndingManager/<ShowEndingAsync>d__25",
+        "System.Void EndingManager/<ShowEndingAsync>d__25::MoveNext()",
+        "System.Runtime.CompilerServices.TaskAwaiter System.Threading.Tasks.Task::GetAwaiter()",
+        205
+      ],
+      [
+        "EndingManager/<ShowEndingAsync>d__25",
+        "System.Void EndingManager/<ShowEndingAsync>d__25::MoveNext()",
+        "System.Boolean System.Runtime.CompilerServices.TaskAwaiter::get_IsCompleted()",
+        214
+      ],
+      [
+        "EndingManager/<ShowEndingAsync>d__25",
+        "System.Void EndingManager/<ShowEndingAsync>d__25::MoveNext()",
+        "System.Void Cysharp.Threading.Tasks.CompilerServices.AsyncUniTaskMethodBuilder::AwaitUnsafeOnCompleted<System.Runtime.CompilerServices.TaskAwaiter,EndingManager/<ShowEndingAsync>d__25>(!!0&,!!1&)",
+        247
+      ],
+      [
+        "EndingManager/<ShowEndingAsync>d__25",
+        "System.Void EndingManager/<ShowEndingAsync>d__25::MoveNext()",
+        "System.Void System.Runtime.CompilerServices.TaskAwaiter::GetResult()",
+        285
+      ],
+      [
+        "EndingManager/<ShowEndingAsync>d__25",
+        "System.Void EndingManager/<ShowEndingAsync>d__25::MoveNext()",
+        "System.Void UnityEngine.GameObject::SetActive(System.Boolean)",
+        294
+      ],
+      [
+        "EndingManager/<ShowEndingAsync>d__25",
+        "System.Void EndingManager/<ShowEndingAsync>d__25::MoveNext()",
+        "System.Void Cysharp.Threading.Tasks.CompilerServices.AsyncUniTaskMethodBuilder::SetException(System.Exception)",
+        319
+      ],
+      [
+        "EndingManager/<ShowEndingAsync>d__25",
+        "System.Void EndingManager/<ShowEndingAsync>d__25::MoveNext()",
+        "System.Void Cysharp.Threading.Tasks.CompilerServices.AsyncUniTaskMethodBuilder::SetResult()",
+        340
+      ],
+      [
+        "EndingManager/<ShowEndingAsync>d__25",
+        "System.Void EndingManager/<ShowEndingAsync>d__25::SetStateMachine(System.Runtime.CompilerServices.IAsyncStateMachine)",
+        "System.Void Cysharp.Threading.Tasks.CompilerServices.AsyncUniTaskMethodBuilder::SetStateMachine(System.Runtime.CompilerServices.IAsyncStateMachine)",
+        7
+      ],
+      [
+        "EndingManager/<Start>d__22",
+        "System.Void EndingManager/<Start>d__22::MoveNext()",
+        "System.Int32 EndingManager::get_PendingEndingNum()",
+        20
+      ],
+      [
+        "EndingManager/<Start>d__22",
+        "System.Void EndingManager/<Start>d__22::MoveNext()",
+        "System.Int32 EndingManager::get_PendingEndingNum()",
+        28
+      ],
+      [
+        "EndingManager/<Start>d__22",
+        "System.Void EndingManager/<Start>d__22::MoveNext()",
+        "Cysharp.Threading.Tasks.UniTask EndingManager::ShowEndingAsync(System.Int32)",
+        33
+      ],
+      [
+        "EndingManager/<Start>d__22",
+        "System.Void EndingManager/<Start>d__22::MoveNext()",
+        "System.Void Cysharp.Threading.Tasks.UniTaskExtensions::Forget(Cysharp.Threading.Tasks.UniTask)",
+        38
+      ],
+      [
+        "EndingManager/<Start>d__22",
+        "System.Void EndingManager/<Start>d__22::MoveNext()",
+        "System.Boolean UnityEngine.Object::op_Inequality(UnityEngine.Object,UnityEngine.Object)",
+        50
+      ],
+      [
+        "EndingManager/<Start>d__22",
+        "System.Void EndingManager/<Start>d__22::MoveNext()",
+        "DG.Tweening.Core.TweenerCore`3<UnityEngine.Color,UnityEngine.Color,DG.Tweening.Plugins.Options.ColorOptions> DG.Tweening.DOTweenModuleUI::DOFade(UnityEngine.UI.Image,System.Single,System.Single)",
+        74
+      ],
+      [
+        "EndingManager/<Start>d__22",
+        "System.Void EndingManager/<Start>d__22::MoveNext()",
+        "!!0 DG.Tweening.TweenSettingsExtensions::SetEase<DG.Tweening.Core.TweenerCore`3<UnityEngine.Color,UnityEngine.Color,DG.Tweening.Plugins.Options.ColorOptions>>(!!0,DG.Tweening.Ease)",
+        80
+      ],
+      [
+        "EndingManager/<Start>d__22",
+        "System.Void EndingManager/<Start>d__22::MoveNext()",
+        "UnityEngine.GameObject UnityEngine.Component::get_gameObject()",
+        86
+      ],
+      [
+        "EndingManager/<Start>d__22",
+        "System.Void EndingManager/<Start>d__22::MoveNext()",
+        "!!0 DG.Tweening.TweenSettingsExtensions::SetLink<DG.Tweening.Core.TweenerCore`3<UnityEngine.Color,UnityEngine.Color,DG.Tweening.Plugins.Options.ColorOptions>>(!!0,UnityEngine.GameObject,DG.Tweening.LinkBehaviour)",
+        92
+      ],
+      [
+        "EndingManager/<Start>d__22",
+        "System.Void EndingManager/<Start>d__22::MoveNext()",
+        "System.Threading.Tasks.Task DG.Tweening.DOTweenModuleUnityVersion::AsyncWaitForCompletion(DG.Tweening.Tween)",
+        97
+      ],
+      [
+        "EndingManager/<Start>d__22",
+        "System.Void EndingManager/<Start>d__22::MoveNext()",
+        "System.Runtime.CompilerServices.TaskAwaiter System.Threading.Tasks.Task::GetAwaiter()",
+        102
+      ],
+      [
+        "EndingManager/<Start>d__22",
+        "System.Void EndingManager/<Start>d__22::MoveNext()",
+        "System.Boolean System.Runtime.CompilerServices.TaskAwaiter::get_IsCompleted()",
+        110
+      ],
+      [
+        "EndingManager/<Start>d__22",
+        "System.Void EndingManager/<Start>d__22::MoveNext()",
+        "System.Void System.Runtime.CompilerServices.AsyncVoidMethodBuilder::AwaitUnsafeOnCompleted<System.Runtime.CompilerServices.TaskAwaiter,EndingManager/<Start>d__22>(!!0&,!!1&)",
+        142
+      ],
+      [
+        "EndingManager/<Start>d__22",
+        "System.Void EndingManager/<Start>d__22::MoveNext()",
+        "System.Void System.Runtime.CompilerServices.TaskAwaiter::GetResult()",
+        179
+      ],
+      [
+        "EndingManager/<Start>d__22",
+        "System.Void EndingManager/<Start>d__22::MoveNext()",
+        "System.Void System.Runtime.CompilerServices.AsyncVoidMethodBuilder::SetException(System.Exception)",
+        202
+      ],
+      [
+        "EndingManager/<Start>d__22",
+        "System.Void EndingManager/<Start>d__22::MoveNext()",
+        "System.Void System.Runtime.CompilerServices.AsyncVoidMethodBuilder::SetResult()",
+        223
+      ],
+      [
+        "EndingManager/<Start>d__22",
+        "System.Void EndingManager/<Start>d__22::SetStateMachine(System.Runtime.CompilerServices.IAsyncStateMachine)",
+        "System.Void System.Runtime.CompilerServices.AsyncVoidMethodBuilder::SetStateMachine(System.Runtime.CompilerServices.IAsyncStateMachine)",
+        7
+      ],
+      [
+        "PlayerAttackCadence",
+        "System.Int32 PlayerAttackCadence::Advance(System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Single,System.Single)",
+        "System.Void PlayerAttackCadence::Interrupt()",
+        46
+      ],
+      [
+        "PlayerAttackCadence",
+        "System.Int32 PlayerAttackCadence::Advance(System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Single,System.Single)",
+        "System.Void PlayerAttackCadence::Interrupt()",
+        89
+      ],
+      [
+        "PlayerAttackCadence",
+        "System.Int32 PlayerAttackCadence::Advance(System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Single,System.Single)",
+        "System.Void PlayerAttackCadence::Interrupt()",
+        100
+      ],
+      [
+        "PlayerAttackCadence",
+        "System.Int32 PlayerAttackCadence::Advance(System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Single,System.Single)",
+        "System.Double PlayerAttackCadence::GetAutomaticInterval(System.Single)",
+        194
+      ],
+      [
+        "PlayerController",
+        "System.Void PlayerController::Update()",
+        "System.Int32 PlayerController::ProcessAttackInput(System.Boolean,System.Boolean,System.Single,UnityEngine.Vector3)",
+        140
+      ],
+      [
+        "PlayerController",
+        "System.Int32 PlayerController::ProcessAttackInput(System.Boolean,System.Boolean,System.Single,UnityEngine.Vector3)",
+        "System.Int32 PlayerAttackCadence::Advance(System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Single,System.Single)",
+        182
+      ],
+      [
+        "PlayerController",
+        "System.Int32 PlayerController::ProcessAttackInput(System.Boolean,System.Boolean,System.Single,UnityEngine.Vector3)",
+        "System.Double PlayerAttackCadence::get_RemainingSeconds()",
+        195
+      ],
+      [
+        "PlayerController",
+        "System.Void PlayerController::.ctor()",
+        "System.Void PlayerAttackCadence::.ctor()",
+        114
+      ],
+      [
+        "Audio",
+        "System.Void Audio::Start()",
+        "System.Void Audio::RestoreVolume(System.String,System.String,UnityEngine.UI.Slider)",
+        17
+      ],
+      [
+        "Audio",
+        "System.Void Audio::Start()",
+        "System.Void Audio::RestoreVolume(System.String,System.String,UnityEngine.UI.Slider)",
+        39
+      ],
+      [
+        "Audio",
+        "System.Void Audio::Update()",
+        "System.Single UnityEngine.Time::get_unscaledTime()",
+        8
+      ],
+      [
+        "Audio",
+        "System.Void Audio::Update()",
+        "System.Void Audio::SavePendingChanges()",
+        28
+      ],
+      [
+        "Audio",
+        "System.Void Audio::SetBGM(System.Single)",
+        "System.Void Audio::SetVolume(System.String,System.String,System.Single)",
+        12
+      ],
+      [
+        "Audio",
+        "System.Void Audio::SetSE(System.Single)",
+        "System.Void Audio::SetVolume(System.String,System.String,System.Single)",
+        12
+      ],
+      [
+        "Audio",
+        "System.Void Audio::RestoreVolume(System.String,System.String,UnityEngine.UI.Slider)",
+        "System.Boolean UnityEngine.Object::op_Equality(UnityEngine.Object,UnityEngine.Object)",
+        7
+      ],
+      [
+        "Audio",
+        "System.Void Audio::RestoreVolume(System.String,System.String,UnityEngine.UI.Slider)",
+        "System.Boolean UnityEngine.Audio.AudioMixer::GetFloat(System.String,System.Single&)",
+        23
+      ],
+      [
+        "Audio",
+        "System.Void Audio::RestoreVolume(System.String,System.String,UnityEngine.UI.Slider)",
+        "System.Boolean UnityEngine.PlayerPrefs::HasKey(System.String)",
+        32
+      ],
+      [
+        "Audio",
+        "System.Void Audio::RestoreVolume(System.String,System.String,UnityEngine.UI.Slider)",
+        "System.Single UnityEngine.PlayerPrefs::GetFloat(System.String,System.Single)",
+        41
+      ],
+      [
+        "Audio",
+        "System.Void Audio::RestoreVolume(System.String,System.String,UnityEngine.UI.Slider)",
+        "System.Boolean System.Single::IsNaN(System.Single)",
+        48
+      ],
+      [
+        "Audio",
+        "System.Void Audio::RestoreVolume(System.String,System.String,UnityEngine.UI.Slider)",
+        "System.Boolean System.Single::IsInfinity(System.Single)",
+        56
+      ],
+      [
+        "Audio",
+        "System.Void Audio::RestoreVolume(System.String,System.String,UnityEngine.UI.Slider)",
+        "System.Single UnityEngine.Mathf::Clamp(System.Single,System.Single,System.Single)",
+        81
+      ],
+      [
+        "Audio",
+        "System.Void Audio::RestoreVolume(System.String,System.String,UnityEngine.UI.Slider)",
+        "System.Boolean UnityEngine.Audio.AudioMixer::SetFloat(System.String,System.Single)",
+        86
+      ],
+      [
+        "Audio",
+        "System.Void Audio::RestoreVolume(System.String,System.String,UnityEngine.UI.Slider)",
+        "System.Boolean UnityEngine.Audio.AudioMixer::GetFloat(System.String,System.Single&)",
+        102
+      ],
+      [
+        "Audio",
+        "System.Void Audio::RestoreVolume(System.String,System.String,UnityEngine.UI.Slider)",
+        "System.Boolean UnityEngine.Object::op_Inequality(UnityEngine.Object,UnityEngine.Object)",
+        110
+      ],
+      [
+        "Audio",
+        "System.Void Audio::RestoreVolume(System.String,System.String,UnityEngine.UI.Slider)",
+        "System.Void UnityEngine.UI.Slider::SetValueWithoutNotify(System.Single)",
+        119
+      ],
+      [
+        "Audio",
+        "System.Void Audio::SetVolume(System.String,System.String,System.Single)",
+        "System.Boolean UnityEngine.Object::op_Equality(UnityEngine.Object,UnityEngine.Object)",
+        7
+      ],
+      [
+        "Audio",
+        "System.Void Audio::SetVolume(System.String,System.String,System.Single)",
+        "System.Boolean System.Single::IsNaN(System.Single)",
+        15
+      ],
+      [
+        "Audio",
+        "System.Void Audio::SetVolume(System.String,System.String,System.Single)",
+        "System.Boolean System.Single::IsInfinity(System.Single)",
+        23
+      ],
+      [
+        "Audio",
+        "System.Void Audio::SetVolume(System.String,System.String,System.Single)",
+        "System.Single UnityEngine.Mathf::Clamp(System.Single,System.Single,System.Single)",
+        42
+      ],
+      [
+        "Audio",
+        "System.Void Audio::SetVolume(System.String,System.String,System.Single)",
+        "System.Boolean UnityEngine.Audio.AudioMixer::SetFloat(System.String,System.Single)",
+        57
+      ],
+      [
+        "Audio",
+        "System.Void Audio::SetVolume(System.String,System.String,System.Single)",
+        "System.Void UnityEngine.PlayerPrefs::SetFloat(System.String,System.Single)",
+        67
+      ],
+      [
+        "Audio",
+        "System.Void Audio::SetVolume(System.String,System.String,System.Single)",
+        "System.Single UnityEngine.Time::get_unscaledTime()",
+        80
+      ],
+      [
+        "Audio",
+        "System.Void Audio::SavePendingChanges()",
+        "System.Void UnityEngine.PlayerPrefs::Save()",
+        9
+      ],
+      [
+        "Audio",
+        "System.Void Audio::OnDisable()",
+        "System.Void Audio::SavePendingChanges()",
+        1
+      ],
+      [
+        "Audio",
+        "System.Void Audio::OnApplicationPause(System.Boolean)",
+        "System.Void Audio::SavePendingChanges()",
+        4
+      ],
+      [
+        "Audio",
+        "System.Void Audio::OnApplicationQuit()",
+        "System.Void Audio::SavePendingChanges()",
+        1
+      ],
+      [
+        "Audio",
+        "System.Void Audio::.ctor()",
+        "System.Void UnityEngine.MonoBehaviour::.ctor()",
+        1
+      ]
+    ],
+    "constants": [
+      [
+        "PlayerAttackCadence",
+        "ReferenceRate",
+        "60"
+      ],
+      [
+        "PlayerAttackCadence",
+        "ReadyTolerance",
+        "1E-09"
+      ],
+      [
+        "PlayerAttackCadence",
+        "MaximumAttacksPerFrame",
+        "6"
+      ],
+      [
+        "PlayerController",
+        "ENEMY_CONTACT_DAMAGE",
+        "5"
+      ],
+      [
+        "Audio",
+        "BgmVolumeKey",
+        "GearCraft.Audio.BGM.dB.v1"
+      ],
+      [
+        "Audio",
+        "SeVolumeKey",
+        "GearCraft.Audio.SE.dB.v1"
+      ],
+      [
+        "Audio",
+        "MinVolume",
+        "-40"
+      ],
+      [
+        "Audio",
+        "MaxVolume",
+        "0"
+      ],
+      [
+        "Audio",
+        "SaveDelay",
+        "0.3"
+      ]
+    ],
+    "assembly_metadata": [
+      {
+        "kind": "ASSEMBLY",
+        "values": [
+          "Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "2bad3ccf-473b-4278-9022-4b4a5043cc59"
+        ]
+      }
+    ],
+    "reader": {
+      "argv": [
+        "/Applications/Unity/Hub/Editor/6000.0.67f1/Unity.app/Contents/MonoBleedingEdge/bin/mono",
+        "/Users/sora/Desktop/Unity/GearCraft_Remake/QA/ReleaseVerification20261019/ReadManagedMarkers.exe",
+        "/private/tmp/GearCraftReleaseVerification20261019/GearCraft.app/Contents/Resources/Data/Managed/Assembly-CSharp.dll"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    "reader_exe_sha256": "138e0c75de25b057afcf950c455f5d518cd2f0ac54f7a80ced9cf5bd6857101c",
+    "scope": "Static Cecil metadata/IL references in the built assembly; target DLL is not executed. Call presence does not prove all control flow, numeric arguments, UI behavior, or runtime cancellation timing."
+  },
+  "managed_hash_relationship": {
+    "built_sha256": "1c596d3af54915ec82d1d761a7f34149bf006a8b74b5de09aa5e9125f9011b95",
+    "editor_sha256": "77fffdeb5db90cfa80813c63e4a660007b358df74deb910c21f8f669c6803f35",
+    "equal_required": false,
+    "reason": "Release/player compilation, stripping and symbols differ from Editor compilation; byte equality is not a correctness criterion."
+  },
+  "boot_config": {
+    "present": true,
+    "text": "gfx-threading-mode=4\nwait-for-native-debugger=0\nhdr-display-enabled=0\ngc-max-time-slice=3\nbuild-guid=9bbc5f5676f14c2d92c5b35351b0100a\n",
+    "scope": "Literal packaged settings only; do not infer a full DevelopmentBuild classification from one key."
+  },
+  "scene_data": {
+    "matches": {
+      "Title.source_scene_path": [
+        {
+          "file": "globalgamemanagers",
+          "first_utf8_offset": 128664
+        }
+      ],
+      "Title.credit_object": [
+        {
+          "file": "level0",
+          "first_utf8_offset": 14128
+        }
+      ],
+      "Ending.source_scene_path": [
+        {
+          "file": "globalgamemanagers",
+          "first_utf8_offset": 128784
+        }
+      ],
+      "Ending.notice_object": [
+        {
+          "file": "level3",
+          "first_utf8_offset": 10084
+        }
+      ],
+      "Ending.hint_object": [
+        {
+          "file": "level3",
+          "first_utf8_offset": 10368
+        }
+      ],
+      "Arrival.asset_name": [
+        {
+          "file": "sharedassets4.assets",
+          "first_utf8_offset": 82768
+        }
+      ],
+      "Arrival.page_1": [
+        {
+          "file": "sharedassets4.assets",
+          "first_utf8_offset": 82812
+        }
+      ],
+      "Arrival.page_2": [
+        {
+          "file": "sharedassets4.assets",
+          "first_utf8_offset": 82968
+        }
+      ]
+    },
+    "scanned_files": [
+      {
+        "file": "globalgamemanagers",
+        "bytes": 228772
+      },
+      {
+        "file": "globalgamemanagers.assets",
+        "bytes": 1277800
+      },
+      {
+        "file": "level0",
+        "bytes": 74760
+      },
+      {
+        "file": "level1",
+        "bytes": 8176
+      },
+      {
+        "file": "level2",
+        "bytes": 179304
+      },
+      {
+        "file": "level3",
+        "bytes": 29976
+      },
+      {
+        "file": "level4",
+        "bytes": 51812
+      },
+      {
+        "file": "level5",
+        "bytes": 81832
+      },
+      {
+        "file": "level6",
+        "bytes": 98376
+      },
+      {
+        "file": "resources.assets",
+        "bytes": 764152
+      },
+      {
+        "file": "sharedassets0.assets",
+        "bytes": 921392
+      },
+      {
+        "file": "sharedassets1.assets",
+        "bytes": 4296
+      },
+      {
+        "file": "sharedassets2.assets",
+        "bytes": 334152
+      },
+      {
+        "file": "sharedassets3.assets",
+        "bytes": 332520
+      },
+      {
+        "file": "sharedassets4.assets",
+        "bytes": 83112
+      },
+      {
+        "file": "sharedassets5.assets",
+        "bytes": 77648
+      },
+      {
+        "file": "sharedassets6.assets",
+        "bytes": 14204
+      }
+    ],
+    "scope": "Exact UTF-8 byte occurrence in packaged Unity data, not a parsed asset-object binding or visual proof. Compressed data may hide text; not-found alone is inconclusive.",
+    "requested_markers": {
+      "Title.source_scene_path": "Assets/GearCraft/Scenes/Title.unity",
+      "Title.credit_object": "bgmTitle_title",
+      "Ending.source_scene_path": "Assets/GearCraft/Scenes/Ending.unity",
+      "Ending.notice_object": "GalleryUnlockNotice",
+      "Ending.hint_object": "ContinueHint",
+      "Arrival.asset_name": "CraftSpaceArrivalMessage",
+      "Arrival.page_1": "ここが、あなたの工房兼宿舎です。\n防衛の後は、ここで次の戦いに備えましょう。",
+      "Arrival.page_2": "A / D で左へ進み、ベッドで休みましょう。\nベッドのそばで Space を押すと眠れます。"
+    },
+    "source_layout_only": {
+      "Title_credit": [
+        {
+          "source_object": "bgmTitle_title",
+          "rect_file_id": 2059606914,
+          "values": {
+            "m_AnchorMin": "{x: 1, y: 0}",
+            "m_AnchorMax": "{x: 1, y: 0}",
+            "m_AnchoredPosition": "{x: -24, y: 20}",
+            "m_SizeDelta": "{x: 820.779, y: 88.801}",
+            "m_Pivot": "{x: 1, y: 0}"
+          }
+        }
+      ],
+      "Ending_continue_hint": [
+        {
+          "source_object": "ContinueHint",
+          "rect_file_id": 2134408041,
+          "values": {
+            "m_AnchorMin": "{x: 0, y: 0}",
+            "m_AnchorMax": "{x: 1, y: 0}",
+            "m_AnchoredPosition": "{x: 0, y: 23}",
+            "m_SizeDelta": "{x: -80, y: 32}",
+            "m_Pivot": "{x: 0.5, y: 0.5}"
+          }
+        }
+      ]
+    },
+    "layout_values_verified_in_player": false,
+    "layout_limit": "Source hashes prove inspected source stayed unchanged; exact text/name matches prove those bytes are packaged. RectTransform numeric binding and actual screen layout still require a serialized asset parser or this new Player visual inspection. Prior Editor screenshots are not Player screenshots."
+  },
+  "BuildReports": {
+    "provided": [
+      {
+        "path": "/Users/sora/Desktop/Unity/GearCraft_Remake/QA/ReleaseVerification20261019/macos-build.json",
+        "sha256": "f77d7b09c800a94c0210ef563c8505b48e8e03c0f36289260a1abfd60a359586",
+        "claims": [
+          {
+            "field": "platform",
+            "value": "StandaloneOSX"
+          },
+          {
+            "field": "result",
+            "value": "Succeeded"
+          },
+          {
+            "field": "development",
+            "value": false
+          },
+          {
+            "field": "options",
+            "value": "ForceOptimizeScriptCompilation, Il2CPP, CompressTextures, StripDebugSymbols, ShaderLivelinkSupport, DetailedBuildReport"
+          }
+        ]
+      }
+    ],
+    "authority": "Build tool claims only. Do not replace artifact backend, signature, architecture, source, or code-marker evidence with options flags; an IL2CPP flag does not override observed Mono files."
+  },
+  "artifact_hashes": {
+    "before": {
+      "Contents/Info.plist": "288a5985d210c267150140cd996781128cfb7a966de89c0aa7f07ba8d07306ce",
+      "Contents/MacOS/GearCraft_Remake": "4f01117ebd82181a94d903db9d4a357d6c99d8a78e99d8a5fcfe69fc11852b17",
+      "Contents/Resources/Data/Managed/Assembly-CSharp.dll": "1c596d3af54915ec82d1d761a7f34149bf006a8b74b5de09aa5e9125f9011b95",
+      "Contents/Frameworks/libmonobdwgc-2.0.dylib": "2de5e1988153aed94acca35f8958e3efe01fae4047d723422c7d9bfeaed3fdbd",
+      "Contents/Frameworks/UnityPlayer.dylib": "af09afe80e984a17953636694554262d768d2d769964da0b6e696e0c31818191"
+    },
+    "after": {
+      "Contents/Info.plist": "288a5985d210c267150140cd996781128cfb7a966de89c0aa7f07ba8d07306ce",
+      "Contents/MacOS/GearCraft_Remake": "4f01117ebd82181a94d903db9d4a357d6c99d8a78e99d8a5fcfe69fc11852b17",
+      "Contents/Resources/Data/Managed/Assembly-CSharp.dll": "1c596d3af54915ec82d1d761a7f34149bf006a8b74b5de09aa5e9125f9011b95",
+      "Contents/Frameworks/libmonobdwgc-2.0.dylib": "2de5e1988153aed94acca35f8958e3efe01fae4047d723422c7d9bfeaed3fdbd",
+      "Contents/Frameworks/UnityPlayer.dylib": "af09afe80e984a17953636694554262d768d2d769964da0b6e696e0c31818191"
+    },
+    "unchanged": true
+  },
+  "status": "FAIL_OR_UNVERIFIED",
+  "R22": "UNRESOLVED: no process launch/termination or buffer allocation ownership tested here"
+}

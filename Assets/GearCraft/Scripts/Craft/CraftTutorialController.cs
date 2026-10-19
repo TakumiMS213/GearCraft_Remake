@@ -222,7 +222,7 @@ namespace GearCraft.Scripts.Craft
             {
                 var status = StatusManager.Instance;
                 bool damageUp = status.bonusDamage > progress.baselineDamage + 0.001f;
-                bool faster = status.attackSpeedMult < progress.baselineAttackSpeed - 0.001f;
+                bool faster = HasFasterAttack(status.currentWeapon, progress.baselineAttackSpeed, status.attackSpeedMult);
                 foreach (var placed in upgradeGridManager.PlacedParts)
                 {
                     var part = placed.partData;
@@ -444,6 +444,13 @@ namespace GearCraft.Scripts.Craft
         private string GetCurrentHint()
         {
             if (progress.hintLevel == 0) return "";
+            if (Step.WaitCondition == CraftTutorialWaitCondition.ImproveWeapon &&
+                IsRangedSpeedUnchanged(StatusManager.Instance))
+            {
+                if (progress.hintLevel == 1) return "速さが変わらないときは、一撃の威力を伸ばす方法を考えてみましょう。";
+                if (progress.hintLevel == 2) return "左のパーツから、先ほどとは違う「ダメージ＋」の効果を探しましょう。";
+                return "速さのパーツを外せば、材料と空きが戻ります。別の威力パーツを組み込みましょう。";
+            }
             if (Step.WaitCondition == CraftTutorialWaitCondition.AssessCraftMaterials &&
                 craftManager != null && craftManager.SelectedRecipe == tutorialScrapModuleRecipe)
             {
@@ -520,11 +527,14 @@ namespace GearCraft.Scripts.Craft
         private bool HasSpaceForUpgrade(UpgradePartSO requestedPart = null)
         {
             if (upgradeGridManager == null || upgradeShopManager == null) return true;
-            var candidates = requestedPart != null ? new[] {requestedPart} : Step.Independent ? new[] { upgradeShopManager.FindPart("Damage+2"), upgradeShopManager.FindPart("SpeedGear") }
+            var candidates = requestedPart != null ? new[] {requestedPart} : Step.Independent ? new[] { tutorialDamagePart, upgradeShopManager.FindPart("Damage+2"), upgradeShopManager.FindPart("SpeedGear") }
                 : new[] { tutorialDamagePart };
+            bool seekingDamage = requestedPart == null && Step.Independent &&
+                IsRangedSpeedUnchanged(StatusManager.Instance);
             foreach (var part in candidates)
             {
                 if (part == null || (requestedPart == null && Step.Independent && part.name == progress.practicePartName)) continue;
+                if (seekingDamage && !HasEffect(part, UpgradeEffectType.DamageFlat)) continue;
                 for (int y = 0; y < upgradeGridManager.GridSize; y++)
                     for (int x = 0; x < upgradeGridManager.GridSize; x++)
                         for (int rotation = 0; rotation < 4; rotation++)
@@ -613,7 +623,7 @@ namespace GearCraft.Scripts.Craft
             var status = StatusManager.Instance;
             if (status == null || part == null) return;
             bool damageUp = status.bonusDamage > progress.baselineDamage + 0.001f;
-            bool faster = status.attackSpeedMult < progress.baselineAttackSpeed - 0.001f;
+            bool faster = HasFasterAttack(status.currentWeapon, progress.baselineAttackSpeed, status.attackSpeedMult);
             if (IsWaitingFor(CraftTutorialWaitCondition.PlaceDamagePart))
             {
                 if (!HasEffect(part, UpgradeEffectType.DamageFlat) || !damageUp)
@@ -623,7 +633,13 @@ namespace GearCraft.Scripts.Craft
             else if (IsWaitingFor(CraftTutorialWaitCondition.ImproveWeapon))
             {
                 if (!IsNewWeaponImprovement(part, damageUp, faster))
-                { Fail("先ほどとは違うパーツで、今より威力か速さを伸ばしましょう。効果を見比べてみてください。"); return; }
+                {
+                    if (!damageUp && HasEffect(part, UpgradeEffectType.AttackSpeedMult) && IsRangedSpeedUnchanged(status))
+                        Fail("今の構成では攻撃の間隔は変わりません。今回は一撃の威力を高めてみましょう。");
+                    else
+                        Fail("先ほどとは違うパーツで、今より威力か速さを伸ばしましょう。効果を見比べてみてください。");
+                    return;
+                }
             }
             else return;
             float addedDamageBonus = status.bonusDamage - progress.baselineDamage;
@@ -636,6 +652,23 @@ namespace GearCraft.Scripts.Craft
                 : "パーツが組み込まれ、次の攻撃までの待ち時間が短くなりました。";
             if (damageUp && faster) result += "\n次の攻撃までの待ち時間も短くなっています。";
             Succeed(result);
+        }
+
+        private static bool HasFasterAttack(WeaponDataSO weapon, float beforeMultiplier, float afterMultiplier)
+        {
+            if (weapon == null || !(afterMultiplier < beforeMultiplier - 0.001f)) return false;
+            if (weapon.weaponType != WeaponType.Ranged) return true;
+            // Compare both part configurations on the same current weapon: changing weapons alone is not an improvement.
+            return PlayerAttackCadence.GetAutomaticInterval(weapon.coolTime * afterMultiplier) <
+                PlayerAttackCadence.GetAutomaticInterval(weapon.coolTime * beforeMultiplier);
+        }
+
+        private bool IsRangedSpeedUnchanged(StatusManager status)
+        {
+            return status != null && status.currentWeapon != null && progress != null &&
+                status.currentWeapon.weaponType == WeaponType.Ranged &&
+                status.attackSpeedMult < progress.baselineAttackSpeed - 0.001f &&
+                !HasFasterAttack(status.currentWeapon, progress.baselineAttackSpeed, status.attackSpeedMult);
         }
 
         private bool IsNewWeaponImprovement(UpgradePartSO part, bool damageUp, bool faster)

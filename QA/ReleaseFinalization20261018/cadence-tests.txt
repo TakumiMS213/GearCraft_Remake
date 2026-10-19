@@ -1,0 +1,206 @@
+checks=205 failures=0
+PASS,quantize/0,actual=0.016666666666666666 expected=0.016666666666666666
+PASS,quantize/-0.1,actual=0.016666666666666666 expected=0.016666666666666666
+PASS,quantize/0.0001,actual=0.016666666666666666 expected=0.016666666666666666
+PASS,quantize/0.03,actual=0.03333333333333333 expected=0.03333333333333333
+PASS,quantize/0.08,actual=0.08333333333333333 expected=0.08333333333333333
+PASS,quantize/0.1,actual=0.1 expected=0.1
+PASS,quantize/0.1397977989,actual=0.15 expected=0.15
+PASS,quantize/0.2,actual=0.2 expected=0.2
+PASS,quantize/0.3,actual=0.3 expected=0.3
+PASS,quantize/0.5,actual=0.5 expected=0.5
+PASS,quantize/1,actual=1 expected=1
+PASS,quantize/2,actual=2 expected=2
+PASS,quantize/0.0041939339669999996,actual=0.016666666666666666 expected=0.016666666666666666
+PASS,quantize/0.014619377664,actual=0.016666666666666666 expected=0.016666666666666666
+PASS,boundary/downULP/1,actual=0.016666666666666666 expected=0.016666666666666666
+PASS,boundary/exact/1,actual=0.016666666666666666 expected=0.016666666666666666
+PASS,boundary/upULP/1,actual=0.016666666666666666 expected=0.016666666666666666
+PASS,boundary/realAbove/1,actual=0.03333333333333333 expected=0.03333333333333333
+PASS,boundary/downULP/2,actual=0.03333333333333333 expected=0.03333333333333333
+PASS,boundary/exact/2,actual=0.03333333333333333 expected=0.03333333333333333
+PASS,boundary/upULP/2,actual=0.03333333333333333 expected=0.03333333333333333
+PASS,boundary/realAbove/2,actual=0.05 expected=0.05
+PASS,boundary/downULP/6,actual=0.1 expected=0.1
+PASS,boundary/exact/6,actual=0.1 expected=0.1
+PASS,boundary/upULP/6,actual=0.1 expected=0.1
+PASS,boundary/realAbove/6,actual=0.11666666666666667 expected=0.11666666666666667
+PASS,boundary/downULP/12,actual=0.2 expected=0.2
+PASS,boundary/exact/12,actual=0.2 expected=0.2
+PASS,boundary/upULP/12,actual=0.2 expected=0.2
+PASS,boundary/realAbove/12,actual=0.21666666666666667 expected=0.21666666666666667
+PASS,boundary/downULP/30,actual=0.5 expected=0.5
+PASS,boundary/exact/30,actual=0.5 expected=0.5
+PASS,boundary/upULP/30,actual=0.5 expected=0.5
+PASS,boundary/realAbove/30,actual=0.5166666666666667 expected=0.5166666666666667
+PASS,boundary/downULP/60,actual=1 expected=1
+PASS,boundary/exact/60,actual=1 expected=1
+PASS,boundary/upULP/60,actual=1 expected=1
+PASS,boundary/realAbove/60,actual=1.0166666666666666 expected=1.0166666666666666
+PASS,boundary/downULP/120,actual=2 expected=2
+PASS,boundary/exact/120,actual=2 expected=2
+PASS,boundary/upULP/120,actual=2 expected=2
+PASS,boundary/realAbove/120,actual=2.0166666666666666 expected=2.0166666666666666
+PASS,steady/p0/0.0001/count,actual=608 expected=608 interval=0.016666666666666666
+PASS,steady/p0/0.0001/bounded,max=2
+PASS,steady/p0/0.03/count,actual=304 expected=304 interval=0.03333333333333333
+PASS,steady/p0/0.03/bounded,max=1
+PASS,steady/p0/0.08/count,actual=122 expected=122 interval=0.08333333333333333
+PASS,steady/p0/0.08/bounded,max=1
+PASS,steady/p0/0.1/count,actual=102 expected=102 interval=0.1
+PASS,steady/p0/0.1/bounded,max=1
+PASS,steady/p0/0.1397978/count,actual=68 expected=68 interval=0.15
+PASS,steady/p0/0.1397978/bounded,max=1
+PASS,steady/p0/0.2/count,actual=51 expected=51 interval=0.2
+PASS,steady/p0/0.2/bounded,max=1
+PASS,steady/p0/0.3/count,actual=34 expected=34 interval=0.3
+PASS,steady/p0/0.3/bounded,max=1
+PASS,steady/p0/0.5/count,actual=21 expected=21 interval=0.5
+PASS,steady/p0/0.5/bounded,max=1
+PASS,steady/p0/1/count,actual=11 expected=11 interval=1
+PASS,steady/p0/1/bounded,max=1
+PASS,steady/p0/2/count,actual=6 expected=6 interval=2
+PASS,steady/p0/2/bounded,max=1
+PASS,steady/p1/0.0001/count,actual=608 expected=608 interval=0.016666666666666666
+PASS,steady/p1/0.0001/bounded,max=1
+PASS,steady/p1/0.03/count,actual=304 expected=304 interval=0.03333333333333333
+PASS,steady/p1/0.03/bounded,max=1
+PASS,steady/p1/0.08/count,actual=122 expected=122 interval=0.08333333333333333
+PASS,steady/p1/0.08/bounded,max=1
+PASS,steady/p1/0.1/count,actual=102 expected=102 interval=0.1
+PASS,steady/p1/0.1/bounded,max=1
+PASS,steady/p1/0.1397978/count,actual=68 expected=68 interval=0.15
+PASS,steady/p1/0.1397978/bounded,max=1
+PASS,steady/p1/0.2/count,actual=51 expected=51 interval=0.2
+PASS,steady/p1/0.2/bounded,max=1
+PASS,steady/p1/0.3/count,actual=34 expected=34 interval=0.3
+PASS,steady/p1/0.3/bounded,max=1
+PASS,steady/p1/0.5/count,actual=21 expected=21 interval=0.5
+PASS,steady/p1/0.5/bounded,max=1
+PASS,steady/p1/1/count,actual=11 expected=11 interval=1
+PASS,steady/p1/1/bounded,max=1
+PASS,steady/p1/2/count,actual=6 expected=6 interval=2
+PASS,steady/p1/2/bounded,max=1
+PASS,steady/p2/0.0001/count,actual=608 expected=608 interval=0.016666666666666666
+PASS,steady/p2/0.0001/bounded,max=1
+PASS,steady/p2/0.03/count,actual=304 expected=304 interval=0.03333333333333333
+PASS,steady/p2/0.03/bounded,max=1
+PASS,steady/p2/0.08/count,actual=122 expected=122 interval=0.08333333333333333
+PASS,steady/p2/0.08/bounded,max=1
+PASS,steady/p2/0.1/count,actual=102 expected=102 interval=0.1
+PASS,steady/p2/0.1/bounded,max=1
+PASS,steady/p2/0.1397978/count,actual=68 expected=68 interval=0.15
+PASS,steady/p2/0.1397978/bounded,max=1
+PASS,steady/p2/0.2/count,actual=51 expected=51 interval=0.2
+PASS,steady/p2/0.2/bounded,max=1
+PASS,steady/p2/0.3/count,actual=34 expected=34 interval=0.3
+PASS,steady/p2/0.3/bounded,max=1
+PASS,steady/p2/0.5/count,actual=21 expected=21 interval=0.5
+PASS,steady/p2/0.5/bounded,max=1
+PASS,steady/p2/1/count,actual=11 expected=11 interval=1
+PASS,steady/p2/1/bounded,max=1
+PASS,steady/p2/2/count,actual=6 expected=6 interval=2
+PASS,steady/p2/2/bounded,max=1
+PASS,steady/p3/0.0001/count,actual=608 expected=608 interval=0.016666666666666666
+PASS,steady/p3/0.0001/bounded,max=3
+PASS,steady/p3/0.03/count,actual=304 expected=304 interval=0.03333333333333333
+PASS,steady/p3/0.03/bounded,max=2
+PASS,steady/p3/0.08/count,actual=122 expected=122 interval=0.08333333333333333
+PASS,steady/p3/0.08/bounded,max=1
+PASS,steady/p3/0.1/count,actual=102 expected=102 interval=0.1
+PASS,steady/p3/0.1/bounded,max=1
+PASS,steady/p3/0.1397978/count,actual=68 expected=68 interval=0.15
+PASS,steady/p3/0.1397978/bounded,max=1
+PASS,steady/p3/0.2/count,actual=51 expected=51 interval=0.2
+PASS,steady/p3/0.2/bounded,max=1
+PASS,steady/p3/0.3/count,actual=34 expected=34 interval=0.3
+PASS,steady/p3/0.3/bounded,max=1
+PASS,steady/p3/0.5/count,actual=21 expected=21 interval=0.5
+PASS,steady/p3/0.5/bounded,max=1
+PASS,steady/p3/1/count,actual=11 expected=11 interval=1
+PASS,steady/p3/1/bounded,max=1
+PASS,steady/p3/2/count,actual=6 expected=6 interval=2
+PASS,steady/p3/2/bounded,max=1
+PASS,steady/p4/0.0001/count,actual=608 expected=608 interval=0.016666666666666666
+PASS,steady/p4/0.0001/bounded,max=3
+PASS,steady/p4/0.03/count,actual=304 expected=304 interval=0.03333333333333333
+PASS,steady/p4/0.03/bounded,max=2
+PASS,steady/p4/0.08/count,actual=122 expected=122 interval=0.08333333333333333
+PASS,steady/p4/0.08/bounded,max=1
+PASS,steady/p4/0.1/count,actual=102 expected=102 interval=0.1
+PASS,steady/p4/0.1/bounded,max=1
+PASS,steady/p4/0.1397978/count,actual=68 expected=68 interval=0.15
+PASS,steady/p4/0.1397978/bounded,max=1
+PASS,steady/p4/0.2/count,actual=51 expected=51 interval=0.2
+PASS,steady/p4/0.2/bounded,max=1
+PASS,steady/p4/0.3/count,actual=34 expected=34 interval=0.3
+PASS,steady/p4/0.3/bounded,max=1
+PASS,steady/p4/0.5/count,actual=21 expected=21 interval=0.5
+PASS,steady/p4/0.5/bounded,max=1
+PASS,steady/p4/1/count,actual=11 expected=11 interval=1
+PASS,steady/p4/1/bounded,max=1
+PASS,steady/p4/2/count,actual=6 expected=6 interval=2
+PASS,steady/p4/2/bounded,max=1
+PASS,inclusive-end/p0/count,actual=601 expected=601 interval=0.016666666666666666
+PASS,inclusive-end/p0/bounded,max=2
+PASS,ten-minutes/p0/count,actual=36001 expected=36001 interval=0.016666666666666666
+PASS,ten-minutes/p0/bounded,max=2
+PASS,inclusive-end/p1/count,actual=601 expected=601 interval=0.016666666666666666
+PASS,inclusive-end/p1/bounded,max=1
+PASS,ten-minutes/p1/count,actual=36001 expected=36001 interval=0.016666666666666666
+PASS,ten-minutes/p1/bounded,max=1
+PASS,inclusive-end/p2/count,actual=601 expected=601 interval=0.016666666666666666
+PASS,inclusive-end/p2/bounded,max=1
+PASS,ten-minutes/p2/count,actual=36001 expected=36001 interval=0.016666666666666666
+PASS,ten-minutes/p2/bounded,max=1
+PASS,initial-hold/no-retrospective-burst,
+PASS,initial-hold/next-period,
+PASS,interrupt/start,
+PASS,interrupt/preserve-positive,actual=0.2 expected=0.2
+PASS,weapon-change/no-cooldown-reset,
+PASS,weapon-change/old-cooldown-completes,
+PASS,release/no-shot,
+PASS,release/preserve-positive,
+PASS,repress/no-cooldown-bypass,
+PASS,idle/no-shot,
+PASS,repress/one-shot-after-long-idle,
+PASS,blocked/no-shot,
+PASS,blocked/resume-no-debt,
+PASS,disable/preserve-positive,
+PASS,stall/cap/0.5,
+PASS,stall/no-negative-debt/0.5,
+PASS,stall/no-followup-burst/0.5,
+PASS,stall/cap/5,
+PASS,stall/no-negative-debt/5,
+PASS,stall/no-followup-burst/5,
+PASS,boost/start-preserves-running-cooldown,
+PASS,boost/start-next-shot,
+PASS,boost/new-period,actual=0.09999999329447748 expected=0.1
+PASS,boost/end-next-shot,
+PASS,boost/restored-period,actual=0.19999999180436137 expected=0.2
+PASS,melee/first-click,
+PASS,melee/held-no-repeat,
+PASS,melee/new-click,
+PASS,melee/cooldown,
+PASS,melee/blocked,
+PASS,invalid-dt/no-shot/-1,
+PASS,invalid-dt/no-countdown-change/-1,actual=0.2 expected=0.2
+PASS,invalid-dt/no-shot/NaN,
+PASS,invalid-dt/no-countdown-change/NaN,actual=0.2 expected=0.2
+PASS,invalid-dt/no-shot/Infinity,
+PASS,invalid-dt/no-countdown-change/Infinity,actual=0.2 expected=0.2
+PASS,invalid-dt/no-shot/-Infinity,
+PASS,invalid-dt/no-countdown-change/-Infinity,actual=0.2 expected=0.2
+PASS,invalid-period/non-firing-interval/NaN,
+PASS,invalid-period/no-shot/NaN,
+PASS,invalid-period/recovery/NaN,
+PASS,invalid-period/non-firing-interval/Infinity,
+PASS,invalid-period/no-shot/Infinity,
+PASS,invalid-period/recovery/Infinity,
+PASS,invalid-period/non-firing-interval/-Infinity,
+PASS,invalid-period/no-shot/-Infinity,
+PASS,invalid-period/recovery/-Infinity,
+PASS,same-time/no-extra-shot,
+PASS,pause/no-shot,
+PASS,pause/positive-clock-stopped,actual=0.2 expected=0.2
+PASS,pause/resume-no-immediate-extra-shot,

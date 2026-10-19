@@ -1,0 +1,162 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+
+// Links the actual production PlayerAttackCadence source; no copied scheduler implementation.
+public static class PlayerAttackCadenceTests
+{
+    private static int checks;
+    private static int failures;
+    private static readonly List<string> outcomes = new List<string>();
+    private static void Check(bool ok, string name, string details = "")
+    {
+        checks++;
+        if (!ok) failures++;
+        outcomes.Add((ok ? "PASS" : "FAIL") + "," + name + "," + details);
+    }
+    private static void Equal(double actual, double expected, string name, double tolerance = 1e-8)
+    {
+        Check(Math.Abs(actual - expected) <= tolerance, name,
+            "actual=" + actual.ToString("R", CultureInfo.InvariantCulture) + " expected=" + expected.ToString("R", CultureInfo.InvariantCulture));
+    }
+    private static int Fire(PlayerAttackCadence cadence, float dt, float period, bool held = true, bool pressed = false, bool allowed = true, bool automatic = true)
+    {
+        return cadence.Advance(pressed, held, automatic, allowed, dt, period);
+    }
+    private static int Simulate(float nominal, double end, double[] frameDurations, string label)
+    {
+        var cadence = new PlayerAttackCadence();
+        int total = Fire(cadence, 0, nominal, true, true);
+        int maxBurst = total;
+        double elapsed = 0;
+        int index = 0;
+        while (elapsed < end - 1e-10)
+        {
+            double dt = Math.Min(frameDurations[index++ % frameDurations.Length], end - elapsed);
+            int count = Fire(cadence, (float)dt, nominal);
+            maxBurst = Math.Max(maxBurst, count);
+            total += count;
+            elapsed += dt;
+        }
+        double interval = PlayerAttackCadence.GetAutomaticInterval(nominal);
+        int expected = 1 + (int)Math.Floor((end + 1e-7) / interval);
+        Check(total == expected, label + "/count", "actual=" + total + " expected=" + expected + " interval=" + interval.ToString("R", CultureInfo.InvariantCulture));
+        Check(maxBurst <= 6, label + "/bounded", "max=" + maxBurst);
+        return total;
+    }
+    public static int Main()
+    {
+        CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+        var quantization = new[] {
+            new [] { 0.0, 1.0 }, new [] { -0.1, 1.0 }, new [] { 0.0001, 1.0 },
+            new [] { 0.03, 2.0 }, new [] { 0.08, 5.0 }, new [] { 0.1, 6.0 },
+            new [] { 0.1397977989, 9.0 }, new [] { 0.2, 12.0 }, new [] { 0.3, 18.0 },
+            new [] { 0.5, 30.0 }, new [] { 1.0, 60.0 }, new [] { 2.0, 120.0 },
+            new [] { 0.03 * 0.1397977989, 1.0 }, new [] { 0.08 * 0.1827422208, 1.0 }
+        };
+        foreach (var test in quantization)
+            Equal(PlayerAttackCadence.GetAutomaticInterval((float)test[0]), test[1] / 60.0, "quantize/" + test[0].ToString("R"));
+        foreach (int tick in new [] { 1, 2, 6, 12, 30, 60, 120 })
+        {
+            float exact = (float)(tick / 60.0);
+            int bits = BitConverter.SingleToInt32Bits(exact);
+            Equal(PlayerAttackCadence.GetAutomaticInterval(BitConverter.Int32BitsToSingle(bits - 1)), tick / 60.0, "boundary/downULP/" + tick);
+            Equal(PlayerAttackCadence.GetAutomaticInterval(exact), tick / 60.0, "boundary/exact/" + tick);
+            Equal(PlayerAttackCadence.GetAutomaticInterval(BitConverter.Int32BitsToSingle(bits + 1)), tick / 60.0, "boundary/upULP/" + tick);
+            Equal(PlayerAttackCadence.GetAutomaticInterval((float)(tick / 60.0 + 1e-5)), (tick + 1) / 60.0, "boundary/realAbove/" + tick);
+        }
+        var nominalPeriods = new [] { 0.0001f, 0.03f, 0.08f, 0.1f, 0.1397978f, 0.2f, 0.3f, 0.5f, 1f, 2f };
+        var patterns = new [] { new [] { 1.0 / 30 }, new [] { 1.0 / 60 }, new [] { 1.0 / 120 }, new [] { 1.0 / 20, 1.0 / 120 }, new [] { .011, .041, .007, .023, .032 } };
+        for (int p = 0; p < patterns.Length; p++)
+            foreach (float nominal in nominalPeriods)
+                Simulate(nominal, 10.123, patterns[p], "steady/p" + p + "/" + nominal);
+        for (int p = 0; p < 3; p++)
+        {
+            Simulate(0.001f, 10, patterns[p], "inclusive-end/p" + p);
+            Simulate(0.001f, 600, patterns[p], "ten-minutes/p" + p);
+        }
+        {
+            var c = new PlayerAttackCadence();
+            Check(Fire(c, 5, .001f, true, true) == 1, "initial-hold/no-retrospective-burst");
+            Check(Fire(c, 1f/60, .001f) == 1, "initial-hold/next-period");
+        }
+        {
+            var c = new PlayerAttackCadence();
+            Check(Fire(c, 0, .2f, true, true) == 1, "interrupt/start");
+            double before = c.RemainingSeconds;
+            c.Interrupt();
+            Equal(c.RemainingSeconds, before, "interrupt/preserve-positive");
+            Check(Fire(c, 0, .001f, true, true) == 0, "weapon-change/no-cooldown-reset");
+            Check(Fire(c, .05f, .001f) == 0, "weapon-change/old-cooldown-completes");
+        }
+        {
+            var c = new PlayerAttackCadence();
+            Fire(c, 0, .2f, true, true);
+            Check(Fire(c, .01f, .2f, false) == 0, "release/no-shot");
+            Check(c.RemainingSeconds > .18, "release/preserve-positive");
+            Check(Fire(c, 0, .2f, true, true) == 0, "repress/no-cooldown-bypass");
+            Check(Fire(c, 5, .2f, false) == 0, "idle/no-shot");
+            Check(Fire(c, 0, .2f, true, true) == 1, "repress/one-shot-after-long-idle");
+        }
+        {
+            var c = new PlayerAttackCadence();
+            Fire(c, 0, .001f, true, true);
+            Check(Fire(c, 5, .001f, true, false, false) == 0, "blocked/no-shot");
+            Check(Fire(c, 0, .001f) == 1, "blocked/resume-no-debt");
+            c.Interrupt();
+            Check(Fire(c, 0, .001f) == 0, "disable/preserve-positive");
+        }
+        foreach (float stall in new [] { .5f, 5f })
+        {
+            var c = new PlayerAttackCadence();
+            Fire(c, 0, .001f, true, true);
+            Check(Fire(c, stall, .001f) == 6, "stall/cap/" + stall);
+            Check(c.RemainingSeconds >= 0, "stall/no-negative-debt/" + stall);
+            Check(Fire(c, 1f/60, .001f) <= 1, "stall/no-followup-burst/" + stall);
+        }
+        {
+            var c = new PlayerAttackCadence();
+            Fire(c, 0, .2f, true, true);
+            Check(Fire(c, .05f, .1f) == 0, "boost/start-preserves-running-cooldown");
+            Check(Fire(c, .15f, .1f) == 1, "boost/start-next-shot");
+            Equal(c.RemainingSeconds, .1, "boost/new-period", 2e-7);
+            Check(Fire(c, .1f, .2f) == 1, "boost/end-next-shot");
+            Equal(c.RemainingSeconds, .2, "boost/restored-period", 2e-7);
+        }
+        {
+            var c = new PlayerAttackCadence();
+            Check(Fire(c, 0, .2f, true, true, true, false) == 1, "melee/first-click");
+            Check(Fire(c, 5, .2f, true, false, true, false) == 0, "melee/held-no-repeat");
+            Check(Fire(c, 0, .2f, true, true, true, false) == 1, "melee/new-click");
+            Check(Fire(c, .01f, .2f, true, true, true, false) == 0, "melee/cooldown");
+            Check(Fire(c, .5f, .2f, true, true, false, false) == 0, "melee/blocked");
+        }
+        foreach (float bad in new [] { -1f, float.NaN, float.PositiveInfinity, float.NegativeInfinity })
+        {
+            var c = new PlayerAttackCadence();
+            Fire(c, 0, .2f, true, true);
+            double before = c.RemainingSeconds;
+            Check(Fire(c, bad, .2f) == 0, "invalid-dt/no-shot/" + bad);
+            Equal(c.RemainingSeconds, before, "invalid-dt/no-countdown-change/" + bad);
+        }
+        foreach (float bad in new [] { float.NaN, float.PositiveInfinity, float.NegativeInfinity })
+        {
+            Check(double.IsPositiveInfinity(PlayerAttackCadence.GetAutomaticInterval(bad)), "invalid-period/non-firing-interval/" + bad);
+            var c = new PlayerAttackCadence();
+            Check(Fire(c, 0, bad, true, true) == 0, "invalid-period/no-shot/" + bad);
+            Check(Fire(c, 0, .1f, true, true) == 1, "invalid-period/recovery/" + bad);
+        }
+        {
+            var c = new PlayerAttackCadence();
+            Fire(c, 0, .2f, true, true);
+            Check(Fire(c, 0, .2f) == 0, "same-time/no-extra-shot");
+            double before = c.RemainingSeconds;
+            Check(Fire(c, 0, .2f, true, false, false) == 0, "pause/no-shot");
+            Equal(c.RemainingSeconds, before, "pause/positive-clock-stopped");
+            Check(Fire(c, 0, .2f) == 0, "pause/resume-no-immediate-extra-shot");
+        }
+        Console.WriteLine("checks=" + checks + " failures=" + failures);
+        foreach (string row in outcomes) Console.WriteLine(row);
+        return failures == 0 ? 0 : 1;
+    }
+}

@@ -1,0 +1,27 @@
+FAIL
+2026-10-19T01:15:49.6565240Z Fixture: native StageCounter at 31 supplied because Title lacks it; remove after Title-return verification
+2026-10-19T01:15:49.6609890Z begin session=20261019-010910-317-110653f0ec5245b8ad468da33de3bd20; native_stage=31; gallery_was_unlocked=False
+2026-10-19T01:15:49.6918700Z invoked native EndingManager.LoadEndingScene(3), unlock fixture held only in runtime cache
+2026-10-19T01:15:52.4137300Z scene  -> Ending
+2026-10-19T01:15:52.4967270Z native ED3 loaded handle=-1163200; sequence_count=12; notice_pending=true; Gallery unlocked by Awake
+2026-10-19T01:15:52.5062720Z sequence settled index=-1; frame=17401
+2026-10-19T01:15:53.4938990Z sequence settled index=0; frame=18072
+2026-10-19T01:15:54.4911430Z sequence settled index=1; frame=18621
+2026-10-19T01:15:55.4923360Z sequence settled index=2; frame=19116
+2026-10-19T01:15:56.4952790Z sequence settled index=3; frame=19627
+2026-10-19T01:15:57.4969180Z sequence settled index=4; frame=20093
+2026-10-19T01:15:58.4965590Z sequence settled index=5; frame=20584
+2026-10-19T01:15:59.4987800Z sequence settled index=6; frame=21081
+2026-10-19T01:16:00.4992770Z sequence settled index=7; frame=21589
+2026-10-19T01:16:01.4993150Z sequence settled index=8; frame=22091
+2026-10-19T01:16:02.4998360Z sequence settled index=9; frame=22564
+2026-10-19T01:16:03.5024920Z sequence settled index=10; frame=23050
+2026-10-19T01:16:04.5015610Z sequence settled index=11; frame=23532
+2026-10-19T01:16:05.0048430Z notice_text MessageText=ギャラリーが解放されました！<br>タイトル画面から確認できます; overflowing=False
+2026-10-19T01:16:05.0049180Z notice_text ContinueHint=クリック / Enterでタイトルへ; overflowing=True
+2026-10-19T01:16:05.0076540Z System.Exception: Notice text overflow
+  at MCPDynamicCode.<Execute>m__0 (System.Boolean ok, System.String s) [0x00006] in <157bfa146ff94699a671bcd4dd04f4b7>:0 
+  at MCPDynamicCode+<Execute>c__AnonStorey0.<>m__7 () [0x004b0] in <157bfa146ff94699a671bcd4dd04f4b7>:0 
+2026-10-19T01:16:05.0082810Z outcome=FAIL; clicks=13; gallery_unlocked=True; errors=0; callbacks_removed=true
+
+Native Ending scene is left at the observed state. Current session 16-key restoration remains required. Do not claim normal game completion or full UI visual PASS from this result alone.

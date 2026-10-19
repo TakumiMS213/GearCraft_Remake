@@ -1,0 +1,33 @@
+FAIL watchdog_150s
+2026-10-18T07:29:56.2645070Z session=20261018-070128-095-8360bc7954e64d94aff83f6784baf9fb; title_selection=StartButton
+2026-10-18T07:29:56.2652290Z Only Title InputModule and navigation temporarily disabled to avoid physical pointer overriding synthetic hover. Persistent data not directly modified; final canonical restore required.
+2026-10-18T07:29:56.2791310Z scene_entered Title
+2026-10-18T07:29:56.8810830Z start_idle_color=RGBA(0.961, 0.961, 0.961, 1.000)
+2026-10-18T07:29:56.8816610Z capture_requested 01-title-idle frame=14518
+2026-10-18T07:29:56.9398220Z PASS png_complete_fullhd 01-title-idle.png
+2026-10-18T07:29:56.9408520Z PASS button_interactable StartButton
+2026-10-18T07:29:56.9458300Z PASS graphic_raycast_top StartButton at=(960.00, 444.00) hit=StartButton
+2026-10-18T07:29:57.2465730Z PASS start_hover_matches_highlight actual=RGBA(0.613, 0.613, 0.613, 1.000) expected=RGBA(0.613, 0.613, 0.613, 1.000)
+2026-10-18T07:29:57.2465790Z PASS start_hover_differs_from_idle
+2026-10-18T07:29:57.2466250Z capture_requested 02-title-gamestart-hover frame=14814
+2026-10-18T07:29:57.2996150Z PASS png_complete_fullhd 02-title-gamestart-hover.png
+2026-10-18T07:29:57.2998390Z PASS button_interactable SettingButton
+2026-10-18T07:29:57.2999020Z PASS graphic_raycast_top SettingButton at=(960.00, 280.00) hit=SettingButton
+2026-10-18T07:29:57.3040450Z native_pointer_click SettingButton
+2026-10-18T07:29:57.7049810Z PASS setting_panel_visible
+2026-10-18T07:29:57.7052170Z setting_text=
+2026-10-18T07:29:57.7052720Z capture_requested 03-title-setting frame=15061
+2026-10-18T07:29:57.7703910Z PASS png_complete_fullhd 03-title-setting.png
+2026-10-18T07:29:57.7705920Z PASS button_interactable HideSetting
+2026-10-18T07:29:57.7709230Z PASS graphic_raycast_top HideSetting at=(1595.77, 839.94) hit=HideSetting
+2026-10-18T07:29:57.7796280Z native_pointer_click HideSetting
+2026-10-18T07:29:58.1816580Z PASS setting_panel_closed
+2026-10-18T07:29:58.1827610Z PASS button_interactable StartButton
+2026-10-18T07:29:58.1828390Z PASS graphic_raycast_top StartButton at=(960.00, 444.00) hit=StartButton
+2026-10-18T07:29:58.2191990Z native_pointer_click StartButton
+2026-10-18T07:30:00.8916670Z scene_entered Story
+2026-10-18T07:30:01.4124380Z capture_requested 04-opening-story frame=16605
+2026-10-18T07:30:01.4945700Z PASS png_complete_fullhd 04-opening-story.png
+2026-10-18T07:45:49.0149980Z scene=Story; play=True; screen=1672x924
+
+Scope: rendered native UI / EventSystem synthetic pointer dispatch, not OS mouse or physical keyboard. Story and arrival progressed automatically. No sleep / day advance performed. Keep evidence, then stop Play and run current-session canonical restoration.

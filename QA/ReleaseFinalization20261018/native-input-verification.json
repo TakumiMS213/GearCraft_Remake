@@ -1,0 +1,63 @@
+{
+  "source": "native-input-cases.csv only; ranged batch separately recorded",
+  "cases": [
+    {
+      "label": "gate_native_input_EK9_GearCraft_seed77_fps60",
+      "result": "player_dead",
+      "native_input_frames": 4996,
+      "accepted_attacks": 803,
+      "expected_projectiles": 0,
+      "boss_seconds": 68.71667,
+      "boss_remaining_hp": 64900.0,
+      "end_hp": -8.0,
+      "end_gate": 100.0,
+      "checks": {
+        "frame_ids_unique": true,
+        "accepted_equals_result": true,
+        "expected_projectiles_equals_result": true,
+        "no_attack_on_false_false": true,
+        "hp_net": true,
+        "gate_net": true
+      }
+    },
+    {
+      "label": "gate_native_input_BB413_GearCraft_seed77_fps60",
+      "result": "player_dead",
+      "native_input_frames": 6264,
+      "accepted_attacks": 95,
+      "expected_projectiles": 0,
+      "boss_seconds": 10.4666748,
+      "boss_remaining_hp": 8886.0,
+      "end_hp": -25.0,
+      "end_gate": 100.0,
+      "checks": {
+        "frame_ids_unique": true,
+        "accepted_equals_result": true,
+        "expected_projectiles_equals_result": true,
+        "no_attack_on_false_false": true,
+        "hp_net": true,
+        "gate_net": true
+      }
+    },
+    {
+      "label": "gate_native_input_BB413_SteamThrower_seed77_fps60",
+      "result": "player_dead",
+      "native_input_frames": 10258,
+      "accepted_attacks": 2393,
+      "expected_projectiles": 2393,
+      "boss_seconds": 63.2333374,
+      "boss_remaining_hp": 8296.358,
+      "end_hp": -23.0,
+      "end_gate": 100.0,
+      "checks": {
+        "frame_ids_unique": true,
+        "accepted_equals_result": true,
+        "expected_projectiles_equals_result": true,
+        "no_attack_on_false_false": true,
+        "hp_net": true,
+        "gate_net": true
+      }
+    }
+  ],
+  "runtime_claim": "CSV accounting validation; no MCP calls by this auditor"
+}

@@ -1,0 +1,28 @@
+{
+  "source": "Assets/GearCraft/Scripts/Title/Audio.cs",
+  "sha256": "174402e5742e85f9a4618e18628e8239fade79f66190a21dbe801052da365fa5",
+  "unity_execution": false,
+  "results": [
+    {
+      "kind": "production Audio.cs",
+      "command": [
+        "/Applications/Unity/Hub/Editor/6000.0.67f1/Unity.app/Contents/MonoBleedingEdge/bin/mono",
+        "/Applications/Unity/Hub/Editor/6000.0.67f1/Unity.app/Contents/MonoBleedingEdge/lib/mono/msbuild/Current/bin/Roslyn/csc.exe",
+        "@QA/ReleaseFinalization20261018/Audio.compile.rsp"
+      ],
+      "exit_code": 0,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "kind": "QA C#6 body",
+      "command": [
+        "/Applications/Unity/Hub/Editor/6000.0.67f1/Unity.app/Contents/MonoBleedingEdge/bin/mcs",
+        "@QA/ReleaseFinalization20261018/ProbeAudioPersistence.compile.rsp"
+      ],
+      "exit_code": 0,
+      "errors": [],
+      "warnings": []
+    }
+  ]
+}

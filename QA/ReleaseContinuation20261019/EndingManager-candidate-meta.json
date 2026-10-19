@@ -1,0 +1,18 @@
+{
+  "source": "Assets/GearCraft/Scripts/Ending/EndingManager.cs",
+  "baseline_sha256": "6bc06212330a5f612521ded5d8c8cd4e1d37aefe61d896127fa23fa9ae2ad63b",
+  "candidate_sha256": "17d073827d7bd2f4c3f04ad350ce07a96633d92a2bbeb05b7ccd6a96a2c9b854",
+  "production_modified": false,
+  "runtime_tested": false,
+  "purpose": "Prevent surviving scene-owner tweens; historical warning ownership not proven",
+  "static_compile": {
+    "compiler": "Unity 6000.0.67f1 Mono Roslyn csc",
+    "errors": 0,
+    "warnings": 7,
+    "warning_codes": [
+      "CS0649"
+    ],
+    "references": "EndingManager.candidate.rsp",
+    "runtime_executed": false
+  }
+}

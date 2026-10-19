@@ -1,0 +1,45 @@
+InventoryUI 攻撃速度の最小修正案 / 2026-10-18
+制作未編集、現Playへ影響なし。
+
+対象: Assets/GearCraft/Scripts/UI/InventoryUI.cs BuildWeaponStatsText (現在138行付近)。
+現在はraw cooldownと逆数を表示するため、遠距離の量子化されたnative受付性能と一致しない。
+
+最小patch（既存attackCooldown算出直後の2行のみ追加）:
+    float attackCooldown = status != null ? weapon.coolTime * status.attackSpeedMult : weapon.coolTime;
+    if (weapon.weaponType == WeaponType.Ranged)
+        attackCooldown = (float)PlayerAttackCadence.GetAutomaticInterval(attackCooldown);
+    float attackPerSecond = attackCooldown > 0f ? 1f / attackCooldown : 0f;
+
+近接の計算と表示、UpgradeEffectTextFormatterの部品倍率表示、素材やパーツの説明は変えない。
+パーツの倍率と実効発射速度は別の情報で、ここではインベントリの実効性能だけを本編と同じAPIへ揃える。
+
+表示期待値（現在の書式0.##を維持）:
+武器 / 初期(STRACC0,なし) / 終盤(fitted+module20) / 終盤BOOST
+SteamCannon: 間隔1秒・1/秒 / 0.15秒・6.67/秒 / 0.08秒・12/秒
+RailCraft: 間隔2秒・0.5/秒 / 0.28秒・3.53/秒 / 0.15秒・6.67/秒
+SteamGatling: 間隔0.03秒・30/秒 / 0.02秒・60/秒 / 0.02秒・60/秒
+SteamThrower: 間隔0.08秒・12/秒 / 0.02秒・60/秒 / 0.02秒・60/秒
+上記間隔は2桁丸め。例えば実1/60秒は0.02秒と表示されるが、逆数計算自体は丸め前の値を使う。
+Twinの2発は1受付から生まれる弾数なので攻撃速度を2倍表示しない。寿命/命中回数やThrowerの再ヒットを含むDPS表示でもない。
+near-miss境界: raw0.1→0.1秒・10/秒、raw0.2→0.2秒・5/秒。
+近接: 任意raw0.2秒なら従来通り0.2秒・5/秒（入力は1click1攻撃である点も維持）。
+
+最小検証:
+Title内で非active InventoryUI/Statusを作りBuildWeaponStatsTextを反射呼出し。
+上記12構成＋近接1例の文字列を確認する。本編のnative48ケースで上記tickに従う実弾生成数は既にPASS。
+
+チュートリアルの速射判定: 別件として要相談
+CraftTutorialController.cs:225 と616は status.attackSpeedMult < baselineAttackSpeed - .001 だけをfasterと判定する。
+同644-647のIsNewWeaponImprovementがこのboolと新種パーツ増加を使って成功判定し、639付近で「次の攻撃までの待ち時間が短くなりました」と返す。
+baselineは318付近でraw倍率を保存。実際の射撃周期を比較していない。
+例1: SteamGatling終盤倍率.1397978→SpeedGear .9追加で.1258180。rawCTは下がるが両方1/60秒のまま。
+例2: SteamGatling初期 .03秒→SpeedGear .9で.027秒。両方ceilで2/60秒なので、60回上限未満でも速度は増えない。
+どちらもdamageUp=false・新種SpeedGear・独力課題中なら現コードは成功し、効果のない待ち時間短縮を説明してしまう。
+これは今回の新回帰ではなく、旧60fpsの量子化/上限でも起きる既存問題。初回の近接装備で進める通常チュートリアルには当たらず、未習得のまま遠距離で開始・途中装備変更・中断からの再開等で当たり得る。
+
+この問題まで修正するなら最小方針:
+・共通HasFasterAttack等の判定を追加し、遠距離だけ現在武器coolTime×旧/新倍率をGetAutomaticIntervalで比較。近接のraw倍率比較は維持。
+・225と616の両経路で同じ判定を使う（実操作と復帰時の自動再判定の不一致を避ける）。
+・速度パーツが無効だった場合のフィードバックで、上限/同じ周期だったことと威力パーツ等の別手段を伝える。
+・被試験パーツDamage+2/SpeedGearの配布・在庫・購入素材設計を広げる必要があるかを先に確認する。
+今回のInventory最小patchには含めない。rootへ範囲確認用に報告済み。

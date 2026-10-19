@@ -1,0 +1,37 @@
+{
+  "started_utc": "2026-10-19T00:00:18.260184+00:00",
+  "result": "PASS_NORMAL_EXIT",
+  "player_pid": 33457,
+  "normal_exit_confirmed": true,
+  "forced_cleanup": false,
+  "process_may_still_be_running": false,
+  "restoration_pending": false,
+  "player_domain_restoration": "verified_full_type_value_existence",
+  "signals": [],
+  "scope": "One graphics threading comparison; not UI/audio restart validation",
+  "sample_exit_code": 0,
+  "normal_quit_reply": {
+    "accepted": true,
+    "alreadyTerminated": false,
+    "pid": 33457,
+    "reason": "Normal termination request sent; caller must wait for owned process exit"
+  },
+  "player_exit_code": 0,
+  "removed_added_keys": [
+    "GearCraft.Gallery.Progress.v1"
+  ],
+  "application_support_changes": {
+    "directory_existence_changed": false,
+    "added": [],
+    "removed": [],
+    "changed": []
+  },
+  "graphics_threading_modes": [
+    "kGfxThreadingModeDirect"
+  ],
+  "force_gfx_direct_confirmed": true,
+  "console_exception_count": 0,
+  "elapsed_seconds": 20.543,
+  "within_60_seconds": true,
+  "finished_utc": "2026-10-19T00:00:38.802420+00:00"
+}

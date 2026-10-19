@@ -1,0 +1,37 @@
+Standalone smoke run1: 読み取りによる停止状態の切り分け（2026-10-18）
+
+結論
+現時点では製品コードの不具合、GPU停止、終了処理固有の不具合のいずれも確定できない。Unityのmainと描画workerが同じ採取期間中ずっとsemaphoreを待っていた事実はあるが、待機対象・相互依存先はシンボル不足で特定できない。別途Editorにも長いframe停滞が観測されており、同一環境・Unity/描画経路・アプリ起動方法も切り分け対象となる。EditorとPlayerが同じ原因であることは未確認。
+
+実測資料
+standalone-smoke-run1/process-sample.txt、player.log、player-stdio.log、progress.jsonl、result.json、normal-quit-helper.stdout.txtを参照。今回この監査では起動・終了要求・OS設定変更・PlayerPrefs変更は実行していない。
+
+確認できたこと
+・実PlayerはUnity 6000.0.67f1、Apple M4、ARM64。ログにkGfxThreadingModeThreaded。Mono path/MonoManager ReloadAssemblyがあり、sampleにもlibmonobdwgc-2.0.dylibのFinalizerスタックがある。実行中のバックエンドはMonoとして扱う。BuildReport側のIL2CPP表記を実体の根拠にしない。
+・20:33:24 JSTに起動し、20:33:44に正常終了を要求。accepted=trueだが15秒以内に退出しなかった。20:50:57のsampleにもPID 30457が存在する。17分後も生存していたが、終了要求を受理して終了処理へ入ったかは未記録。
+・全52スレッド枠（固有IDは51）を確認。mainはAppKitのtimer callback→UnityPlayer内部→dispatch_semaphore_wait→semaphore_wait_trapで2097/2097 samples。UnityGfxDeviceWorkerもUnityPlayer内部→同semaphore待機で2097/2097 samples。
+・描画workerを含むcall graphに、MTLCommandBuffer waitUntilCompleted / waitUntilScheduled、CAMetalLayer nextDrawable、AGX / IOGPU / IOAccelの関数フレームはない。Metal関連ライブラリがロードされているだけではGPU待ちの証拠にならない。非公開Unity関数内にGPU完了通知への依存が隠れている可能性は残るため、GPU待ちを否定したわけでもない。
+・Playerログは初期化、RenderGraph disabledまでで、収録範囲に例外・クラッシュ・GPUエラーなし。ログが静かなだけではTitleの描画やframe更新が成功した証拠にならない。
+・Assets/GearCraft/Scripts検索ではApplication.wantsToQuitによる終了取消は見つからない。OnApplicationQuitはAudioの保留保存のみ。sampleにPrefs保存・ファイルIOの詰まりを示すフレームはないため、今回の音量保存変更を原因とする根拠はない。
+・helper準備開始11:06:08 UTC→実Player起動11:33:24 UTCの約27分は起動前の待ち時間であり、Playerの正常終了待ち15秒とは別の問題として扱う。
+
+一次資料との対応
+Apple NSRunningApplication.terminateのtrueは「要求送信成功」で、対象が退出する前に戻る。isTerminated等で終了確認が必要。本試験のaccepted=trueは正常終了成功を意味しない。mainがUnity内待機中にあるため、終了イベント未処理という可能性はあるが、これは観測からの推論。
+https://developer.apple.com/documentation/appkit/nsrunningapplication/terminate()
+
+Apple MTLCommandBuffer.waitUntilCompletedはGPUコマンドとcompletion handlersの完了まで現在スレッドを止める。今回その明示フレームはない。semaphore_waitだけからGPU処理停止とは言えない。
+https://developer.apple.com/documentation/metal/mtlcommandbuffer/waituntilcompleted()
+
+Unity 6000の公式Player引数に-force-gfx-direct（単一スレッド描画）と-timestampsがある。同資料はmacOS .app/Contents/MacOSの直接実行も例示しているため、subprocessによる現在の起動方法そのものを非対応とは扱わない。
+https://docs.unity3d.com/6000.0/Documentation/Manual/PlayerCommandLineArguments.html
+
+Apple NSWorkspace.OpenConfigurationには起動引数、アクティブ化、新規instanceなどの指定がある。LaunchServices経路での比較に使い、返却されたNSRunningApplicationのPIDと実行ファイルを確認する。
+https://developer.apple.com/documentation/appkit/nsworkspace/openconfiguration
+
+再現試験の最小案（未実行）
+0. rootの現PID cleanup・完全退出確認・退避Prefs復元を先に完了。次回は新規run directoryとPlayer domain全体のfresh退避を取得し、二重起動を避ける。現在のEditor/Playerの停滞条件と時刻、アプリhashを保存。未保存Editorを勝手に終了しない。
+1. 同一app・同一1280x720・同一subprocess起動のまま、-force-gfx-directだけを追加する1試行。新ログのGfxThreadingModeで適用を確認し、20秒観測→同じ正常終了要求→15秒退出確認を実施する。前後で短いsampleを採り、停止が起動直後からか、終了要求後からかを区別する。改善してもUnityの多スレッド描画経路への依存を示すだけで、GPU故障や原因確定とはしない。-timestampsを使う場合は両比較条件で揃える。
+2. 1で未解決なら描画設定を元に戻し、NSWorkspace/LaunchServicesから同じapp・引数で起動する1試行。既存instanceへの接続を防ぎ、返された新規PIDとexeを照合する。これで起動経路・foreground状態への依存を確認する。プロセス生存/例外なしだけを実UI合格にしない。入力・画面確認は許可と観測手段が整った後の別検証。
+3. 1・2とも再現する場合のみ、Editorをユーザーの作業を保護して正常終了した条件で同一基準試験を1回行い、同時稼働/環境要因を分ける。OS権限変更や描画設定の恒久変更は不要。必要ならその後にDevelopment buildのUnity Profilerでmain/renderの待機元を調べる。
+
+全試行で所有PIDだけを対象とし、正常終了が確認できない場合は自動でPrefsを書き戻さず、PID・取得ログ・復元待ちを残してrootに戻す。本資料の試験案は未実行であり、今回のrun1をUI・音量再起動・正式配布の合格証拠には使わない。

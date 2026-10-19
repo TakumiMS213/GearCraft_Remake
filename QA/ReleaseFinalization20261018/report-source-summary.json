@@ -1,0 +1,559 @@
+{
+  "observed_utc": "2026-10-18T09:09:09.452058+00:00",
+  "scope": "7 initial native-input trials; no later retries included",
+  "cadence_first_line": "checks=205 failures=0",
+  "native48": [
+    {
+      "weapon": "SteamCannon",
+      "configuration": "initial",
+      "patterns": [
+        "30",
+        "60",
+        "120",
+        "jitter"
+      ],
+      "all_pass": true,
+      "event_counts": [
+        "11"
+      ],
+      "object_counts": [
+        "11"
+      ],
+      "damage_min": [
+        "57"
+      ],
+      "damage_max": [
+        "57"
+      ]
+    },
+    {
+      "weapon": "SteamCannon",
+      "configuration": "final",
+      "patterns": [
+        "30",
+        "60",
+        "120",
+        "jitter"
+      ],
+      "all_pass": true,
+      "event_counts": [
+        "67"
+      ],
+      "object_counts": [
+        "134"
+      ],
+      "damage_min": [
+        "102.6"
+      ],
+      "damage_max": [
+        "102.6"
+      ]
+    },
+    {
+      "weapon": "SteamCannon",
+      "configuration": "boost_configured",
+      "patterns": [
+        "30",
+        "60",
+        "120",
+        "jitter"
+      ],
+      "all_pass": true,
+      "event_counts": [
+        "121"
+      ],
+      "object_counts": [
+        "242"
+      ],
+      "damage_min": [
+        "102.6"
+      ],
+      "damage_max": [
+        "102.6"
+      ]
+    },
+    {
+      "weapon": "RailCraft",
+      "configuration": "initial",
+      "patterns": [
+        "30",
+        "60",
+        "120",
+        "jitter"
+      ],
+      "all_pass": true,
+      "event_counts": [
+        "6"
+      ],
+      "object_counts": [
+        "6"
+      ],
+      "damage_min": [
+        "300"
+      ],
+      "damage_max": [
+        "300"
+      ]
+    },
+    {
+      "weapon": "RailCraft",
+      "configuration": "final",
+      "patterns": [
+        "30",
+        "60",
+        "120",
+        "jitter"
+      ],
+      "all_pass": true,
+      "event_counts": [
+        "36"
+      ],
+      "object_counts": [
+        "72"
+      ],
+      "damage_min": [
+        "532"
+      ],
+      "damage_max": [
+        "532"
+      ]
+    },
+    {
+      "weapon": "RailCraft",
+      "configuration": "boost_configured",
+      "patterns": [
+        "30",
+        "60",
+        "120",
+        "jitter"
+      ],
+      "all_pass": true,
+      "event_counts": [
+        "67"
+      ],
+      "object_counts": [
+        "134"
+      ],
+      "damage_min": [
+        "532"
+      ],
+      "damage_max": [
+        "532"
+      ]
+    },
+    {
+      "weapon": "SteamGatling",
+      "configuration": "initial",
+      "patterns": [
+        "30",
+        "60",
+        "120",
+        "jitter"
+      ],
+      "all_pass": true,
+      "event_counts": [
+        "301"
+      ],
+      "object_counts": [
+        "301"
+      ],
+      "damage_min": [
+        "10"
+      ],
+      "damage_max": [
+        "10"
+      ]
+    },
+    {
+      "weapon": "SteamGatling",
+      "configuration": "final",
+      "patterns": [
+        "30",
+        "60",
+        "120",
+        "jitter"
+      ],
+      "all_pass": true,
+      "event_counts": [
+        "601"
+      ],
+      "object_counts": [
+        "1202"
+      ],
+      "damage_min": [
+        "31.6"
+      ],
+      "damage_max": [
+        "31.6"
+      ]
+    },
+    {
+      "weapon": "SteamGatling",
+      "configuration": "boost_configured",
+      "patterns": [
+        "30",
+        "60",
+        "120",
+        "jitter"
+      ],
+      "all_pass": true,
+      "event_counts": [
+        "601"
+      ],
+      "object_counts": [
+        "1202"
+      ],
+      "damage_min": [
+        "31.6"
+      ],
+      "damage_max": [
+        "31.6"
+      ]
+    },
+    {
+      "weapon": "SteamThrower",
+      "configuration": "initial",
+      "patterns": [
+        "30",
+        "60",
+        "120",
+        "jitter"
+      ],
+      "all_pass": true,
+      "event_counts": [
+        "121"
+      ],
+      "object_counts": [
+        "121"
+      ],
+      "damage_min": [
+        "0.3"
+      ],
+      "damage_max": [
+        "0.3"
+      ]
+    },
+    {
+      "weapon": "SteamThrower",
+      "configuration": "final",
+      "patterns": [
+        "30",
+        "60",
+        "120",
+        "jitter"
+      ],
+      "all_pass": true,
+      "event_counts": [
+        "601"
+      ],
+      "object_counts": [
+        "1202"
+      ],
+      "damage_min": [
+        "4.564"
+      ],
+      "damage_max": [
+        "4.564"
+      ]
+    },
+    {
+      "weapon": "SteamThrower",
+      "configuration": "boost_configured",
+      "patterns": [
+        "30",
+        "60",
+        "120",
+        "jitter"
+      ],
+      "all_pass": true,
+      "event_counts": [
+        "601"
+      ],
+      "object_counts": [
+        "1202"
+      ],
+      "damage_min": [
+        "4.564"
+      ],
+      "damage_max": [
+        "4.564"
+      ]
+    }
+  ],
+  "boss_trials": [
+    {
+      "label": "gate_native_input_EK9_GearCraft_seed77_fps60",
+      "weapon": "GearCraft",
+      "boss": "EK-9",
+      "seed": "77",
+      "fps": "60",
+      "valid_combat_outcome": true,
+      "boss_result": "player_dead",
+      "route_result": "player_dead",
+      "boss_seconds": "68.71667",
+      "boss_initial_hp": "147600",
+      "boss_remaining_hp": "64900",
+      "boss_start_player_hp": "100",
+      "boss_end_player_hp": "-8",
+      "boss_end_gate_hp": "100",
+      "boss_attack_events": "778",
+      "route_end_player_hp": "-8",
+      "route_end_gate_hp": "100",
+      "route_game_seconds": "83.283",
+      "route_wall_seconds": "10.759",
+      "initial_str": 20,
+      "initial_acc": 20,
+      "initial_module": 20,
+      "initial_flat": 12.0,
+      "initial_attack_speed": 0.1380719095468521,
+      "boost_uses": 2,
+      "input_rows": 4996,
+      "unique_input_frames": 4996,
+      "attack_events": 803,
+      "expected_projectiles": 0,
+      "acceptance_totals_match": true,
+      "no_duplicate_input_frames": true,
+      "route_hp_balance_matches": true,
+      "route_gate_balance_matches": true
+    },
+    {
+      "label": "gate_native_input_BB413_GearCraft_seed77_fps60",
+      "weapon": "GearCraft",
+      "boss": "BB-413",
+      "seed": "77",
+      "fps": "60",
+      "valid_combat_outcome": true,
+      "boss_result": "player_dead",
+      "route_result": "player_dead",
+      "boss_seconds": "10.4666748",
+      "boss_initial_hp": "13000",
+      "boss_remaining_hp": "8886",
+      "boss_start_player_hp": "100",
+      "boss_end_player_hp": "-25",
+      "boss_end_gate_hp": "100",
+      "boss_attack_events": "54",
+      "route_end_player_hp": "-25",
+      "route_end_gate_hp": "100",
+      "route_game_seconds": "104.417",
+      "route_wall_seconds": "13.729",
+      "initial_str": 10,
+      "initial_acc": 10,
+      "initial_module": 0,
+      "initial_flat": 9.0,
+      "initial_attack_speed": 0.585224986076355,
+      "boost_uses": 2,
+      "input_rows": 6264,
+      "unique_input_frames": 6264,
+      "attack_events": 95,
+      "expected_projectiles": 0,
+      "acceptance_totals_match": true,
+      "no_duplicate_input_frames": true,
+      "route_hp_balance_matches": true,
+      "route_gate_balance_matches": true
+    },
+    {
+      "label": "gate_native_input_BB413_SteamThrower_seed77_fps60",
+      "weapon": "SteamThrower",
+      "boss": "BB-413",
+      "seed": "77",
+      "fps": "60",
+      "valid_combat_outcome": true,
+      "boss_result": "player_dead",
+      "route_result": "player_dead",
+      "boss_seconds": "63.2333374",
+      "boss_initial_hp": "13000",
+      "boss_remaining_hp": "8296.358",
+      "boss_start_player_hp": "97",
+      "boss_end_player_hp": "-23",
+      "boss_end_gate_hp": "100",
+      "boss_attack_events": "1366",
+      "route_end_player_hp": "-23",
+      "route_end_gate_hp": "100",
+      "route_game_seconds": "170.983",
+      "route_wall_seconds": "47.958",
+      "initial_str": 10,
+      "initial_acc": 10,
+      "initial_module": 0,
+      "initial_flat": 9.0,
+      "initial_attack_speed": 0.585224986076355,
+      "boost_uses": 2,
+      "input_rows": 10258,
+      "unique_input_frames": 10258,
+      "attack_events": 2393,
+      "expected_projectiles": 2393,
+      "acceptance_totals_match": true,
+      "no_duplicate_input_frames": true,
+      "route_hp_balance_matches": true,
+      "route_gate_balance_matches": true
+    },
+    {
+      "label": "gate_native_ranged_EK9_RailCraft_seed77_fps60",
+      "weapon": "RailCraft",
+      "boss": "EK-9",
+      "seed": "77",
+      "fps": "60",
+      "valid_combat_outcome": true,
+      "boss_result": "defeated",
+      "route_result": "ending_reached_3",
+      "boss_seconds": "45.3666534",
+      "boss_initial_hp": "147600",
+      "boss_remaining_hp": "-286",
+      "boss_start_player_hp": "100",
+      "boss_end_player_hp": "28",
+      "boss_end_gate_hp": "100",
+      "boss_attack_events": "161",
+      "route_end_player_hp": "48",
+      "route_end_gate_hp": "100",
+      "route_game_seconds": "83.917",
+      "route_wall_seconds": "9.713",
+      "initial_str": 20,
+      "initial_acc": 20,
+      "initial_module": 20,
+      "initial_flat": 12.0,
+      "initial_attack_speed": 0.13979780673980713,
+      "boost_uses": 0,
+      "input_rows": 5034,
+      "unique_input_frames": 5034,
+      "attack_events": 172,
+      "expected_projectiles": 344,
+      "acceptance_totals_match": true,
+      "no_duplicate_input_frames": true,
+      "route_hp_balance_matches": true,
+      "route_gate_balance_matches": true
+    },
+    {
+      "label": "gate_native_ranged_EK9_SteamGatling_seed77_fps60",
+      "weapon": "SteamGatling",
+      "boss": "EK-9",
+      "seed": "77",
+      "fps": "60",
+      "valid_combat_outcome": true,
+      "boss_result": "defeated",
+      "route_result": "ending_reached_3",
+      "boss_seconds": "44.9499969",
+      "boss_initial_hp": "147600",
+      "boss_remaining_hp": "-5.724972",
+      "boss_start_player_hp": "100",
+      "boss_end_player_hp": "64",
+      "boss_end_gate_hp": "100",
+      "boss_attack_events": "2697",
+      "route_end_player_hp": "84",
+      "route_end_gate_hp": "100",
+      "route_game_seconds": "84.200",
+      "route_wall_seconds": "17.221",
+      "initial_str": 20,
+      "initial_acc": 20,
+      "initial_module": 20,
+      "initial_flat": 12.0,
+      "initial_attack_speed": 0.17258988320827484,
+      "boost_uses": 2,
+      "input_rows": 5051,
+      "unique_input_frames": 5051,
+      "attack_events": 2888,
+      "expected_projectiles": 5776,
+      "acceptance_totals_match": true,
+      "no_duplicate_input_frames": true,
+      "route_hp_balance_matches": true,
+      "route_gate_balance_matches": true
+    },
+    {
+      "label": "gate_native_ranged_EK9_SteamCannon_seed77_fps60",
+      "weapon": "SteamCannon",
+      "boss": "EK-9",
+      "seed": "77",
+      "fps": "60",
+      "valid_combat_outcome": true,
+      "boss_result": "defeated",
+      "route_result": "ending_reached_3",
+      "boss_seconds": "59.86667",
+      "boss_initial_hp": "147600",
+      "boss_remaining_hp": "-64.1621552",
+      "boss_start_player_hp": "100",
+      "boss_end_player_hp": "10",
+      "boss_end_gate_hp": "100",
+      "boss_attack_events": "400",
+      "route_end_player_hp": "30",
+      "route_end_gate_hp": "100",
+      "route_game_seconds": "97.550",
+      "route_wall_seconds": "12.417",
+      "initial_str": 20,
+      "initial_acc": 20,
+      "initial_module": 20,
+      "initial_flat": 12.0,
+      "initial_attack_speed": 0.13979780673980713,
+      "boost_uses": 0,
+      "input_rows": 5852,
+      "unique_input_frames": 5852,
+      "attack_events": 418,
+      "expected_projectiles": 836,
+      "acceptance_totals_match": true,
+      "no_duplicate_input_frames": true,
+      "route_hp_balance_matches": true,
+      "route_gate_balance_matches": true
+    },
+    {
+      "label": "gate_native_ranged_EK9_SteamThrower_seed77_fps60",
+      "weapon": "SteamThrower",
+      "boss": "EK-9",
+      "seed": "77",
+      "fps": "60",
+      "valid_combat_outcome": false,
+      "boss_result": "wall_timeout_300s",
+      "route_result": "wall_timeout_300s",
+      "boss_seconds": "57.93335",
+      "boss_initial_hp": "147600",
+      "boss_remaining_hp": "6080.447",
+      "boss_start_player_hp": "97",
+      "boss_end_player_hp": "97",
+      "boss_end_gate_hp": "100",
+      "boss_attack_events": "3476",
+      "route_end_player_hp": "97",
+      "route_end_gate_hp": "100",
+      "route_game_seconds": "73.300",
+      "route_wall_seconds": "300.020",
+      "initial_str": 20,
+      "initial_acc": 20,
+      "initial_module": 20,
+      "initial_flat": 16.0,
+      "initial_attack_speed": 0.18274220824241638,
+      "boost_uses": 0,
+      "input_rows": 4397,
+      "unique_input_frames": 4397,
+      "attack_events": 3597,
+      "expected_projectiles": 7194,
+      "acceptance_totals_match": true,
+      "no_duplicate_input_frames": true,
+      "route_hp_balance_matches": true,
+      "route_gate_balance_matches": true
+    }
+  ],
+  "valid_combat_trials": 6,
+  "invalid_trials": 1,
+  "sources_sha256": {
+    "cadence-tests.txt": "47d354bac45ef9115d8a0ded225121f988550393e08caa161d27236aba8cf57b",
+    "native-attack-cases.csv": "9dfb97040bd66b3dd5bab67632c0f8836b2dc5be003f0c610795a2911d1a8821",
+    "native-attack-result.txt": "2f7c181c0919813daa6247a1e320607ab9cba26391a62d25fe1529903fe9df11",
+    "audio-persistence-result.txt": "fa379d29832dd65dfea239d1bd09248c9870281d6dae928fb6f900af39745f73",
+    "cadence-ui-result.txt": "72d4fb07f35d08e091cea2c657855e191849e650039855757ce220198562a66c",
+    "steam-velocity-isolated-result.txt": "cd44259015ca881809b44af507286ea9990aeba05534470ae27a3a107cb08484",
+    "boss-results-summary.csv": "0ba1d981ffab20cf945b6d43da2349ffb071e72bf219a3da9df0270bd5bac56e"
+  },
+  "later_invalid_retry": {
+    "label": "gate_native_ranged_EK9_SteamThrower_velocityfixed_seed77_fps60",
+    "valid_combat_outcome": false,
+    "result": "batch_stopped_batch_wall_timeout",
+    "boss_seconds": "1.76666641",
+    "boss_remaining_hp": "143892.625",
+    "boss_attack_events": "106",
+    "route_game_seconds": "16.500",
+    "route_wall_seconds": "934.814",
+    "route_end_hp": "97",
+    "route_end_gate": "100",
+    "attack_events": "210",
+    "expected_projectiles": "420",
+    "input_rows": 989,
+    "unique_input_frames": 989,
+    "acceptance_totals_match": true,
+    "hp_balance_matches": true
+  }
+}

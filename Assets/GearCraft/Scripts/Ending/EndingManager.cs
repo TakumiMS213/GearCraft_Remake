@@ -71,6 +71,7 @@ public class EndingManager : MonoBehaviour
             await fadePanel
                 .DOFade(0f, fadeDuration)
                 .SetEase(Ease.Linear)
+                .SetLink(gameObject, LinkBehaviour.KillOnDestroy)
                 .AsyncWaitForCompletion();
         }
     }
@@ -127,6 +128,7 @@ public class EndingManager : MonoBehaviour
             await targetImage
                 .DOFade(1f, fadeDuration)
                 .SetEase(Ease.Linear)
+                .SetLink(gameObject, LinkBehaviour.KillOnDestroy)
                 .AsyncWaitForCompletion();
         }
         else
@@ -140,12 +142,14 @@ public class EndingManager : MonoBehaviour
     /// </summary>
     public async UniTask FadeOutAndLoadScene(string sceneName)
     {
+        var destroyToken = this.GetCancellationTokenOnDestroy();
         // エンディング画像フェードアウト
         SetGameObjectAlpha(endingBad, 0f);
         SetGameObjectAlpha(endingNormal, 0f);
         SetGameObjectAlpha(endingTrue, 0f);
 
-        await UniTask.Delay((int)(fadeDuration * 1000));
+        if (await UniTask.Delay((int)(fadeDuration * 1000), cancellationToken: destroyToken)
+            .SuppressCancellationThrow()) return;
 
         // 画面全体フェードアウト
         if (fadePanel != null)
@@ -153,9 +157,12 @@ public class EndingManager : MonoBehaviour
             await fadePanel
                 .DOFade(1f, fadeDuration)
                 .SetEase(Ease.Linear)
+                .SetLink(gameObject, LinkBehaviour.KillOnDestroy)
                 .AsyncWaitForCompletion();
         }
 
+        // Kill also completes AsyncWaitForCompletion; a destroyed owner must not load a scene.
+        if (destroyToken.IsCancellationRequested) return;
         SceneTransitionManager.LoadSceneWithTransition(sceneName);
     }
 

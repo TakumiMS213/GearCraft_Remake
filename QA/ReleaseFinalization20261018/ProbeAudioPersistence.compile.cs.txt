@@ -1,0 +1,113 @@
+using System; using System.Linq; using System.Collections; using System.Collections.Generic; using UnityEngine; using UnityEngine.SceneManagement; using UnityEngine.UI; using UnityEditor;
+public static class QAProbeCompile { public static object Execute() {
+// C#6 execute_code body. Run only after this session's two FLOAT prefs were backed up.
+// Uses native Title sliders; no scene asset, Mixer asset, or old QA backup is edited.
+const string folder="QA/ReleaseFinalization20261018/";
+const string label="audio-persistence";
+string[] keys={"GearCraft.Audio.BGM.dB.v1","GearCraft.Audio.SE.dB.v1"};
+if(!Application.isPlaying||UnityEngine.SceneManagement.SceneManager.GetActiveScene().name!="Title")throw new System.Exception("Requires Title Play");
+if(!System.IO.File.Exists(folder+"audio-playerprefs-before.txt"))throw new System.Exception("Fresh FLOAT backup required: key|exists|round-trip float");
+if(System.IO.File.Exists(folder+label+"-result.txt"))throw new System.Exception("Result exists; archive explicitly before repeating");
+if(System.IO.File.Exists(folder+label+"-progress.txt")&&System.IO.File.ReadAllText(folder+label+"-progress.txt").StartsWith("RUNNING"))throw new System.Exception("Audio probe is already running");
+var invariant=System.Globalization.CultureInfo.InvariantCulture;
+var backup=System.IO.File.ReadAllLines(folder+"audio-playerprefs-before.txt").Where(x=>!string.IsNullOrWhiteSpace(x)).Select(x=>x.Split('|')).ToArray();
+if(backup.Length!=2||backup.Any(x=>x.Length!=3)||!backup.Select(x=>x[0]).OrderBy(x=>x).SequenceEqual(keys.OrderBy(x=>x)))throw new System.Exception("Backup must contain exactly the two audio float keys");
+foreach(var row in backup){bool.Parse(row[1]);if(bool.Parse(row[1]))float.Parse(row[2],invariant);}
+var audio=UnityEngine.Object.FindFirstObjectByType<Audio>();
+if(audio==null||audio.audioMixer==null||audio.BGMSlider==null||audio.SESlider==null)throw new System.Exception("Active native Title Audio/sliders required");
+var mixer=audio.audioMixer;
+float bgmBefore,seBefore;
+if(!mixer.GetFloat("BGM",out bgmBefore)||!mixer.GetFloat("SE",out seBefore))throw new System.Exception("BGM/SE parameters unavailable");
+var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
+var start=typeof(Audio).GetMethod("Start",flags);
+var pending=typeof(Audio).GetField("hasPendingChanges",flags);
+var flush=typeof(Audio).GetMethod("SavePendingChanges",flags);
+var appPause=typeof(Audio).GetMethod("OnApplicationPause",flags);
+var appQuit=typeof(Audio).GetMethod("OnApplicationQuit",flags);
+if(start==null||pending==null||flush==null||appPause==null||appQuit==null)throw new System.Exception("Compile updated Audio.cs before this probe");
+if((bool)pending.GetValue(audio))throw new System.Exception("Wait for existing user changes to save before probing");
+float scaleBefore=Time.timeScale;
+float bgmSliderBefore=audio.BGMSlider.value,seSliderBefore=audio.SESlider.value;
+int sceneHandle=UnityEngine.SceneManagement.SceneManager.GetActiveScene().handle;
+var evidence=new System.Text.StringBuilder();
+System.Action<string> note=(s)=>evidence.AppendLine(System.DateTime.UtcNow.ToString("O")+" "+s);
+System.Action<bool,string> check=(ok,s)=>{if(!ok)throw new System.Exception(s);};
+System.Action<float,float> expectMixer=(bgm,se)=>{float b,s;check(mixer.GetFloat("BGM",out b)&&mixer.GetFloat("SE",out s)&&Mathf.Abs(b-bgm)<0.01f&&Mathf.Abs(s-se)<0.01f,"Unexpected Mixer values");};
+GameObject freshObject=null;Audio fresh=null;
+UnityEditor.EditorApplication.CallbackFunction tick=null;
+bool complete=false;
+System.Action<string> finish=(outcome)=>{
+ if(complete)return;complete=true;if(tick!=null)UnityEditor.EditorApplication.update-=tick;
+ try{
+  if(audio!=null)flush.Invoke(audio,null);
+  if(fresh!=null)flush.Invoke(fresh,null);
+  if(freshObject!=null)UnityEngine.Object.DestroyImmediate(freshObject);
+  foreach(var row in backup){if(bool.Parse(row[1]))PlayerPrefs.SetFloat(row[0],float.Parse(row[2],invariant));else PlayerPrefs.DeleteKey(row[0]);}
+  PlayerPrefs.Save();
+  foreach(var row in backup){bool exists=bool.Parse(row[1]);check(PlayerPrefs.HasKey(row[0])==exists,"Audio pref existence restoration failed");if(exists)check(PlayerPrefs.GetFloat(row[0]).Equals(float.Parse(row[2],invariant)),"Audio float restoration failed");}
+  check(mixer.SetFloat("BGM",bgmBefore)&&mixer.SetFloat("SE",seBefore),"Mixer effective-value restoration failed");
+  expectMixer(bgmBefore,seBefore);
+  if(audio!=null){audio.enabled=true;audio.BGMSlider.SetValueWithoutNotify(bgmSliderBefore);audio.SESlider.SetValueWithoutNotify(seSliderBefore);}
+  note("Local two-key/Mixer/slider restoration verified. Root still performs fresh session/editor restoration.");
+ }catch(System.Exception ex){outcome="FAIL_RESTORATION";note(ex.ToString());}
+ Time.timeScale=scaleBefore;
+ note(outcome);
+ System.IO.File.WriteAllText(folder+label+"-result.txt",outcome+"\n"+evidence.ToString());
+ System.IO.File.WriteAllText(folder+label+"-progress.txt",outcome+"\n");
+ UnityEditor.EditorApplication.isPlaying=false;
+};
+double wallStart=UnityEditor.EditorApplication.timeSinceStartup;
+System.IO.File.WriteAllText(folder+label+"-progress.txt","RUNNING\n");
+try{
+ Time.timeScale=0f;
+ PlayerPrefs.DeleteKey(keys[0]);PlayerPrefs.DeleteKey(keys[1]);
+ check(mixer.SetFloat("BGM",-20f)&&mixer.SetFloat("SE",-20f),"Cannot set default sentinels");
+ start.Invoke(audio,null);
+ check(!PlayerPrefs.HasKey(keys[0])&&!PlayerPrefs.HasKey(keys[1]),"Initial read created preferences");
+ check(audio.BGMSlider.value==-20f&&audio.SESlider.value==-20f,"Default slider sync failed");
+ expectMixer(-20f,-20f);note("No saved keys: Mixer defaults/slider -20 retained; no preference creation");
+ PlayerPrefs.SetFloat(keys[0],float.NaN);PlayerPrefs.SetFloat(keys[1],float.PositiveInfinity);
+ mixer.SetFloat("BGM",-19f);mixer.SetFloat("SE",-21f);start.Invoke(audio,null);expectMixer(-19f,-21f);
+ note("Invalid stored floats retained current Mixer values");
+ PlayerPrefs.DeleteKey(keys[0]);PlayerPrefs.DeleteKey(keys[1]);
+ audio.BGMSlider.value=-12f;audio.SESlider.value=-31f;
+ check(PlayerPrefs.GetFloat(keys[0],999f)==-12f&&PlayerPrefs.GetFloat(keys[1],999f)==-31f,"Native slider UnityEvents did not save float values");
+ expectMixer(-12f,-31f);check((bool)pending.GetValue(audio),"Changes were not deferred");
+ float changedAt=Time.unscaledTime;int phase=0;int createdFrame=-1;
+ tick=()=>{
+  try{
+   if(!Application.isPlaying){finish("ABORTED");return;}
+   check(UnityEditor.EditorApplication.timeSinceStartup-wallStart<20,"Audio probe wall timeout");
+   check(UnityEngine.SceneManagement.SceneManager.GetActiveScene().handle==sceneHandle,"Unexpected scene transition");
+   check(Time.timeScale==0f,"Probe expected paused gameplay");
+   if(phase==0){
+    if(Time.unscaledTime-changedAt<0.65f)return;
+    check(!(bool)pending.GetValue(audio),"Debounced save did not flush while timeScale=0");
+    note("Native slider changes flushed while timeScale0 after "+(Time.unscaledTime-changedAt)+" unscaled seconds");
+    mixer.SetFloat("BGM",-3f);mixer.SetFloat("SE",-5f);
+    freshObject=new GameObject("QA_AudioPersistence_FreshReader");fresh=freshObject.AddComponent<Audio>();fresh.audioMixer=mixer;
+    createdFrame=Time.frameCount;phase=1;return;
+   }
+   if(phase==1){
+    if(Time.frameCount<=createdFrame+1)return;
+    expectMixer(-12f,-31f);check(!(bool)pending.GetValue(fresh),"Fresh Start unexpectedly scheduled a save");
+    note("Fresh Audio native Start replaced Mixer sentinels from saved floats, with both sliders null");
+    fresh.SetBGM(-100f);fresh.SetSE(10f);expectMixer(-40f,0f);
+    check(PlayerPrefs.GetFloat(keys[0])==-40f&&PlayerPrefs.GetFloat(keys[1])==0f,"Finite inputs not clamped");
+    fresh.SetBGM(float.NaN);fresh.SetSE(float.NegativeInfinity);expectMixer(-40f,0f);
+    appPause.Invoke(fresh,new object[]{false});check((bool)pending.GetValue(fresh),"OnApplicationPause(false) unexpectedly consumed dirty state");
+    appPause.Invoke(fresh,new object[]{true});check(!(bool)pending.GetValue(fresh),"Pause(true) did not flush");
+    fresh.SetBGM(-8f);appQuit.Invoke(fresh,null);check(!(bool)pending.GetValue(fresh),"Application quit did not flush");
+    fresh.SetSE(-18f);fresh.enabled=false;check(!(bool)pending.GetValue(fresh),"OnDisable did not flush");
+    fresh.audioMixer=null;fresh.SetBGM(-6f);fresh.SetSE(-7f);start.Invoke(fresh,null);
+    check(PlayerPrefs.GetFloat(keys[0])==-8f&&PlayerPrefs.GetFloat(keys[1])==-18f,"Null Mixer changed preferences");
+    note("Clamp/NaN/null handling and pause/quit/disable immediate flush passed");
+    finish("PASS");
+   }
+  }catch(System.Exception ex){note(ex.ToString());finish("FAIL");}
+ };
+ UnityEditor.EditorApplication.update+=tick;
+}catch(System.Exception ex){note(ex.ToString());finish("FAIL");}
+return "Scheduled local audio persistence probe; inspect audio-persistence-progress.txt. This is not a standalone-player restart test.";
+
+} }

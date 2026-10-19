@@ -1,0 +1,7 @@
+{"utc": "2026-10-19T00:00:18.342252+00:00", "event": "player_started", "pid": 33457, "graphics": "force-gfx-direct"}
+{"utc": "2026-10-19T00:00:23.391146+00:00", "event": "sampling_at_five_seconds", "pid": 33457, "elapsed_seconds": 5.049}
+{"utc": "2026-10-19T00:00:26.587029+00:00", "event": "observing_player", "pid": 33457, "elapsed_seconds": 8.245}
+{"utc": "2026-10-19T00:00:28.369551+00:00", "event": "observing_player", "pid": 33457, "elapsed_seconds": 10.028}
+{"utc": "2026-10-19T00:00:33.376398+00:00", "event": "observing_player", "pid": 33457, "elapsed_seconds": 15.035}
+{"utc": "2026-10-19T00:00:38.357232+00:00", "event": "requesting_normal_termination", "pid": 33457}
+{"utc": "2026-10-19T00:00:38.802628+00:00", "event": "finished", "result": "PASS_NORMAL_EXIT", "pid": 33457, "normal_exit": true, "forced_cleanup": false, "restoration_pending": false, "elapsed_seconds": 20.543}

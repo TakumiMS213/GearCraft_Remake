@@ -1,0 +1,99 @@
+macOS配布Playerの読み取り確認・実機試験案（2026-10-18）
+
+追記（07:11 UTC）: rootの最新build-be4fbf1b09は完了。
+/private/tmp/GearCraftReleaseFinalization20261018/GearCraft.app が現在の実機試験候補。
+Editor.logにBuild succeeded（191.78 MB、18.9秒）、205ファイル/201,100,313 bytesを確認。
+最新DLLは420,864 bytes、SHA256 67e1855bb82c8353042efaad33151f4abd30c9ad2b7267a78410a0451016da35。
+音量保存キーとPlayerAttackCadenceを含み、codesign --verify --deep --strictも成功。
+Universal/adhoc/Team IDなし/Bundle ID等は下記旧appと同じ。macos-latest-build-readonly.jsonに記録。
+以下の「旧版」指摘は以前のVerified appに対する観測であり、最新appを古いと判断するものではない。
+
+実行範囲
+この担当はappを起動/終了していない。MCP操作、PlayerPrefs書換え、OS権限変更、署名変更、Bundle ID変更もしていない。
+Info.plist、Mach-O、署名、DLL、関連する保存domainの存在/件数、非promptのOS権限チェックのみ確認した。plistの実値は本資料に収録しない。
+
+確認した配布物
+対象: /private/tmp/GearCraftReleaseCheck20261018/Verified/GearCraft.app
+・Executable / CFBundleName: GearCraft_Remake
+・CFBundleIdentifier: com.DefaultCompany.2D-URP
+・CFBundleShortVersionString: 1.0、CFBundleVersion: 0
+・LSMinimumSystemVersion: 11.0
+・Mach-O: x86_64 + arm64 のUniversal。今回のホストはarm64。
+・MonoBleedingEdge / Managed/Assembly-CSharp.dllを含むMono Player。
+・codesign --verify --deep --strict は成功。Signature=adhoc、TeamIdentifier未設定。Developer ID署名を持つ正式配布物としての確認は未完了。
+・app拡張属性にcom.apple.provenanceあり、読取り時点でcom.apple.quarantineはなし。ダウンロード後のGatekeeper経路を通した試験ではない。
+・Product/CompanyはGearCraft_Remake / Takumi。Project設定は1920×1080、FullScreenWindow、runInBackground=true、resizableWindow=false、forceSingleInstance=false、Fullscreen切替許可。
+
+最初に必要なビルド更新
+検査時のapp Assembly-CSharp.dllは418,304 bytes、SHA256:
+  0e0eda9027087b38ee8cdc5a271040cbffc388bc8c5b2f30fbd4eb25a00a6050
+音量保存キーのUTF-16文字列とPlayerAttackCadence型名が含まれていなかった。
+同時点のLibrary DLLは421,376 bytes、SHA256:
+  c2e67138abfc92b6b567634a2efef4932fd67652899509dd20b3dbea47376661
+こちらは両方含まれていた。したがって既存Verified appは今回修正前で、最新非Development再ビルドが必要。再ビルドで署名/Info.plist/DLLを再確認する。
+
+セーブ保存先と保護
+Unity 6公式PlayerPrefs資料ではmacOS PlayerはBundleIdentifierのdomain、EditorはCompany/Productのdomainを使用する。実環境では旧命名も残っており、資料のパスを決め打ちせず次の実在を確認した。
+・~/Library/Preferences/com.DefaultCompany.2D-URP.plist: 存在、defaults exportは20キー、raw plistの辞書と一致。
+・~/Library/Preferences/unity.Takumi.GearCraft_Remake.plist: 存在、12キー、exportとraw辞書が一致。
+・~/Library/Preferences/com.Takumi.GearCraft_Remake.plist: ファイル未存在、exportは空辞書。
+  defaults exportは未存在domainにも成功/空辞書を返したため、exit0だけでは元の存在状態を判定できない。
+・Player側domainにはGearCraft以外の名前の既存キー、画面設定、Unity session情報もある。Editorの今回10キーだけの退避ではPlayer起動による全変更を保護できない。
+・~/Library/Application Support/Takumi/GearCraft_Remake は存在し、確認時点は空。
+・~/Library/Logs/Takumi/GearCraft_Remake/Player.log は存在。試験は別-logFileへ記録して既存ログの上書きを避ける。
+
+rootが起動前に行うfresh退避案（この担当は未実施）
+1. 実行中Editor Play/native callbackを終え、このsessionのEditor10キーを確定/退避する。Playerも重複起動しない。
+2. 上記のPlayer/Editor/互換候補3domainについて、ファイルの元の存在状態、rawコピー、SHA256、defaults exportの型付きplistを新QAへ保存する。既存backupは上書きしない。
+3. 中身はログへ表示しない。比較はキー集合・各値の型/値の一致をプログラム内で判定し、件数と一致真偽だけ出力する。
+4. Application Support側は元の存在状態とファイル一覧/ハッシュを記録する。今回は空なので試験が新たに作ったものだけ識別できる。既存の他ファイルを削除しない。
+5. 各Player終了後、書込み完了を待ち、変更後exportを比較用に退避する。全試験後は型付きdomainをdefaults import等の正規経路で復元し、試験で増えたキーが残らないよう辞書完全一致を確認する。
+6. 未存在だったdomainは元の不存在へ戻す。復元はrootが必要な承認を経て行う。単純なraw plist上書きだけで済ませず、設定キャッシュの再読値も照合する。
+7. Editorプロセスが持つPlayerPrefsキャッシュと競合しないよう、Editor用domainの最終復元はrootのUnity内API復元と順序を合わせる。全domainを一括deleteして戻す運用やcfprefsd killはしない。
+8. Bundle IDを変更する場合は新旧双方のdomainを別に扱う。会社/製品/Bundle変更は移行方針を確認してから行い、検証途中のappだけ書き換えない。
+
+OS入力/画面取得の現状
+・python3、swift、osascript、screencapture、open、codesign、lipo、defaults、xcrunが存在。cliclickはなし。
+・現在のPythonにQuartz/AppKit/Foundation/pyautoguiはない。ただし標準ctypesからApplicationServices/CoreGraphicsを読み込めることを確認した。
+・非promptの確認値（Python ctypesとSwiftで一致）:
+  AXIsProcessTrusted=false
+  CGPreflightPostEventAccess=false
+  CGPreflightScreenCaptureAccess=false
+・CGRequest系/AXのprompt optionは呼んでいない。許可変更はしていない。
+・したがって現時点では座標クリック/キー合成/画面取得の自動化を実行可能と断定しない。rootは既にuserへ必要許可を依頼中。
+・許可後はPython ctypesのCGEventCreateMouseEvent/CGEventCreateKeyboardEvent→CGEventPostToPid、またはSwiftのCoreGraphicsで実UIを操作できる候補。新パッケージ導入は不要。座標は実ウィンドウの表示から確定し、Unity内推測座標を転用しない。
+・osascriptのSystem Events入力も権限が必要な経路であり、許可がない場合の迂回策として使わない。
+・sandbox内のpsは拒否され、NSWorkspaceのrunningApplicationsも対象が見えなかった。これを「Unity/Playerが起動していない」証拠にしない。起動時に自分で得たPID/プロセスhandleを追跡する。
+
+入力権限を変更せずできる起動・正常終了案
+・起動自体は入力合成ではない。rootが最新appの絶対パスを指定して、Unity公式の実行形式で起動する案:
+  <app>/Contents/MacOS/GearCraft_Remake -screen-fullscreen 0 -screen-width 1280 -screen-height 720 -logFile <今回QAの絶対パス>/player-launch-1.log
+  Python subprocess等でこの子PIDを直接保持すれば、同じBundle IDの別プロセスを誤って停止しない。起動には通常のsandbox/実行承認が別途適用される。
+・正常終了の候補は自分で起動したPIDをNSRunningApplication(processIdentifier:)へ渡し、terminate()を要求する方法。入力イベント送信/画面録画APIを使わない。
+  Apple公式によればterminate()は正常終了要求であり、trueは要求送信成功だけを意味する。isTerminatedまたは所有プロセスの終了を確認する必要がある。sandboxed callerからはfalseになる制約も明記されているため、現sandbox内で使えるとは断定しない。
+・terminate()が拒否/対象取得不能の場合は、権限不足を記録し、ユーザーの通常Quit/ゲームEXITに委ねる。SIGKILL/forceTerminateや未確認のSIGTERMを正常終了の代用にしない。
+・open -a <絶対appパス> --args ... も候補だが、今回はforceSingleInstance=falseなので既存起動の有無を追跡する。-nによる意図しない二重起動を避ける。
+
+音量の実プロセス再起動試験
+1. fresh退避と最新app確認後に起動。実UIからBGM/SEをそれぞれ違う分かる値へ変更し、0.3秒より十分長く待つ。変更前後の画像とPlayerログを記録する。
+2. 正常終了を要求し、終了を確認。Player domainの2 floatキーが期待値になったことを読取りで確認する（他の実値は出力しない）。
+3. 同じ最新appを新PIDで再起動し、SETTINGを開いてslider位置/音量を確認する。PlayerPrefsに値があるだけではMixer復元成功の証拠にしない。
+4. 2回目も正常終了、Player/Editor/domain/関連ファイルをfresh backupから復元する。
+5. 入力/画面権限が未承認ならUI操作/スクリーンショット部分は未実施として残す。事前にdefaultsで値を入れるだけの試験は読み込み経路検査で、UIからの正常保存を代替しない。
+
+配布に関する未確定事項
+正式対象OSと製品名/Bundle IDが未確定。現在のadhoc署名整合性PASSは、Developer ID署名・notarization・Gatekeeper・他Macでの起動成功を意味しない。権限/識別子を勝手に変更しない。
+
+公式資料
+Unity 6 PlayerPrefs（macOS Player/Editor保存先）:
+https://docs.unity3d.com/6000.0/Documentation/ScriptReference/PlayerPrefs.html
+Unity 6 Player command-line arguments（画面/専用ログ）:
+https://docs.unity3d.com/6000.0/Documentation/Manual/PlayerCommandLineArguments.html
+Unity 6 Code sign your application（Developer IDと公証）:
+https://docs.unity3d.com/6000.0/Documentation/Manual/macoscodesigning.html
+Apple NSRunningApplication.terminate（正常終了要求・sandbox制約）:
+https://developer.apple.com/documentation/appkit/nsrunningapplication/terminate()
+Apple CGPreflightPostEventAccess / CGPreflightScreenCaptureAccess:
+https://developer.apple.com/documentation/coregraphics/cgpreflightposteventaccess()
+https://developer.apple.com/documentation/coregraphics/cgpreflightscreencaptureaccess()
+ローカルのman open / defaults helpも参照。これらの仕様確認は実起動/正常終了試験を置き換えない。

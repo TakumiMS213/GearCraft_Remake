@@ -1,0 +1,23 @@
+{
+  "schema":1,
+  "session_id":"20261018-070128-095-8360bc7954e64d94aff83f6784baf9fb",
+  "captured_utc":"2026-10-18T07:01:28.1031920Z",
+  "keys":[
+    {"key":"GearCraft.Gallery.Progress.v1","type":"string","exists":true,"value_base64":"eyJoYXNSZWFjaGVkRW5kaW5nIjpmYWxzZSwiZW5jb3VudGVyZWRFbmVtaWVzIjpbImx2MV9BLTEiLCJsdjNfRmluYWxCb3NzIiwibHYxX0ctMSIsImx2MV9CLTEiLCJsdjNfSUMtNDA4Il0sImFjcXVpcmVkV2VhcG9ucyI6WyJLYXRhbmEiLCJBUiJdLCJjcmFmdGVkUmVjaXBlcyI6WyJQdW5rRHJpdmUiXSwiYWNxdWlyZWRNYXRlcmlhbHMiOlsxLDJdfQ=="},
+    {"key":"GearCraft.Main.OpeningNotice.Seen.v1","type":"int","exists":true,"value_base64":"MQ=="},
+    {"key":"GearCraft.CraftTutorial.Metrics.Craft.v5","type":"string","exists":true,"value_base64":"eyJ0YXNrQXR0ZW1wdHMiOjUsImNvbXBsZXRpb25zIjo0LCJpbmRlcGVuZGVudEF0dGVtcHRzIjoxLCJpbmRlcGVuZGVudFN1Y2Nlc3NlcyI6MSwiaGludFJlcXVlc3RzIjozLCJpbnZhbGlkQXR0ZW1wdHMiOjEyLCJwYXVzZXMiOjEsImVsYXBzZWRTZWNvbmRzIjoxMDIuMzQ2Njc5Njg3NX0="},
+    {"key":"GearCraft.CraftTutorial.Metrics.WeaponCustom.v5","type":"string","exists":true,"value_base64":"eyJ0YXNrQXR0ZW1wdHMiOjIsImNvbXBsZXRpb25zIjoyLCJpbmRlcGVuZGVudEF0dGVtcHRzIjoxLCJpbmRlcGVuZGVudFN1Y2Nlc3NlcyI6MSwiaGludFJlcXVlc3RzIjowLCJpbnZhbGlkQXR0ZW1wdHMiOjAsInBhdXNlcyI6MCwiZWxhcHNlZFNlY29uZHMiOjIzLjAyNzYyNjAzNzU5NzY1OH0="},
+    {"key":"GearCraft.CraftTutorial.Mastery.Craft.v5","type":"int","exists":true,"value_base64":"MQ=="},
+    {"key":"GearCraft.CraftTutorial.Mastery.WeaponCustom.v5","type":"int","exists":true,"value_base64":"MQ=="},
+    {"key":"GearCraft.CraftTutorial.AutoPlayed.Craft.v4","type":"int","exists":true,"value_base64":"MQ=="},
+    {"key":"GearCraft.CraftTutorial.AutoPlayed.WeaponCustom.v3","type":"int","exists":true,"value_base64":"MQ=="},
+    {"key":"CraftTutorial.Metrics.Craft.v5","type":"string","exists":false,"value_base64":""},
+    {"key":"CraftTutorial.Metrics.WeaponCustom.v5","type":"string","exists":false,"value_base64":""},
+    {"key":"CraftTutorial.Mastery.Craft.v5","type":"int","exists":false,"value_base64":""},
+    {"key":"CraftTutorial.Mastery.WeaponCustom.v5","type":"int","exists":false,"value_base64":""},
+    {"key":"CraftTutorial.AutoPlayed.Craft.v4","type":"int","exists":false,"value_base64":""},
+    {"key":"CraftTutorial.AutoPlayed.WeaponCustom.v3","type":"int","exists":false,"value_base64":""},
+    {"key":"GearCraft.Audio.BGM.dB.v1","type":"float","exists":false,"value_base64":""},
+    {"key":"GearCraft.Audio.SE.dB.v1","type":"float","exists":false,"value_base64":""}
+  ]
+}

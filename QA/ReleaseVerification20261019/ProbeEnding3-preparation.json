@@ -1,0 +1,31 @@
+{
+  "prepared_utc": "2026-10-19T01:14:21.603172+00:00",
+  "runtime_executed": false,
+  "production_modified": false,
+  "mcp_used": false,
+  "static_compile": {
+    "language": "C#6",
+    "errors": 0,
+    "warnings": 0
+  },
+  "bodies": {
+    "ProbeEnding3ToNotice": {
+      "bytes": 15659,
+      "sha256": "615f0aa6969fcced0a64846b77d54cb87c0dd2023df73db16b686965078fe57e"
+    },
+    "ProbeEndingNoticeToTitle": {
+      "bytes": 10356,
+      "sha256": "a447ae58fa7675bcb473538591110d5bd84871a3844fb8281589f10370fd8510"
+    }
+  },
+  "native_flow": "EndingManager.LoadEndingScene(3) -> real Ending scene -> native Button IPointerClickHandler with natural fades -> Gallery notice -> native notice Button -> Title",
+  "fresh_backup": "ReleaseVerification20261019 typed16 keys/session match, root restoration required",
+  "fixtures": "Runtime-only Gallery hasReachedEnding=false; native StageCounter31 only if absent in Title, removed after return",
+  "screenshots": [
+    "ending3-native-notice.png",
+    "ending3-native-title.png"
+  ],
+  "R22": "UNRESOLVED; outside scope",
+  "updated_utc": "2026-10-19T01:15:22.515678+00:00",
+  "render_dimensions": "GameView.targetRenderSize + Camera.pixelWidth/Height + rootCanvas.pixelRect; PNG matches captured GameView size; no Screen.width/height assertions"
+}

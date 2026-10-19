@@ -1,0 +1,2 @@
+label,valid_combat_outcome,result,boss_seconds,boss_remaining_hp,boss_attack_events,route_game_seconds,route_wall_seconds,route_end_hp,route_end_gate,attack_events,expected_projectiles,input_rows,unique_input_frames,acceptance_totals_match,hp_balance_matches
+gate_native_ranged_EK9_SteamThrower_velocityfixed_seed77_fps60,False,batch_stopped_batch_wall_timeout,1.76666641,143892.625,106,16.500,934.814,97,100,210,420,989,989,True,True

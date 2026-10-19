@@ -1,0 +1,162 @@
+// C#6 execute_code method body. Isolated Title Play acceptance -> real native projectile creation.
+// Synthetic dt drives ProcessAttackInput. Native physics/lifetime/hits and real render FPS are NOT measured.
+// 48 real-asset cases (4 weapons x 3 configurations x 4 dt patterns), plus native guards and a cloned line-hitbox path.
+// Fresh canonical 16-key session manifest required. Auto-stops Play, including failure/watchdog paths.
+const string folder="QA/ReleaseFinalization20261018/";
+const string label="native-attack";
+if(!Application.isPlaying||UnityEngine.SceneManagement.SceneManager.GetActiveScene().name!="Title")throw new System.Exception("Requires idle Title Play");
+if(System.IO.File.Exists(folder+label+"-result.txt"))throw new System.Exception("Result exists; archive explicitly before rerunning");
+foreach(string path in System.IO.Directory.GetFiles(folder,"*-progress.txt"))if(System.IO.File.ReadAllText(path).StartsWith("RUNNING"))throw new System.Exception("Another probe is running: "+path);
+var invariant=System.Globalization.CultureInfo.InvariantCulture;
+var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.NonPublic;
+var statics=System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.NonPublic;
+System.Func<string,string> hash=path=>{using(var sha=System.Security.Cryptography.SHA256.Create())return System.BitConverter.ToString(sha.ComputeHash(System.IO.File.ReadAllBytes(path))).Replace("-","").ToLowerInvariant();};
+if(!System.IO.File.Exists(folder+"canonical-backup-ready.txt"))throw new System.Exception("Fresh canonical backup manifest missing");
+string[] manifest=System.IO.File.ReadAllLines(folder+"canonical-backup-ready.txt");
+string session=System.IO.File.ReadAllText(folder+"session-id.txt").Trim();
+if(!manifest.Contains("keys=16")||!manifest.Contains("session_id="+session)||UnityEditor.SessionState.GetString("GearCraft.QA.ReleaseFinalization.Session","")!=session)throw new System.Exception("Not this Editor session's canonical 16-key backup");
+foreach(string entry in manifest){int split=entry.IndexOf('=');if(split<0)continue;string name=entry.Substring(0,split);if(name.EndsWith(".txt")||name.EndsWith(".json")){if(hash(folder+name)!=entry.Substring(split+1))throw new System.Exception("Backup hash mismatch: "+name);}}
+var prefs=System.IO.File.ReadAllLines(folder+"typed-prefs-before.txt").Where(x=>!string.IsNullOrWhiteSpace(x)).Select(x=>x.Split('|')).ToArray();
+if(prefs.Length!=16||prefs.Any(x=>x.Length!=4)||prefs.Select(x=>x[0]).Distinct().Count()!=16)throw new System.Exception("Invalid canonical preference schema");
+System.Func<string,string,string> prefValue=(key,type)=>type=="string"?PlayerPrefs.GetString(key):type=="float"?PlayerPrefs.GetFloat(key).ToString("R",invariant):PlayerPrefs.GetInt(key).ToString(invariant);
+var currentPrefs=prefs.Select(x=>new[]{x[0],x[1],PlayerPrefs.HasKey(x[0]).ToString(),PlayerPrefs.HasKey(x[0])?prefValue(x[0],x[1]):""}).ToArray();
+var transition=UnityEngine.Object.FindFirstObjectByType<SceneTransitionManager>();
+if(transition==null||transition.IsLoading||StageFlowManager.Instance!=null||UnityEngine.Object.FindFirstObjectByType<PlayerController>()!=null||UnityEngine.Object.FindFirstObjectByType<EnemyController>()!=null||GearCraft.Gallery.GalleryNavigation.IsOpen)throw new System.Exception("Title is not isolated/idle");
+var attack=typeof(PlayerController).GetMethod("ProcessAttackInput",flags);
+var boostActive=typeof(PlayerController).GetField("isBoostActive",flags);
+var blockedFrame=typeof(StageFlowManager).GetField("playerInputBlockedFrame",statics);
+var steamDamage=typeof(GearCraft.Scripts.Main.SteamThrowerBulletController).GetField("damage",flags);
+var lineDamage=typeof(LineHitboxController).GetField("damage",flags);
+if(attack==null||attack.GetParameters().Length!=4||boostActive==null||blockedFrame==null||steamDamage==null||lineDamage==null)throw new System.Exception("Compile the current native attack API before probing");
+System.Func<GameObject[]> projectiles=()=>UnityEngine.Object.FindObjectsByType<BulletController>(FindObjectsSortMode.None).Select(x=>x.gameObject)
+ .Concat(UnityEngine.Object.FindObjectsByType<GearCraft.Scripts.Main.SteamThrowerBulletController>(FindObjectsSortMode.None).Select(x=>x.gameObject))
+ .Concat(UnityEngine.Object.FindObjectsByType<LineHitboxController>(FindObjectsSortMode.None).Select(x=>x.gameObject)).Distinct().ToArray();
+if(projectiles().Length!=0)throw new System.Exception("Existing projectile objects must not be mixed with isolated counts");
+var originalStatus=StatusManager.Instance;string statusBefore=originalStatus!=null?JsonUtility.ToJson(originalStatus):null;
+var originalMaterials=MaterialManager.Instance;string materialsBefore=originalMaterials!=null?JsonUtility.ToJson(originalMaterials):null;
+var input=UnityEngine.EventSystems.EventSystem.current;bool inputBefore=input!=null&&input.enabled;
+float scaleBefore=Time.timeScale,captureBefore=Time.captureDeltaTime;
+var randomBefore=UnityEngine.Random.state;
+int frameBlockBefore=(int)blockedFrame.GetValue(null),sceneHandle=UnityEngine.SceneManagement.SceneManager.GetActiveScene().handle;
+var created=new System.Collections.Generic.List<UnityEngine.Object>();
+var evidence=new System.Text.StringBuilder();
+int checks=0,completedCases=0,currentCase=-1;bool done=false;
+System.Action<string> note=s=>evidence.AppendLine(s);
+System.Action<bool,string> require=(ok,s)=>{checks++;if(!ok)throw new System.Exception(s);};
+UnityEditor.EditorApplication.CallbackFunction tick=null;
+System.Action cleanShots=()=>{foreach(var shot in projectiles())if(shot!=null)UnityEngine.Object.DestroyImmediate(shot);};
+System.Action<string> finish=outcome=>{
+ if(done)return;done=true;if(tick!=null)UnityEditor.EditorApplication.update-=tick;
+ try{
+  cleanShots();foreach(var obj in created)if(obj!=null)UnityEngine.Object.DestroyImmediate(obj);
+  blockedFrame.SetValue(null,frameBlockBefore);UnityEngine.Random.state=randomBefore;
+  Time.timeScale=scaleBefore;Time.captureDeltaTime=captureBefore;if(input!=null)input.enabled=inputBefore;
+  bool unchanged=object.ReferenceEquals(StatusManager.Instance,originalStatus)&&object.ReferenceEquals(MaterialManager.Instance,originalMaterials)&&
+   (originalStatus==null||JsonUtility.ToJson(originalStatus)==statusBefore)&&(originalMaterials==null||JsonUtility.ToJson(originalMaterials)==materialsBefore)&&
+   currentPrefs.All(x=>PlayerPrefs.HasKey(x[0])==bool.Parse(x[2])&&(!bool.Parse(x[2])||prefValue(x[0],x[1])==x[3]));
+  note("runtime_status_materials_and_16_prefs_unchanged="+unchanged);
+  if(!unchanged)outcome="FAIL_STATE_CHANGED";
+ }catch(System.Exception ex){outcome="FAIL_CLEANUP";note(ex.ToString());}
+ note("source_PlayerAttackCadence_sha256="+hash("Assets/GearCraft/Scripts/Main/PlayerAttackCadence.cs"));
+ note("source_PlayerController_sha256="+hash("Assets/GearCraft/Scripts/Main/PlayerController.cs"));
+ System.IO.File.WriteAllText(folder+label+"-result.txt",outcome+" cases="+completedCases+" checks="+checks+" current_case="+currentCase+"\n"+evidence.ToString()+"\nScope: native attack acceptance / Instantiate / configured projectile data under synthetic deltaTime. No projectile Start, native physics/hits/lifetime, actual rendered fps, Q resource consumption or BOOST lifetime measured. Root restores canonical session/editor after Play stops.\n");
+ System.IO.File.WriteAllText(folder+label+"-progress.txt",outcome+" cases="+completedCases+"\n");
+ UnityEditor.EditorApplication.isPlaying=false;
+};
+var loadouts=System.IO.File.ReadAllLines(folder+"native-attack-loadouts.csv").Skip(1).Where(x=>!string.IsNullOrWhiteSpace(x)).Select(x=>x.Split(',')).ToDictionary(x=>x[0],x=>x);
+string[] weapons={"SteamCannon","RailCraft","SteamGatling","SteamThrower"};
+string[] stages={"initial","final","boost_configured"};
+string[] patterns={"30","60","120","jitter"};
+float[] initialDamage={57f,300f,10f,0.3f};float[] finalDamage={102.6f,532f,31.6f,4.564f};
+int[,] ticksExpected={{60,9,5},{120,17,9},{2,1,1},{5,1,1}};
+int[][] allCounts=new int[12][];for(int i=0;i<12;i++)allCounts[i]=new int[4];
+System.Func<WeaponDataSO,int,PlayerController> makePlayer=(weapon,stage)=>{
+ var go=new GameObject("QA_NativeAttack_Inactive");go.SetActive(false);go.hideFlags=HideFlags.HideAndDontSave;go.transform.position=new Vector3(10000f,10000f,0f);created.Add(go);
+ var status=go.AddComponent<StatusManager>();var player=go.AddComponent<PlayerController>();player.enabled=false;
+ var fire=new GameObject("FirePoint");fire.transform.SetParent(go.transform,false);player.FirePoint=fire.transform;
+ player.runtimeStatus=status;player.currentWeapon=weapon;status.currentWeapon=weapon;
+ status.STR=stage==0?0:20;status.ACC=stage==0?0:20;
+ string profile=stage==0?"none":weapon.weaponName=="SteamThrower"?"final_day11_thrower_fitted_damage_module20":"final_day11_ranged_fitted_speed_module20";
+ var row=loadouts[profile];var parts=new System.Collections.Generic.List<UpgradePartSO>();
+ if(!string.IsNullOrWhiteSpace(row[1]))foreach(string name in row[1].Split(';')){var part=UnityEditor.AssetDatabase.LoadAssetAtPath<UpgradePartSO>("Assets/GearCraft/ScriptableObject/UpgradeParts/"+name+".asset");require(part!=null,"Missing real part "+name);parts.Add(part);}
+ status.RecalculateUpgradeEffects(parts);status.craftWeaponDamagebuff=int.Parse(row[2],invariant);
+ if(stage==2){status.attackSpeedMult=Mathf.Max(status.attackSpeedMult*0.5f,0.05f);boostActive.SetValue(player,true);}
+ require(object.ReferenceEquals(StatusManager.Instance,originalStatus),"Inactive isolated Status replaced singleton");
+ return player;
+};
+System.Func<PlayerController,float,bool,bool,int> invoke=(player,dt,pressed,held)=>(int)attack.Invoke(player,new object[]{pressed,held,dt,player.FirePoint.position+new Vector3(10f,0f,0f)});
+System.IO.File.WriteAllText(folder+label+"-cases.csv","id,weapon,configuration,dt_pattern,virtual_end,dt_sum,updates,attack_events,bullet_objects,steam_objects,line_objects,expected_attack_events,expected_objects,damage_expected,damage_min,damage_max,speed_mult,flat_damage,twin,max_burst,result\n");
+System.IO.File.WriteAllText(folder+label+"-progress.txt","RUNNING 0/48\n");
+note("session_id="+session+"; all initial STR/ACC=0 module=0 no parts; final STR/ACC=20 module=20 with real fitted parts; boost is configured post-activation state only");
+note("manifest_sha256="+hash(folder+"canonical-backup-ready.txt")+"; loadouts_sha256="+hash(folder+"native-attack-loadouts.csv"));
+System.Action<int> runCase=idx=>{
+ int wi=idx/12,stage=(idx/4)%3,pi=idx%4;
+ var weapon=UnityEditor.AssetDatabase.LoadAssetAtPath<WeaponDataSO>("Assets/GearCraft/ScriptableObject/WeaponData/"+weapons[wi]+".asset");
+ require(weapon!=null&&!weapon.useLineHitbox,"Real weapon missing or line mode changed: "+weapons[wi]);
+ var player=makePlayer(weapon,stage);var status=player.runtimeStatus;
+ float expectedDamage=stage==0?initialDamage[wi]:finalDamage[wi];require(Mathf.Abs(status.GetWeaponDamage(weapon)-expectedDamage)<0.0001f,"Loadout damage differs from independent asset baseline");
+ int attackTotal=0,bulletTotal=0,steamTotal=0,lineTotal=0,updates=0,maxBurst=0;
+ float minDamage=float.PositiveInfinity,maxDamage=float.NegativeInfinity;
+ double elapsed=0,dtSum=0;bool first=true;int patternIndex=0;
+ double[] framePattern=pi==0?new[]{1d/30d}:pi==1?new[]{1d/60d}:pi==2?new[]{1d/120d}:new[]{0.011d,0.041d,0.007d,0.023d,0.032d};
+ UnityEngine.Random.InitState(77);Time.timeScale=1f;
+ try{
+  while(first||elapsed<10d-1e-10){
+   float dt=first?0f:(float)System.Math.Min(framePattern[patternIndex++%framePattern.Length],10d-elapsed);
+   if(!first){elapsed+=dt;dtSum+=dt;}int attacks=invoke(player,dt,first,true);first=false;updates++;attackTotal+=attacks;maxBurst=System.Math.Max(maxBurst,attacks);
+   var shots=projectiles();require(shots.Length==attacks*(status.hasBulletDouble?2:1),"Instantiate count differs from native acceptance: case "+idx+" update "+updates);
+   foreach(var shot in shots){
+    var steam=shot.GetComponent<GearCraft.Scripts.Main.SteamThrowerBulletController>();var bullet=shot.GetComponent<BulletController>();var line=shot.GetComponent<LineHitboxController>();
+    float damage=0f;
+    if(steam!=null){steamTotal++;damage=(float)steamDamage.GetValue(steam);require(weapon.weaponName=="SteamThrower","Unexpected steam object");}
+    else if(bullet!=null){bulletTotal++;damage=bullet.bulletDamage;require(weapon.weaponName!="SteamThrower","Unexpected generic bullet for Thrower");require(bullet.ricochetCount==status.ricochetCount,"Native ricochet configuration mismatch");require(!weapon.isPiercing||!bullet.destroyOnHit,"Native piercing configuration mismatch");}
+    else if(line!=null){lineTotal++;damage=(float)lineDamage.GetValue(line);}
+    else throw new System.Exception("Unrecognized generated projectile");
+    minDamage=Mathf.Min(minDamage,damage);maxDamage=Mathf.Max(maxDamage,damage);require(Mathf.Abs(damage-expectedDamage)<0.0001f,"Native configured damage mismatch");
+    var body=shot.GetComponent<Rigidbody2D>();require(body!=null&&Mathf.Abs(body.linearVelocity.magnitude-weapon.bulletSpeed)<0.001f,"Native launch velocity mismatch");
+    UnityEngine.Object.DestroyImmediate(shot);
+   }
+  }
+  int expectedAttacks=1+(int)System.Math.Floor((10d+0.0000001d)/(ticksExpected[wi,stage]/60d));int expectedObjects=expectedAttacks*(status.hasBulletDouble?2:1);
+  string result=attackTotal==expectedAttacks&&bulletTotal+steamTotal+lineTotal==expectedObjects&&maxBurst<=6?"PASS":"FAIL";
+  System.IO.File.AppendAllText(folder+label+"-cases.csv",idx+","+weapon.weaponName+","+stages[stage]+","+patterns[pi]+","+elapsed.ToString("R",invariant)+","+dtSum.ToString("R",invariant)+","+updates+","+attackTotal+","+bulletTotal+","+steamTotal+","+lineTotal+","+expectedAttacks+","+expectedObjects+","+expectedDamage.ToString("R",invariant)+","+minDamage.ToString("R",invariant)+","+maxDamage.ToString("R",invariant)+","+status.attackSpeedMult.ToString("R",invariant)+","+status.bonusDamage.ToString("R",invariant)+","+status.hasBulletDouble+","+maxBurst+","+result+"\n");
+  require(result=="PASS","Ten-second native event/object totals differ: case "+idx);
+  allCounts[wi*3+stage][pi]=attackTotal;
+ }finally{cleanShots();if(player!=null)UnityEngine.Object.DestroyImmediate(player.gameObject);Time.timeScale=0f;}
+};
+System.Action runGuardsAndLine=()=>{
+ var weapon=UnityEditor.AssetDatabase.LoadAssetAtPath<WeaponDataSO>("Assets/GearCraft/ScriptableObject/WeaponData/SteamCannon.asset");
+ var p=makePlayer(weapon,0);
+ try{
+  Time.timeScale=0f;require(invoke(p,1f,true,true)==0&&projectiles().Length==0,"Native TimeScale0 failed to suppress shooting");
+  Time.timeScale=1f;StageFlowManager.BlockPlayerInputForCurrentFrame();require(invoke(p,1f,true,true)==0&&projectiles().Length==0,"Native StageFlow frame guard failed to suppress shooting");
+  blockedFrame.SetValue(null,frameBlockBefore);require(invoke(p,0f,true,true)==1&&projectiles().Length==1,"Native guard release did not resume exactly one attack");cleanShots();
+  require(invoke(p,0f,true,true)==0&&projectiles().Length==0,"Same-time input bypassed remaining native CT");
+  note("PASS native TimeScale0, StageFlow frame guard, one-shot resume and remaining cooldown");
+ }finally{cleanShots();blockedFrame.SetValue(null,frameBlockBefore);UnityEngine.Object.DestroyImmediate(p.gameObject);Time.timeScale=0f;}
+ var asset=UnityEditor.AssetDatabase.LoadAssetAtPath<WeaponDataSO>("Assets/GearCraft/ScriptableObject/WeaponData/RailCraft.asset");
+ var clone=UnityEngine.Object.Instantiate(asset);clone.hideFlags=HideFlags.HideAndDontSave;clone.useLineHitbox=true;created.Add(clone);p=makePlayer(clone,1);
+ try{
+  Time.timeScale=1f;int events=invoke(p,0f,true,true);var shots=projectiles();require(events==1&&shots.Length==1,"Line mode must produce one native hitbox per event even with Twin");
+  var line=shots[0].GetComponent<LineHitboxController>();require(line!=null&&Mathf.Abs((float)lineDamage.GetValue(line)-532f)<0.0001f,"Native line damage mismatch");
+  require(shots[0].GetComponent<BoxCollider2D>()!=null&&shots[0].transform.Find("VisibleHitbox")!=null,"Native line collider/visual missing");
+  note("PASS additional synthetic RailCraft clone line flag: one real line hitbox, damage=532, native collider and visual, despite Twin=true; real Rail asset untouched");
+ }finally{cleanShots();UnityEngine.Object.DestroyImmediate(p.gameObject);Time.timeScale=0f;}
+};
+double wallStart=UnityEditor.EditorApplication.timeSinceStartup;
+try{
+ if(input!=null)input.enabled=false;Time.captureDeltaTime=0f;Time.timeScale=0f;
+ runGuardsAndLine();
+ tick=()=>{
+  try{
+   if(!Application.isPlaying){finish("ABORTED");return;}
+   require(UnityEditor.EditorApplication.timeSinceStartup-wallStart<180d,"Native attack probe wall watchdog");
+   require(UnityEngine.SceneManagement.SceneManager.GetActiveScene().handle==sceneHandle&&!transition.IsLoading,"Title changed during isolated probe");
+   if(completedCases>=48){foreach(var counts in allCounts)require(counts.All(x=>x==counts[0]),"FPS patterns produced different native attack event counts");note("PASS all 12 configurations produced identical native event counts at 30/60/120/jitter");finish("PASS");return;}
+   currentCase=completedCases;runCase(currentCase);completedCases++;
+   System.IO.File.WriteAllText(folder+label+"-progress.txt","RUNNING "+completedCases+"/48 wall="+(UnityEditor.EditorApplication.timeSinceStartup-wallStart).ToString("0.000",invariant)+"\n");
+  }catch(System.Exception ex){note(ex.ToString());finish("FAIL");}
+ };
+ UnityEditor.EditorApplication.update+=tick;
+}catch(System.Exception ex){note(ex.ToString());finish("FAIL");}
+return done?"Native probe finished; inspect native-attack-result.txt":"Scheduled native attack probe: 48 cases, 180-second wall watchdog, auto-stops Play. Synthetic dt, real native creation; not a physics/DPS measurement.";

@@ -1,0 +1,44 @@
+PlayerController FPS修正 独立最終レビュー / 2026-10-18
+
+結論: 今回差分によるリリース阻害不具合はソースレビューでは確認しなかった。
+対象はReleaseFinalization/source-beforeの直前版との差分。制作/MCP操作なし。
+
+1. OnDisableと一時効果寿命
+PlayerController.OnDisableはattackCadence.Interruptのみ。BOOST/Gear用CancellationTokenSourceやCancelTemporaryCombatEffectsを呼ばない。
+OnDestroyと死亡・Snapshot・Title reset前の明示Cancelは維持し、BOOST/変形の取得・自然満了・owner検査・finally処理は差分なし。
+GalleryNavigation.SuspendSourceはPlayerを無効化しtimeScale0で退避する。Interruptは正の残CTを維持し、wasHeldだけ解除。
+従って復帰時に過去分の射撃バーストを発生させず、従来のBOOST/変形の停止・再開設計を壊していない。
+
+2. UI/死亡と持替え
+Updateの拒否分岐でもProcessAttackInput(false,false,dt,...)へ通知する。
+ProcessAttackInputはnative StageFlowManager.IsPlayerInputBlockedとisDeathRetrying、武器/発射物参照を検査する。
+StageFlowはtimeScale0、当フレーム停止、報酬/日付表示/回収等のblocking UIをまとめている。
+Pause.Resumeと報酬確定は既存BlockPlayerInputForCurrentFrameを維持しているため、同frameの決定入力は発射へ流れない。
+ProcessAttackInput先頭でもSyncWeaponFromStatusを呼び、ApplyWeaponDataIfNeededで武器が変わった時だけInterruptする。
+正CTは持替えで0にしない。毎Updateの通常Syncは同じ武器ならreturnするので連射のwasHeldを誤って消さない。
+
+3. Cooldownの仕様差
+旧coolTimeは攻撃前gateとUpdate末尾減算を兼ねていた。新コードはcadence.remainingが唯一の進行元、coolTimeは各Process呼出し後にmirrorを書くだけ。
+制作コード内でcoolTimeを読む他箇所はない。二重減算はない。
+残CTはdouble、射撃だけ60Hz切上げ/最低1tick、継続時の余り保持、最大6回後の負債破棄。
+近接はpressedの単発/rawCTのまま。double化によって旧float誤差で遅れていた境界判定が正常化する点は共通。
+安定ceilは旧floatの0.1秒=7tick等を6tickへ正常化するため、旧60fps完全bit一致ではない。主要終盤周期は維持。
+旧QAでCoolTimeUpdateや無引数PerformShotAttackを反射呼出しするもの、coolTimeを書き戻してnative攻撃を制御するものは非互換。
+今回native probeは新ProcessAttackInput共通入口を使い、旧botの射撃複製を証明として流用しない。
+
+4. 弾生成
+PerformShotAttackは照準の読み取りをVector3引数へ移しただけ。Twin、spread、velocity、ConfigureSpawnedProjectile、line分岐、反動の経路は維持。
+複数catchupは同frame/同照準/同位置の生成になるため、受付数のFPS一致を物理命中・DPSの完全一致とは表現しない。
+
+関連する既存UI不整合（今回の新回帰ではない）
+InventoryUI.cs:138-144 BuildWeaponStatsTextは rawCT=weapon.coolTime*attackSpeedMult の逆数を攻撃速度として表示。
+終盤Gat .03*.1397978なら約238.44/秒だが新仕様の受付上限は60/秒。
+実射撃間隔を表示する意図なら遠距離にPlayerAttackCadence.GetAutomaticIntervalを使う最小修正候補。rootへ報告済み、こちら未編集。
+
+証拠
+cadence-tests.txt/json: 本番純C#クラスを直接リンクした205件、rootによるrelative epsilon修正後は全PASS。
+ProbeNativeAttack.cs.txt: native生成48ケース＋UI/lineチェック準備済み、最終レビュー時点ではMCP実行待ち。
+
+対象SHA256
+Assets/GearCraft/Scripts/Main/PlayerController.cs 7d77c90e3b7ddf34c8eef0c0f25cf7a679f21d94b816e179c155b5e4b3652daf
+Assets/GearCraft/Scripts/Main/PlayerAttackCadence.cs 4fafff854f2b66a08534f197e23580a9c76c9fadc57d51d2e0d364a9cf9955f8

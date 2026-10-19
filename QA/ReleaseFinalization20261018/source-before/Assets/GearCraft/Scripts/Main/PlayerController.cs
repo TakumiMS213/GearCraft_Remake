@@ -1,0 +1,1043 @@
+using System;
+using Cysharp.Threading.Tasks;
+using System.Threading;
+using GearCraft.Scripts.Main;
+using UnityEngine;
+
+
+public class PlayerController : MonoBehaviour
+{
+    // --- Movement Settings ---
+    public float moveSpeed = 5f;
+    public float jumpForce = 10f;
+    [Header("ダッシュ設定")]
+    public float doubleTapWindow = 0.25f;
+    public float dashSpeed = 12f;
+    public float dashDuration = 0.18f;
+    private bool isGrounded;
+    private int lastTapDirection = 0;
+    private float lastTapTime = -999f;
+    private int dashDirection = 0;
+    private float dashTimer = 0f;
+
+    // --- Weapon (データ駆動) ---
+    [Header("武器設定")]
+    public WeaponDataSO currentWeapon;       // 現在の武器（StatusManagerから同期）
+    public Transform FirePoint;
+
+    // --- Module References ---
+    public GameObject punkdrive;
+    public GameObject barrier;
+    [SerializeField] private GameObject barrierBreakEffectPrefab;
+    public float barrierDuration = 5f;
+    public float barrierCooldown = 10f;
+    [SerializeField] private float barrierRedeployDelay = 3f;
+    public bool CanBarrierUse = true;
+    public bool CanUseGearCraft = true;
+
+    // --- Player Stats ---
+    private bool isInvincible;
+    private int boostCount = 0;
+    private float[] baseWeaponCT;
+    private float boostRemainingTime = 0f;
+    private bool isBoostActive = false;
+    private CancellationTokenSource boostCts;
+    private float boostSavedSpeedMult;
+    private float boostAppliedSpeedMult;
+    private CancellationTokenSource gearCraftCts;
+    private WeaponDataSO gearCraftReturnWeapon;
+    private WeaponDataSO gearCraftTemporaryWeapon;
+    private const float ENEMY_CONTACT_DAMAGE = 5f;
+    private bool isBarrierActive;
+    private bool isBarrierRecharging;
+    private bool isDeathRetrying;
+
+    public int HP;
+    public int SAN;
+    public int STR;
+    public int ACC;
+
+    // --- Internal weapon state ---
+    private float coolTime;
+    private float currentCoolTime;
+    private float currentDamage;
+
+    // --- Components ---
+    private Rigidbody2D rb;
+    private SpriteRenderer spriteRenderer;
+    private Animator anim;
+    public Animator armAnimator;
+    public ArmRotation armRotation;
+    public StatusManager runtimeStatus;
+    private MeleeWeapon meleeWeapon;
+    private WeaponDataSO appliedWeapon;
+    private string lastArmTriggerName;
+
+    // --- Particle ---
+    public GameObject BurnPtPrehub;
+    public GameObject boostEffect;
+    public GameObject boostUseEffect;
+
+    public GameObject BoostPanel;
+    public AllSpritesToBlack AllBlack;
+
+    // --- Wall ---
+    private bool isTouchingWall = false;
+    private Vector2 wallNormal = Vector2.zero;
+
+    // --- Unity Events ---
+
+    private void Start()
+    {
+        boostEffect = BurnPtPrehub;
+        runtimeStatus = StatusManager.Instance ?? FindAnyObjectByType<StatusManager>();
+        rb = GetComponent<Rigidbody2D>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        anim = GetComponent<Animator>();
+        meleeWeapon = armAnimator != null ? armAnimator.GetComponentInParent<MeleeWeapon>() : FindAnyObjectByType<MeleeWeapon>();
+        if (runtimeStatus != null)
+            runtimeStatus.UseCraftSpacebuff = false;
+        isInvincible = false;
+
+        if (runtimeStatus != null)
+        {
+            if (runtimeStatus.module_barrier)
+            {
+                ActivateBarrier();
+            }
+            HP = runtimeStatus.HP;
+            SAN = runtimeStatus.SAN;
+            STR = runtimeStatus.STR;
+            ACC = runtimeStatus.ACC;
+        }
+
+        // 武器同期
+        SyncWeaponFromStatus();
+
+        if (FirePoint == null)
+            Debug.LogError("FirePointが設定されていません", this);
+    }
+
+    private void Update()
+    {
+        // StatusManagerからステータス同期
+        if (runtimeStatus != null)
+        {
+            HP = runtimeStatus.HP;
+            SAN = runtimeStatus.SAN;
+            STR = runtimeStatus.STR;
+            ACC = runtimeStatus.ACC;
+        }
+        if (HP > 100) { HP = 100; }
+
+        // 武器同期
+        SyncWeaponFromStatus();
+
+        if (isDeathRetrying || StageFlowManager.IsPlayerInputBlocked)
+        {
+            StopPlayerMovementInput();
+        }
+        else
+        {
+            HandleMovement();
+            HandleAttack();
+
+            if (Input.GetKeyDown(KeyCode.LeftShift))
+            {
+                Instantiate(BurnPtPrehub, transform.position, Quaternion.identity);
+                if (currentWeapon != null && currentWeapon.weaponName == "GearCraft_Sword" && CanUseGearCraft)
+                    ChangeGearCraft();
+            }
+            if (Input.GetKeyDown(KeyCode.Q))
+                BoostActive().Forget();
+        }
+        CoolTimeUpdate();
+        UpdateAutoBarrier();
+        if (boostEffect != null && isBoostActive)
+        {
+            SpawnEffect(boostEffect, transform.position);
+        }
+
+        // Armアニメーションのトリガー
+        UpdateArmAnimation();
+
+        // PunkDrive起動/停止
+        if (punkdrive != null)
+            punkdrive.SetActive(runtimeStatus != null && runtimeStatus.punkDrive);
+    }
+
+    private void FixedUpdate()
+    {
+        if (isDeathRetrying || StageFlowManager.IsPlayerInputBlocked) StopPlayerMovementInput();
+    }
+
+    private void StopPlayerMovementInput()
+    {
+        dashTimer = 0f;
+        dashDirection = 0;
+        lastTapDirection = 0;
+        lastTapTime = -999f;
+        if (rb != null) rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
+        if (anim != null)
+        {
+            anim.SetBool("run", false);
+            if (isGrounded) anim.SetBool("jump", false);
+        }
+    }
+
+    /// <summary>
+    /// StatusManagerから武器情報を同期
+    /// </summary>
+    private void SyncWeaponFromStatus()
+    {
+        if (runtimeStatus != null && runtimeStatus.currentWeapon != null)
+        {
+            currentWeapon = runtimeStatus.currentWeapon;
+            ApplyWeaponDataIfNeeded();
+        }
+    }
+
+    private void ApplyWeaponDataIfNeeded()
+    {
+        if (currentWeapon == appliedWeapon) return;
+
+        appliedWeapon = currentWeapon;
+        lastArmTriggerName = null;
+
+        if (meleeWeapon != null)
+        {
+            meleeWeapon.ApplyWeaponData(currentWeapon);
+        }
+
+    }
+
+    /// <summary>
+    /// 現在の武器がMeleeかどうか
+    /// </summary>
+    private bool IsMelee()
+    {
+        return currentWeapon != null && currentWeapon.weaponType == WeaponType.Melee;
+    }
+
+    /// <summary>
+    /// 現在の武器がRangedかどうか
+    /// </summary>
+    private bool IsRanged()
+    {
+        return currentWeapon != null && currentWeapon.weaponType == WeaponType.Ranged;
+    }
+
+    // --- Arm Animation ---
+    private void UpdateArmAnimation()
+    {
+        if (armAnimator == null || currentWeapon == null) return;
+
+        if (!string.IsNullOrEmpty(currentWeapon.armTriggerName) && currentWeapon.armTriggerName != lastArmTriggerName)
+        {
+            ResetArmAnimationTriggers();
+            armAnimator.SetTrigger(currentWeapon.armTriggerName);
+            lastArmTriggerName = currentWeapon.armTriggerName;
+        }
+    }
+
+    private void ResetArmAnimationTriggers()
+    {
+        armAnimator.ResetTrigger("Assault");
+        armAnimator.ResetTrigger("Sword");
+        armAnimator.ResetTrigger("SteamShoot");
+        armAnimator.ResetTrigger("GearCraft_Sword");
+        armAnimator.ResetTrigger("GearCraft_Axe");
+        armAnimator.ResetTrigger("RailCraft");
+        armAnimator.ResetTrigger("SteamGatling");
+        armAnimator.ResetTrigger("SteamThrower");
+    }
+
+    // --- Movement ---
+    private void HandleMovement()
+    {
+        HandleDashInput();
+
+        float moveInput = Input.GetAxisRaw("Horizontal");
+        if (IsBlockedByWall(moveInput))
+        {
+            moveInput = 0;
+        }
+
+        if (dashTimer > 0f)
+        {
+            dashTimer -= Time.deltaTime;
+            if (IsBlockedByWall(dashDirection))
+            {
+                dashTimer = 0f;
+            }
+            else
+            {
+                rb.linearVelocity = new Vector2(dashDirection * dashSpeed, rb.linearVelocity.y);
+            }
+        }
+        else
+        {
+            rb.linearVelocity = new Vector2(moveInput * GetCurrentMoveSpeed(), rb.linearVelocity.y);
+        }
+
+        anim.SetBool("run", dashTimer > 0f || moveInput != 0);
+
+        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
+        {
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+            isGrounded = false;
+            anim.SetBool("jump", true);
+        }
+        if (isGrounded) anim.SetBool("jump", false);
+    }
+
+    private void HandleDashInput()
+    {
+        int pressedDirection = GetHorizontalKeyDownDirection();
+        if (pressedDirection == 0) return;
+
+        if (pressedDirection == lastTapDirection && Time.time - lastTapTime <= doubleTapWindow)
+        {
+            StartDash(pressedDirection);
+            lastTapDirection = 0;
+            lastTapTime = -999f;
+            return;
+        }
+
+        lastTapDirection = pressedDirection;
+        lastTapTime = Time.time;
+    }
+
+    private int GetHorizontalKeyDownDirection()
+    {
+        if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
+        {
+            return -1;
+        }
+
+        if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
+        {
+            return 1;
+        }
+
+        return 0;
+    }
+
+    private void StartDash(int direction)
+    {
+        if (direction == 0 || IsBlockedByWall(direction)) return;
+
+        dashDirection = direction;
+        dashTimer = dashDuration;
+    }
+
+    private bool IsBlockedByWall(float direction)
+    {
+        if (!isTouchingWall || wallNormal == Vector2.zero || direction == 0f)
+        {
+            return false;
+        }
+
+        return Mathf.Sign(direction) == -Mathf.Sign(wallNormal.x);
+    }
+
+    private float GetCurrentMoveSpeed()
+    {
+        float speed = moveSpeed;
+        if (runtimeStatus != null && currentWeapon != null && currentWeapon.weaponName == "GearCraft_Sword")
+        {
+            speed += runtimeStatus.gearCraftSwordMoveSpeedBonus;
+        }
+
+        return Mathf.Max(0f, speed);
+    }
+
+    // --- Attack ---
+    private void HandleAttack()
+    {
+        if (currentWeapon == null) return;
+
+        float weaponCoolTime = currentWeapon.coolTime;
+        // 攻撃速度倍率を適用
+        if (runtimeStatus != null)
+            weaponCoolTime *= runtimeStatus.attackSpeedMult;
+
+        float weaponDamage = currentWeapon.baseDamage;
+
+        // 近接武器
+        if (IsMelee() && Input.GetMouseButtonDown(0) && coolTime <= 0f)
+        {
+            coolTime = weaponCoolTime;
+            currentDamage = weaponDamage;
+            PerformMeleeAttack();
+        }
+        // 射撃武器
+        if (IsRanged() && Input.GetMouseButton(0) && coolTime <= 0f)
+        {
+            coolTime = weaponCoolTime;
+            currentDamage = weaponDamage;
+            PerformShotAttack();
+        }
+    }
+
+    private void PerformMeleeAttack()
+    {
+        if (armRotation != null && currentWeapon != null)
+        {
+            meleeWeapon?.BeginAttack(currentWeapon.meleeRotateDuration);
+            armRotation.RotateArmOnce(currentWeapon.meleeRotateDuration);
+        }
+    }
+
+    private void PerformShotAttack()
+    {
+        if (FirePoint == null || currentWeapon == null) return;
+        if (!currentWeapon.useLineHitbox && currentWeapon.bulletPrefab == null) return;
+
+        Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        mouseWorldPos.z = 0f;
+        Vector2 direction = (mouseWorldPos - FirePoint.position).normalized;
+        float angle = Mathf.Clamp(Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg, -90f, 90f);
+
+        float spread = currentWeapon.spreadAngle;
+        if (runtimeStatus != null)
+        {
+            spread += runtimeStatus.spreadModifier;
+        }
+
+        float finalAngle = CalculateSpreadAngle(angle, spread);
+        direction = new Vector2(Mathf.Cos(finalAngle * Mathf.Deg2Rad), Mathf.Sin(finalAngle * Mathf.Deg2Rad));
+        Vector3 muzzlePosition = GetMuzzlePosition(direction);
+
+        if (currentWeapon.useLineHitbox)
+        {
+            PerformLineHitboxAttack(direction, finalAngle, muzzlePosition);
+            return;
+        }
+
+        GameObject bullet = Instantiate(currentWeapon.bulletPrefab, muzzlePosition, Quaternion.Euler(0, 0, finalAngle));
+        if (bullet == null) return;
+
+        Rigidbody2D rbBullet = bullet.GetComponent<Rigidbody2D>();
+        if (rbBullet != null)
+        {
+            rbBullet.linearVelocity = direction * GetCurrentBulletSpeed();
+        }
+
+        ConfigureSpawnedProjectile(bullet);
+
+        if (runtimeStatus != null && runtimeStatus.hasBulletDouble)
+        {
+            float secondAngle = CalculateSpreadAngle(angle, spread);
+            Vector2 dir2 = new Vector2(Mathf.Cos(secondAngle * Mathf.Deg2Rad), Mathf.Sin(secondAngle * Mathf.Deg2Rad));
+            Vector3 secondMuzzlePosition = GetMuzzlePosition(dir2);
+            GameObject bullet2 = Instantiate(currentWeapon.bulletPrefab, secondMuzzlePosition, Quaternion.Euler(0, 0, secondAngle));
+            if (bullet2 == null) return;
+
+            Rigidbody2D rb2 = bullet2.GetComponent<Rigidbody2D>();
+            if (rb2 != null)
+            {
+                rb2.linearVelocity = dir2 * GetCurrentBulletSpeed();
+            }
+
+            ConfigureSpawnedProjectile(bullet2);
+        }
+
+        ApplySteamGatlingDownwardRecoil(direction);
+    }
+
+    private void ConfigureSpawnedProjectile(GameObject bullet)
+    {
+        if (bullet == null || currentWeapon == null)
+        {
+            return;
+        }
+
+        float projectileDamage = currentDamage;
+        if (runtimeStatus != null)
+        {
+            projectileDamage += runtimeStatus.GetWeaponDamageBonus(currentWeapon);
+            if (runtimeStatus.bulletSizeMult > 1f)
+            {
+                bullet.transform.localScale *= runtimeStatus.bulletSizeMult;
+            }
+
+            ApplyWeaponSpecificProjectileVisuals(bullet);
+        }
+
+        SteamThrowerBulletController steamThrowerBullet = bullet.GetComponent<SteamThrowerBulletController>();
+        if (steamThrowerBullet != null)
+        {
+            if (runtimeStatus != null &&
+                currentWeapon.weaponName == "SteamThrower" &&
+                isBoostActive &&
+                runtimeStatus.steamThrowerBoostDamageMultiplier > 1f)
+            {
+                projectileDamage *= runtimeStatus.steamThrowerBoostDamageMultiplier;
+            }
+
+            steamThrowerBullet.Configure(projectileDamage, currentWeapon.attackRange, null);
+            if (runtimeStatus != null && currentWeapon.weaponName == "SteamThrower")
+            {
+                steamThrowerBullet.ConfigureBonus(
+                    runtimeStatus.steamThrowerOverheatSlipDamage,
+                    runtimeStatus.steamThrowerNoBulletGravity,
+                    isBoostActive && runtimeStatus.steamThrowerBoostBurnDropsActive);
+            }
+            return;
+        }
+
+        BulletController bulletController = bullet.GetComponent<BulletController>();
+        if (bulletController == null)
+        {
+            return;
+        }
+
+        ApplyWeaponDataToBullet(bulletController);
+        bulletController.bulletDamage = projectileDamage;
+
+        if (runtimeStatus != null)
+        {
+            int ricochet = runtimeStatus.ricochetCount;
+            if (currentWeapon.weaponName == "RailCraft" && runtimeStatus.railCraftRicochetMultiplier > 1f)
+            {
+                ricochet = Mathf.RoundToInt(ricochet * runtimeStatus.railCraftRicochetMultiplier);
+            }
+
+            bulletController.ricochetCount = ricochet;
+            ApplyWeaponSpecificBulletBonuses(bulletController);
+        }
+
+        if (currentWeapon.isPiercing)
+        {
+            bulletController.destroyOnHit = false;
+        }
+    }
+
+
+    private static float CalculateSpreadAngle(float baseAngle, float spread)
+    {
+        float clampedSpread = Mathf.Max(0f, spread);
+        return baseAngle + UnityEngine.Random.Range(-clampedSpread, clampedSpread);
+    }
+
+    private float GetCurrentBulletSpeed()
+    {
+        float bulletSpeed = currentWeapon != null ? currentWeapon.bulletSpeed : 0f;
+        if (runtimeStatus == null || currentWeapon == null)
+        {
+            return bulletSpeed;
+        }
+
+        switch (currentWeapon.weaponName)
+        {
+            case "SteamCannon":
+                return bulletSpeed * runtimeStatus.steamCannonBulletSpeedMultiplier;
+            case "SteamGatling":
+                return bulletSpeed * runtimeStatus.steamGatlingBulletSpeedMultiplier;
+            default:
+                return bulletSpeed;
+        }
+    }
+
+    private void ApplyWeaponSpecificProjectileVisuals(GameObject bullet)
+    {
+        if (bullet == null || runtimeStatus == null || currentWeapon == null)
+        {
+            return;
+        }
+
+        if (currentWeapon.weaponName == "RailCraft" && runtimeStatus.railCraftBulletSizeMultiplier > 1f)
+        {
+            bullet.transform.localScale *= runtimeStatus.railCraftBulletSizeMultiplier;
+        }
+
+        if (currentWeapon.weaponName == "SteamCannon" &&
+            runtimeStatus.steamCannonGiantBulletChance > 0f &&
+            UnityEngine.Random.value < runtimeStatus.steamCannonGiantBulletChance)
+        {
+            bullet.transform.localScale *= 3f;
+        }
+    }
+
+    private void ApplyWeaponSpecificBulletBonuses(BulletController bulletController)
+    {
+        if (bulletController == null || runtimeStatus == null || currentWeapon == null)
+        {
+            return;
+        }
+
+        switch (currentWeapon.weaponName)
+        {
+            case "SteamCannon":
+                bulletController.explosionRadiusMultiplier = runtimeStatus.steamCannonExplosionRadiusMultiplier;
+                bulletController.directHitKnockback = runtimeStatus.steamCannonDirectHitKnockback;
+                break;
+            case "RailCraft":
+                bulletController.applyOverheatOnHit = runtimeStatus.railCraftApplyOverheat;
+                break;
+            case "SteamGatling":
+                bulletController.bossDamageMultiplier = runtimeStatus.steamGatlingBossDamageMultiplier;
+                bulletController.normalDamageMultiplier = runtimeStatus.steamGatlingNormalDamageMultiplier;
+                break;
+        }
+    }
+
+    private void ApplySteamGatlingDownwardRecoil(Vector2 direction)
+    {
+        if (runtimeStatus == null ||
+            currentWeapon == null ||
+            currentWeapon.weaponName != "SteamGatling" ||
+            !runtimeStatus.steamGatlingDownwardRecoil ||
+            direction.y > -0.45f ||
+            rb == null)
+        {
+            return;
+        }
+
+        rb.linearVelocity = new Vector2(rb.linearVelocity.x, Mathf.Max(rb.linearVelocity.y, jumpForce * 0.75f));
+    }
+
+    private Vector3 GetMuzzlePosition(Vector2 direction)
+    {
+        Vector2 normalizedDirection = direction.sqrMagnitude > 0f ? direction.normalized : Vector2.right;
+        Vector2 perpendicular = new Vector2(-normalizedDirection.y, normalizedDirection.x);
+        Vector2 offset = normalizedDirection * currentWeapon.muzzleOffset.x + perpendicular * currentWeapon.muzzleOffset.y;
+        return FirePoint.position + (Vector3)offset;
+    }
+
+    private void PerformLineHitboxAttack(Vector2 direction, float angle, Vector3 muzzlePosition)
+    {
+        float range = Mathf.Max(0.1f, currentWeapon.attackRange);
+        float width = Mathf.Max(0.01f, currentWeapon.lineHitboxWidth);
+        float duration = Mathf.Max(0.01f, currentWeapon.lineHitboxDuration);
+        float damage = currentDamage;
+
+        if (runtimeStatus != null)
+        {
+            damage += runtimeStatus.GetWeaponDamageBonus(currentWeapon);
+        }
+
+        Vector3 center = muzzlePosition + (Vector3)(direction.normalized * range * 0.5f);
+        GameObject hitbox = new GameObject($"{currentWeapon.weaponName}_LineHitbox");
+        hitbox.transform.position = center;
+        hitbox.transform.rotation = Quaternion.Euler(0f, 0f, angle);
+
+        BoxCollider2D collider = hitbox.AddComponent<BoxCollider2D>();
+        collider.isTrigger = true;
+        collider.size = new Vector2(range, width);
+
+        Rigidbody2D hitboxBody = hitbox.AddComponent<Rigidbody2D>();
+        hitboxBody.bodyType = RigidbodyType2D.Kinematic;
+        hitboxBody.gravityScale = 0f;
+
+        LineHitboxController controller = hitbox.AddComponent<LineHitboxController>();
+        controller.Initialize(damage, duration, collider.size, currentWeapon.lineHitboxVisualPrefab, currentWeapon.lineHitboxVisualSprite);
+    }
+
+    private void ApplyWeaponDataToBullet(BulletController bullet)
+    {
+        if (bullet == null || currentWeapon == null) return;
+
+        bullet.bulletLifeTime = Mathf.Max(0.1f, currentWeapon.attackRange);
+    }
+
+    // --- CoolTime ---
+    private void CoolTimeUpdate()
+    {
+        if (coolTime > 0f)
+        {
+            coolTime -= Time.deltaTime;
+            if (coolTime < 0f) coolTime = 0f;
+        }
+    }
+
+    // --- Damage & Invincibility ---
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.collider.CompareTag("Ground")) isGrounded = true;
+        if (collision.collider.CompareTag("Enemy") &&
+            !MainDebugEnemySpawnWindow.IsDebugModeActive &&
+            !isInvincible &&
+            collision.gameObject.activeSelf)
+        {
+            TakeDamageByBullet(ENEMY_CONTACT_DAMAGE);
+        }
+        if (collision.collider.CompareTag("Wall"))
+        {
+            isTouchingWall = true;
+            if (collision.contacts.Length > 0)
+                wallNormal = collision.contacts[0].normal;
+        }
+    }
+
+    private void OnCollisionExit2D(Collision2D collision)
+    {
+        if (collision.collider.CompareTag("Wall"))
+        {
+            isTouchingWall = false;
+            wallNormal = Vector2.zero;
+        }
+    }
+
+    public async void TakeDamageByBullet(float bulletDamage)
+    {
+        if (MainDebugEnemySpawnWindow.IsDebugModeActive) return;
+        if (EndingManager.IsLoadingEnding) return;
+        if (isDeathRetrying) return;
+        if (isInvincible) return;
+        if (TryBreakBarrier())
+        {
+            return;
+        }
+
+        if (runtimeStatus != null)
+        {
+            runtimeStatus.HP -= (int)bulletDamage;
+            if (runtimeStatus.HP <= 0)
+            {
+                isDeathRetrying = true;
+                CancelTemporaryCombatEffects();
+                StageFlowManager deathFlow = StageFlowManager.Instance;
+                deathFlow?.enemySpawner?.StopSpawning();
+                if (AllBlack != null) AllBlack.SetAllToBlack();
+
+                // 他の敵を破壊
+                foreach (var enemy in GameObject.FindGameObjectsWithTag("Enemy"))
+                    if (enemy != null && enemy != this.gameObject) Destroy(enemy);
+                foreach (var bullet in GameObject.FindGameObjectsWithTag("Bullet"))
+                    if (bullet != null && bullet != this.gameObject) Destroy(bullet);
+
+                var rb2d = GetComponent<Rigidbody2D>();
+                if (rb2d != null)
+                {
+                    rb2d.linearVelocity = Vector2.zero;
+                    rb2d.angularVelocity = 0f;
+                    rb2d.constraints = RigidbodyConstraints2D.FreezeAll;
+                }
+                var token = this.GetCancellationTokenOnDestroy();
+                try
+                {
+                    await UniTask.Delay(1000, cancellationToken: token);
+                    // 同時に門が破壊された場合はEDを優先し、別シーンのFlowへ再試行を送らない。
+                    if (!EndingManager.IsLoadingEnding && deathFlow != null)
+                        deathFlow.RetryDayAfterPlayerDeath();
+                }
+                catch (OperationCanceledException) when (token.IsCancellationRequested) { }
+                return;
+            }
+        }
+        StartCoroutine(DamageCooldown());
+    }
+
+    private System.Collections.IEnumerator DamageCooldown()
+    {
+        isInvincible = true;
+        float blinkDuration = 1f, blinkInterval = 0.1f, elapsedTime = 0f;
+        while (elapsedTime < blinkDuration)
+        {
+            spriteRenderer.color = Color.white;
+            yield return new WaitForSeconds(blinkInterval / 2f);
+            spriteRenderer.color = Color.clear;
+            yield return new WaitForSeconds(blinkInterval / 2f);
+            elapsedTime += blinkInterval;
+        }
+        spriteRenderer.color = Color.white;
+        isInvincible = false;
+    }
+
+    private void UpdateAutoBarrier()
+    {
+        if (runtimeStatus == null || !runtimeStatus.module_barrier)
+        {
+            isBarrierActive = false;
+            isBarrierRecharging = false;
+            CanBarrierUse = false;
+            if (barrier != null)
+            {
+                barrier.SetActive(false);
+            }
+            return;
+        }
+
+        if (!isBarrierActive && !isBarrierRecharging)
+        {
+            ActivateBarrier();
+        }
+    }
+
+    private void ActivateBarrier()
+    {
+        isBarrierActive = true;
+        isBarrierRecharging = false;
+        CanBarrierUse = true;
+        if (barrier != null)
+        {
+            barrier.SetActive(true);
+        }
+    }
+
+    private bool TryBreakBarrier()
+    {
+        if (runtimeStatus == null || !runtimeStatus.module_barrier || !isBarrierActive)
+        {
+            return false;
+        }
+
+        isBarrierActive = false;
+        CanBarrierUse = false;
+        if (barrier != null)
+        {
+            barrier.SetActive(false);
+        }
+
+        SpawnBarrierBreakEffect();
+
+        RedeployBarrierAsync().Forget();
+        return true;
+    }
+
+    private async UniTaskVoid RedeployBarrierAsync()
+    {
+        if (isBarrierRecharging)
+        {
+            return;
+        }
+
+        isBarrierRecharging = true;
+        await UniTask.Delay(TimeSpan.FromSeconds(barrierRedeployDelay), cancellationToken: this.GetCancellationTokenOnDestroy());
+        isBarrierRecharging = false;
+
+        if (runtimeStatus != null && runtimeStatus.module_barrier)
+        {
+            ActivateBarrier();
+        }
+    }
+
+    private void SpawnBarrierBreakEffect()
+    {
+        if (barrierBreakEffectPrefab != null)
+        {
+            Instantiate(barrierBreakEffectPrefab, transform.position, Quaternion.identity);
+            return;
+        }
+
+        GameObject effect = new GameObject("BarrierBreakParticle");
+        effect.transform.position = transform.position;
+
+        ParticleSystem particle = effect.AddComponent<ParticleSystem>();
+        particle.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        ParticleSystem.MainModule main = particle.main;
+        main.duration = 0.45f;
+        main.loop = false;
+        main.startLifetime = new ParticleSystem.MinMaxCurve(0.35f, 0.75f);
+        main.startSpeed = new ParticleSystem.MinMaxCurve(2.2f, 5.2f);
+        main.startSize = new ParticleSystem.MinMaxCurve(0.08f, 0.2f);
+        main.startColor = new ParticleSystem.MinMaxGradient(
+            new Color(0.25f, 0.95f, 1f, 1f),
+            new Color(0.65f, 1f, 1f, 0.7f));
+        main.gravityModifier = 0.35f;
+        main.simulationSpace = ParticleSystemSimulationSpace.World;
+        main.stopAction = ParticleSystemStopAction.Destroy;
+
+        ParticleSystem.EmissionModule emission = particle.emission;
+        emission.rateOverTime = 0f;
+        emission.SetBursts(new[] { new ParticleSystem.Burst(0f, 22, 34) });
+
+        ParticleSystem.ShapeModule shape = particle.shape;
+        shape.enabled = true;
+        shape.shapeType = ParticleSystemShapeType.Circle;
+        shape.radius = 0.28f;
+
+        ParticleSystemRenderer particleRenderer = effect.GetComponent<ParticleSystemRenderer>();
+        if (particleRenderer != null)
+        {
+            particleRenderer.sortingOrder = 5000;
+        }
+        particle.Play();
+    }
+
+    private async UniTaskVoid BoostActive()
+    {
+        if (runtimeStatus == null)
+        {
+            runtimeStatus = StatusManager.Instance ?? FindAnyObjectByType<StatusManager>();
+        }
+
+        if (runtimeStatus == null || MaterialManager.Instance == null)
+        {
+            return;
+        }
+
+        if (currentWeapon == null)
+        {
+            return;
+        }
+
+        if (!MaterialManager.Instance.UseMaterial(MaterialManager.MaterialType.Gear, 1))
+        {
+            return;
+        }
+
+        if (boostUseEffect != null)
+        {
+            SpawnEffect(boostUseEffect, transform.position);
+        }
+
+        if (BoostPanel != null)
+        {
+            BoostPanel.SetActive(true);
+        }
+
+        boostRemainingTime = Mathf.Min(boostRemainingTime + 5f, 5f);
+        boostCount++;
+        if (currentWeapon != null &&
+            currentWeapon.weaponName == "SteamThrower" &&
+            runtimeStatus.steamThrowerBoostBurnDrops)
+        {
+            runtimeStatus.steamThrowerBoostBurnDropsActive = true;
+        }
+
+        if (isBoostActive)
+        {
+            return;
+        }
+
+        isBoostActive = true;
+        var source = CancellationTokenSource.CreateLinkedTokenSource(this.GetCancellationTokenOnDestroy());
+        boostCts = source;
+        boostSavedSpeedMult = runtimeStatus.attackSpeedMult;
+        boostAppliedSpeedMult = Mathf.Max(boostSavedSpeedMult * 0.5f, 0.05f);
+        runtimeStatus.attackSpeedMult = boostAppliedSpeedMult;
+
+        try
+        {
+            while (boostRemainingTime > 0f)
+            {
+                await UniTask.Delay(TimeSpan.FromSeconds(0.1f), cancellationToken: source.Token);
+                boostRemainingTime -= 0.1f;
+            }
+        }
+        catch (OperationCanceledException) when (source.IsCancellationRequested)
+        {
+        }
+        finally
+        {
+            FinishBoost(source);
+            source.Dispose();
+        }
+    }
+
+    private void FinishBoost(CancellationTokenSource source)
+    {
+        if (boostCts != source) return;
+        boostCts = null;
+        boostCount = 0;
+        isBoostActive = false;
+        boostRemainingTime = 0f;
+        if (runtimeStatus != null)
+        {
+            // 日の再試行やラン初期化が済んでいたら、その新しい値を上書きしない。
+            if (Mathf.Approximately(runtimeStatus.attackSpeedMult, boostAppliedSpeedMult))
+                runtimeStatus.attackSpeedMult = boostSavedSpeedMult;
+            runtimeStatus.steamThrowerBoostBurnDropsActive = false;
+        }
+
+        if (BoostPanel != null)
+        {
+            BoostPanel.SetActive(false);
+        }
+    }
+
+    async void ChangeGearCraft()
+    {
+        if (runtimeStatus == null || currentWeapon == null) return;
+
+        // GearCraft_Sword→GearCraft_Axe切替（武器名で判定）
+        CanUseGearCraft = false;
+        if (armAnimator != null)
+            armAnimator.SetFloat("speedNum", 1);
+
+        // GearCraft_Axeに切替（StatusManagerの武器リストから検索）
+        var source = CancellationTokenSource.CreateLinkedTokenSource(this.GetCancellationTokenOnDestroy());
+        gearCraftCts = source;
+        gearCraftReturnWeapon = currentWeapon;
+        var axeWeapon = runtimeStatus.FindOwnedWeaponByName("GearCraft_Axe");
+        gearCraftTemporaryWeapon = axeWeapon;
+        if (axeWeapon != null)
+        {
+            runtimeStatus.EquipWeapon(axeWeapon);
+            if (runtimeStatus.gearCraftTransformGearGain > 0)
+            {
+                MaterialManager.Instance?.AddMaterial(MaterialManager.MaterialType.Gear, runtimeStatus.gearCraftTransformGearGain);
+            }
+        }
+
+        try
+        {
+            await UniTask.Delay(TimeSpan.FromSeconds(5f), cancellationToken: source.Token);
+            if (armAnimator != null) armAnimator.SetFloat("speedNum", -1);
+            RestoreGearCraftWeapon();
+            await UniTask.Delay(TimeSpan.FromSeconds(5f), cancellationToken: source.Token);
+        }
+        catch (OperationCanceledException) when (source.IsCancellationRequested) { }
+        finally
+        {
+            FinishGearCraftTransform(source);
+            source.Dispose();
+        }
+    }
+
+    private void RestoreGearCraftWeapon()
+    {
+        if (runtimeStatus != null && gearCraftReturnWeapon != null &&
+            runtimeStatus.currentWeapon == gearCraftTemporaryWeapon &&
+            runtimeStatus.ownedWeapons.Contains(gearCraftReturnWeapon))
+            runtimeStatus.EquipWeapon(gearCraftReturnWeapon);
+        gearCraftReturnWeapon = null;
+        gearCraftTemporaryWeapon = null;
+    }
+
+    private void FinishGearCraftTransform(CancellationTokenSource source)
+    {
+        if (gearCraftCts != source) return;
+        gearCraftCts = null;
+        RestoreGearCraftWeapon();
+        CanUseGearCraft = true;
+    }
+
+    public void CancelTemporaryCombatEffects()
+    {
+        // 待機の再開を待たずに解除し、Snapshot復元後の書き戻しを防ぐ。
+        CancellationTokenSource pendingBoost = boostCts;
+        if (pendingBoost != null)
+        {
+            FinishBoost(pendingBoost);
+            pendingBoost.Cancel();
+        }
+        CancellationTokenSource pendingTransform = gearCraftCts;
+        if (pendingTransform != null)
+        {
+            FinishGearCraftTransform(pendingTransform);
+            pendingTransform.Cancel();
+        }
+    }
+
+    private void OnDestroy() => CancelTemporaryCombatEffects();
+
+    /// <summary>
+    /// エフェクトを生成するヘルパー
+    /// </summary>
+    private void SpawnEffect(GameObject prefab, Vector3 position)
+    {
+        if (prefab == null) return;
+        GameObject effect = Instantiate(prefab, position, Quaternion.identity);
+        effect.SetActive(true);
+        var ps = effect.GetComponent<ParticleSystem>();
+        if (ps != null)
+        {
+            ps.Simulate(0, true, true);
+            ps.Play();
+        }
+    }
+}

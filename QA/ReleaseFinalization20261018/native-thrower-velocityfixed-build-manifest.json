@@ -1,0 +1,19 @@
+{
+  "source_batch": "BatchNativeRanged.cs.txt",
+  "source_batch_sha256": "9962612d0f36793a4bd0a11df23cb3faed7efe62610ec9170438a17474018868",
+  "source_plan": "native-ranged-cases.csv",
+  "source_plan_sha256": "a1304ee797a3e916c6384aa08d85a77af1c9b4016340a6ad2d94013bfe83bec6",
+  "source_label": "gate_native_ranged_EK9_SteamThrower_seed77_fps60",
+  "new_label": "gate_native_ranged_EK9_SteamThrower_velocityfixed_seed77_fps60",
+  "case_count": 1,
+  "new_plan_sha256": "23b7f6ab53806f83894b8f36973085796aed18efc5f463769487a7f8f1c6f762",
+  "output_sha256": "cf5ae487bde84f7d9cc9748bfea1a0920b7754d972531edc705cc939a162ace0",
+  "configuration_changes": [],
+  "runner_changes": [
+    "Plan filename/hash",
+    "UI-progress overlap guard",
+    "DOTween Default and logger enabled for detailed missing-target warnings"
+  ],
+  "previous_timeout_preserved": true,
+  "runtime_verification": "pending root execution"
+}

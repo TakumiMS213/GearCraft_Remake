@@ -1,0 +1,41 @@
+新macOSビルドのStandalone起動・正常終了smoke（準備のみ）
+
+実行対象を /private/tmp/GearCraftReleaseVerification20261019/GearCraft.app に固定。
+旧ReleaseFinalizationのapp・結果・保存バックアップは使用/変更しない。再利用するのは既存normal-quit-helper実行ファイルのみで、SHA256 1393faeb59adae61cfba3339268019b22175ff323638f826ee818f5737751524 と照合する。Swift再コンパイル、OS入力、画面取得、権限変更はしない。
+
+rootの実行手順
+1. 新ビルド成功・パッケージ確認後、EditorのPlayを停止し、UI/Ending検証の保存状態復元を確認する。別のGearCraft Playerを終了させておく。
+2. 準備内容を表示するだけの場合（アプリ/保存/helperへのアクセスなし）:
+   python3 QA/ReleaseVerification20261019/standalone_probe.py
+3. 初回の既存Threaded設定によるsmoke:
+   python3 QA/ReleaseVerification20261019/standalone_probe.py --execute --graphics threaded --run-dir QA/ReleaseVerification20261019/standalone-threaded-run1
+   実行はrootのみ。今回作成担当は実行していない。
+4. result.json、console-findings.json、restore-plan.json、Player domain復元結果、protected-domains-final.json、application-support-after.jsonを確認する。
+   PASS_NORMAL_EXITかつ正常終了true、forced_cleanup=false、process_may_still_be_running=false、restoration_pending=false、within_60_seconds=true、application_support_unchanged=trueを採用条件とする。
+   Thread/ComputeBufferの既知注意は例外と分けて記録する。例外0は警告0や実画面/音声検証済みを意味しない。
+
+初回identity
+--execute時に新appのInfo.plist・実行ファイル・Assembly-CSharp.dll・主要scene dataのhashを採り、standalone-build-identity.jsonへ排他的新規保存する。保存後、fresh backup後、終了後にも同じidentityか照合する。
+既存のidentityファイルがあれば完全一致するappだけを許容。新ビルドが更に更新された場合、identity/過去結果を上書きして続行せず別QA run計画として扱う。
+Bundle IDは com.DefaultCompany.2D-URP、Assemblyには既存Audio/cadence機能のmarker、scene dataにはglobalgamemanagers/level0を要求。これらはbuildのsource一致/署名/公証の完全な代用ではなく、rootのビルド・パッケージ確認と併用する。
+
+状態保護
+実行直前にPlayer domain全体を型付きplistでfresh保存し、diskとdefaults exportの一致を確認する。過去20keysやcanonical16keysの値を流用しない。
+Editorのunity.Takumi.GearCraft_Remakeと互換com.Takumi.GearCraft_Remakeは比較のみで書き換えない。
+起動前に同名Player不在、起動後に唯一の該当PIDと絶対実行パスが今回Popen子に一致することを確認する。復元はその子の終了・reapと同名Player不在を確認してから行う。
+defaults import後に残る追加キーは、実行前に存在せず、終了時snapshotで存在し、削除直前の全domain/当該値が予測と一致するものだけを個別削除する。Galleryを決め打ちで削除したりdomain全削除はしない。
+最後に全キーの型/値/存在、保護Editor domain、AppSupportファイルmanifestを照合。AppSupportは比較のみでファイル削除や書戻しはしない。変化した場合はPASSを拒否し、rootの判断に残す。
+既存result folderへは書かず、新QA直下の未作成folderだけを許容する。保存内容そのものはconsoleに表示せず、QA backupファイルへ保存する。
+
+時間と終了
+59秒の操作予算に最終ローカル記録用の1秒を残す。準備は5秒以内、起動後20秒観測（5秒時点で自己PIDを2秒sample）、通常終了要求後15秒以内のexit0を確認する。
+正常終了要求は既存helperから対象PIDと絶対実行パスを照合してNSRunningApplication.terminate()。通常終了できない場合は、保持する未reapのPopen子だけにTERM→5秒待機→必要ならKILL→5秒待機。名前/プロセスグループや任意PIDを終了させない。
+強制終了を正常終了PASSにしない。subprocess操作は残予算でtimeoutを制限し、60秒を超えた場合もPASSを拒否する。OS/ファイルI/O自体が停止すれば絶対時刻の完了は保証できないため、elapsedとpendingを必ず記録し、復元確認が無いまま完了としない。
+不確実なidentity/同時Player/保護domain変化/時間不足なら復元書込みを進めずRESTORE_REVIEW_REQUIREDを残す。rootは当該runのfresh backupとresultを使って後処理する。
+
+スコープ
+新ビルドの起動・元描画モード確認・正常終了・保存状態保護のみ。実OS入力、Title描画の目視、音量操作とOSプロセス再起動、全プレイ、別OS、公証はこのsmokeの対象外。
+--graphics directは必要と判断された場合の別run用に残すが、今回の既定はthreadedであり自動追加試行はしない。制作の恒久描画設定を変更しない。
+
+準備時確認
+旧2Pythonのhashをstandalone-preparation.jsonに記録。新2Pythonはcompile()による構文確認PASS。アプリ、helper、defaults、sampleは未実行。新appのidentityは準備時にはまだ取得していない。

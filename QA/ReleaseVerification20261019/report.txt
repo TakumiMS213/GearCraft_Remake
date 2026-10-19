@@ -1,0 +1,77 @@
+GearCraft 再検証レポート（2026-10-19 / ReleaseVerification）
+状態: 今回予定した検証・局所修正・最新macOSビルド・Standalone正常終了・保存復元・配布候補ZIP作成を完了。正式公開や一般のリリース条件をすべて満たしたという意味ではなく、下記の未確認/未解決事項を維持する。
+
+段階と保存状態
+前段ReleaseContinuationのsession 20261019-001012-875-20240fc5f6004f7fb25cebb8921f88a3は、native Restore後、2026-10-19T01:08:15Zの独立Verifyで復元完了。PlayerPrefs16項目、Play停止・Title clean、fixed ticks2822399、GameView index3とサイズ一覧、logger、DOTween、退避ファイルhashが一致した。
+根拠: ../ReleaseContinuation20261019/canonical-restoration.txt / canonical-final-verification.json。
+今回は別fresh session 20261019-010910-317-110653f0ec5245b8ad468da33de3bd20を使用。2026-10-19T01:18:42Zにnative Restore、01:18:50Zに独立Verifyも完了。16prefs全一致、Title clean/Playfalse、precise ticks2822399、GameView index3/サイズ一覧、logger/DOTween、退避hashを確認し、QA callback進行なし。根拠は今回folderのcanonical-restoration.txt / canonical-final-verification.json。前段とは別々のfresh backupへ復元した。
+前段のTitle外部変更Reload modal待ちは解消。rootがUnity本コンパイルを確認し、Assembly-CSharp.dll更新は2026-10-19 09:41:55 JST。以下は新制作コードによる再検証である。旧レポートと旧失敗結果は上書きしない。
+
+今回の制作修正とUI確認
+Titleの曲名表示を右下アンカー/pivotへ直し、余白右24・下20を設けた。FullHDで曲名spriteのboundsはx1239.377〜1896、y19.99996〜91.04079となり、Canvas1920×1080内に収まることをnative検査でPASS、rootが画像を目視確認した。
+GAMESTART hoverはidle RGBA(.961,.961,.961,1)から指定highlight RGBA(.613,.613,.613,1)へ変化。SETTINGのnative開閉とStory進行も観測した。操作はGraphicRaycasterで対象を確認したEventSystem合成pointerであり、実OSマウス操作とは区別する。
+
+初回UI run1は実際の文章overflowを検出
+ui-visual-20261019-011008-436-5ddcdbe8/result.txtはFAIL exceptionのまま保持。Storyの後、arrival page0はoverflowなし、page1の3行文はpreferredHeight144.13に対し表示領域height138で収まらず、arrival_text_no_overflow page1で停止した。これは前段のStageCounter未生成を誤FAILとしたQA問題とは別で、修正後の文章がまだ長いことを検出した結果。
+page1の制作assetを次の2行へ再修正した。
+「A / D で左へ進み、ベッドで休みましょう。
+ベッドのそばで Space を押すと眠れます。」
+rootのnative計測ではpreferredHeight95.24となり領域内。文面以外の待ち時間/カメラ演出は変更しない。
+修正後の初回UI再試行ui-visual-20261019-011309-316-201615dcはPASS。Story全5ページ・arrival全2ページのnative進行を観測し、両arrivalともoverflow=False、2行表示を記録。rootが04c/04d画像を目視して収容を確認した。
+初日前状態、左上端に一致したタスク背景、左中央/画面内のベッド矢印まで確認し、矢印の横揺れ17.825pxを観測。PNG9枚はいずれも1920×1080で保存。睡眠・日進行やクラフトの実操作はこのprobeでは行っていない。
+
+宿舎WXGA検証はPASS
+dorm-wxga-20261019-011201-003-f10edb0b/result.txtはPASS。既存1366×768 presetでGameView/Camera/Canvasが一致、初日前、睡眠目的と操作表示、タスク背景の左上端一致・画面内収容・文字overflowなし、矢印sprite表示/画面内/左中央配置を確認した。
+タスクbounds=(0,646.91,670,121.09)、矢印はx41.04→22.11へ18.927px揺れ、y336/height96。完全なWXGA PNG2枚を保存。終了後の元FullHD index3・描画サイズ・サイズ一覧の局所復帰も確認済み。これは今回session全体の最終保存復元とは別。
+Screen参考値1672×924はMCP Editor contextの値で、実GameView1366×768と混同しない。FullHDとWXGAはどちらも概ね16:9であり、異なるアスペクト比全般の検証済みとは記載しない。
+
+EndingManager寿命の局所回帰
+制作修正はDOFade3本のKillOnDestroy link、FadeOutAndLoadSceneのdestroy token付きDelay、fade後token確認。owner破棄後のTween残存と旧ownerからのscene要求を抑止し、ownerの一時非表示では進行を止めない。
+最初のending-lifetime-result.txtはFAIL、completed0/5を保持。Destroy要求の約3ms後、ownerがnullになった直後にEditor更新からTween activeを判定し、後続のDOTween PlayerLoop更新を待っていなかった。
+run2はDestroy後にゲームframeが3以上かつunscaled時間が50ms以上進むのを待つQA判定へ変更し、同じ制作コードの5経路でPASSした。
+  Start_panel_destroy / Show_image_destroy / FadeOut_delay_destroy / FadeOut_panel_destroy / Disable_only_continues。
+ending-lifetime-run2-result.txt: completed5/5、3.555 wall秒、relevant_logs0、Title scene handle不変、transition idle、Pending0、Gallery keyの有無/値不変。callback解除・一時owner破棄も完了。非表示ケースはalphaが.2420785→.4469575へ進み、破棄とは区別されている。
+最初の早過ぎる判定のFAILは制作の寿命不具合が再現した根拠には採用しない。run2のPASSは過去3件のImage警告の所有者特定を兼ねない。通常ED→Gallery解放告知→Titleは次項の別試験で確認した。
+
+通常EDの統合検証と通知hintの高さ修正
+EndingManager.LoadEndingScene(3)と本編の画像送り/解放処理を使い、12枚のED sequenceからGallery解放通知まで到達。Title開始の局所fixtureとしてStageCounter31を用意し、runtime Gallery cacheのhasReachedEndingをfalseへ設定したため、通常ゲームを最初から完走した試験とは区別する。解放保存自体は本編EndingManager.Awakeが行い、最後に今回fresh保存へ復元済み。
+初回ending3-native-notice-result.txtは通知到達・errors0の後、ContinueHintのTMP overflow判定でFAIL。root計測でhintはrect height26 / preferred26.07、本文はheight122 / preferred95.24でoverflow=False。ending3-notice-overflow-before.pngは目視可能であり、この数値だけから目に見える文字切れを断定しない。
+Play停止・Title Editへ戻して、Ending.unityのContinueHint RectTransform heightのみ26→32へ変更。新label ending3-native-run2で旧失敗資料を残して再実行した。
+再試行ending3-native-run2-notice-result.txtはREADY_NOTICE_REVIEW。13回のnative click経路で通知に到達し、本文・hintともoverflow=False、Gallery unlocked=true、errors0、callback解除済み。黒背景のpixel boundsは(0,0)〜(1920,1080)、Canvas order100で全画面。ending3-native-run2-notice.pngを保存し、その時点で表示を保持して目視確認に使った。
+続くending3-native-run2-title-result.txtはPASS_NATIVE_FLOW_REVIEW_IMAGES。通知の既存ButtonをIPointerClickHandler経由で操作し、Titleへ復帰。Gallery.IsUnlocked=true、GalleryIcon.interactable=true、Time.timeScale=1、stage1をnativeで確認した。rootが通知/Title両PNGを目視し、黒背景＋2行本文＋下部hint、明るいGallery入口の表示を確認済み。一時StageCounterもcleanup済み。
+この局所統合経路は完了。制作17項目のsource-build-manifest.jsonにはEnding.unityを追加してある。
+
+前段から継承する戦闘結果
+SteamThrowerは終盤STR/ACC20・工房module20、stage31/seed77のnative bot試験でEKを60.0667秒で撃破、ED3接続、ボス中本人/門被害0。入力・HP/Gate収支8チェックPASS。今回phaseで再戦したものではない。
+初期構成注入の1seedであり、素材取得からの通しプレイや人間の攻略成功率ではない。旧2件の途中停止は保持し、敗北/討伐時間に数えない。BB Gear/ThrowerとEK Gearの前回の本人死亡結果は未解消の観測として残す。
+根拠: ../ReleaseContinuation20261019/combat-result-audit.txt / performance-report.txt。
+
+新macOSビルドとパッケージ検査
+macos-build.json: build-5765894403、StandaloneOSX非Development版Succeeded、201101453 bytes、errors0、warnings3。既知のMetal warningはLight2Dのvector truncation2件とPixelationのSampleSource1件で、今回も残存する。
+実体はMono。BuildReport optionsにIl2CPPの文字列があるが、Managed AssemblyとMono runtimeの現物を優先し、IL2CPP版とは記載しない。実行ファイル・UnityPlayer・Monoの主要3binaryはx86_64/arm64両対応、アドホック署名のcodesign --deep --strictはexit0。
+初回macos-package-verification.jsonのFAIL_OR_UNVERIFIEDは保持。SetLinkのgenericメソッド照合がQA側で不十分だったため、照合を修正したrun2はPASS_LOCAL_ARTIFACT_CHECKS_WITH_LIMITS、検査errors0/warnings0となった。これはビルドshader warnings3が消えた意味ではない。
+source17項目のhashはmanifestと一致、Ending3本のowner link・取消・fade後token照合、Audio保存、共通攻撃cadenceを含むIL15チェックがすべてtrue。Managed hashは1c596d3af54915ec82d1d761a7f34149bf006a8b74b5de09aa5e9125f9011b95。
+場面名/文章のpackaged byte出現を確認したが、RectTransform数値のPlayer asset bindingや実Player画面の目視までの証明ではない。Editorでの画像確認と配布物検査の範囲を区別する。
+根拠: macos-build.json / macos-package-verification.json / macos-package-verification-run2.json / source-build-manifest.json。
+
+新Standaloneの起動・正常終了・Player保存復元
+standalone-threaded-run1/result.jsonはPASS_NORMAL_EXIT、20.531秒、exit0、forced_cleanup=false、signalsなし。元のkGfxThreadingModeThreadedで起動・正常終了した。今回appのidentityを新規記録し照合、旧helperのみを再利用し、旧保存バックアップは流用していない。
+Console例外0。今回はThread premature-finalization注意0、ComputeBuffer GC disposal注意1。前回Thread注意が今回は出なかったことを修正済みとは扱わず、R22の所有者・影響は未解決のまま。例外0は警告0ではない。
+Player domain実行前20キーの型/値/存在を全復元した。追加されたGearCraft.Gallery.Progress.v1のみ、実行前不在・終了時値・削除直前のdomain一致を確かめて限定削除。Editor保護2domainsとAppSupportは不変、restoration_pending=false、process_may_still_be_running=false。
+rootがビルド/起動後にcanonical-postbuild-verification.jsonでも再照合し、2026-10-19T01:21:20ZにEditor16keys、Title clean/Playfalse、ticks2822399、GameView/サイズ一覧、logger/DOTween、退避hashまで再一致した。EditorとPlayerの両方で今回の復元待ちは解消済み。
+これは起動/正常終了/保存状態保護のsmokeであり、実OS入力・実Player画面の目視・音量変更後のプロセス再起動は検証していない。
+
+永続保存した配布候補
+Builds/ReleaseCandidate20261019/GearCraft-macOS-universal-20261019.zip
+同folderに.zip.sha256とREADME.txtを保存。
+ZIPは61877021 bytes、SHA256 26a4b9729b9d8f480dc26f2eb0da1e56e172386dbdf9105275f78186d29ebcba。
+release-archive.jsonはPASS。205 files/symlinksをZIP展開後に全照合し、file hash・mode・link targetが一致、元app不変、展開後codesign exit0。workspaceへの保存後hashも一致した。
+ローカル配布候補の作成までで、外部公開はしていない。アドホック署名の整合性はDeveloper ID署名、公証、Gatekeeperでの配布承認を意味しない。
+
+未確認・未解決事項
+・正式公開、Developer ID署名/公証、他OSは未実施。
+・実OSマウス/キーボード操作、実Player描画の目視、音量UI変更→OSプロセス再起動/聴感は未検証。
+・FullHD/WXGAは16:9系の解像度違いであり、異なるアスペクト比全般は未検証。
+・Metal shader warning3件、終了時ComputeBuffer注意1件の所有者/影響は未解決。R22のThread注意は今回0件だが、過去の発生原因が解決したとの証拠はない。
+・BB Gear/Thrower・EK Gearの既存ボット本人死亡観測は維持する。通常プレイヤーの攻略不能判定には使わず、今回の範囲で追加性能調整はしていない。
+今回予定した一巡は完了。未実施事項をPASSへ置き換えず、過去FAIL/中断記録も保持する。

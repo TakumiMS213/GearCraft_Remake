@@ -1,0 +1,84 @@
+{
+  "read_only_analysis": true,
+  "new_process_launched": false,
+  "app_identity_unchanged_all_three": true,
+  "results": [
+    {
+      "run": "standalone-smoke-run1",
+      "result": "STOPPED_REVIEW_REQUIRED",
+      "elapsed_seconds": null,
+      "normal_exit": false,
+      "restored": "not_attempted",
+      "graphics": [
+        "kGfxThreadingModeThreaded"
+      ],
+      "main_samples": 2097,
+      "main_event_wait": 0,
+      "main_timer": 2097,
+      "main_dispatch_semaphore_wait": 2097,
+      "main_mono_invoke_observed": false,
+      "main_metal_work_observed": false,
+      "gfx_worker_samples": 2097,
+      "gfx_worker_dispatch_semaphore_wait": 2097,
+      "gfx_worker_metal_work_observed": false,
+      "premature_finalization_messages": 0,
+      "compute_buffer_cleanup_messages": 0,
+      "sample_file": "QA/ReleaseFinalization20261018/standalone-smoke-run1/process-sample.txt",
+      "subsequent_cleanup": {
+        "source": "standalone-smoke-run1/cleanup-result.json",
+        "process_stopped": true,
+        "full_player_domain_restored": true,
+        "keys_restored": 20,
+        "protected_domains_unchanged": {
+          "unity.Takumi.GearCraft_Remake": true,
+          "com.Takumi.GearCraft_Remake": true
+        }
+      }
+    },
+    {
+      "run": "standalone-direct-run1",
+      "result": "PASS_NORMAL_EXIT",
+      "elapsed_seconds": 20.543,
+      "normal_exit": true,
+      "restored": "verified_full_type_value_existence",
+      "graphics": [
+        "kGfxThreadingModeDirect"
+      ],
+      "main_samples": 170,
+      "main_event_wait": 150,
+      "main_timer": 20,
+      "main_dispatch_semaphore_wait": 0,
+      "main_mono_invoke_observed": true,
+      "main_metal_work_observed": true,
+      "gfx_worker_samples": null,
+      "gfx_worker_dispatch_semaphore_wait": null,
+      "gfx_worker_metal_work_observed": false,
+      "premature_finalization_messages": 5,
+      "compute_buffer_cleanup_messages": 1,
+      "sample_file": "QA/ReleaseFinalization20261018/standalone-direct-run1/process-sample-at5s.txt"
+    },
+    {
+      "run": "standalone-threaded-recheck1",
+      "result": "PASS_NORMAL_EXIT",
+      "elapsed_seconds": 20.467,
+      "normal_exit": true,
+      "restored": "verified_full_type_value_existence",
+      "graphics": [
+        "kGfxThreadingModeThreaded"
+      ],
+      "main_samples": 169,
+      "main_event_wait": 99,
+      "main_timer": 70,
+      "main_dispatch_semaphore_wait": 52,
+      "main_mono_invoke_observed": true,
+      "main_metal_work_observed": false,
+      "gfx_worker_samples": 169,
+      "gfx_worker_dispatch_semaphore_wait": 161,
+      "gfx_worker_metal_work_observed": true,
+      "premature_finalization_messages": 5,
+      "compute_buffer_cleanup_messages": 1,
+      "sample_file": "QA/ReleaseFinalization20261018/standalone-threaded-recheck1/process-sample-at5s.txt"
+    }
+  ],
+  "limitation": "sample counts are not frame counts; no screenshots or gameplay-input validation; first sample taken much later after launch"
+}

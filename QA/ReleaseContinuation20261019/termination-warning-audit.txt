@@ -1,0 +1,52 @@
+R22 終了時注意の発生元調査（2026-10-19）
+
+結論
+アプリ所有ComputeBufferの未Disposeは見つからず、制作コードの修正候補は現時点で0件。Thread注意はMonoランタイムが出す文字列まで特定できた。ComputeBuffer注意はUnity管理ラッパーのfinalizer由来であり、2D Animation 10.2.2の起動時fallback bufferに静的な未解放候補がある。ただし、今回の1件がその個体であることは実行時の割当スタックで未確認。パッケージ所有物への推測によるRelease、警告抑制、Engine/Package更新は行わない。
+
+観測事実
+QA/ReleaseFinalization20261018/standalone-direct-run1/player.log と standalone-threaded-recheck1/player.log の両方で、終了時にThread prematurely finalizedが5件、ComputeBuffer GC disposalが1件。両試験は終了コード0、正常終了、保存状態復元済み。注意が出た事実と、クラッシュ/保存失敗が発生したことは別。初回の長時間停止との因果も未確定。
+実体はMono。アプリのContents/Frameworks/libmonobdwgc-2.0.dylibに同じThread注意文字列が存在する。BuildReportのIL2CPPラベルを根拠にしない。
+
+調査範囲
+Assetsの全153 C#ファイル、同梱DOTween DLL（Editor DLLも含む型参照文字列）、Library/PackageCacheのruntime/editor/sample/test検索を実施。Runtimeの生成箇所はEditor/Tests/Samplesを除いて別途確認した。
+Assets全C#にComputeBuffer/GraphicsBuffer参照は0件。両DOTween DLLにも両型名の参照文字列はない。アプリ側のnew Thread/ThreadPool/Task.Run/UniTask.RunOnThreadPool/UniTask.SwitchToThreadPool呼出しも見つからない。System.ThreadingのusingはCancellationToken等にも必要なので、usingの存在をThread所有の証拠にしていない。DLLの文字列検査は動的反射まで完全に否定する検査ではない。
+
+1. Thread注意の発生元
+Unity公式Monoソース mono/utils/hazard-pointer.c:175-182付近のmono_hazard_pointer_get()は、mono_thread_info_get_small_id()が負の場合に当該g_warningを出し、emergency hazard tableを返す。ローカルUnity 6000.0.67f1付属 il2cpp/external/mono/mono/utils/hazard-pointer.cにも同じ分岐があり、実Mono dylibにも文字列がある。
+https://github.com/Unity-Technologies/mono/blob/unity-main/mono/utils/hazard-pointer.c
+
+したがって、Monoがthread登録情報を得られない状態の診断であることは説明できる。一方、「このアプリがThreadを5本作り捨てた」「Audio変更が原因」「注意だけで安全/危険と断定」はできない。終了時のnative callback/engine threadの呼出順や呼出元スタックはログにない。UniTaskにはThreadPool API実装があるが、アプリ側呼出しはなく、インストールされていることを原因扱いしない。
+
+2. ComputeBuffer注意の意味
+Unity公式6000.0 C#参照のComputeBuffer finalizerはDispose(false)へ進み、未解放native pointerが残る場合に注意を出す。GC/finalizerからのnative破棄はmain thread要件のため避ける設計。Release()はDispose()へ委譲する。実PlayerのUnityEngine.CoreModule.dllに今回の注意文言が存在する。公開6000.0ブランチの最新版には割当スタック追跡の案内が追加されており、実6000.0.67f1の注意全文と完全一致する版ではない点に留意。
+https://github.com/Unity-Technologies/UnityCsReference/blob/6000.0/Runtime/Export/Shaders/ComputeBuffer.bindings.cs
+https://docs.unity3d.com/6000.0/Documentation/ScriptReference/ComputeBuffer.Release.html
+
+「GCが正常にGPU資源を手動解放した」という成功通知ではない。所有者がDispose/Releaseする必要がある種類の注意だが、注意文言のみでは所有者を特定できない。
+
+3. 最も具体的なパッケージ側候補
+Library/PackageCache/com.unity.2d.animation@6e14714a57c6/package.json: version 10.2.2。
+Runtime/BatchedDeformation/GpuDeformationSystem.cs:
+・23-29行: AfterSceneLoadのRuntimeInitializeOnLoadMethodで、static s_FallbackBufferがnullならComputeBufferを生成してglobal shader bufferへ設定する。
+・27行のcount/strideはいずれもsizeof(float4x4)=64なので、このfallbackは64×64=4,096 bytesのpayload（管理/native付帯領域は別）。実際の警告個体のサイズを測定した値ではない。
+・32-37行: ClearFallbackBufferにReleaseがある。
+・73-82行: ClearFallbackBufferの呼出しはGpuDeformationSystem.Cleanup経由。
+Runtime/BatchedDeformation/DeformationManager.cs:
+・28-43行: managerはinstanceアクセスで遅延生成。
+・111-124行: OnDisableが各system.Cleanupを呼ぶ。
+・231-247行: 起動時のDeformationStartupはUNITY_EDITOR限定。
+
+AssetsでSpriteSkin名・SpriteSkinスクリプトGUID（57c008f954fe54a8bb972de1018a2cb8）の参照は0件。一方、実PlayerのContents/Resources/Data/RuntimeInitializeOnLoads.jsonにはUnity.2D.Animation.Runtime / GpuDeformationSystem / CreateFallbackBufferが含まれている。
+この組合せでは、SpriteSkin/managerを使わないPlayerでもfallbackだけを生成し、managerの寿命に紐づくCleanupに到達しない経路が成立し得る。終了時1個の注意と整合する有力候補。ただし稼働中s_FallbackBuffer、manager存在、Release呼出し、注意の割当元を直接測っていないため「今回の原因確定」とは記載しない。
+
+4. 他の生成元の扱い
+URP 17.0.4ではShaderData.csが複数ComputeBufferを所有するが、同ファイル30-35行でDisposeBufferを呼び、UniversalRenderPipeline.cs:312でShaderData.instance.Dispose、326でConstantBuffer.ReleaseAllを呼ぶ解放経路がある。
+CoreのProbeVolume/GPUDriven、URP LightCookieManager、LightTransportにも生成箇所がある。アプリ独自生成ではなく、単なるnew ComputeBuffer検索ヒットを未解放と扱わない。RenderGraph無効ログだけではこれら全機能の非使用を証明できない。
+
+修正方針と必要最小の追加確認（提案のみ・未実施）
+・現時点は制作コード変更なし。終了時に全bufferを探してReleaseしたり、パッケージのprivate static fieldを反射で破棄するコードは加えない。
+・R22を原因確定まで追う場合は、使い捨ての検証用Player/コピーでbuffer割当元を記録する。native leak detectionの割当スタック取得がこのUnity版で利用可能か確認し、Title時のfallback存在/manager未生成/終了直前未Releaseを観測する。観測でmanagerを生成するinstance getterを呼ぶと条件を変えるので、読み取りはfield直接に限る。
+・パッケージ候補の確認後はUnity側へ最小再現（2D Animation入り、SpriteSkinなし、Title開始→通常終了）を添える。修正版パッケージが確認できた場合の更新、または未使用パッケージを外した検証用ビルドとの比較を次の判断材料にする。今回の作業ではPackageCache/manifest/制作ファイルを編集していない。
+・アプリ所有の未Disposeが将来スタックで確認できた場合に限り、当該所有クラスのOnDisable/OnDestroy等でnull/IsValidを考慮してReleaseし参照をnullへ戻す局所修正を検討。現在はその対象がない。
+
+本作業は読取とこのメモ保存のみ。MCP、アプリ新規起動/停止、制作コード編集、OS権限変更は行っていない。R22は「発生元の種類とパッケージ候補を特定、警告個体の所有者は未確定」のままとする。

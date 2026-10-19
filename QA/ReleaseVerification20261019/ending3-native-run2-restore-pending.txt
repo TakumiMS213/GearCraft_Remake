@@ -1,0 +1,3 @@
+PENDING_ROOT_RESTORE
+session=20261019-010910-317-110653f0ec5245b8ad468da33de3bd20
+Native RecordEnding may save Gallery data; root must restore fresh 16 typed keys after Play stops.

@@ -1,0 +1,24 @@
+{
+  "utc": "2026-10-19T01:17:00.727905+00:00",
+  "head": "82e55c75c7b7127fe15e06e280bc43290492363c",
+  "production_and_settings_sha256": {
+    "Assets/GearCraft/Paticles/SteamThrowerAttack.prefab": "6d2da51aecc12fe3960119c2763619f7f7a4ae23a77a728460ba24d9154e81fa",
+    "Assets/GearCraft/Paticles/SteamThrowerOverheatSparks.prefab": "d9f4aca1fa010674d195c85e7aef4682123fa7fd69b86dafbdadc64292353744",
+    "Assets/GearCraft/Scenes/Title.unity": "d0c96afd9faf27cbf4227da67aefcf25b3c667dc23534f52be42bacc0b584831",
+    "Assets/GearCraft/ScriptableObject/Story/CraftSpaceArrivalMessage.asset": "7c3ca6edfd1cb37a96a9bbe346efd8da2ab80ef57e7e496f42d776e8396cfa2d",
+    "Assets/GearCraft/Scripts/Craft/CraftTutorialController.cs": "ae81c8875c0b7020af5d55ecfa5d9cd080461ae07a039a94451ae2ee39c25d84",
+    "Assets/GearCraft/Scripts/Ending/EndingManager.cs": "17d073827d7bd2f4c3f04ad350ce07a96633d92a2bbeb05b7ccd6a96a2c9b854",
+    "Assets/GearCraft/Scripts/Main/PlayerAttackCadence.cs": "4fafff854f2b66a08534f197e23580a9c76c9fadc57d51d2e0d364a9cf9955f8",
+    "Assets/GearCraft/Scripts/Main/PlayerAttackCadence.cs.meta": "92eab6f52e8a424ee9890bdbc7bbec67aaa3d326e9a6efd38fb6e4480ba9452a",
+    "Assets/GearCraft/Scripts/Main/PlayerController.cs": "7d77c90e3b7ddf34c8eef0c0f25cf7a679f21d94b816e179c155b5e4b3652daf",
+    "Assets/GearCraft/Scripts/Title/Audio.cs": "174402e5742e85f9a4618e18628e8239fade79f66190a21dbe801052da365fa5",
+    "Assets/GearCraft/Scripts/UI/InventoryUI.cs": "ac96b1350fbea1cb74f3fbad70d970bcf5011f0a8c49c7d1bd83e69edd6aa067",
+    "Packages/manifest.json": "9128b5455c9f2e470340ca65cb348e5b17a37e291554b8ef05cb7fe5f55aeab2",
+    "Packages/packages-lock.json": "17d59a7c0d72575131c13b4ff0e31b460d5acf98f644897a318226dcd9a5dbc7",
+    "ProjectSettings/EditorBuildSettings.asset": "c99bfced7a5e4fbd10c6e69439fcbe022d9681923423fb22b659853b2b2fb750",
+    "ProjectSettings/ProjectSettings.asset": "7b5dd1ece84ecc4fbd30e530f2da60d21f1c827d609b1f8d0815cac1383287ca",
+    "ProjectSettings/ProjectVersion.txt": "5b25df62f578207e47336381b31e771ef10e3fe72bb138d4c8e8986c08f9978b",
+    "Assets/GearCraft/Scenes/Ending.unity": "75df63df0e74668dc0bc1a15e37f3cad5b5c0b94a0b8246c7a7e1c1b10a0ce8c"
+  },
+  "scope": "Applied source at start of final build verification; local edits not committed."
+}

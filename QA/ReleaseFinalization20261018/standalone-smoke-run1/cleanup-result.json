@@ -1,0 +1,27 @@
+{
+  "pid": 30457,
+  "normal_exit_test": "FAILED_TIMEOUT",
+  "signals": [],
+  "prior_cleanup_attempt": {
+    "signal": "SIGTERM",
+    "delivered": true,
+    "observation": "Process disappeared after signal; intervening identity check aborted safely before preference writes."
+  },
+  "process_stopped": true,
+  "test_created_keys_removed": [
+    "GearCraft.Gallery.Progress.v1"
+  ],
+  "full_player_domain_restored": true,
+  "keys_restored": 20,
+  "protected_domains_unchanged": {
+    "unity.Takumi.GearCraft_Remake": true,
+    "com.Takumi.GearCraft_Remake": true
+  },
+  "application_support_changes": {
+    "directory_existence_changed": false,
+    "added": [],
+    "removed": [],
+    "changed": []
+  },
+  "utc": "2026-10-18T23:57:02.632550+00:00"
+}

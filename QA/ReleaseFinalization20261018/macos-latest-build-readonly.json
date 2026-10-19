@@ -1,0 +1,22 @@
+{
+  "observed_utc": "2026-10-18T07:11:07.685347+00:00",
+  "app": "/private/tmp/GearCraftReleaseFinalization20261018/GearCraft.app",
+  "info": {
+    "CFBundleIdentifier": "com.DefaultCompany.2D-URP",
+    "CFBundleName": "GearCraft_Remake",
+    "CFBundleVersion": "0",
+    "CFBundleShortVersionString": "1.0",
+    "LSMinimumSystemVersion": "11.0"
+  },
+  "dll_bytes": 420864,
+  "dll_sha256": "67e1855bb82c8353042efaad33151f4abd30c9ad2b7267a78410a0451016da35",
+  "audio_key_utf16": true,
+  "attack_cadence_ascii": true,
+  "signature_verify_exit": 0,
+  "signature": [
+    "Format=app bundle with Mach-O universal (x86_64 arm64)",
+    "Signature=adhoc",
+    "TeamIdentifier=not set"
+  ],
+  "app_launched": false
+}

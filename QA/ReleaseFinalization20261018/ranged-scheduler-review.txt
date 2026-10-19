@@ -1,0 +1,71 @@
+射撃受付のFPS依存: 独立設計レビュー / 2026-10-18
+
+目的
+30/60/120 fpsで、同じゲーム時間・継続入力・武器構成の射撃受付数を揃える。
+既存60fpsの実用上の武器バランス（高速武器の最大60攻撃/秒）を維持する。
+各攻撃の生成・Twin・弾補正・反動は既存PerformShotAttackを使用し、近接はクリック単発のまま。
+
+既存根拠（修正前PlayerController.cs）
+Update:121-154 は HandleAttack 後に CoolTimeUpdate。
+HandleAttack:356-380 は1Updateにつき最大1射撃。
+CoolTimeUpdate:646-652 はfloatの減算後に負数を0へ丸め、余りを消す。
+StageFlowManager.cs:64-66 は Time.timeScale<=0/フレームブロック/各ゲームUIを入力拒否へまとめる。
+SteamThrowerBulletController.cs:22,107-115 は弾インスタンスごとの0.18秒再ヒット間隔。
+BulletController.cs:37,332以降 は弾ごとの既命中集合を持つ。
+
+推奨する境界の扱い
+・射撃周期は rawCT=weapon.coolTime*attackSpeedMult を60Hz整数tickへ切り上げ、最低1tick。
+・整数境界付近の単精度丸めを小さなtick単位epsilonで吸収する。周期はdoubleで保持して累積誤差を抑える。
+・dtを減算する所有箇所を1つにする。既存CoolTimeUpdateと新schedulerで二重減算しない。
+・継続射撃時だけ負の残CTを繰り越し、必要回数をPerformShotAttackへ渡す。
+・押し始めに直前dt全体を継続射撃時間と数えない。発射可能なら即時1発のみ。
+・解除/UI/武器変更/Behaviour無効化時は過去の負債を捨てる。正の残CTは保持し、連打/持替えでCTを短縮させない。
+・ポーズ中はゲーム時間が止まる。GalleryでPlayer.enabled=falseの間にも負債を溜めない。
+・BOOST開始/終了やパーツ倍率変更では、既に始まった正のCTを途中で0にしない。新しい周期は次の射撃から適用する。
+・1frameのcatchupは4〜6攻撃に制限し、上限到達後の余った過去負債を必ず破棄する。負債を残すと後続frameもバーストする。
+・catchup上限時にremaining=0とすると次frame即時発射になる。新周期を置くか残周期へ正規化するかを明示する。
+・NaN/Infinity/負CTはwhileの非停止や永久射撃停止を起こすため入力を安全な範囲へ正規化する。
+
+60fps維持の限界（旧float減算をIEEE単精度で再現した数値検証）
+rawCT / 旧60fps tick / 安定ceil tick:
+  0.03 / 2 / 2
+  0.08 / 5 / 5
+  0.10 / 7 / 6
+  0.20 / 13 / 12
+  0.30 / 18 / 18
+  0.50 / 30 / 30
+  1.00 / 61 / 60
+  2.00 / 121 / 120
+  0.1397978 / 9 / 9
+旧float減算の丸めで正の微小値が残る周期では、安定ceilへの変更により1tick短縮する。
+0.1境界では頻度が約16.7%増えるため、完全な旧動作維持とは言えない。主要終盤Gat/Throwerの1tick上限・Cannonの9tickには差がない。
+代案: rawCT変更時だけ旧float減算の反復回数を算出しキャッシュして整数tick化すれば旧60fpsに厳密に近づけられる。
+ただし偶然の丸め遅延を仕様として残す。今回は安定ceilを選ぶ場合、この境界正常化を変更点として明記する。
+
+意味のある純C#検証案（本番schedulerヘルパーを直接リンクして検証、コピー実装同士の比較は不可）
+1. 周期oracle: 0/負/1tick未満/.03/.08/.1/.2/.5/1/2/終盤倍率、およびtick境界±floatULP・十分離れた値。
+2. 同一時刻窓: t=0即時攻撃から共通t=10までのinclusive窓で30/60/120・交互20/120・決定的jitterを比較。
+   期待値は1+floor(T/quantizedPeriod)、per-frame最大catchupを超えない通常区間のみ。異なる最終サンプル時刻の単純frame数比較は不可。
+3. 10分継続: double残差とfloat入力dtによる累積ずれを確認。境界判定epsilonを大きくしすぎない。
+4. 初押下: 長いidle後、長い前frame後の新規押下でも即時1発のみ。正CT中の再押下は0発。
+5. 中断: release/UI/death/weapon変更/disable後に負CTを持ち越さず、同時に正CTを0にしない。
+6. UI操作した同frame: StageFlowのフレームブロックが立ったframeは0発、解除後に前frameの遅延分を発射しない。
+7. 倍率変化: BOOST ON/OFFの境界で正CTを保持、次周期から倍率反映。旧周期分を新周期で割って大量発射しない。
+8. 長frame: 0.5秒/数秒の飛びでcatchup<=上限、続く通常frameで負債に由来する上限連打が起きない。
+9. dt=0/負/非有限: 非停止・発射増加・負債の増加なし。
+10. 近接: 連続heldで発射を繰り返さず、新しいクリックかつ残CT<=0の時だけ1回。
+
+実機検証の分離
+純C#は受付数と残CTの契約まで。30fpsで2発を同frameに生成すると同位置・同向き・同時刻から発生するため、弾の軌道/命中/敵無敵/物理tickまで60fpsと同一にはならない。
+Twinは1受付あたり2弾、lineHitboxは既存経路、Throwerは弾単位再ヒットを確認する。
+標的へのダメージや移動/照準を伴う戦闘結果は別のnative実機証拠が必要。旧QAの手動coolTime再現では新攻撃受付コードの回帰証明にならない。
+
+変更範囲
+この文書のみ。制作コード/MCP/保存状態は変更していない。
+
+初回実装レビュー / 本番クラスを直接コンパイル
+PlayerAttackCadence.GetAutomaticInterval/Advance/Interruptを使用する純C#192項目を実行し、191件PASS。
+唯一の失敗は2.0fの1ULP上がepsilon1e-5tickを超えて121tickへ切り上がる境界。
+初回証拠をcadence-tests-initial.txt/jsonへ保管。rootへnominal秒数に応じたepsilon拡張を提案済み。
+ControllerレビューではUpdate二重減算なし、ブロック時もschedulerへ通知、ApplyWeaponDataIfNeeded/OnDisableでInterrupt、BOOST寿命は変更なし。
+PerformShotAttack(Vector3)は入力読み取りだけを引数化し、既存Twin/Configure/LineHitbox/反動の処理経路を維持。

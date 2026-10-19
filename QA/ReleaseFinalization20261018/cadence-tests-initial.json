@@ -1,0 +1,9 @@
+{
+  "production_source": "Assets/GearCraft/Scripts/Main/PlayerAttackCadence.cs",
+  "sha256_before": "f6c611ef00b3dc02de3abc8e25dca4cace7088335fb5a5daefac1a03e3a029c7",
+  "sha256_after": "f6c611ef00b3dc02de3abc8e25dca4cace7088335fb5a5daefac1a03e3a029c7",
+  "unchanged": true,
+  "compile_exit": 0,
+  "test_exit": 1,
+  "scope": "Actual pure C# scheduler; no Unity, physical bullets, UI integration, MCP, or save state exercised."
+}

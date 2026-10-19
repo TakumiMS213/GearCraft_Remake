@@ -1,0 +1,88 @@
+{
+// C#6 execute_code body. Run once in clean Title Edit mode before any QA run.
+const string folder="QA/ReleaseVerification20261019/";
+if(Application.isPlaying)throw new System.Exception("Capture current session before entering Play");
+var scene=UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+if(scene.path!="Assets/GearCraft/Scenes/Title.unity"||scene.isDirty)return "NOT_CAPTURED: require clean Title Edit scene; current="+scene.path+" dirty="+scene.isDirty+". No scene saved and no backup written.";
+if(StatusManager.Instance!=null||MaterialManager.Instance!=null||StageFlowManager.Instance!=null||StageCounter.Instance!=null)throw new System.Exception("Runtime singleton remains in Edit mode; inspect before capturing session");
+System.IO.Directory.CreateDirectory(folder);
+foreach(string name in new[]{"playerprefs-before.txt","editor-before.txt","gameview-before.txt","logger-before.txt","logger-enabled-before.txt","session-backup-ready.txt"})if(System.IO.File.Exists(folder+name))throw new System.Exception("Never overwrite session backup: "+name);
+string[] keys={"GearCraft.Gallery.Progress.v1","GearCraft.Main.OpeningNotice.Seen.v1","CraftTutorial.Metrics.Craft.v5","CraftTutorial.Metrics.WeaponCustom.v5","CraftTutorial.Mastery.Craft.v5","CraftTutorial.Mastery.WeaponCustom.v5","CraftTutorial.AutoPlayed.Craft.v4","CraftTutorial.AutoPlayed.WeaponCustom.v3"};
+var prefs=new System.Text.StringBuilder();
+foreach(string key in keys){bool exists=PlayerPrefs.HasKey(key);bool text=key.Contains(".Metrics.")||key.Contains("Gallery.Progress");string value=text?System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(PlayerPrefs.GetString(key))):PlayerPrefs.GetInt(key).ToString();prefs.AppendLine(key+"|"+exists+"|"+value);}
+var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.NonPublic;
+var assembly=typeof(UnityEditor.Editor).Assembly;var viewType=assembly.GetType("UnityEditor.GameView");var view=Resources.FindObjectsOfTypeAll(viewType).FirstOrDefault();
+if(view==null)throw new System.Exception("Open GameView before capture");
+int index=(int)viewType.GetProperty("selectedSizeIndex",flags).GetValue(view,null);
+var sizesType=assembly.GetType("UnityEditor.GameViewSizes");var sizes=typeof(UnityEditor.ScriptableSingleton<>).MakeGenericType(sizesType).GetProperty("instance",flags).GetValue(null,null);
+var group=sizesType.GetProperty("currentGroup",flags).GetValue(sizes,null);var labels=(string[])group.GetType().GetMethod("GetDisplayTexts",flags).Invoke(group,null);
+var invariant=System.Globalization.CultureInfo.InvariantCulture;
+System.IO.File.WriteAllText(folder+"playerprefs-before.txt",prefs.ToString());
+System.IO.File.WriteAllText(folder+"editor-before.txt",scene.path+"\n"+QualitySettings.vSyncCount+"\n"+Application.targetFrameRate+"\n"+Application.runInBackground+"\n"+Time.captureDeltaTime.ToString("R",invariant)+"\n"+Time.fixedDeltaTime.ToString("R",invariant)+"\n"+Time.timeScale.ToString("R",invariant)+"\n");
+System.IO.File.WriteAllText(folder+"gameview-before.txt",index+"\n"+string.Join("\n",labels)+"\n");
+System.IO.File.WriteAllText(folder+"logger-before.txt",((int)Debug.unityLogger.filterLogType)+"\n");
+System.IO.File.WriteAllText(folder+"logger-enabled-before.txt",Debug.unityLogger.logEnabled+"\n");
+System.IO.File.WriteAllText(folder+"session-backup-ready.txt","UTC="+System.DateTime.UtcNow.ToString("O")+"\nkeys=8\nscene="+scene.path+"\nsource=current_session_native_PlayerPrefs\n");
+}
+
+{
+const string folder="QA/ReleaseVerification20261019/";
+foreach(string name in new[]{"audio-playerprefs-before.txt","time-ticks-before.txt","dotween-before.txt"})if(System.IO.File.Exists(folder+name))throw new System.Exception("Refuse backup overwrite: "+name);
+var rows=new System.Collections.Generic.List<string>();
+foreach(string key in new[]{"GearCraft.Audio.BGM.dB.v1","GearCraft.Audio.SE.dB.v1"})rows.Add(key+"|"+PlayerPrefs.HasKey(key)+"|"+PlayerPrefs.GetFloat(key).ToString("R",System.Globalization.CultureInfo.InvariantCulture));
+var tm=UnityEditor.Unsupported.GetSerializedAssetInterfaceSingleton("TimeManager");
+if(tm==null||Resources.FindObjectsOfTypeAll(tm.GetType()).Length!=1)throw new System.Exception("Require one native TimeManager singleton");
+var so=new UnityEditor.SerializedObject(tm);so.Update();var ticks=so.FindProperty("Fixed Timestep.m_Count");
+if(ticks==null)throw new System.Exception("Missing fixed ticks property");
+System.IO.File.WriteAllText(folder+"audio-playerprefs-before.txt",string.Join("\n",rows.ToArray())+"\n");
+System.IO.File.WriteAllText(folder+"time-ticks-before.txt",ticks.longValue.ToString(System.Globalization.CultureInfo.InvariantCulture)+"\n");
+System.IO.File.WriteAllText(folder+"dotween-before.txt",((int)DG.Tweening.DOTween.logBehaviour).ToString()+"\n");
+}
+
+{
+// C#6 execute_code body. Additional fresh, typed backup; never overwrites prior sidecars.
+const string folder="QA/ReleaseVerification20261019/";
+if(Application.isPlaying)throw new System.Exception("Capture canonical keys in Edit mode before any test Play");
+var scene=UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+if(scene.path!="Assets/GearCraft/Scenes/Title.unity"||scene.isDirty)throw new System.Exception("Require clean Title Edit; do not save a modified scene");
+if(StatusManager.Instance!=null||MaterialManager.Instance!=null||StageFlowManager.Instance!=null)throw new System.Exception("Runtime singleton remains in Edit mode");
+foreach(string name in new[]{"session-backup-ready.txt","playerprefs-before.txt","editor-before.txt","gameview-before.txt","logger-before.txt","logger-enabled-before.txt","audio-playerprefs-before.txt"})if(!System.IO.File.Exists(folder+name))throw new System.Exception("Current session base backup missing: "+name);
+foreach(string name in new[]{"typed-prefs-before.json","typed-prefs-before.txt","session-id.txt","canonical-backup-ready.txt"})if(System.IO.File.Exists(folder+name))throw new System.Exception("Never overwrite canonical backup: "+name);
+var invariant=System.Globalization.CultureInfo.InvariantCulture;
+System.Func<string,string> hash=path=>{using(var sha=System.Security.Cryptography.SHA256.Create()){return System.BitConverter.ToString(sha.ComputeHash(System.IO.File.ReadAllBytes(path))).Replace("-","").ToLowerInvariant();}};
+// Check that the pre-existing fresh 8-key capture still agrees; a test must not have already changed it.
+foreach(string row in System.IO.File.ReadAllLines(folder+"playerprefs-before.txt")){
+ if(string.IsNullOrWhiteSpace(row))continue;var c=row.Split('|');if(c.Length!=3)throw new System.Exception("Invalid base prefs row");
+ bool exists=bool.Parse(c[1]);if(PlayerPrefs.HasKey(c[0])!=exists)throw new System.Exception("Base prefs changed since capture: "+c[0]);
+ if(exists){bool text=c[0].Contains(".Metrics.")||c[0].Contains("Gallery.Progress");string value=text?System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(PlayerPrefs.GetString(c[0]))):PlayerPrefs.GetInt(c[0]).ToString(invariant);if(value!=c[2])throw new System.Exception("Base prefs value changed since capture: "+c[0]);}
+}
+string id=System.DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff")+"-"+System.Guid.NewGuid().ToString("N");
+string[] keys={
+ "GearCraft.Gallery.Progress.v1","GearCraft.Main.OpeningNotice.Seen.v1",
+ "GearCraft.CraftTutorial.Metrics.Craft.v5","GearCraft.CraftTutorial.Metrics.WeaponCustom.v5",
+ CraftTutorialMetrics.CraftMasteryKey,CraftTutorialMetrics.WeaponMasteryKey,
+ "GearCraft.CraftTutorial.AutoPlayed.Craft.v4","GearCraft.CraftTutorial.AutoPlayed.WeaponCustom.v3",
+ "CraftTutorial.Metrics.Craft.v5","CraftTutorial.Metrics.WeaponCustom.v5",
+ "CraftTutorial.Mastery.Craft.v5","CraftTutorial.Mastery.WeaponCustom.v5",
+ "CraftTutorial.AutoPlayed.Craft.v4","CraftTutorial.AutoPlayed.WeaponCustom.v3",
+ "GearCraft.Audio.BGM.dB.v1","GearCraft.Audio.SE.dB.v1"};
+if(keys.Distinct().Count()!=16)throw new System.Exception("Duplicate or renamed canonical keys; review schema");
+var rows=new System.Collections.Generic.List<string>();var jsonRows=new System.Collections.Generic.List<string>();
+foreach(string key in keys){
+ string type=key.Contains("Audio.")?"float":key.Contains(".Metrics.")||key.Contains("Gallery.Progress")?"string":"int";
+ bool exists=PlayerPrefs.HasKey(key);string raw=exists?(type=="string"?PlayerPrefs.GetString(key):type=="float"?PlayerPrefs.GetFloat(key).ToString("R",invariant):PlayerPrefs.GetInt(key).ToString(invariant)):"";
+ string value=System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(raw));
+ rows.Add(key+"|"+type+"|"+exists+"|"+value);
+ jsonRows.Add("    {\"key\":\""+key+"\",\"type\":\""+type+"\",\"exists\":"+(exists?"true":"false")+",\"value_base64\":\""+value+"\"}");
+}
+// Base64 preserves exact string content and avoids culture-dependent numeric parsing on restoration.
+System.IO.File.WriteAllText(folder+"typed-prefs-before.json","{\n  \"schema\":1,\n  \"session_id\":\""+id+"\",\n  \"captured_utc\":\""+System.DateTime.UtcNow.ToString("O")+"\",\n  \"keys\":[\n"+string.Join(",\n",jsonRows.ToArray())+"\n  ]\n}\n");
+System.IO.File.WriteAllText(folder+"typed-prefs-before.txt",string.Join("\n",rows.ToArray())+"\n");
+System.IO.File.WriteAllText(folder+"session-id.txt",id+"\n");
+var manifest=new System.Text.StringBuilder();manifest.AppendLine("session_id="+id);manifest.AppendLine("source=current_session_native_PlayerPrefs");manifest.AppendLine("keys=16");
+foreach(string name in new[]{"typed-prefs-before.json","typed-prefs-before.txt","session-id.txt","session-backup-ready.txt","playerprefs-before.txt","editor-before.txt","gameview-before.txt","logger-before.txt","logger-enabled-before.txt","audio-playerprefs-before.txt"})manifest.AppendLine(name+"="+hash(folder+name));
+System.IO.File.WriteAllText(folder+"canonical-backup-ready.txt",manifest.ToString());
+UnityEditor.SessionState.SetString("GearCraft.QA.ReleaseVerification.Session",id);
+return "Fresh canonical+legacy+audio keys captured: 16; session="+id+"; earlier backups preserved. No Play/prefs/source changes performed.";
+
+}

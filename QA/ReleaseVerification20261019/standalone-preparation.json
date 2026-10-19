@@ -1,0 +1,15 @@
+{
+  "prepared_only": true,
+  "executed": false,
+  "app": "/private/tmp/GearCraftReleaseVerification20261019/GearCraft.app",
+  "helper_sha256": "1393faeb59adae61cfba3339268019b22175ff323638f826ee818f5737751524",
+  "old_sources_sha256": {
+    "standalone_smoke.py": "e2a753fe53c19f92920265fa522789f3fd8fcc9970bfe6ce5878de28055a0e44",
+    "standalone_direct_probe.py": "c9c2113198076a920e4dc904f2e2c5b0dbdaac7e32fe3eb30fd749010d415545"
+  },
+  "new_sources_sha256": {
+    "standalone_smoke.py": "15524908dd0114d7fb3aca9ab61fa81c2491297ba393a15ddaa99c59e176e36b",
+    "standalone_probe.py": "a7b4d0eff03167bd94fd2f99ad5555e67b6a0d378ff647b5a647c6cc710e7bad"
+  },
+  "validation": "Python compile() only; no subprocess, PlayerPrefs read/write, app launch, or helper invocation"
+}

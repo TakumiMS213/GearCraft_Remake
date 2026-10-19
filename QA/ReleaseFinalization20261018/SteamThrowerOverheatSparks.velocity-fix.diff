@@ -1,0 +1,11 @@
+--- QA/ReleaseFinalization20261018/source-before/Assets/GearCraft/Paticles/SteamThrowerOverheatSparks.prefab
++++ Assets/GearCraft/Paticles/SteamThrowerOverheatSparks.prefab
+@@ -1600,7 +1600,7 @@
+         m_RotationOrder: 4
+     z:
+       serializedVersion: 2
+-      minMaxState: 0
++      minMaxState: 3
+       scalar: 0
+       minScalar: 0
+       maxCurve:

@@ -1,0 +1,8 @@
+PASS
+2026-10-18T07:05:31.7027920Z No saved keys: Mixer defaults/slider -20 retained; no preference creation
+2026-10-18T07:05:31.7078260Z Invalid stored floats retained current Mixer values
+2026-10-18T07:05:31.7319550Z Native slider changes flushed while timeScale0 after 1.409755 unscaled seconds
+2026-10-18T07:05:31.7358030Z Fresh Audio native Start replaced Mixer sentinels from saved floats, with both sliders null
+2026-10-18T07:05:31.7378480Z Clamp/NaN/null handling and pause/quit/disable immediate flush passed
+2026-10-18T07:05:31.7388800Z Local two-key/Mixer/slider restoration verified. Root still performs fresh session/editor restoration.
+2026-10-18T07:05:31.7388850Z PASS

@@ -1,0 +1,17 @@
+result=ending_reached_3
+start_hp=100
+start_gate=100
+end_hp=100
+end_gate=100
+start_stage=31
+last_stage=31
+completed_native_waves=1
+rewards_selected=0
+game_seconds=94.400
+wall_seconds=137.316
+expected_projectiles=7460
+attack_events=3730
+player_damage=3.00
+gate_damage=0.00
+player_healed=3.00
+gate_healed=0.00

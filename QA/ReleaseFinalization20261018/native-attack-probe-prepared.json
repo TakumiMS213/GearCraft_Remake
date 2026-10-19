@@ -1,0 +1,38 @@
+{
+  "prepared": true,
+  "executed": true,
+  "compile": "C#6 PASS via current Unity assembly references",
+  "cases": 48,
+  "weapons": [
+    "SteamCannon",
+    "RailCraft",
+    "SteamGatling",
+    "SteamThrower"
+  ],
+  "configurations": [
+    "initial (STR/ACC=0; no parts/module)",
+    "final (STR/ACC=20; fitted real parts; module20)",
+    "boost_configured (final * 0.5 speed, min0.05; isBoostActive)"
+  ],
+  "patterns": [
+    "30",
+    "60",
+    "120",
+    "jitter 11/41/7/23/32 ms"
+  ],
+  "virtual_duration_seconds": 10,
+  "fresh_backup_required": "canonical-backup-ready.txt / 16 typed keys / Editor SessionState ID / SHA256 entries",
+  "auto_stop_play": true,
+  "watchdog_seconds": 180,
+  "body_sha256": "e41a32ab32233784f489c6fbbd7b8703cd67d2c8de936a17af719e904bddc8a8",
+  "scope": "Real ProcessAttackInput and native projectile creation/configuration, synchronous cleanup before projectile Start/physics. Not actual display FPS, hits, DPS, Q cost, or BOOST lifetime.",
+  "executed_by_preparer": false,
+  "execution_observed": {
+    "performed_by": "root via Unity MCP",
+    "result": "PASS",
+    "completed_cases": 48,
+    "evidence": "native-attack-result.txt",
+    "evidence_sha256": "2f7c181c0919813daa6247a1e320607ab9cba26391a62d25fe1529903fe9df11",
+    "unchanged_runtime_status_materials_16prefs": true
+  }
+}

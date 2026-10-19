@@ -1,0 +1,27 @@
+{
+  "utc": "2026-10-19T00:23:30.665666+00:00",
+  "source": "/Users/sora/Library/Logs/Unity/Editor.log",
+  "snapshot_byte_limit": 113370133,
+  "matched_headers": [
+    {
+      "line": 549511,
+      "byte_offset": 30360238
+    },
+    {
+      "line": 549573,
+      "byte_offset": 30365467
+    },
+    {
+      "line": 549635,
+      "byte_offset": 30370696
+    },
+    {
+      "line": 2072514,
+      "byte_offset": 112608251
+    }
+  ],
+  "individual_count": 3,
+  "aggregates_not_additional_errors": true,
+  "production_changed": false,
+  "new_test_attribution": "Not established; historical lines around Ending teardown, before prior particle error flood."
+}

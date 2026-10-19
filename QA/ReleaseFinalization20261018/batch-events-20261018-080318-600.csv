@@ -1,0 +1,7 @@
+wall_seconds,event,case_label,details
+"0.022","case_begin","gate_native_ranged_EK9_SteamThrower_velocityfixed_seed77_fps60","SteamThrower,31,final_day11_thrower_fitted_damage_defense_module20,77"
+"0.023","title_requested","gate_native_ranged_EK9_SteamThrower_velocityfixed_seed77_fps60","Native callback removed; wait 6 game seconds in Title to drain death/BOOST continuations"
+"0.790","title_stable","gate_native_ranged_EK9_SteamThrower_velocityfixed_seed77_fps60","6 game seconds and at least 360 frames elapsed at captureDeltaTime=1/60; no Main flow or active scene transition; native Ending runtime reset complete"
+"0.832","bootstrap_invoked","gate_native_ranged_EK9_SteamThrower_velocityfixed_seed77_fps60","Loading paused Main for native survival: SteamThrower,31,final_day11_thrower_fitted_damage_defense_module20,77; inspect native-survival-bootstrap-progress.txt for READY"
+"1.613","route_invoked","gate_native_ranged_EK9_SteamThrower_velocityfixed_seed77_fps60","Scheduled one native survival day: gate_native_ranged_EK9_SteamThrower_velocityfixed_seed77_fps60; progress=QA/ReleaseFinalization20261018/native-survival-progress.txt"
+"936.421","batch_failed","gate_native_ranged_EK9_SteamThrower_velocityfixed_seed77_fps60","batch_wall_timeout"

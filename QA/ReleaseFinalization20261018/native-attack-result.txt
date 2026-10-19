@@ -1,0 +1,11 @@
+PASS cases=48 checks=127768 current_case=47
+session_id=20261018-070128-095-8360bc7954e64d94aff83f6784baf9fb; all initial STR/ACC=0 module=0 no parts; final STR/ACC=20 module=20 with real fitted parts; boost is configured post-activation state only
+manifest_sha256=8a2353ffdc0a02483b2d2ce87ced9dd6db100c8e73428748eaf8d366dd916c1f; loadouts_sha256=8f63f943377c7dbada5ad180f63d0cf4e5c76e906277fdb156850db39d76e4b8
+PASS native TimeScale0, StageFlow frame guard, one-shot resume and remaining cooldown
+PASS additional synthetic RailCraft clone line flag: one real line hitbox, damage=532, native collider and visual, despite Twin=true; real Rail asset untouched
+PASS all 12 configurations produced identical native event counts at 30/60/120/jitter
+runtime_status_materials_and_16_prefs_unchanged=True
+source_PlayerAttackCadence_sha256=4fafff854f2b66a08534f197e23580a9c76c9fadc57d51d2e0d364a9cf9955f8
+source_PlayerController_sha256=7d77c90e3b7ddf34c8eef0c0f25cf7a679f21d94b816e179c155b5e4b3652daf
+
+Scope: native attack acceptance / Instantiate / configured projectile data under synthetic deltaTime. No projectile Start, native physics/hits/lifetime, actual rendered fps, Q resource consumption or BOOST lifetime measured. Root restores canonical session/editor after Play stops.

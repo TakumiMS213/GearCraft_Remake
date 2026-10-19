@@ -1,0 +1,39 @@
+音量の永続保存：実装と検証状況（2026-10-18）
+
+制作変更は Assets/GearCraft/Scripts/Title/Audio.cs のみ。
+変更前はsource-before/Assets/GearCraft/Scripts/Title/Audio.csへ退避済み。
+scene、Mixer asset、UI接続、既定音量、slider範囲は変更していない。
+
+実装
+・GearCraft.Audio.BGM.dB.v1 / GearCraft.Audio.SE.dB.v1 の2 floatキー。
+・Startで保存値がある場合だけMixerに反映。未保存時のMixer値を保持し、Startだけでは保存キーを作らない。
+・保存値のNaN/Infinityは適用しない。有限値は現行sliderの−40〜0 dBへ収める。
+・既存SetBGM/SetSEとserialized参照を維持。Mixer未設定なら何もしない。操作の度のDebug.Logは除去。
+・実操作は即座にMixerとPlayerPrefsのメモリ値を更新し、最後の変更から0.3秒のunscaled time後にSave。
+・OnDisable、OnApplicationPause(true)、OnApplicationQuitでは未確定変更を直ちにSaveする。
+・slider=nullでも保存値をMixerに反映できる。表示同期はSetValueWithoutNotifyなので保存イベントを再発火しない。
+
+静的検証
+・Audio.csをUnity参照DLL付きRoslynでコンパイル: error0 / warning0。
+・ProbeAudioPersistence.cs.txtをC#6 method bodyとしてコンパイル: error0 / warning0。
+・結果: audio-static-compile.json。ソースSHA、コマンド、各ログを保存。
+・MCP/Play/実配布起動はこの担当では実施していない。実機PASS結果は作成していない。
+
+root用の局所probe
+1. このsessionのfresh backupを取得する。旧QAの8キーbackupを流用しない。
+   追加2キーは audio-playerprefs-before.txt に次の型で退避する。
+   key|TrueまたはFalse|PlayerPrefs.GetFloat(key).ToString("R", InvariantCulture)
+   2行のみ。未存在行の値は0でよい。既存ファイルは上書きしない。
+   別形式の全sessionバックアップを使う場合はprobe入口をそのfresh形式に合わせる。
+2. 更新後のUnityコンパイル完了、Title Play、Audioと実sliderのStart完了を確認する。
+3. ProbeAudioPersistence.cs.txtをexecute_code C#6本文として実行する。
+   出力: audio-persistence-progress.txt、audio-persistence-result.txt。既存resultは上書きしない。
+4. probeはnative Title slider callback→Mixer/float保存、timeScale0の遅延保存、新Audioのnative Startでの復元、両slider=null、範囲/NaN/null、Pause/Quit/disable確定を確認する。
+   新Audioの前にはMixer値を異なる値へ変え、メモリ内Mixer値の持越しを成功と誤認しない。
+5. 成否どちらでもcallbackを解除し、追加2キー・probe前Mixer値・slider値を戻してPlayを停止する。
+   rootは全sessionのfresh backupによる最終復元とclean Title等を別途確認する。
+
+制約
+・新Audio生成は保存読込み経路の局所回帰であり、OS/Playerプロセス再起動の検証ではない。
+・PlayerPrefs.Saveの呼出経路はdirty解除と値から確認する。実配布Playerを終了・再起動しての永続化確認はrootの配布検証に残る。
+・−40 dBは従来どおり減衰値。完全muteや音量UIの整数/小数差の変更は含めていない。

@@ -1,0 +1,10 @@
+PASS_NATIVE_FLOW_REVIEW_IMAGES
+2026-10-19T01:18:04.9697040Z clicked native Gallery notice Button through IPointerClickHandler
+2026-10-19T01:18:07.7598360Z scene  -> Title
+2026-10-19T01:18:07.8740510Z Title idle; Gallery Button=GalleryIcon interactable; timeScale=1; stage=1
+2026-10-19T01:18:07.8741020Z Title native GameView capture requested
+2026-10-19T01:18:07.9384570Z capture complete 1920x1080; bytes=62884; visual review required
+2026-10-19T01:18:07.9400910Z QA StageCounter fixture removed
+2026-10-19T01:18:07.9401400Z outcome=PASS_NATIVE_FLOW_REVIEW_IMAGES; scene=Title; Gallery unlocked=True; PendingEndingNum=3; callbacks_removed=true
+
+Native flow complete only when PASS_NATIVE_FLOW_REVIEW_IMAGES. Root must visually inspect both PNGs and then stop Play / restore all fresh 16 typed keys plus Editor state. This does not represent a combat-earned ED3.

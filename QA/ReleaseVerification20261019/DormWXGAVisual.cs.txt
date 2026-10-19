@@ -1,0 +1,131 @@
+// C#6 execute_code body. Run after FirstTimeUIVisual callback has ended, in the same idle first-day CraftSpace Play.
+// Existing preset 4 only; no custom sizes, OS screen capture, player movement, or scene/pref changes.
+const string folder = "QA/ReleaseVerification20261019/";
+if (!Application.isPlaying || UnityEditor.EditorApplication.isPaused || UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "CraftSpace") throw new System.Exception("Require unpaused CraftSpace Play after UI probe");
+string session = System.IO.File.ReadAllText(folder + "session-id.txt").Trim();
+if (string.IsNullOrEmpty(session) || UnityEditor.SessionState.GetString("GearCraft.QA.ReleaseVerification.Session", "") != session || !System.IO.File.Exists(folder + "canonical-backup-ready.txt") || System.IO.File.Exists(folder + "canonical-restoration.txt")) throw new System.Exception("Fresh unrestored session required");
+if (!System.IO.File.Exists(folder + "ui-visual-progress.txt")) throw new System.Exception("FirstTimeUIVisual completion evidence missing");
+string uiState = System.IO.File.ReadAllText(folder + "ui-visual-progress.txt");
+if (!(uiState.StartsWith("PASS ") || uiState.StartsWith("FAIL ") || uiState.StartsWith("INTERRUPTED "))) throw new System.Exception("FirstTimeUIVisual callback must have ended; a prior UI failure remains a separate result");
+foreach (string file in System.IO.Directory.GetFiles(folder, "*progress.txt")) { string state = System.IO.File.ReadAllText(file); if (state.StartsWith("RUNNING") || state.StartsWith("LOADING")) throw new System.Exception("Another callback active: " + file); }
+if (Time.timeScale != 1f || Time.captureDeltaTime != 0f || ArrivalMessagePresenter.IsMessagePlaying || ArrivalMessagePresenter.IsCameraPresentationPlaying || StatusManager.Instance == null || StatusManager.Instance.DormTasks.hasStartedFirstDay || (StageCounter.Instance != null && StageCounter.Instance.StageCount != 1)) throw new System.Exception("Require idle first-day dorm, native time settings");
+var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic;
+var assembly = typeof(UnityEditor.Editor).Assembly;
+var viewType = assembly.GetType("UnityEditor.GameView");
+var view = Resources.FindObjectsOfTypeAll(viewType).OfType<UnityEditor.EditorWindow>().FirstOrDefault();
+if (view == null) throw new System.Exception("Existing GameView required");
+var selectedProperty = viewType.GetProperty("selectedSizeIndex", flags);
+var targetProperty = viewType.GetProperty("targetRenderSize", flags);
+var sizesType = assembly.GetType("UnityEditor.GameViewSizes");
+var sizes = typeof(UnityEditor.ScriptableSingleton<>).MakeGenericType(sizesType).GetProperty("instance", flags).GetValue(null, null);
+var group = sizesType.GetProperty("currentGroup", flags).GetValue(sizes, null);
+System.Func<string[]> labels = () => (string[])group.GetType().GetMethod("GetDisplayTexts", flags).Invoke(group, null);
+System.Func<Vector2> renderSize = () => view == null ? Vector2.zero : (Vector2)targetProperty.GetValue(view, null);
+int originalIndex = (int)selectedProperty.GetValue(view, null);
+string[] originalLabels = labels();
+if (originalLabels.Length <= 4 || originalLabels[4] != "WXGA (1366x768)") throw new System.Exception("Expected existing index 4 label WXGA (1366x768); do not create or select an unknown size");
+if (originalIndex != 3 || originalLabels[originalIndex] != "Full HD (1920x1080)" || renderSize() != new Vector2(1920, 1080)) throw new System.Exception("Require original existing index 3 Full HD render target");
+System.Func<int, int, bool> aligned = (width, height) => {
+    var size = renderSize(); var cam = Camera.main;
+    if (Mathf.Abs(size.x - width) > .5f || Mathf.Abs(size.y - height) > .5f || cam == null || cam.pixelWidth != width || cam.pixelHeight != height) return false;
+    var canvases = UnityEngine.Object.FindObjectsByType<Canvas>(FindObjectsInactive.Exclude, FindObjectsSortMode.None).Where(c => c.isRootCanvas && c.isActiveAndEnabled && c.targetDisplay == 0 && c.renderMode != RenderMode.WorldSpace && c.gameObject.scene == UnityEngine.SceneManagement.SceneManager.GetActiveScene()).ToArray();
+    return canvases.Length > 0 && canvases.All(c => Mathf.Abs(c.pixelRect.width - width) < 1f && Mathf.Abs(c.pixelRect.height - height) < 1f);
+};
+if (!aligned(1920, 1080)) throw new System.Exception("Original Camera/Canvas not aligned to Full HD");
+string run = "dorm-wxga-" + System.DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff") + "-" + System.Guid.NewGuid().ToString("N").Substring(0, 8);
+string output = System.IO.Path.GetFullPath(folder + run);
+System.IO.Directory.CreateDirectory(output);
+System.IO.File.WriteAllText(output + "/original-gameview.txt", "session=" + session + "\nindex=" + originalIndex + "\n" + string.Join("\n", originalLabels) + "\n");
+var invariant = System.Globalization.CultureInfo.InvariantCulture;
+System.Action<string> note = line => System.IO.File.AppendAllText(output + "/events.txt", System.DateTime.UtcNow.ToString("O") + " " + line + "\n");
+System.Action<bool, string> check = (ok, name) => { note((ok ? "PASS " : "FAIL ") + name); if (!ok) throw new System.Exception(name); };
+System.Func<RectTransform, Rect> pixelBounds = rect => {
+    var canvas = rect.GetComponentInParent<Canvas>(); var cam = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
+    var corners = new Vector3[4]; rect.GetWorldCorners(corners);
+    var pixels = corners.Select(c => RectTransformUtility.WorldToScreenPoint(cam, c)).ToArray();
+    return Rect.MinMaxRect(pixels.Min(p => p.x), pixels.Min(p => p.y), pixels.Max(p => p.x), pixels.Max(p => p.y));
+};
+System.Func<float> inspect = () => {
+    check(aligned(1366, 768), "wxga_render_camera_canvas_aligned");
+    check(StatusManager.Instance != null && !StatusManager.Instance.DormTasks.hasStartedFirstDay && (StageCounter.Instance == null || StageCounter.Instance.StageCount == 1), "first_day_preparation_preserved");
+    var tasks = GameObject.Find("DormTaskPanel"); var arrow = GameObject.Find("FirstBedGuideArrow");
+    check(tasks != null && arrow != null, "task_and_arrow_visible");
+    var taskRect = tasks.GetComponent<RectTransform>(); var taskView = tasks.GetComponentInParent<Canvas>().rootCanvas.pixelRect; var taskBounds = pixelBounds(taskRect);
+    check(Mathf.Abs(taskBounds.xMin - taskView.xMin) < 1f && Mathf.Abs(taskBounds.yMax - taskView.yMax) < 1f, "task_background_flush_top_left");
+    check(taskBounds.xMax <= taskView.xMax + 1f && taskBounds.yMin >= taskView.yMin - 1f, "task_background_inside_canvas");
+    var texts = tasks.GetComponentsInChildren<TMPro.TMP_Text>();
+    string content = string.Join(" / ", texts.Select(t => t.text.Replace("\n", " ")).ToArray());
+    check(content.Contains("ベッドで眠って明日に備える") && content.Contains("A / D") && content.Contains("Space"), "sleep_goal_and_controls_visible");
+    check(texts.All(t => !t.isTextOverflowing), "task_text_no_overflow");
+    var arrowRect = arrow.GetComponent<RectTransform>(); var arrowView = arrow.GetComponentInParent<Canvas>().rootCanvas.pixelRect; var arrowBounds = pixelBounds(arrowRect);
+    var arrowImage = arrow.GetComponent<UnityEngine.UI.Image>();
+    check(arrowImage != null && arrowImage.enabled && arrowImage.sprite != null && arrowImage.color.a > 0f, "arrow_has_visible_sprite");
+    check(arrowBounds.xMin >= arrowView.xMin && arrowBounds.xMax <= arrowView.xMax && arrowBounds.yMin >= arrowView.yMin && arrowBounds.yMax <= arrowView.yMax, "arrow_inside_canvas");
+    check(Mathf.Abs(arrowBounds.center.y - arrowView.center.y) < 2f && arrowRect.anchorMin == new Vector2(0f, .5f) && arrowRect.anchorMax == new Vector2(0f, .5f), "arrow_left_middle_anchor");
+    note("render=" + renderSize() + "; Screen_reference=" + Screen.width + "x" + Screen.height + "; task_pixels=" + taskBounds + "; arrow_pixels=" + arrowBounds + "; content=" + content);
+    return arrowRect.anchoredPosition.x;
+};
+UnityEditor.EditorApplication.CallbackFunction tick = null;
+double began = UnityEditor.EditorApplication.timeSinceStartup, phaseAt = began, lastTick = began, lastPump = began, lastProgress = began, captureAt = began;
+int phase = 0, lastFrame = -1, stableFrames = 0;
+float firstArrowX = 0f;
+string pending = "", outcome = "PASS";
+bool done = false;
+System.Action restoreIndex = () => { if (view != null) { selectedProperty.SetValue(view, originalIndex, null); view.Repaint(); UnityEditor.EditorApplication.QueuePlayerLoopUpdate(); } };
+System.Action<string> finish = result => {
+    if (done) return; done = true;
+    if (tick != null) UnityEditor.EditorApplication.update -= tick;
+    try { restoreIndex(); } catch (System.Exception ex) { note("restore_request_exception=" + ex); result += " RESTORE_PENDING"; }
+    bool indexRestored = view != null && (int)selectedProperty.GetValue(view, null) == originalIndex;
+    bool targetRestored = renderSize() == new Vector2(1920, 1080);
+    bool sizesUnchanged = labels().SequenceEqual(originalLabels);
+    note("restore_index=" + indexRestored + "; restore_render_target=" + targetRestored + "; size_list_unchanged=" + sizesUnchanged);
+    if (!indexRestored || !targetRestored || !sizesUnchanged) result = "FAIL restore_verification_pending; prior=" + result;
+    System.IO.File.WriteAllText(output + "/result.txt", result + "\n" + System.IO.File.ReadAllText(output + "/events.txt") + "\nScope: Unity GameView 1366x768 dorm visual layout; no physical input or new aspect-ratio claim. No save/time/scene edits. Root still performs canonical session restore.\n");
+    System.IO.File.WriteAllText(folder + "dorm-wxga-progress.txt", result + " " + run + "\n");
+};
+System.Action<string> beginRestore = result => { outcome = result; phase = 3; phaseAt = UnityEditor.EditorApplication.timeSinceStartup; stableFrames = 0; pending = ""; restoreIndex(); note("restore_requested original_index=" + originalIndex + "; outcome=" + result); };
+System.Action<string> capture = name => { pending = output + "/" + name + ".png"; if (System.IO.File.Exists(pending)) throw new System.Exception("Refuse screenshot overwrite"); captureAt = UnityEditor.EditorApplication.timeSinceStartup; ScreenCapture.CaptureScreenshot(pending, 1); note("capture_requested=" + name); };
+note("session=" + session + "; preset4=" + originalLabels[4] + "; no custom sizes");
+System.IO.File.WriteAllText(folder + "dorm-wxga-progress.txt", "RUNNING " + run + " phase=0\n");
+tick = () => {
+    try {
+        double now = UnityEditor.EditorApplication.timeSinceStartup, gap = now - lastTick; lastTick = now;
+        if (now - lastPump >= .1) { lastPump = now; if (view != null) view.Repaint(); UnityEditor.EditorApplication.QueuePlayerLoopUpdate(); }
+        if (now - lastProgress >= 1) { lastProgress = now; System.IO.File.WriteAllText(folder + "dorm-wxga-progress.txt", "RUNNING " + run + " phase=" + phase + " render=" + renderSize() + " Screen_reference=" + Screen.width + "x" + Screen.height + "\n"); }
+        if (phase < 3 && (gap > 5 || !Application.isPlaying || UnityEditor.EditorApplication.isPaused || UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "CraftSpace" || Time.timeScale != 1f || Time.captureDeltaTime != 0f)) { beginRestore("INTERRUPTED environment_changed"); return; }
+        if (phase < 3 && now - began > 20) { beginRestore("FAIL wxga_watchdog_20s"); return; }
+        if (phase == 3) {
+            bool restored = view != null && (int)selectedProperty.GetValue(view, null) == originalIndex && renderSize() == new Vector2(1920, 1080) && labels().SequenceEqual(originalLabels);
+            if (restored && Application.isPlaying && UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "CraftSpace") restored = aligned(1920, 1080);
+            if (restored && now - phaseAt >= .4) { finish(outcome); return; }
+            if (now - phaseAt > 10) { finish("FAIL restore_timeout; prior=" + outcome); return; }
+            return;
+        }
+        if (pending.Length > 0) {
+            if (now - captureAt > 8) throw new System.Exception("Screenshot deadline 8s");
+            if (!System.IO.File.Exists(pending)) return;
+            byte[] png; try { png = System.IO.File.ReadAllBytes(pending); } catch (System.IO.IOException) { return; }
+            if (png.Length < 32 || png[png.Length - 8] != 73 || png[png.Length - 7] != 69 || png[png.Length - 6] != 78 || png[png.Length - 5] != 68) return;
+            check(png[0] == 137 && png[1] == 80 && png[2] == 78 && png[3] == 71 && (png[16] << 24 | png[17] << 16 | png[18] << 8 | png[19]) == 1366 && (png[20] << 24 | png[21] << 16 | png[22] << 8 | png[23]) == 768, "png_complete_wxga " + System.IO.Path.GetFileName(pending));
+            pending = "";
+        }
+        if (lastFrame == Time.frameCount) return; lastFrame = Time.frameCount;
+        if (phase == 0) {
+            stableFrames = aligned(1366, 768) ? stableFrames + 1 : 0;
+            if (stableFrames >= 4 && now - phaseAt >= .5) { firstArrowX = inspect(); capture("01-dorm-wxga-arrow-a"); phase = 1; phaseAt = now; }
+        } else if (phase == 1 && now - phaseAt >= .35) {
+            var arrow = GameObject.Find("FirstBedGuideArrow");
+            if (arrow != null && Mathf.Abs(arrow.GetComponent<RectTransform>().anchoredPosition.x - firstArrowX) > 1f) { float nextX = inspect(); note("arrow_sway_delta_x=" + (nextX - firstArrowX).ToString("F3", invariant)); capture("02-dorm-wxga-arrow-b"); phase = 2; }
+            else if (now - phaseAt > 2) throw new System.Exception("Arrow did not visibly sway");
+        } else if (phase == 2) beginRestore("PASS");
+    } catch (System.Exception ex) {
+        note(ex.ToString());
+        try { if (phase < 3) beginRestore("FAIL exception"); else finish("FAIL restore_exception"); }
+        catch (System.Exception restoreEx) { note(restoreEx.ToString()); finish("FAIL restore_exception"); }
+    }
+};
+UnityEditor.EditorApplication.update += tick;
+try { selectedProperty.SetValue(view, 4, null); view.Repaint(); UnityEditor.EditorApplication.QueuePlayerLoopUpdate(); }
+catch (System.Exception ex) { note(ex.ToString()); beginRestore("FAIL preset_selection"); }
+return "WXGA dorm probe started: " + run + "; about 2–4s, watchdog20s + restore10s; root retains Play for final review/restoration.";

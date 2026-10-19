@@ -1,0 +1,231 @@
+// C#6 execute_code method body. Native EndingManager + actual DOTween updates.
+// Requires an idle, fresh Title Play. No PlayerPrefs writes and no valid destination scene.
+const string folder = "QA/ReleaseVerification20261019/";
+const string label = "ending-lifetime";
+const string sentinel = "__QA_EndingLifetime_MUST_NOT_LOAD__";
+var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public;
+var staticFlags = System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic;
+System.Action<bool, string> require = (ok, message) => { if (!ok) throw new System.Exception(message); };
+require(Application.isPlaying && !UnityEditor.EditorApplication.isPaused, "Requires unpaused Play");
+var initialScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+require(initialScene.name == "Title" && Time.timeScale == 1f, "Requires Title / timeScale 1");
+require(EndingManager.PendingEndingNum == 0 && !EndingManager.IsLoadingEnding, "Fresh PendingEndingNum 0 required");
+require(UnityEngine.Object.FindFirstObjectByType<EndingManager>() == null, "Unexpected existing EndingManager");
+require(!System.IO.File.Exists(folder + label + "-result.txt"), "Result exists; archive explicitly before repeating");
+require(!System.IO.File.Exists(folder + label + "-progress.txt") || !System.IO.File.ReadAllText(folder + label + "-progress.txt").StartsWith("RUNNING"), "Probe already running");
+for (int i = 0; i < UnityEngine.SceneManagement.SceneManager.sceneCountInBuildSettings; i++)
+    require(System.IO.Path.GetFileNameWithoutExtension(UnityEngine.SceneManagement.SceneUtility.GetScenePathByBuildIndex(i)) != sentinel, "Sentinel must not be a build scene");
+var transitions = UnityEngine.Object.FindObjectsByType<SceneTransitionManager>(FindObjectsSortMode.None);
+require(transitions.Length == 1 && !transitions[0].IsLoading, "One idle Title SceneTransitionManager is required");
+var transition = transitions[0];
+var endingType = typeof(EndingManager);
+var showMethod = endingType.GetMethod("ShowEndingAsync", flags);
+var exitMethod = endingType.GetMethod("FadeOutAndLoadScene", flags);
+var badField = endingType.GetField("endingBad", flags);
+var panelField = endingType.GetField("fadePanel", flags);
+var durationField = endingType.GetField("fadeDuration", flags);
+var transitionType = typeof(SceneTransitionManager);
+var resetVisuals = transitionType.GetMethod("FadeLoadingVisuals", flags);
+var transitionLoading = transitionType.GetField("isLoading", flags);
+require(showMethod != null && exitMethod != null && badField != null && panelField != null && durationField != null && resetVisuals != null && transitionLoading != null, "Native reflection contract missing");
+string galleryKey = GearCraft.Gallery.GalleryProgress.SaveKey;
+bool galleryExisted = PlayerPrefs.HasKey(galleryKey);
+string galleryBefore = PlayerPrefs.GetString(galleryKey, "");
+var randomBefore = UnityEngine.Random.state;
+var restoreTransition = new System.Collections.Generic.List<System.Action>();
+foreach (string fieldName in new[] { "pendingEnterTransition", "pendingTip" }) {
+    var f = transitionType.GetField(fieldName, staticFlags); var original = f.GetValue(null);
+    restoreTransition.Add(() => f.SetValue(null, original));
+}
+foreach (var graphic in new UnityEngine.UI.Graphic[] { transition.fadeImage, transition.LoadfadeImage, transitionType.GetField("loadingTipText", flags).GetValue(transition) as UnityEngine.UI.Graphic }) {
+    if (graphic == null) continue;
+    var g = graphic; var color = g.color; bool raycast = g.raycastTarget; var text = g as TMPro.TMP_Text; string content = text == null ? null : text.text;
+    restoreTransition.Add(() => { if (g != null) { g.color = color; g.raycastTarget = raycast; if (text != null) text.text = content; } });
+}
+var loadingRoot = transitionType.GetField("loadingRoot", flags).GetValue(transition) as GameObject;
+bool rootActive = loadingRoot != null && loadingRoot.activeSelf;
+restoreTransition.Add(() => { if (loadingRoot != null) loadingRoot.SetActive(rootActive); });
+var eventSystem = UnityEngine.EventSystems.EventSystem.current;
+bool navigation = eventSystem != null && eventSystem.sendNavigationEvents;
+restoreTransition.Add(() => { if (eventSystem != null) eventSystem.sendNavigationEvents = navigation; });
+var owners = new System.Collections.Generic.List<GameObject>();
+var tweens = new System.Collections.Generic.List<DG.Tweening.Tween>();
+var evidence = new System.Text.StringBuilder();
+var relevantLogs = new System.Collections.Generic.List<string>();
+System.Action<string> note = s => evidence.AppendLine(System.DateTime.UtcNow.ToString("O") + " " + s);
+double wallStart = UnityEditor.EditorApplication.timeSinceStartup;
+bool done = false, transitionAttempted = false;
+int completed = 0;
+UnityEditor.EditorApplication.CallbackFunction tick = null;
+UnityEngine.Application.LogCallback onLog = (message, stack, type) => {
+    string lower = message.ToLowerInvariant();
+    if (lower.Contains("dotween") && (lower.Contains("missing") || lower.Contains("null") || lower.Contains("safe mode")) || lower.Contains("missingreferenceexception") || message.Contains(sentinel))
+        relevantLogs.Add(type + ": " + message + "\n" + stack);
+};
+UnityEngine.Events.UnityAction<UnityEngine.SceneManagement.Scene, UnityEngine.SceneManagement.Scene> onScene = (oldScene, newScene) => note("UNEXPECTED_SCENE " + oldScene.name + " -> " + newScene.name);
+System.Action<string> finish = null;
+finish = outcome => {
+    if (done) return;
+    done = true;
+    if (tick != null) UnityEditor.EditorApplication.update -= tick;
+    var cleanupErrors = new System.Collections.Generic.List<string>();
+    try {
+        if (transitionAttempted && transition != null) {
+            transition.StopAllCoroutines();
+            resetVisuals.Invoke(transition, new object[] { 0f, 0f });
+            transitionLoading.SetValue(transition, false);
+            foreach (var restore in restoreTransition) restore();
+            UnityEngine.Random.state = randomBefore;
+            note("FAIL containment: stopped probe-triggered transition; restored original Title transition state");
+        }
+    } catch (System.Exception ex) { cleanupErrors.Add("transition cleanup " + ex); }
+    foreach (var tween in tweens) {
+        try { if (tween != null && DG.Tweening.TweenExtensions.IsActive(tween)) DG.Tweening.TweenExtensions.Kill(tween, false); }
+        catch (System.Exception ex) { cleanupErrors.Add("tween cleanup " + ex); }
+    }
+    foreach (var owner in owners) {
+        try { if (owner != null) UnityEngine.Object.DestroyImmediate(owner); }
+        catch (System.Exception ex) { cleanupErrors.Add("owner cleanup " + ex); }
+    }
+    bool gallerySame = PlayerPrefs.HasKey(galleryKey) == galleryExisted && PlayerPrefs.GetString(galleryKey, "") == galleryBefore;
+    bool pendingZero = EndingManager.PendingEndingNum == 0 && !EndingManager.IsLoadingEnding;
+    bool sameScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().handle == initialScene.handle;
+    bool titleIdle = transition != null && !transition.IsLoading;
+    if (!gallerySame || !pendingZero || !sameScene || !titleIdle || relevantLogs.Count != 0 || cleanupErrors.Count != 0) outcome = "FAIL";
+    note("completed=" + completed + "/5; scene_handle_unchanged=" + sameScene + "; transition_idle=" + titleIdle + "; Pending0=" + pendingZero + "; gallery_key_presence_and_value_unchanged=" + gallerySame + "; relevant_logs=" + relevantLogs.Count);
+    foreach (var line in relevantLogs) note("RELEVANT_LOG " + line);
+    foreach (var line in cleanupErrors) note("CLEANUP_ERROR " + line);
+    Application.logMessageReceived -= onLog;
+    UnityEngine.SceneManagement.SceneManager.activeSceneChanged -= onScene;
+    note("callbacks_removed=true; temporary_owners_destroyed=" + owners.TrueForAll(x => x == null) + "; wall_seconds=" + (UnityEditor.EditorApplication.timeSinceStartup - wallStart).ToString("F3", System.Globalization.CultureInfo.InvariantCulture));
+    System.IO.File.WriteAllText(folder + label + "-result.txt", outcome + "\n" + evidence + "\nNonvisual native-lifetime test; not evidence of final ED layout or historical warning ownership. No PlayerPrefs Set/Save/Delete calls. Title Play remains running.\n");
+    System.IO.File.WriteAllText(folder + label + "-progress.txt", outcome + " completed=" + completed + "/5\n");
+};
+Application.logMessageReceived += onLog;
+UnityEngine.SceneManagement.SceneManager.activeSceneChanged += onScene;
+System.IO.File.WriteAllText(folder + label + "-progress.txt", "RUNNING\n");
+note("begin Title handle=" + initialScene.handle + "; Pending0; sentinel=" + sentinel);
+string[] names = { "Start_panel_destroy", "Show_image_destroy", "FadeOut_delay_destroy", "FadeOut_panel_destroy", "Disable_only_continues" };
+int test = 0, phase = 0, createdFrame = 0;
+GameObject fixture = null;
+EndingManager manager = null;
+UnityEngine.UI.Image image = null, panel = null;
+DG.Tweening.Tween currentTween = null;
+Cysharp.Threading.Tasks.UniTask nativeTask = default(Cysharp.Threading.Tasks.UniTask);
+bool hasNativeTask = false;
+float started = 0, phaseTime = 0, alphaBeforeDisable = 0;
+const float duration = 0.50f;
+System.Action makeFixture = () => {
+    fixture = new GameObject("__QA_EndingLifetime_" + names[test]);
+    fixture.SetActive(false);
+    owners.Add(fixture);
+    var imageObject = new GameObject("EndingImage", typeof(RectTransform), typeof(CanvasRenderer), typeof(UnityEngine.UI.Image));
+    imageObject.transform.SetParent(fixture.transform, false);
+    image = imageObject.GetComponent<UnityEngine.UI.Image>(); image.raycastTarget = false; image.color = new Color(1, 1, 1, 0);
+    var panelObject = new GameObject("FadePanel", typeof(RectTransform), typeof(CanvasRenderer), typeof(UnityEngine.UI.Image));
+    panelObject.transform.SetParent(fixture.transform, false);
+    panel = panelObject.GetComponent<UnityEngine.UI.Image>(); panel.raycastTarget = false; panel.color = new Color(0, 0, 0, 0);
+    manager = fixture.AddComponent<EndingManager>();
+    badField.SetValue(manager, imageObject);
+    durationField.SetValue(manager, duration);
+    panelField.SetValue(manager, test == 0 ? panel : null);
+    currentTween = null; hasNativeTask = false;
+    fixture.SetActive(true);
+    createdFrame = Time.frameCount; started = Time.unscaledTime; phase = 1;
+    note(names[test] + " fixture_activated Pending=" + EndingManager.PendingEndingNum);
+};
+System.Func<UnityEngine.UI.Image, DG.Tweening.Tween> findTween = target => {
+    var found = DG.Tweening.DOTween.TweensByTarget(target, false);
+    if (found == null || found.Count == 0) return null;
+    require(found.Count == 1, "Unexpected multiple tweens on temporary test target");
+    var tween = found[0]; if (!tweens.Contains(tween)) tweens.Add(tween); return tween;
+};
+System.Action pass = () => {
+    if (hasNativeTask) {
+        require(nativeTask.Status == Cysharp.Threading.Tasks.UniTaskStatus.Succeeded, names[test] + " native task did not finish cleanly");
+        nativeTask.GetAwaiter().GetResult(); hasNativeTask = false;
+    }
+    note("PASS " + names[test]); completed++;
+    if (fixture != null) UnityEngine.Object.DestroyImmediate(fixture);
+    test++; phase = 0;
+    if (test == names.Length) finish("PASS");
+};
+tick = () => {
+    try {
+        require(Application.isPlaying, "Play stopped externally");
+        require(UnityEditor.EditorApplication.timeSinceStartup - wallStart < 20, "20-second wall timeout");
+        require(Time.timeScale == 1f && !UnityEditor.EditorApplication.isPaused, "External pause/timeScale change");
+        require(UnityEngine.SceneManagement.SceneManager.GetActiveScene().handle == initialScene.handle, "Unexpected scene load");
+        require(EndingManager.PendingEndingNum == 0 && !EndingManager.IsLoadingEnding, "Ending static state changed");
+        if (transition != null && transition.IsLoading) { transitionAttempted = true; throw new System.Exception("Canceled owner attempted scene transition"); }
+        require(transition != null, "Original Title transition destroyed");
+        require(relevantLogs.Count == 0, "Relevant lifetime warning/error captured");
+        if (phase == 0) { makeFixture(); return; }
+        if (phase == 1) {
+            if (Time.frameCount - createdFrame < 2) return;
+            if (test == 0) {
+                currentTween = findTween(panel);
+            } else {
+                started = Time.unscaledTime;
+                if (test == 1 || test == 4) {
+                    nativeTask = (Cysharp.Threading.Tasks.UniTask)showMethod.Invoke(manager, new object[] { 1 });
+                    currentTween = findTween(image);
+                } else {
+                    if (test == 3) panelField.SetValue(manager, panel);
+                    nativeTask = (Cysharp.Threading.Tasks.UniTask)exitMethod.Invoke(manager, new object[] { sentinel });
+                }
+                hasNativeTask = true;
+            }
+            if (test == 0 || test == 1 || test == 4) require(currentTween != null && DG.Tweening.TweenExtensions.IsActive(currentTween), "Native fade did not start");
+            phase = 2; return;
+        }
+        if (phase == 2) {
+            if (test == 3) {
+                if (currentTween == null) {
+                    currentTween = findTween(panel);
+                    if (currentTween == null) { require(Time.unscaledTime - started < duration + 0.35f, "FadeOut panel never started"); return; }
+                    phaseTime = Time.unscaledTime; return;
+                }
+                if (Time.unscaledTime - phaseTime < 0.10f) return;
+                require(DG.Tweening.TweenExtensions.IsActive(currentTween) && panel.color.a > 0f && panel.color.a < 1f, "Panel not in active fade");
+                note("FadeOut panel alpha=" + panel.color.a);
+            } else {
+                if (Time.unscaledTime - started < 0.12f) return;
+                if (test == 2) {
+                    require(nativeTask.Status == Cysharp.Threading.Tasks.UniTaskStatus.Pending && Time.unscaledTime - started < duration, "Not within initial delay");
+                } else {
+                    var target = test == 0 ? panel : image;
+                    require(DG.Tweening.TweenExtensions.IsActive(currentTween) && target.color.a > 0f && target.color.a < 1f, "Not within native fade");
+                    note(names[test] + " active_alpha=" + target.color.a);
+                }
+            }
+            phaseTime = Time.unscaledTime;
+            if (test == 4) { alphaBeforeDisable = image.color.a; fixture.SetActive(false); note("owner disabled without destruction"); }
+            else { UnityEngine.Object.Destroy(fixture); note("owner Destroy requested"); }
+            phase = 3; return;
+        }
+        if (phase == 3) {
+            if (test == 4) {
+                if (Time.unscaledTime - phaseTime < 0.10f) return;
+                require(fixture != null && !fixture.activeSelf, "Disabled fixture disappeared");
+                require(DG.Tweening.TweenExtensions.IsActive(currentTween) && image.color.a > alphaBeforeDisable, "Disable stopped native tween progress");
+                note("disabled alpha progressed " + alphaBeforeDisable + " -> " + image.color.a); phase = 4; return;
+            }
+            if (fixture != null) return;
+            require(currentTween == null || !DG.Tweening.TweenExtensions.IsActive(currentTween), "Destroyed owner's tween remains active");
+            if (test == 2 || test == 3) {
+                if (Time.unscaledTime - started < duration * 2f + 0.25f) return;
+            }
+            if (hasNativeTask && nativeTask.Status == Cysharp.Threading.Tasks.UniTaskStatus.Pending) return;
+            pass(); return;
+        }
+        if (phase == 4) {
+            if (Time.unscaledTime - started < duration + 0.15f) return;
+            require(fixture != null && !fixture.activeSelf && Mathf.Abs(image.color.a - 1f) < 0.001f, "Disabled-owner fade did not complete");
+            require(!DG.Tweening.TweenExtensions.IsActive(currentTween), "Completed fade remains active");
+            pass();
+        }
+    } catch (System.Exception ex) { note(ex.ToString()); finish("FAIL"); }
+};
+UnityEditor.EditorApplication.update += tick;
+return "Scheduled EndingManager lifetime probe (5 native cases, <=20 seconds); inspect ending-lifetime-progress.txt. No valid scene destination or PlayerPrefs writes.";

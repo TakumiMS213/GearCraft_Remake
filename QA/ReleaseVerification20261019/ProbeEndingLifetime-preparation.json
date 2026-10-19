@@ -1,0 +1,28 @@
+{
+  "prepared_utc": "2026-10-19T01:08:20.708764+00:00",
+  "runtime_executed": false,
+  "mcp_used": false,
+  "production_modified": false,
+  "body_only_change": "folder constant: ReleaseContinuation20261019 -> ReleaseVerification20261019",
+  "old_results_copied": false,
+  "body_sha256": "4d18da9eb15f0e60f702fc8a2cdce023c0a1c0a364bdb6d61affd9734146e516",
+  "current_ending_source_sha256": "17d073827d7bd2f4c3f04ad350ce07a96633d92a2bbeb05b7ccd6a96a2c9b854",
+  "current_source_exactly_matches_candidate": true,
+  "native_contract": {
+    "Start_panel_SetLink_KillOnDestroy": true,
+    "ShowEndingAsync_image_SetLink_KillOnDestroy": true,
+    "FadeOut_panel_SetLink_KillOnDestroy": true,
+    "FadeOut_delay_destroy_cancellation": true,
+    "post_killed_tween_destroy_check_before_scene_load": true,
+    "PendingEndingNum_zero_bypasses_RecordEnding": true
+  },
+  "R22": "UNRESOLVED: earlier termination warnings are not covered or resolved by this EndingManager lifetime probe.",
+  "static_compile": {
+    "language": "C#6",
+    "compiler": "Unity bundled Mono Roslyn csc",
+    "exit_code": 0,
+    "errors": 0,
+    "warnings": 0,
+    "runtime_executed": false
+  }
+}

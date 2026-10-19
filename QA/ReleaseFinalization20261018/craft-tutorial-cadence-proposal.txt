@@ -1,0 +1,54 @@
+チュートリアル実効速射判定の限定案 / 2026-10-18
+
+対象: CraftTutorialController.csのみ。+37/-4行。制作未適用。
+差分: craft-tutorial-cadence.patch.txt
+全候補: CraftTutorialController.cadence-proposal.cs.txt
+オフライン全Assembly compile: tutorial-cadence-proposal.compile.log (exit0)
+
+判定
+ReconcilePausedOutcomesとOnPartPlacedの2箇所を共通HasFasterAttackへ。
+近接は既存の倍率減少判定をそのまま維持。遠距離はPlayerAttackCadence.GetAutomaticIntervalで算出した実周期が短くなった場合だけ成功候補とする。
+上限60回/秒だけでなく、ceilの同じ段差に留まる場合も未改善とする。
+
+baselineWeapon/currentWeapon
+現在のprogressが保存するのはパーツのbaselineAttackSpeedで、baselineWeaponは無い。
+新たな武器参照や保存項目は増設しない。課題は『パーツの変更による改良』なので、両倍率を同じcurrentWeaponへ適用して比較する。
+これにより武器を持ち替えて基礎CTが変わっただけでは成功にならず、現在使う武器でそのパーツ差が実効改善になるかを評価できる。
+実際の成功には既存IsNewWeaponImprovementの新種パーツ/個数増加も必要。
+現行でAttackSpeedMultを持つSpeedGear/+/++はいずれもrangedOnly=0で、武器種切替による速度パーツ対象変化はない。
+将来、遠距離専用速度パーツや一時効果を工房へ持ち越す設計を追加する場合は、baselinePartsから倍率再評価を検討する。本案ではその新仕様を作らない。
+
+フィードバック
+無効な速度パーツ配置は成功/習得として記録しない。
+「今の構成では攻撃の間隔は変わりません。今回は一撃の威力を高めてみましょう。」
+ヒント1: 威力を伸ばすという考え方。
+ヒント2: 左のパーツの別のダメージ効果。
+ヒント3: 速さのパーツを外して材料/空きを戻し、別の威力パーツを組む操作。
+既存の任意ヒント/領域ハイライトの段階構造を維持し、常時正解を示さない。
+
+初期課題の到達可能性
+PrepareCurrentStepはDamage+1を常時在庫保証、独力課題ではDamage+2とSpeedGearも保証する。
+実習のScrapを最低3、独力では最低6まで補充する既存仕様は変更しない。
+Damage+1は1×1/費用3/補正+1、Damage+2は2×1/費用6/補正+3。
+初期3×3にDamage+1を1つ置いた状態なら、Damage+2を置く2マスは必ず残り、別種かつ威力増の成功経路がある。
+SpeedGearを試して実効速度が変わらなかった場合も、その購入は費用4。TryPurchaseAndPlaceはrefundCostsOnRemove=trueで記録し、RemovePart→RefundPartCostsで4が返るため、残2+返金4=6でDamage+2へ替えられる。
+既存Damage+2から実習を省略した場合はpracticePartName=Damage+2となる。Damage+1を独力課題の空き候補に追加し、既に保証される1マス/費用3の別種ルートを案内にも反映する。
+速度不変の後の空きヒントはダメージ候補を対象にし、SpeedGearだけ入る空きを『改良できる空き』として扱わない。
+全ての任意終盤構成で無コスト改良可能とする仕様ではない。初期配布/在庫/基本グリッド経路の達成可能性を維持する限定修正。
+
+発生条件の訂正
+習得済みの再表示はStartTutorialのreferenceOnlyになり、PartPlacedイベントの成功判定を使わない。
+問題が起きるのは未習得のまま遠距離で開始、途中持替え、または一時中断からの再開等。
+
+適用後の短い実機検証
+ProbeCadenceTutorial.cs.txtをfresh16key manifestがあるTitle Playで実行。C#6静的compile PASS。
+・同じ現在武器でbefore/afterの周期比較、持替えだけでは成功しない。
+・Gat2tick plateau/60cap、Thrower5tick plateauはfalse、Gat2→1/Thrower5→4/Cannon/Rail改善はtrue。
+・近接の倍率判定とInventory表示は従来通り。
+・Inventory遠距離12構成はnative周期に合う期待文字列。
+・native OnPartPlacedでGat速度plateauを非成功にし、ReconcilePausedOutcomesも非成功。
+・段階ヒント3種、初期Damage+1→Speed失敗→取り外し→Damage+2成功。
+・Cannon速度パーツは実周期が短くなるため成功。
+・3×3の1マスだけ空く有効native配置で、Damage+1だけが候補に入り独力課題を完了できる。
+購入・素材消費の実行は行わない。実費用と既存grant/refund経路はコード/アセット根拠で別に明記する。
+既存Status/Material/Grid singletonは復元し、native tutorialが書くmetrics/masteryを含む16Prefsをその場で復元。成功/失敗ともPlay自動停止し、rootがcanonical最終復元を行う。

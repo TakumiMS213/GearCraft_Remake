@@ -1,0 +1,2 @@
+GearCraft.Audio.BGM.dB.v1|False|0
+GearCraft.Audio.SE.dB.v1|False|0

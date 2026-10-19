@@ -1,0 +1,29 @@
+実Endingシーン ED3 → 初回Gallery通知 → Title：準備済み / 実行未実施
+
+実行担当はroot。MCP/Playの操作は準備担当で実施していない。新sessionのfresh16キー退避、session IDの一致、未復元を検証してからのみ始める。
+
+手順
+1. 他QAのRUNNINGがなく、lifetime/UI検証後に再びfresh Title Playへ入る。PendingEndingNum=0、timeScale=1、captureDeltaTime=0、GameViewを開いたまま描画が安定するまで待つ。Unity画面サイズ等は変更しない。
+2. ProbeEnding3ToNotice.cs.txt をexecute_codeする（C#6 body、watchdog55秒）。実ending sceneへのnative EndingManager.LoadEndingScene(3)を起点とし、native ImageSequenceViewerのadvanceButtonへIPointerClickHandlerを送る。12枚の実ED3シーケンスの各fadeが自然完了するまで待って次へ進む。ShowNextImage、ConsumeGalleryUnlockNotice等の内部進行を直接書き換えない。
+3. ending3-native-progress.txt が READY_NOTICE_REVIEW になれば、自動化callbackは解除済み。実Endingは通知のまま表示される。ending3-native-notice.pngをrootが必ずview_image等で開き、画面全面の黒背景、通知ウィンドウ、文言、余計なED画像やスコアの露出、切れ/文字化けを確認する。
+   期待文言: 「ギャラリーが解放されました！」改行「タイトル画面から確認できます」
+   案内: 「クリック / Enterでタイトルへ」
+   自動チェックはTMP文言/overflow、黒Image色/alpha/画面領域、ストーリー画像非表示、PNG寸法。画像を人間の観点で確認する代用ではない。
+4. 画像確認後、ProbeEndingNoticeToTitle.cs.txt を実行する（watchdog20秒）。実galleryNoticeButtonのIPointerClickHandlerを1回発火し、native ReturnToTitle→SceneTransitionManagerを通る。Titleが表示され、遷移終了、timeScale1、Gallery入口のinteractable、日数resetを確認する。
+5. ending3-native-title-result.txt が PASS_NATIVE_FLOW_REVIEW_IMAGES であることを確認し、ending3-native-title.pngも画像で確認する。Part1/2のログは例外/該当DOTween警告を今回分だけ監視する。表示を確認した結果はrootが別途追記する。
+6. rootがPlayを停止し、このsessionの16キー＋Editor/GameView/logger/timeの正規復元を行う。ending3-native-restore-pending.txtは復元が必要な印であり、自動的に解消扱いしない。過去QAのバックアップを使わない。
+
+fixtureと保存の扱い
+- TitleにはStageCounterが存在せず、そのままEDをロードするとScoreManager.Awakeが要求するInstanceがない。Titleからの局所検証のため、必要な場合だけnative StageCounterをQA名のGOへ追加し31を与える。実戦での撃破・スコア獲得の再現ではない。既存StageCounterがあれば置換しない。
+- 作成したStageCounterはTitle帰還検証後に名前/ID/型を確認して当該QA所有物だけ削除する。途中失敗またはPart2未実行ならPlay停止で破棄される。元のTitle sceneを保存しない。
+- Galleryの発見リストを保持し、runtime cacheのhasReachedEndingだけfalseにして初回通知の条件を作る。PrefsへテストコードからSet/Save/Deleteしないが、実EndingManager.AwakeのRecordEnding/Saveが通常どおり保存する。Galleryはsession内で実際に変化するため16キー復元必須。
+- Gallery Changedイベントの購読をResetCacheで消去しない。Title Gallery入口の解放は通常のDataとnative OnEnable/Refreshで反映される。
+- native Title帰還はStatusManager.ResetRunProgress、MaterialManager.ClearAllMaterialsを行う。これらをprobeが代替しない。
+- Ending.PendingEndingNumはnative経路で3のままTitleに戻る可能性がある。probeは勝手に0へ書き換えない。続く独立試験では新しいPlayへ入りruntime resetさせる。
+
+制約
+この試験はED3を通常の公開入口へ指定した局所接続検証であり、MainをクリアしてED3条件を獲得した通し試験ではない。
+UIポインタイベント経路の試験であり、OSマウス/物理Enter入力の試験ではない。R22（終了時Thread/ComputeBuffer注意）は引き続き別の未解決項目で、本試験のPASSで解消扱いしない。
+失敗時はwatchdogが独自callbackを解除し、状態と復元待ちを記録する。失敗を隠すため追加シーンロードやPrefs再書込みを行わずrootへ戻す。
+
+描画寸法の補足: Editor contextのScreen.width/heightは検証基準にしない。GameView.targetRenderSizeとCamera.pixelWidth/Height、active root Canvas.pixelRectの一致を確認し、通知黒パネルはrootCanvas.pixelRect全体を覆うか判定。PNGは撮影要求時のGameView寸法と比較する。

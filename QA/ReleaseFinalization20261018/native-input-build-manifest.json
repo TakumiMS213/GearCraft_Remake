@@ -1,0 +1,17 @@
+{
+  "kind": "native-input-v2",
+  "cases": 3,
+  "outputs": {
+    "NativeInputBootstrap.cs.txt": "26b5c61c817a223049812b64474f2bbe7e0584a4ff1bc627925d36805d2c6b24",
+    "NativeInputSurvivalRoute.cs.txt": "bf9b350e9f7f3bfed2aa64d695124412f48be36dd4d09873ea6a7e056c440ff1",
+    "BatchNativeInput.cs.txt": "d3d3f20da18c4f5ccdf2e66d357cc0e5726732f77b1e949b191abf8a40366519",
+    "native-input-cases.csv": "c91305986a13f5503a39f7a9565a6b307cc41b30c0c340813dbbcc22e08a752a"
+  },
+  "source_read_only": {
+    "RegressionSurvivalRoute.cs.txt": "dcb8685669a8bbd3b78ea0f32c866318bac7134bc672fc5327fe7aa20b512160",
+    "NativeSurvivalBootstrap.cs.txt": "983097ba210d3cac3f2342e933690c6c915b1f4e64f226eb07e963e94aa3e649",
+    "BatchDefense.template.cs.txt": "d8adf83e1a3b4550231b3e41fd9ede042194dc98d9660d89e5bb4b14e1b6b022"
+  },
+  "runtime_verification": "pending root compile and execution",
+  "session_backup_copied": false
+}

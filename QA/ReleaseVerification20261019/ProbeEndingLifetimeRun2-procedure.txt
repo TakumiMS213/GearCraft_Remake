@@ -1,0 +1,11 @@
+Ending lifetime run2 — PREPARED / NOT RUN
+
+旧ending-lifetime-result.txtのFAILは原典として保持する。約3ms後のowner null直後にTween activeを判定していたため、Unity PlayerLoopの後続DOTween更新を待って再確認する。現時点では製品不具合ともテスト誤判定とも確定しない。
+
+前提は元ProbeEndingLifetime-procedure.txtと同じ: Title Play / Time.timeScale1 / unpaused / Pending0 / original transition idle / 他QA callbackなし。
+実行body: ProbeEndingLifetimeRun2.cs.txt
+新出力: ending-lifetime-run2-progress.txt / ending-lifetime-run2-result.txt
+旧body/resultを変更・削除しない。
+
+変更: Destroy要求frameとunscaledTimeを記録し、要求後にゲームframeが3以上進み、unscaledTimeが0.05秒以上進んだ時点でTween停止を検証する。EditorApplication.update回数はPlayerLoop進行の代用にしない。各ゲームframeでowner null/Tween active/要求後経過を記録する。5項目・nativeメソッド・DOTween実更新・20秒wall timeout・ログ監視・cleanupは維持。
+PASSなら『次のPlayerLoopを待った後に5経路の寿命検証が通った』と解釈する。旧3警告の所有者特定や通常ED3画面の検証を兼ねない。

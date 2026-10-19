@@ -1,0 +1,43 @@
+using System;
+using System.IO;
+using UnityEditor;
+using UnityEngine;
+using MCPForUnity.Editor.Services;
+using MCPForUnity.Editor.Services.Transport;
+
+// Temporary QA recovery. Removed when this release check finishes.
+[InitializeOnLoad]
+internal static class ReleaseReconnectOnce
+{
+    const string Folder = "QA/ReleaseFinalization20261018/";
+    static ReleaseReconnectOnce() { EditorApplication.update += WhenReady; }
+
+    static void WhenReady()
+    {
+        if (EditorApplication.isCompiling || EditorApplication.isUpdating || EditorApplication.isPlayingOrWillChangePlaymode) return;
+        EditorApplication.update -= WhenReady;
+        Run();
+    }
+
+    static async void Run()
+    {
+        if (Application.isPlaying || EditorApplication.isCompiling ||
+            !File.Exists(Folder + "session-id.txt") ||
+            File.Exists(Folder + "reconnect-attempt.txt")) return;
+        string id = File.ReadAllText(Folder + "session-id.txt").Trim();
+        bool sameSession = SessionState.GetString("GearCraft.QA.ReleaseFinalization.Session", "") == id;
+        File.WriteAllText(Folder + "reconnect-guards.txt", "sameSession=" + sameSession + "\n");
+        if (!sameSession) return;
+        File.WriteAllText(Folder + "reconnect-attempt.txt", DateTime.UtcNow.ToString("O"));
+        try
+        {
+            // Use the existing authorized endpoint and the plugin's own connection checks.
+            bool connected = await MCPServiceLocator.TransportManager.StartAsync(TransportMode.Http);
+            File.WriteAllText(Folder + "reconnect-result.txt", "connected=" + connected + "\n");
+        }
+        catch (Exception ex)
+        {
+            File.WriteAllText(Folder + "reconnect-result.txt", "failed=" + ex.GetType().Name + "\n");
+        }
+    }
+}

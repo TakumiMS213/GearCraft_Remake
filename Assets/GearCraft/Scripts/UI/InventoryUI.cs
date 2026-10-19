@@ -136,6 +136,8 @@ public class InventoryUI : MonoBehaviour
     {
         float damage = status != null ? status.GetWeaponDamage(weapon) : weapon.baseDamage;
         float attackCooldown = status != null ? weapon.coolTime * status.attackSpeedMult : weapon.coolTime;
+        if (weapon.weaponType == WeaponType.Ranged)
+            attackCooldown = (float)PlayerAttackCadence.GetAutomaticInterval(attackCooldown);
         float attackPerSecond = attackCooldown > 0f ? 1f / attackCooldown : 0f;
 
         return

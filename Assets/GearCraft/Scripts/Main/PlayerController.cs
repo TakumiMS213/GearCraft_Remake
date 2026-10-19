@@ -61,6 +61,7 @@ public class PlayerController : MonoBehaviour
     private float coolTime;
     private float currentCoolTime;
     private float currentDamage;
+    private readonly PlayerAttackCadence attackCadence = new PlayerAttackCadence();
 
     // --- Components ---
     private Rigidbody2D rb;
@@ -136,6 +137,7 @@ public class PlayerController : MonoBehaviour
         if (isDeathRetrying || StageFlowManager.IsPlayerInputBlocked)
         {
             StopPlayerMovementInput();
+            ProcessAttackInput(false, false, Time.deltaTime, Vector3.zero);
         }
         else
         {
@@ -151,7 +153,6 @@ public class PlayerController : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.Q))
                 BoostActive().Forget();
         }
-        CoolTimeUpdate();
         UpdateAutoBarrier();
         if (boostEffect != null && isBoostActive)
         {
@@ -202,6 +203,7 @@ public class PlayerController : MonoBehaviour
         if (currentWeapon == appliedWeapon) return;
 
         appliedWeapon = currentWeapon;
+        attackCadence.Interrupt();
         lastArmTriggerName = null;
 
         if (meleeWeapon != null)
@@ -355,29 +357,33 @@ public class PlayerController : MonoBehaviour
     // --- Attack ---
     private void HandleAttack()
     {
-        if (currentWeapon == null) return;
+        Vector3 aimWorld = Vector3.zero;
+        Camera camera = Camera.main;
+        if (camera != null) aimWorld = camera.ScreenToWorldPoint(Input.mousePosition);
+        aimWorld.z = 0f;
+        ProcessAttackInput(Input.GetMouseButtonDown(0), Input.GetMouseButton(0), Time.deltaTime, aimWorld);
+    }
 
-        float weaponCoolTime = currentWeapon.coolTime;
-        // 攻撃速度倍率を適用
-        if (runtimeStatus != null)
-            weaponCoolTime *= runtimeStatus.attackSpeedMult;
+    private int ProcessAttackInput(bool pressed, bool held, float deltaTime, Vector3 aimWorld)
+    {
+        SyncWeaponFromStatus();
+        bool automatic = IsRanged();
+        bool allowed = !isDeathRetrying && !StageFlowManager.IsPlayerInputBlocked &&
+            currentWeapon != null && (automatic || IsMelee());
+        if (automatic && (FirePoint == null ||
+            (!currentWeapon.useLineHitbox && currentWeapon.bulletPrefab == null))) allowed = false;
 
-        float weaponDamage = currentWeapon.baseDamage;
-
-        // 近接武器
-        if (IsMelee() && Input.GetMouseButtonDown(0) && coolTime <= 0f)
+        float interval = currentWeapon != null ? currentWeapon.coolTime : 0f;
+        if (runtimeStatus != null) interval *= runtimeStatus.attackSpeedMult;
+        int attacks = attackCadence.Advance(pressed, held, automatic, allowed, deltaTime, interval);
+        coolTime = (float)attackCadence.RemainingSeconds;
+        for (int i = 0; i < attacks; i++)
         {
-            coolTime = weaponCoolTime;
-            currentDamage = weaponDamage;
-            PerformMeleeAttack();
+            currentDamage = currentWeapon.baseDamage;
+            if (automatic) PerformShotAttack(aimWorld);
+            else PerformMeleeAttack();
         }
-        // 射撃武器
-        if (IsRanged() && Input.GetMouseButton(0) && coolTime <= 0f)
-        {
-            coolTime = weaponCoolTime;
-            currentDamage = weaponDamage;
-            PerformShotAttack();
-        }
+        return attacks;
     }
 
     private void PerformMeleeAttack()
@@ -389,14 +395,12 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void PerformShotAttack()
+    private void PerformShotAttack(Vector3 aimWorld)
     {
         if (FirePoint == null || currentWeapon == null) return;
         if (!currentWeapon.useLineHitbox && currentWeapon.bulletPrefab == null) return;
 
-        Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        mouseWorldPos.z = 0f;
-        Vector2 direction = (mouseWorldPos - FirePoint.position).normalized;
+        Vector2 direction = (aimWorld - FirePoint.position).normalized;
         float angle = Mathf.Clamp(Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg, -90f, 90f);
 
         float spread = currentWeapon.spreadAngle;
@@ -640,16 +644,6 @@ public class PlayerController : MonoBehaviour
         if (bullet == null || currentWeapon == null) return;
 
         bullet.bulletLifeTime = Mathf.Max(0.1f, currentWeapon.attackRange);
-    }
-
-    // --- CoolTime ---
-    private void CoolTimeUpdate()
-    {
-        if (coolTime > 0f)
-        {
-            coolTime -= Time.deltaTime;
-            if (coolTime < 0f) coolTime = 0f;
-        }
     }
 
     // --- Damage & Invincibility ---
@@ -1022,6 +1016,8 @@ public class PlayerController : MonoBehaviour
             pendingTransform.Cancel();
         }
     }
+
+    private void OnDisable() => attackCadence.Interrupt();
 
     private void OnDestroy() => CancelTemporaryCombatEffects();
 

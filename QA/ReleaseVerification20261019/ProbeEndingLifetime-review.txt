@@ -1,0 +1,8 @@
+EndingManager適合レビュー（準備のみ、実行未実施）
+
+ProbeEndingLifetime.cs.txt は旧QAからfolder定数だけを変更。旧結果・進捗・セーブ退避はコピーしていない。
+適用済みEndingManagerを読取確認。Start / ShowEndingAsync / FadeOutAndLoadScene のDOFade3か所はKillOnDestroyで所有者にリンク。FadeOutのDelayにはdestroy cancellationとSuppressCancellationThrowがあり、Tween待機解除後もtokenを確認してシーンロードを抑止する。5項目のprobeはこの差分をそのまま対象にしており矛盾なし。
+private/publicメソッド名、serialized field名と型はprobeの反射契約と一致。Pending0でのAwakeはRecordEndingを呼ばず、probe自身もPrefs Set/Save/Deleteを使用しない。
+非表示だけの場合はKillOnDestroyの対象ではなく、probeの継続検証と整合する。テストは実表示レイアウトや通常ED分岐の網羅ではない。
+
+R22は未解決のまま維持する。過去のThread prematurely finalized 5件 / ComputeBuffer GC disposal1件について、このprobeのPASSは解消証拠にならない。既存調査はQA/ReleaseContinuation20261019/termination-warning-audit.txtを参照。アプリ所有buffer未Disposeは未特定、package候補は原因確定ではない。

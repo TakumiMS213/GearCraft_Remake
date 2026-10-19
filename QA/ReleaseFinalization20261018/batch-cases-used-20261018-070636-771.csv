@@ -1,0 +1,4 @@
+label,weapon,start_stage,profile,seed,STR,ACC,moduleDamage,repair,barrier,punk,scrap_module,initial_hp,initial_gate,fps
+gate_native_input_EK9_GearCraft_seed77_fps60,GearCraft,31,final_day11_melee_defense_module20,77,20,20,20,1,1,1,1,100,100,60
+gate_native_input_BB413_GearCraft_seed77_fps60,GearCraft,16,mid_day4_common,77,10,10,0,1,0,1,1,100,100,60
+gate_native_input_BB413_SteamThrower_seed77_fps60,SteamThrower,16,mid_day4_common,77,10,10,0,1,0,1,1,100,100,60

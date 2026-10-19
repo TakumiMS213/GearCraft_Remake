@@ -1,0 +1,28 @@
+{
+  "prepared_utc": "2026-10-19T00:32:50.751376+00:00",
+  "runtime_executed": false,
+  "production_modified_by_probe_preparation": false,
+  "body": "QA/ReleaseContinuation20261019/ProbeEndingLifetime.cs.txt",
+  "body_sha256": "fa8dcda4af35353631bcbd4cba8f8ba4d5f5a7703384163e00ceab941d2915cb",
+  "source_sha256": "17d073827d7bd2f4c3f04ad350ce07a96633d92a2bbeb05b7ccd6a96a2c9b854",
+  "static_compile": {
+    "language": "C# 6",
+    "compiler": "Unity 6000.0.67f1 bundled Mono Roslyn csc",
+    "exit_code": 0,
+    "errors": 0,
+    "warnings": 0,
+    "response_file": "QA/ReleaseContinuation20261019/ProbeEndingLifetime.compile.rsp"
+  },
+  "cases": [
+    "Start panel fade then owner destruction",
+    "ShowEndingAsync image fade then owner destruction",
+    "FadeOutAndLoadScene delay then owner destruction",
+    "FadeOutAndLoadScene panel tween then owner destruction",
+    "Owner inactive only: tween continues and completes"
+  ],
+  "wall_timeout_seconds": 20,
+  "playerprefs_writes": false,
+  "scene_destination": "nonexistent QA sentinel only",
+  "cleanup": "owned test tweens, generated owners, Editor update and log/scene callbacks; probe-triggered transition containment only on failure",
+  "limits": "No native runtime result yet; no visual-layout assertion or ownership proof for historical logs."
+}

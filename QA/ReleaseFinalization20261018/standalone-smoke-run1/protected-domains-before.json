@@ -1,0 +1,20 @@
+{
+  "unity.Takumi.GearCraft_Remake": {
+    "domain": "unity.Takumi.GearCraft_Remake",
+    "path": "/Users/sora/Library/Preferences/unity.Takumi.GearCraft_Remake.plist",
+    "exists": true,
+    "raw_sha256": "9d96c04b697f76b84ae8b67a125389b23ae876b601b4f01ee8221c99dc0aeaf9",
+    "typed_sha256": "fbfd3b286f4c5da8ea091fb497eef0dfe9fcd4cfcfc91daad8a79733c2edccfa",
+    "key_count": 12,
+    "disk_matches_export": true
+  },
+  "com.Takumi.GearCraft_Remake": {
+    "domain": "com.Takumi.GearCraft_Remake",
+    "path": "/Users/sora/Library/Preferences/com.Takumi.GearCraft_Remake.plist",
+    "exists": false,
+    "raw_sha256": null,
+    "typed_sha256": "9261ecceda608ef174256e5fdc774c1e6e3dcf533409c1bc393d490d01c713f1",
+    "key_count": 0,
+    "disk_matches_export": null
+  }
+}

@@ -1,0 +1,12 @@
+FAIL
+2026-10-19T01:09:33.8235810Z begin Title handle=-1158778; Pending0; sentinel=__QA_EndingLifetime_MUST_NOT_LOAD__
+2026-10-19T01:09:33.8554160Z Start_panel_destroy fixture_activated Pending=0
+2026-10-19T01:09:33.9645520Z Start_panel_destroy active_alpha=0.7590126
+2026-10-19T01:09:33.9645820Z owner Destroy requested
+2026-10-19T01:09:33.9677240Z System.Exception: Destroyed owner's tween remains active
+  at MCPDynamicCode.<Execute>m__0 (System.Boolean ok, System.String message) [0x00006] in <9abf8b9bd71547eab935f9ebf770bddc>:0 
+  at MCPDynamicCode+<Execute>c__AnonStorey2.<>m__9 () [0x00677] in <9abf8b9bd71547eab935f9ebf770bddc>:0 
+2026-10-19T01:09:33.9697990Z completed=0/5; scene_handle_unchanged=True; transition_idle=True; Pending0=True; gallery_key_presence_and_value_unchanged=True; relevant_logs=0
+2026-10-19T01:09:33.9703430Z callbacks_removed=true; temporary_owners_destroyed=True; wall_seconds=0.148
+
+Nonvisual native-lifetime test; not evidence of final ED layout or historical warning ownership. No PlayerPrefs Set/Save/Delete calls. Title Play remains running.

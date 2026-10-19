@@ -1,0 +1,46 @@
+// C#6 MCP body. Isolated runtime clones, manually simulated; no native weapon/bot execution.
+const string folder="QA/ReleaseFinalization20261018/";
+if(!Application.isPlaying)throw new System.Exception("Run in Play mode; avoids creating/editing scene objects in Edit mode");
+if(System.IO.File.Exists(folder+"steam-velocity-isolated-result.txt"))throw new System.Exception("Result already exists; archive explicitly before repeating");
+string[] paths={"Assets/GearCraft/Paticles/SteamThrowerAttack.prefab","Assets/GearCraft/Paticles/SteamThrowerOverheatSparks.prefab"};
+var clones=new System.Collections.Generic.List<GameObject>();
+var evidence=new System.Text.StringBuilder();
+int velocityErrors=0,otherErrors=0,systems=0;
+float previousScale=Time.timeScale;
+Application.LogCallback observe=(condition,stack,type)=>{
+ if(condition.IndexOf("Velocity curves must all be in the same mode",System.StringComparison.OrdinalIgnoreCase)>=0){velocityErrors++;evidence.AppendLine("VELOCITY_ERROR "+condition);}
+ else if(type==LogType.Error||type==LogType.Exception||type==LogType.Assert){otherErrors++;evidence.AppendLine(type+" "+condition);}
+};
+string outcome="FAIL";
+Application.logMessageReceived+=observe;
+try{
+ Time.timeScale=0f;
+ foreach(string path in paths){
+  var prefab=UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(path);
+  if(prefab==null)throw new System.Exception("Missing prefab "+path);
+  var clone=UnityEngine.Object.Instantiate(prefab,new Vector3(10000f,10000f,0f),Quaternion.identity);
+  clone.name="QA_"+prefab.name;clones.Add(clone);
+  var particles=clone.GetComponentsInChildren<ParticleSystem>(true);
+  foreach(var ps in particles){
+   var main=ps.main;main.stopAction=ParticleSystemStopAction.None;
+   var velocity=ps.velocityOverLifetime;
+   if(!velocity.enabled)continue;
+   systems++;
+   evidence.AppendLine(path+" / "+ps.name+" modes="+velocity.x.mode+","+velocity.y.mode+","+velocity.z.mode+" z="+velocity.z.constantMin+".."+velocity.z.constantMax);
+   if(velocity.x.mode!=velocity.y.mode||velocity.x.mode!=velocity.z.mode)throw new System.Exception("XYZ mode mismatch on "+ps.name);
+   if(velocity.z.constantMin!=0f||velocity.z.constantMax!=0f)throw new System.Exception("Z no longer zero..zero on "+ps.name);
+  }
+  for(int step=0;step<1200;step++)foreach(var ps in particles)if(ps!=null)ps.Simulate(1f/60f,false,step==0,false);
+ }
+ if(systems!=3)throw new System.Exception("Expected the three enabled Steam velocity modules, got "+systems);
+ if(velocityErrors!=0||otherErrors!=0)throw new System.Exception("Simulation emitted errors");
+ outcome="PASS";
+}catch(System.Exception ex){evidence.AppendLine(ex.ToString());}
+finally{
+ foreach(var clone in clones)if(clone!=null)UnityEngine.Object.DestroyImmediate(clone);
+ Time.timeScale=previousScale;
+ Application.logMessageReceived-=observe;
+}
+string result=outcome+"\nenabled_systems="+systems+"\nmanual_simulated_seconds_per_prefab=20\nvelocity_errors="+velocityErrors+"\nother_errors="+otherErrors+"\n"+evidence+"\nRuntime clones destroyed; timeScale restored. Not a native 20-second weapon firing test.\n";
+System.IO.File.WriteAllText(folder+"steam-velocity-isolated-result.txt",result);
+return result;

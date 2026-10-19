@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>GearCraft.CraftTutorial.AutoPlayed.Craft.v3</key>
+	<integer>1</integer>
+	<key>GearCraft.CraftTutorial.AutoPlayed.Craft.v4</key>
+	<integer>1</integer>
+	<key>GearCraft.CraftTutorial.AutoPlayed.WeaponCustom.v2</key>
+	<integer>1</integer>
+	<key>GearCraft.CraftTutorial.AutoPlayed.WeaponCustom.v3</key>
+	<integer>1</integer>
+	<key>GearCraft.Gallery.Progress.v1</key>
+	<string>{"hasReachedEnding":false,"encounteredEnemies":[],"acquiredWeapons":["Katana"],"craftedRecipes":[],"acquiredMaterials":[]}</string>
+	<key>GearCraft.Main.OpeningNotice.Seen.v1</key>
+	<integer>1</integer>
+	<key>Screenmanager Fullscreen mode</key>
+	<integer>3</integer>
+	<key>Screenmanager Fullscreen mode Default</key>
+	<integer>1</integer>
+	<key>Screenmanager Resolution Height</key>
+	<integer>720</integer>
+	<key>Screenmanager Resolution Height Default</key>
+	<integer>1080</integer>
+	<key>Screenmanager Resolution Use Native</key>
+	<integer>0</integer>
+	<key>Screenmanager Resolution Use Native Default</key>
+	<integer>0</integer>
+	<key>Screenmanager Resolution Width</key>
+	<integer>1280</integer>
+	<key>Screenmanager Resolution Width Default</key>
+	<integer>1920</integer>
+	<key>Screenmanager Window Position X</key>
+	<integer>0</integer>
+	<key>Screenmanager Window Position Y</key>
+	<integer>76</integer>
+	<key>UnitySelectMonitor</key>
+	<integer>0</integer>
+	<key>unity.player_session_count</key>
+	<string>30</string>
+	<key>unity.player_sessionid</key>
+	<string>3662196417317236019</string>
+	<key>wcs.highscore.default_60s</key>
+	<string>{"modeId":"default_60s","score":3650,"rank":2,"correctHits":21,"wrongHits":0,"emptyShots":0,"maxCombo":21,"accuracy":1.0,"achievedAt":"2026-08-19 17:09:22"}</string>
+	<key>wcs.settings.debugInitial</key>
+	<integer>1</integer>
+</dict>
+</plist>

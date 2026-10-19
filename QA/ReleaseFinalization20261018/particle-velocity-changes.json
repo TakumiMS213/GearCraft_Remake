@@ -1,0 +1,26 @@
+[
+  {
+    "path": "Assets/GearCraft/Paticles/SteamThrowerAttack.prefab",
+    "line": 1603,
+    "old_mode": 0,
+    "new_mode": 3,
+    "scalar": 0,
+    "minScalar": 0
+  },
+  {
+    "path": "Assets/GearCraft/Paticles/SteamThrowerAttack.prefab",
+    "line": 6437,
+    "old_mode": 0,
+    "new_mode": 3,
+    "scalar": 0,
+    "minScalar": 0
+  },
+  {
+    "path": "Assets/GearCraft/Paticles/SteamThrowerOverheatSparks.prefab",
+    "line": 1603,
+    "old_mode": 0,
+    "new_mode": 3,
+    "scalar": 0,
+    "minScalar": 0
+  }
+]

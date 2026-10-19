@@ -1,0 +1,13 @@
+{
+  "prepared_only": true,
+  "standalone_launched": false,
+  "preferences_modified": false,
+  "python_ast_parse": "PASS",
+  "swift_typecheck_exit": 0,
+  "files": {
+    "standalone_smoke.py": "e2a753fe53c19f92920265fa522789f3fd8fcc9970bfe6ce5878de28055a0e44",
+    "StandaloneNormalQuit.swift": "4a371be5752755d67acbb0111cb54311faacc4a5439e8f2c40e9d7b0631c4488",
+    "standalone-smoke-review.txt": "951ff4a0e5ecf67793156a1c944ffd794a607ff9a9cb6e9e127e01b009cf8908"
+  },
+  "note": "Swift helper typechecked, not executed. Root reviews and runs with required permission."
+}

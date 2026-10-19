@@ -1,0 +1,30 @@
+2026-10-19T01:12:01.0041930Z session=20261019-010910-317-110653f0ec5245b8ad468da33de3bd20; preset4=WXGA (1366x768); no custom sizes
+2026-10-19T01:12:01.5062340Z PASS wxga_render_camera_canvas_aligned
+2026-10-19T01:12:01.5064620Z PASS first_day_preparation_preserved
+2026-10-19T01:12:01.5067160Z PASS task_and_arrow_visible
+2026-10-19T01:12:01.5082510Z PASS task_background_flush_top_left
+2026-10-19T01:12:01.5083530Z PASS task_background_inside_canvas
+2026-10-19T01:12:01.5086170Z PASS sleep_goal_and_controls_visible
+2026-10-19T01:12:01.5088610Z PASS task_text_no_overflow
+2026-10-19T01:12:01.5089730Z PASS arrow_has_visible_sprite
+2026-10-19T01:12:01.5090510Z PASS arrow_inside_canvas
+2026-10-19T01:12:01.5093940Z PASS arrow_left_middle_anchor
+2026-10-19T01:12:01.5094960Z render=(1366.00, 768.00); Screen_reference=1672x924; task_pixels=(x:0.00, y:646.91, width:670.00, height:121.09); arrow_pixels=(x:41.04, y:336.00, width:51.00, height:96.00); content=ベッドで眠って明日に備える A / D：移動　ベッドのそばで Space
+2026-10-19T01:12:01.5096840Z capture_requested=01-dorm-wxga-arrow-a
+2026-10-19T01:12:01.5410870Z PASS png_complete_wxga 01-dorm-wxga-arrow-a.png
+2026-10-19T01:12:01.8548510Z PASS wxga_render_camera_canvas_aligned
+2026-10-19T01:12:01.8550740Z PASS first_day_preparation_preserved
+2026-10-19T01:12:01.8553140Z PASS task_and_arrow_visible
+2026-10-19T01:12:01.8554230Z PASS task_background_flush_top_left
+2026-10-19T01:12:01.8555070Z PASS task_background_inside_canvas
+2026-10-19T01:12:01.8555950Z PASS sleep_goal_and_controls_visible
+2026-10-19T01:12:01.8556830Z PASS task_text_no_overflow
+2026-10-19T01:12:01.8557660Z PASS arrow_has_visible_sprite
+2026-10-19T01:12:01.8558420Z PASS arrow_inside_canvas
+2026-10-19T01:12:01.8559130Z PASS arrow_left_middle_anchor
+2026-10-19T01:12:01.8560070Z render=(1366.00, 768.00); Screen_reference=1672x924; task_pixels=(x:0.00, y:646.91, width:670.00, height:121.09); arrow_pixels=(x:22.11, y:336.00, width:51.00, height:96.00); content=ベッドで眠って明日に備える A / D：移動　ベッドのそばで Space
+2026-10-19T01:12:01.8560910Z arrow_sway_delta_x=-18.927
+2026-10-19T01:12:01.8561840Z capture_requested=02-dorm-wxga-arrow-b
+2026-10-19T01:12:01.8861060Z PASS png_complete_wxga 02-dorm-wxga-arrow-b.png
+2026-10-19T01:12:01.8864320Z restore_requested original_index=3; outcome=PASS
+2026-10-19T01:12:02.2871790Z restore_index=True; restore_render_target=True; size_list_unchanged=True

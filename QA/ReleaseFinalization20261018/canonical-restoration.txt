@@ -1,0 +1,10 @@
+session_id=20261018-070128-095-8360bc7954e64d94aff83f6784baf9fb
+UTC=2026-10-18T10:33:28.0418600Z
+prefs_verified=16
+Play=false
+scene=Title clean
+fixed_ticks=2822399
+fixed_delta_getter=0.0199999921
+GameView_index=3
+GameView_sizes_restored=true
+logger_and_dotween_restored=true

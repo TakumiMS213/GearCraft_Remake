@@ -1,0 +1,59 @@
+PASS checks=54
+PASS inactive setup preserved singleton ownership
+PASS weapon SteamCannon
+PASS weapon RailCraft
+PASS weapon SteamGatling
+PASS weapon SteamThrower
+PASS weapon GearCraft_Sword
+PASS Gat 2tick plateau is not faster
+PASS Gat 1tick cap is not faster
+PASS Gat 2tick to 1tick is faster
+PASS Thrower 5tick plateau / 4tick improvement
+PASS slower ranged weapons improve
+PASS melee raw-speed rule unchanged
+PASS weapon switch alone is not improvement
+PASS comparison uses same current weapon for both part configurations
+PASS missing weapon is not credited
+PASS inventory actual cadence SteamCannon stage=0
+PASS inventory actual cadence SteamCannon stage=1
+PASS inventory actual cadence SteamCannon stage=2
+PASS inventory actual cadence RailCraft stage=0
+PASS inventory actual cadence RailCraft stage=1
+PASS inventory actual cadence RailCraft stage=2
+PASS inventory actual cadence SteamGatling stage=0
+PASS inventory actual cadence SteamGatling stage=1
+PASS inventory actual cadence SteamGatling stage=2
+PASS inventory actual cadence SteamThrower stage=0
+PASS inventory actual cadence SteamThrower stage=1
+PASS inventory actual cadence SteamThrower stage=2
+PASS inventory melee text retains raw interval
+PASS guaranteed tutorial parts available
+PASS real initial parts match granted 3/6 scrap and refundable speed cost4
+PASS initial Damage+1 native placement
+PASS SpeedGear native placement
+PASS plateau placement is not tutorial success
+PASS plateau explains unchanged result and next objective
+PASS paused-outcome reconciliation also rejects plateau
+PASS plateau graduated hint 1
+PASS plateau graduated hint 2
+PASS plateau graduated hint 3
+PASS initial 3x3 grid accepts alternate Damage+2 after removing speed
+PASS initial fallback damage route reaches success
+PASS Cannon practice placement
+PASS Cannon speed placement
+PASS actual ranged interval improvement succeeds
+PASS existing Damage+2 practice baseline
+PASS native single-cell fill 2/0
+PASS native single-cell fill 0/1
+PASS native single-cell fill 1/1
+PASS native single-cell fill 2/1
+PASS native single-cell fill 0/2
+PASS native single-cell fill 1/2
+PASS only Damage+1 fits remaining native grid cell
+PASS Damage+1 is included in independent task space candidates
+PASS existing-Damage+2 route places alternate Damage+1
+PASS Damage+1 fallback reaches independent-task success
+Purchase/material consumption not executed: native placement, real asset costs, and source-verified grant/refund path support initial reachability.
+restored_status_grid_materials_16prefs=True
+
+No visual-layout, actual purchase, or gameplay-physics test. Root still restores canonical session/editor after automatic Play stop.

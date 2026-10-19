@@ -1,0 +1,15 @@
+{
+  "scene_content_sha256": {
+    "globalgamemanagers": "123b4d9f110c8da8ec2f53adcdd2b0c822e02f011173b4e50b5b7679244e6e81",
+    "level0": "5087706ab895cd10d4d8259e7d4e1a2eb477307e3ae156959191a545f0b211f8",
+    "sharedassets0.assets": "9c78a6780664fdf2b9153431cce97d2ae5cd6bafe4929e3486bea876a89f8f71",
+    "resources.assets": "69e73b2213902a8ccb03730b6a168deba9c31b0bb9e39d9133f4e1cd9ccd3b46",
+    "boot.config": "b27f572879a661eafcfef340c606d3ee084193a89f0566dd5c51139f2e9ffebc"
+  },
+  "app": "/private/tmp/GearCraftReleaseVerification20261019/GearCraft.app",
+  "executable": "/private/tmp/GearCraftReleaseVerification20261019/GearCraft.app/Contents/MacOS/GearCraft_Remake",
+  "bundle_identifier": "com.DefaultCompany.2D-URP",
+  "info_sha256": "288a5985d210c267150140cd996781128cfb7a966de89c0aa7f07ba8d07306ce",
+  "exe_sha256": "4f01117ebd82181a94d903db9d4a357d6c99d8a78e99d8a5fcfe69fc11852b17",
+  "managed_sha256": "1c596d3af54915ec82d1d761a7f34149bf006a8b74b5de09aa5e9125f9011b95"
+}

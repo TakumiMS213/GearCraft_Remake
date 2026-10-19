@@ -1,0 +1,53 @@
+Standalone smoke runner：rootレビュー用（準備済み・未実行）
+
+対象
+/private/tmp/GearCraftReleaseFinalization20261018/GearCraft.app
+実装: standalone_smoke.py / StandaloneNormalQuit.swift
+この担当は起動、正常終了要求、PlayerPrefs変更を実行していない。
+
+実行案
+まずrootがコードを確認し、既存のPlayerが起動しておらずEditor Playも終了していることを確認する。
+対象Player domainを使う他アプリも同時に実行しない。現在のBundle IDはテンプレート由来なので、別アプリとの共有がありうる。
+必要な実行/Library書込みの承認をrootが得てから、プロジェクトrootで次を実行する。
+
+python3 QA/ReleaseFinalization20261018/standalone_smoke.py --execute --run-dir QA/ReleaseFinalization20261018/standalone-smoke-run1
+
+--executeなしでは説明JSONのみ。既存run-dirは上書き拒否。run-dirはこのQAの直下に限定する。
+最初にSwift helperをコンパイルするため、最初の起動まで20秒より長くかかる可能性がある。
+実際のPlayer起動後は20秒待ち、その間5秒ごとにstdoutへ進捗JSONをflushする。toolは短いyieldで起動し、継続中の進捗を確認する。
+
+起動前に行うこと
+・Info.plist/実行ファイル/DLLをhash化。Bundle IDと実行ファイル所在を確認し、Audio保存キー/PlayerAttackCadenceが含まれる最新版を要求。
+・Player domain com.DefaultCompany.2D-URP全体をdefaults exportで取得し、型付きplistとraw plist/存在状態を新runに退避する。
+・Editor/互換候補 unity.Takumi.GearCraft_Remake、com.Takumi.GearCraft_Remake は書き込まず、raw/型付き内容のhash・存在状態・件数だけ記録する。実値はstdoutへ出さない。
+・各存在ファイルのraw辞書とdefaults exportが一致することを確認。現在のPlayer domainが未存在の場合、importだけで不存在へ戻すことができないため起動前に停止する。このrunnerではdefaults deleteを使用しない。
+・Application Support/Takumi/GearCraft_Remakeの既存manifestを記録。symlink先を辿らない。
+
+起動/正常終了
+・Python subprocessで実行ファイルの絶対パスを起動し、その子PIDを保持する。window 1280×720、専用-logFile、stdioもrun内へ記録。
+・20秒より前に終了した場合は不明な早期終了として停止し、PlayerPrefsを自動復元しない。
+・20秒後にSwift helperへ所有PIDと正確な実行パスを渡す。NSRunningApplicationの実行パス照合後、terminate()を1回だけ呼ぶ。
+・helperの受理返信を最大5秒待ち、終了要求開始から合計最大15秒で所有子プロセスのexit code0を確認する。
+・入力イベント/画面API/OS設定変更は使わない。forceTerminate、kill、SIGTERM/SIGKILLなどの代替終了処理は一切ない。
+・正常終了APIはsandboxed callerから拒否されうる。拒否・timeout・解決不能なPIDなどでは追加操作せず、PIDとrestoration_pendingをresult.jsonへ残す。
+
+復元条件と内容
+・所有Playerの正常終了、Editor/互換候補domain不変、app hash不変、Player domainのraw/export一致を確認した場合だけ復元する。
+・正常終了後のPlayer domainを別export/rawファイルへ保存し、freshのbefore.export.plistをdefaults importでPlayer domainにだけ戻す。
+・readbackでキー集合、型/値、元の存在状態を完全照合する。二重のdefaults deleteやrawファイル上書きfallback、cfprefsd killは行わない。
+・consoleに例外が見つかっても、終了/保護確認が成立していればセーブを復元し、試験結果だけFAIL_CONSOLE_EXCEPTIONとする。
+・不確実な状態や復元照合失敗はSTOPPED_REVIEW_REQUIRED。backup/対象PID/復元待ちの記録をrootが確認して対応する。
+・Application Supportのafter manifestと差分は残すが、作成・変更されたファイルを削除/上書きしない。差分があればrootが別途扱う。
+
+出力
+progress.jsonl、result.json、launched-process.json、app-before.json
+player-domain-before/after/restored.{json,export.plist} と存在時raw plist
+protected-domains-before/after/final.json
+application-support-before/after.json
+player.log、player-stdio.log、normal-quit-helper.stdout/stderr.txt、console-findings.json
+起動後に中断されたらlaunched-process.jsonのPIDを確認する。プロセスが生きている間はPrefsを復元しない。
+
+検証範囲
+これは最新非開発Playerの起動/正常終了・ログ例外のsmokeであり、実UI操作・画面表示・音を聞く検査・音量のプロセス再起動保持ではない。
+console-findingsはException類/Assertion/Fatal/Crashの文字列検出で、全クラッシュ/描画不具合を保証するものではない。
+OS入力/画面権限や正式対象OSの確認待ちは、このsmokeの成功とは別に残る。

@@ -1,0 +1,27 @@
+READY_NOTICE_REVIEW
+2026-10-19T01:17:20.9311100Z Fixture: native StageCounter at 31 supplied because Title lacks it; remove after Title-return verification
+2026-10-19T01:17:20.9354150Z begin session=20261019-010910-317-110653f0ec5245b8ad468da33de3bd20; native_stage=31; gallery_was_unlocked=True
+2026-10-19T01:17:20.9662770Z invoked native EndingManager.LoadEndingScene(3), unlock fixture held only in runtime cache
+2026-10-19T01:17:23.3352390Z scene  -> Ending
+2026-10-19T01:17:23.5705960Z native ED3 loaded handle=-1164126; sequence_count=12; notice_pending=true; Gallery unlocked by Awake
+2026-10-19T01:17:23.5724670Z sequence settled index=-1; frame=1023
+2026-10-19T01:17:24.5746510Z sequence settled index=0; frame=1532
+2026-10-19T01:17:25.5762070Z sequence settled index=1; frame=2013
+2026-10-19T01:17:26.5749700Z sequence settled index=2; frame=2523
+2026-10-19T01:17:27.5754930Z sequence settled index=3; frame=3043
+2026-10-19T01:17:28.5797020Z sequence settled index=4; frame=3479
+2026-10-19T01:17:29.5789560Z sequence settled index=5; frame=3938
+2026-10-19T01:17:30.5849270Z sequence settled index=6; frame=4325
+2026-10-19T01:17:31.5838860Z sequence settled index=7; frame=4782
+2026-10-19T01:17:32.5833590Z sequence settled index=8; frame=5295
+2026-10-19T01:17:33.5869420Z sequence settled index=9; frame=5726
+2026-10-19T01:17:34.5861160Z sequence settled index=10; frame=6228
+2026-10-19T01:17:35.5903090Z sequence settled index=11; frame=6648
+2026-10-19T01:17:36.0908570Z notice_text MessageText=ギャラリーが解放されました！<br>タイトル画面から確認できます; overflowing=False
+2026-10-19T01:17:36.0909360Z notice_text ContinueHint=クリック / Enterでタイトルへ; overflowing=False
+2026-10-19T01:17:36.0957900Z notice_black_rect pixel_min=0,0; max=1920,1080; canvas_viewport=(x:0.00, y:0.00, width:1920.00, height:1080.00); gameview=(1920.00, 1080.00); canvas_order=100
+2026-10-19T01:17:36.0963670Z native GameView capture requested /Users/sora/Desktop/Unity/GearCraft_Remake/QA/ReleaseVerification20261019/ending3-native-run2-notice.png; frame=6911; notice remains displayed for review
+2026-10-19T01:17:36.1715060Z capture completed 1920x1080; bytes=66040; manual visual review still required
+2026-10-19T01:17:36.1721450Z outcome=READY_NOTICE_REVIEW; clicks=13; gallery_unlocked=True; errors=0; callbacks_removed=true
+
+Native Ending scene is left at the observed state. Current session 16-key restoration remains required. Do not claim normal game completion or full UI visual PASS from this result alone.

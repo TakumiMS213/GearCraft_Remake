@@ -1,0 +1,15 @@
+{
+  "utc": "2026-10-19T01:22:38.873526+00:00",
+  "archive": "/private/tmp/GearCraftReleaseVerification20261019/GearCraft-macOS-universal-20261019.zip",
+  "bytes": 61877021,
+  "sha256": "26a4b9729b9d8f480dc26f2eb0da1e56e172386dbdf9105275f78186d29ebcba",
+  "app_files_and_symlinks": 205,
+  "roundtrip_all_file_hashes_modes_symlink_targets_match": true,
+  "source_app_unchanged": true,
+  "extracted_codesign_exit": 0,
+  "extracted_codesign_stderr": "",
+  "scope": "Local release candidate ZIP. Ad-hoc integrity only; not Developer ID notarization or public distribution.",
+  "status": "PASS",
+  "workspace_archive": "/Users/sora/Desktop/Unity/GearCraft_Remake/Builds/ReleaseCandidate20261019/GearCraft-macOS-universal-20261019.zip",
+  "workspace_archive_sha256_verified": true
+}

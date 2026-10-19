@@ -1,0 +1,3 @@
+boss,stage,scaling_stage,event,result,spawn_game_seconds,event_game_seconds,boss_seconds,start_hp,start_gate,end_hp,end_gate,player_damage,gate_damage,player_healed,gate_healed,start_boss_hp,remaining_boss_hp,attack_events,player_x,player_y,boss_x,boss_y
+"EK-9","31","31","spawned","active","16","16","0","97","100","97","100","0","0","0","0","147600","147600","0","4.323234","-3.82227063","9.08098","-0.8022671"
+"EK-9","31","31","ended","defeated","16","76.0666656","60.0666656","97","100","97","100","0","0","0","0","147600","-0.247268677","3604","-4.183557","-3.82227063","2.85664034","-0.8022671"

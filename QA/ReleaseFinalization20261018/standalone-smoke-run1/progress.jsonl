@@ -1,0 +1,12 @@
+{"utc": "2026-10-18T11:06:08.644539+00:00", "event": "preparing_quit_helper"}
+{"utc": "2026-10-18T11:33:24.136208+00:00", "event": "player_started", "pid": 30457}
+{"utc": "2026-10-18T11:33:29.244019+00:00", "event": "observing_player", "pid": 30457, "elapsed_seconds": 5.1}
+{"utc": "2026-10-18T11:33:34.376175+00:00", "event": "observing_player", "pid": 30457, "elapsed_seconds": 10.2}
+{"utc": "2026-10-18T11:33:39.262569+00:00", "event": "observing_player", "pid": 30457, "elapsed_seconds": 15.1}
+{"utc": "2026-10-18T11:33:44.143449+00:00", "event": "requesting_normal_termination", "pid": 30457}
+{"utc": "2026-10-18T11:33:47.287874+00:00", "event": "waiting_for_normal_exit", "pid": 30457, "elapsed_seconds": 3.1}
+{"utc": "2026-10-18T11:33:50.187958+00:00", "event": "waiting_for_normal_exit", "pid": 30457, "elapsed_seconds": 6.0}
+{"utc": "2026-10-18T11:33:53.300537+00:00", "event": "waiting_for_normal_exit", "pid": 30457, "elapsed_seconds": 9.2}
+{"utc": "2026-10-18T11:33:56.207219+00:00", "event": "waiting_for_normal_exit", "pid": 30457, "elapsed_seconds": 12.1}
+{"utc": "2026-10-18T11:33:59.313953+00:00", "event": "review_required", "pid": 30457, "process_may_still_be_running": true, "restoration_pending": true, "reason": "RuntimeError: Player did not exit within 15 seconds; no force termination attempted"}
+{"utc": "2026-10-18T11:33:59.317993+00:00", "event": "finished", "result": "STOPPED_REVIEW_REQUIRED", "pid": 30457, "restoration_pending": true, "process_may_still_be_running": true}

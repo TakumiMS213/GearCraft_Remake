@@ -1,0 +1,55 @@
+SteamThrower EK 1回再実行 — 準備と最小差分（2026-10-19）
+
+準備済み
+LoadBatchNativeThrowerVelocityFixed.cs.txt → BatchNativeThrowerVelocityFixed.cs.txt
+NativeInputBootstrap.cs.txt / NativeInputSurvivalRoute.cs.txt
+native-thrower-velocityfixed-cases.csv / loadouts.csv / loadout-placements.csv
+combat-continuation-manifest.json（旧入力と新出力のSHA256、本文同一性、変更一覧）
+prepare_combat_continuation.py（生成用。現在は生成済み、実行開始後は再生成しない）
+
+状態
+制作変更・MCP・Unity実行はこの担当では行っていない。
+新bootstrap/route/batchを現在のUnity/Game DLL参照でC#6オフラインコンパイルし、3本ともerror0/warning0。
+root作成のfresh captureファイルは読取りだけとし、生成対象に含めていない。
+
+前回からの変更
+・保存先だけを QA/ReleaseContinuation20261019/ に変更。
+・Editor SessionStateキーを GearCraft.QA.ReleaseContinuation.Session に変更。
+・labelを gate_continuation_EK9_SteamThrower_velocityfixed_seed77_fps60 に変更。
+・上記変更に応じたplan/bootstrap/routeのhashを更新。
+・単独routeのwall期限300→140秒、batchのroute監視340→145秒、全体監視を150秒へ変更。
+・その他の戦闘/照準/入力/回避/迎撃/BOOST/物理/Spawner/報酬/ED条件は旧velocityfixed版を維持。
+・DOTween.logBehaviour=DG.Tweening.LogBehaviour.Default、logger enabled=trueも旧再試行版と同じ。終了時の完全復元は今回fresh backupからrootが行う。
+旧QAのbackup/result/sourceは変更しない。コピーしたCSVは装備定義2件だけで、過去のセーブ・Editor設定・試験結果は一切コピーしていない。
+
+固定構成（前回planとlabel以外の全列一致を検査済み）
+SteamThrower / stage31 / seed77 / fps60
+profile=final_day11_thrower_fitted_damage_defense_module20
+STR20 / ACC20 / moduleDamage20 / HP100 / GATE100
+repair=1 / barrier=1 / punk=1 / scrap_module=1
+パーツと配置は旧2CSVをそのまま使用。native RecalculateUpgradeEffectsで実効果を計算する。
+本編ProcessAttackInputを毎観測ゲームフレーム1回呼ぶ方式を維持。受付intと生成期待数を記録するが、expected_projectilesは実命中数ではない。
+有限BOOST2回・実在歯車のみ。HP/門補充・無敵注入・敵直接damageなし。
+
+rootの呼出手順
+1. 新folderのCaptureFresh.cs.txt（root所有）をclean Title Editで一度だけ実行する。今回の実値でtyped16keys、Editor/GameView/logger/DOTween、既存TimeManagerの正確tickを新規取得する。
+   旧ReleaseFinalizationのcapture/backupを再利用しない。新session-idとcanonical-backup-readyのhash、SessionStateキーが一致する必要がある。今回すでにfresh capture済みなら再実行しない。
+2. rootの今回用Restore/Verify bodyが新folder・新sessionへ対応していることを確認する。旧Restoreの固定session/tick/DOTween hashや旧GameView名をそのまま使わない。
+3. TitleでPlay開始、native StatusManager/MaterialManagerの初期化を待つ。Mainから開始する必要はない。
+   前回計測は16:9のQA480x270。今回も同じ解像度へ合わせる場合は、新capture完了後にrootが今回専用GameView名で設定し、その名前を今回Restoreの除去許可と一致させる。このrunner自身はGameViewサイズを変更しない。
+4. LoadBatchNativeThrowerVelocityFixed.cs.txtの本文をMCP execute_codeで実行する。loaderは既存MCPのCheckBlockedPatternsとCompileAndExecuteを通して大きなbodyを呼ぶ。
+   batchがTitleで6ゲーム秒/360frame待つ→native bootstrapでMainを準備→route開始まで行うため、別途bootstrap/routeを重ねて呼ばない。
+5. batch-progress.txt / native-survival-progress.txt / batch-events-*.csvを短い間隔で確認する。新labelの*-bosses.csv / *-result.txtが結果となる。元の2無効試行は旧folderに残る。
+6. 自動停止後、Play=falseとQA callback終了を確認し、rootの新Restore→Verifyを実行する。batchは入口のruntime設定のみ戻すため、PlayerPrefs16keys・GameView・DOTween等の最終復元を省略しない。
+
+期限の意味と中止
+全体150秒、route140秒の判定はEditorApplication.update上で行う。Editor main threadが停止すると監視も実行できず、停止中のOS実時間で150秒以内にPlayを強制停止する保証はない。Editor復帰後に期限超過を検出して無効終了する。
+同じ理由でcancel-defense-batch.txtまたはcancel-native-survival.txtによる中止要求も次のEditor updateまで待つ。必要時はrootだけが今回folderへsentinelを置く。
+wall_timeout_140s / batch_wall_timeout_150s / route_wall_watchdog_145s / 初期化失敗は戦闘勝敗として扱わない。長停止なら同じ試行を繰り返さず、rootが停止・復元を確認する。
+単独routeには元のgame_timeout_900sを維持しているが、通常は先にwall期限で止まる。監視期限の変更はダメージ/敵AIを変えるものではない。
+
+結果判定
+同じ装備を初期注入した最終日だけの敵物理付きbot試験であり、素材取得からの通しプレイや人間の平均成功率ではない。
+討伐時間は*-bosses.csvのspawned→ended/defeatedのboss_secondsを使う。ED演出までの日全体game_secondsを討伐時間にしない。
+Ending到達はstage31限定の条件下での接続確認。全行程のED達成証拠にしない。
+約60秒の目標との比較は有効完了時だけ行い、wall期限時点の残HPから時間を外挿しない。

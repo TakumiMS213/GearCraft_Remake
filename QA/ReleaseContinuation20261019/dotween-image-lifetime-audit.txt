@@ -1,0 +1,52 @@
+DOTween Image missing/null 過去ログ監査（2026-10-19）
+
+結果
+過去ログからImage.DOFadeのsetterが破棄済みImageへ書き戻したことは確認できるが、Tween生成元メソッド・target名・instance IDはないため、3件の所有者を確定できない。
+現行EndingManagerにはscene破棄までTweenの寿命を制限しない経路が残っている。Ending退場直後という記録と整合する優先候補で、既存SceneTransitionManager/ImageSequenceViewer側の保護とは別に局所予防修正を行う余地がある。
+
+ログ採取と時系列
+Editor.logの113,370,133 bytes時点までを読取。全ログは保存/表示せず、各該当位置の前14行/後28行だけをdotween-warning-excerpts.txtへ抽出。offset/採取時刻はdotween-warning-log-snapshot.json。
+・549511行（30,360,238 bytes）、549573行（30,365,467 bytes）、549635行（30,370,696 bytes）が個別3件。
+・2,072,514行（112,608,251 bytes）はSafe Modeの「3 errors」の集約報告。第4の独立エラーではない。
+・各個別記録はEnding.unityロード→Temp/__Backupscenes/0.backup復帰直後。個別3件の後に旧Particle Velocityエラー大量出力が続き、その末尾のPlay終了付近に集約報告がある。
+・個別行に絶対時刻はない。今回rootが実行中の2026-10-19 UIテストで新規発生した警告と断定しない。log snapshotの採取時点では上記4ヘッダーのみ。
+
+スタックが示す範囲
+UnityEngine.UI.Graphic.set_color
+→ DOTweenModuleUI+<>c__DisplayClass4_0.<DOFade>b__1 （Assets/GearCraft/Plugins/Demigiant/DOTween/Modules/DOTweenModuleUI.cs:79）
+→ ColorPlugin.EvaluateAndApply → Tweener.ApplyTween
+→ DOTweenComponent.Update。
+同梱ModuleUI:77-82はImage専用DOFadeでtarget.colorへ書き戻す処理。CanvasGroup/TMP/TransformのTweenではない。更新時のstackであり、生成時の製品コードcall siteは記録されていない。
+
+所有候補と既存保護
+1. EndingManager.cs:128付近（優先）
+ShowEndingAsyncがtargetImage.DOFade(1, fadeDuration)を直接作り、Tween保持/SetLink/OnDestroy Killがない。Start:72、FadeOutAndLoadScene:154のfadePanel用2本も同じ構造。
+Ending.unityのEndingManagerObjectは有効、fadeDuration=2秒。Ending_Bad / Ending_Nomal / Ending_Trueは実Imageを持つ。fadePanelはfileID0で未設定なので、現在シーンでの最有力はtargetImage側1本。Ending入場直後にテスト終了/別sceneへ移ると2秒fade途中のImageが破棄され得る。
+2. SceneTransitionManager.cs:210-212
+既にstandalone TweenへSetLink(gameObject)がある。ImageSequenceViewer.cs:153-156もcurrentTweenをOnDestroyでKillする。両者を一律に未対処と判定しない。
+3. CraftSpace/TransitionManager.cs:49-65
+Main/CraftSpace双方に実配置があり、移動Tween→DelayedCall→Image.DOFadeが未保持・未リンク。一般的なscene退場時の残存経路はあるが、今回のEnding退場後3件との直接対応は未確認。今回Ending用予防修正へ便乗して範囲を広げない。
+4. GateWarningUI.cs
+ImageループTweenに退場cleanupはないが、現Scenes検索で当該script GUID参照がなく、今回の実発生元候補として優先しない。
+
+既存修正後の状態
+EndingManager / ImageSequenceViewer / GateWarningUI / SceneTransitionManagerの現SHAは、QA/ReleaseReadiness20261016/final-verification.jsonとQA/ReleaseFinalization20261018/source-before.jsonの記録と各々一致。EndingManagerの未リンク経路は既存修正で解消された箇所ではない。
+EndingManager baseline SHA256: 6bc06212330a5f612521ded5d8c8cd4e1d37aefe61d896127fa23fa9ae2ad63b。
+
+最小修正候補（QAのみ、制作未適用）
+EndingManager-lifetime-candidate.diff と EndingManager.candidate.cs.txt。
+・standalone DOFade3本へSetLink(gameObject, LinkBehaviour.KillOnDestroy)。Sequenceに内包されたTweenではないので直接リンクを使用できる。
+・KillOnDisableは使わない。ImageSequenceViewerが画像を隠す既存操作ではfadeの寿命を変更せず、owner GameObject破棄時に限る。
+・FadeOutAndLoadSceneはDelayへdestroy tokenを渡し、キャンセルはSuppressCancellationThrowでreturn。fade完了後もtokenを確認してからscene遷移する。
+・理由: 同梱DOTweenModuleUnityVersion.AsyncWaitForCompletionはKillでも待機を終えるため、SetLinkだけでは旧ownerのFadeOutAndLoadSceneが次sceneを要求する可能性が残る。
+Start/ShowEndingAsyncはfade await後に追加処理がないため、余分なキャンセル制御を追加しない。fade時間/ED選択/解放保存/表示内容は変えない。
+
+静的確認
+現UnityのRoslyn＋Library/ScriptAssemblies＋同梱DOTween DLLで候補ファイルをコンパイル: エラー0、未代入SerializeFieldのCS0649が7件。候補コードの実行・Unity Play/MCP・制作編集はしていない。
+生成したrspは必要参照（DOTween DLL、Assembly-CSharp）を補って検証済み。初回の参照不足コンパイルは実装エラーではなく、最終rspで解消済み。
+
+rootでの局所回帰案
+1. Ending入場後2秒以内にTitleへ退場して数frame進め、Image missing/nullが新規発生しないかlog offsetを区切って確認。
+2. FadeOutAndLoadSceneのDelay途中とfade途中でowner sceneを退場し、旧await完了後にさらにscene遷移が発生しないことを確認。
+3. 通常ED画像送り→Gallery解放告知→Titleの既存経路を1回確認。
+これらを実施しても過去3件のtarget個体を特定したとは扱わず、未リンク寿命経路の予防修正が成立したこととして報告する。

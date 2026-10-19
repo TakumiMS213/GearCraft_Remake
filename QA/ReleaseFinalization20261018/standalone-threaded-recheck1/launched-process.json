@@ -1,0 +1,15 @@
+{
+  "utc": "2026-10-19T00:01:08.250964+00:00",
+  "pid": 33556,
+  "command": [
+    "/private/tmp/GearCraftReleaseFinalization20261018/GearCraft.app/Contents/MacOS/GearCraft_Remake",
+    "-screen-fullscreen",
+    "0",
+    "-screen-width",
+    "1280",
+    "-screen-height",
+    "720",
+    "-logFile",
+    "/Users/sora/Desktop/Unity/GearCraft_Remake/QA/ReleaseFinalization20261018/standalone-threaded-recheck1/player.log"
+  ]
+}

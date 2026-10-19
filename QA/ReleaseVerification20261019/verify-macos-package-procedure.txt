@@ -1,0 +1,29 @@
+新macOS配布app照合 — 準備済み / 検査実行はroot
+
+実行例（new build完了後）
+python3 QA/ReleaseVerification20261019/verify_macos_package.py --build-report QA/ReleaseVerification20261019/macos-build.json
+
+既定app: /private/tmp/GearCraftReleaseVerification20261019/GearCraft.app
+既定出力: QA/ReleaseVerification20261019/macos-package-verification.json（既存時は上書き拒否）
+再試行は明示的に別の --output QA/ReleaseVerification20261019/<new-name>.json を指定する。
+
+読取り対象と根拠
+- CFBundleExecutableをInfo.plistから読み、推測名ではなく実ファイルにfile/lipoを実行。主実行ファイル・UnityPlayer・Mono runtimeのarm64/x86_64を記録する。
+- codesign --verify --deep --strict、および -dv --verbose=4。ローカルのad-hoc署名整合性であり、Developer ID署名、公証、Gatekeeper許可の合格ではない。spctl/notarytoolは呼ばない。
+- source-build-manifest.jsonの17件を実ファイルSHA256と照合。検査前後にmanifestとsourceが不変か確認する。Ending.unityのContinueHint修正を含む現manifestを読む。
+- Info.plist / 実行ファイル / Assembly-CSharp.dll / Mono / UnityPlayerのhashを前後照合し、検査中にbuild成果物が変わった場合は失敗として記録する。
+- 配布app内のlibmonobdwgc＋managed Assembly-CSharpの存在、IL2CPP相当ファイルの有無を記録。BuildReportのoptions/backend記載より実体を優先する。
+- 補助ReadManagedMarkers.exeはUnity付属Mono.Cecilによる静的メタデータ/IL読取。対象DLLをAssembly.Load等で実行しない。EndingManagerの各async状態機械のSetLink、destroy token取得・取消確認、Audioの保存/復元/キー/unscaled時計、cadence共通受付を実DLLの参照から確認する。
+- Editor用DLLとRelease/Player用DLLのhashを参考記録するが、両者のbyte一致は要求しない。Release最適化・stripping・Editor定義等で異なるため。
+- packaged Unity dataでArrival2文面、Titleのcreditオブジェクト名、Ending通知オブジェクト名等のUTF-8を検索する。文字列存在は収録証拠であり、数値RectTransformとオブジェクトの結び付け・最終画面の見え方の証明ではない。圧縮で見つからない場合はinconclusive warning。
+- Title creditの位置、Ending ContinueHint height等は現在sourceの値とhashを記録し、配布Playerの数値配置を検証済みとはしない。Editorの画像確認とPlayerの画像確認も区別する。
+
+副作用・限界
+appの起動/終了、Unity MCP、PlayerPrefs、OS入力/画面API、署名・公証・設定変更は行わない。
+新しいQA JSON reportだけを書き込み、app/production/manifest/以前の記録は変更しない。
+BuildReportは --build-report で明示された既存ファイルのhashと関連claimを別項目へ記録する。options=IL2CPPのような記載が実Monoと食い違っても、実体を置き換えない。
+PASS_LOCAL_ARTIFACT_CHECKS_WITH_LIMITSは以上の局所artifact検査の合格。配布可能性や全機能合格を意味しない。R22の終了時Thread/ComputeBuffer注意は未解決のまま。
+
+準備時検証
+Python構文compile成功。Cecil補助exeはUnity Mono Roslyn C#6でerrors0/warnings0。
+準備担当は新appのcheckerを実行していない。実行結果はrootによる上記コマンドの新JSONにのみ記録される。

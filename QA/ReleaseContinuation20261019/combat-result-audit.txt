@@ -1,0 +1,44 @@
+SteamThrower / EK-9 再試行の読取監査（2026-10-19）
+
+対象: gate_continuation_EK9_SteamThrower_velocityfixed_seed77_fps60
+集計元: 同ラベルの result.txt / bosses.csv / native-input.csv / events.csv / geometry.csv / initial-status.json。
+再集計: python3 QA/ReleaseContinuation20261019/analyze_combat_result.py
+詳細数値・入力ファイルSHA256: combat-result-audit.json。
+
+方法と範囲
+最終日の構成を初期注入した seed77 のボット試験1件。敵の移動・攻撃・物理を動かし、本編 PlayerController の共通攻撃受付を呼ぶ。素材取得からの通しプレイ、人間の平均成功率、実時間のゲームクリア速度を測ったものではない。今回、バランス値の追加調整はしていない。
+初期構成は旧2試行と記録項目が一致: STR20 / ACC20 / 工房module20 / bonusDamage16 / attackSpeedMult0.18274220824241638 / 二重弾あり / spread0 / ricochet0 / bulletSize1 / Punk・Repair・Barrier・Scrap moduleあり。profile は final_day11_thrower_fitted_damage_defense_module20。HP・門100、stage31、60 game fps。
+
+今回の確定結果
+batch COMPLETE 1/1。最終wave撃破後 ending_reached_3 に接続。
+EK出現 game16.000 → 撃破 game76.0666656、討伐時間60.0666656秒（約60.07秒）。開始HP147600、終了HP-0.247268677。60秒目標に近い値を、この条件の1試行で確認した。
+ボス区間はプレイヤーHP97→97、門100→100、本人被害0・門被害0・回復0。ボス区間の受付攻撃3604回。
+日次試験全体はHP100−被害3＋回復3＝100、門100−被害0＋回復0＝100。終端HP100は記録された通常処理の回復3を含み、ボス区間のHPとは区別する。完了wave1、報酬選択0。
+前座・ED待ちを含む94.400 game秒 / 137.316 wall秒は、EK討伐時間に用いない。
+
+収支・入力整合
+native-input 5663行、frame IDは5663個で重複なし。accepted_attacks合計3730＝result.attack_events。
+入力受付から算出した expected_projectiles 合計7460＝result、全行で accepted_attacks×2。これは二重弾時の期待生成数であり、全7460個を別観測した実体数ではない。
+pressed/heldが共にfalseの行からの攻撃受付は0。本人・門の全体収支、およびボス区間の本人収支が一致。全8チェックPASS。
+記録されたBOOST使用は0回（予算2回と実消費を混同しない）。ボス区間dash6回、迎撃対象への切替11回、敵本体への復帰11回。22件の切替イベントを22発の迎撃成功とは扱わない。
+geometry記録でプレイヤーとEKの両軸bounds重複は0フレーム、最低player_y=-3.82227063、最大player_floor_depth=-0.0149998665。観測されたボス区間に正の床貫通はない。
+
+旧試行との比較（旧ファイルは保存したまま）
+1) gate_native_ranged_EK9_SteamThrower_seed77_fps60:
+   wall_timeout_300s。ボス開始から57.93335秒で中断、残HP6080.447、本人97・門100。討伐時間または敗北の記録には採用しない。
+2) gate_native_ranged_EK9_SteamThrower_velocityfixed_seed77_fps60:
+   batch_stopped_batch_wall_timeout。Editor長停止を含みwall934.814秒、ボス区間1.76666641 game秒のみ、残HP143892.625。全戦闘の比較対象には採用しない。
+両旧試行ともBOOST実消費0、初期戦闘パラメータは今回と同じ。
+
+旧1と今回のボス相対時刻を合わせた補助比較:
+  30.0秒: 旧HP75321.375 / 今回75038.5、受付攻撃は双方1800回。
+  57.9秒付近: 旧HP6281.261 / 今回6325.41846、受付攻撃は双方3474回。残HP差は今回+44.15746。
+旧1・今回ともdash6回、迎撃切替11回・復帰11回だが、操作時刻・プレイヤー位置・ボス位置・命中の推移は完全には一致しない。今回の成功を追加火力調整やパーティクル修正による火力上昇と解釈しない。旧の未観測討伐時刻も外挿しない。
+
+描画条件の留保
+1672×924はMCP Editor contextで観測したScreen/Display値。試験後のTitleでは同時にGameView targetRenderSize・Camera pixelWidth/height・Canvas pixelRectが1920×1080であり、1672×924を戦闘の実描画サイズとは断定できない。
+戦闘中のCamera描画寸法は今回も旧試行もCSVに未記録。旧QA480設定の履歴も実戦闘寸法の証拠とはしない。描画条件同等は未確認であり、異解像度だったとの断定もしない。
+
+結論
+この構成・操作条件ではSteamThrowerが約60.07秒でEKを撃破し、最終waveからEDへ到達できることを確認した。入力・被害・回復の集計不一致は見つからない。過去2件の中断を性能不足の敗北として数える必要はなく、今回の1件から人間の成功率や全武器順位の再評価は行わない。
+セッション全体のUI検証・最終復元状態はroot管理の別記録を参照。この戦闘結果だけで最終復元済みとは判断しない。

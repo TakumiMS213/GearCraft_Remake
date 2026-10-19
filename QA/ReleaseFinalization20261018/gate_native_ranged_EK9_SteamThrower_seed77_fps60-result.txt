@@ -1,0 +1,17 @@
+result=wall_timeout_300s
+start_hp=100
+start_gate=100
+end_hp=97
+end_gate=100
+start_stage=31
+last_stage=31
+completed_native_waves=0
+rewards_selected=0
+game_seconds=73.300
+wall_seconds=300.020
+expected_projectiles=7194
+attack_events=3597
+player_damage=3.00
+gate_damage=0.00
+player_healed=0.00
+gate_healed=0.00

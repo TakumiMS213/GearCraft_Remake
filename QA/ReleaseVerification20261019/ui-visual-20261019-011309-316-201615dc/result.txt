@@ -1,0 +1,92 @@
+PASS
+2026-10-19T01:13:09.3271690Z session=20261019-010910-317-110653f0ec5245b8ad468da33de3bd20; title_selection=StartButton
+2026-10-19T01:13:09.3299730Z Only Title InputModule and navigation temporarily disabled to avoid physical pointer overriding synthetic hover. Persistent data not directly modified; final canonical restore required.
+2026-10-19T01:13:09.3454900Z scene_entered Title
+2026-10-19T01:13:09.9481630Z start_idle_color=RGBA(0.961, 0.961, 0.961, 1.000)
+2026-10-19T01:13:09.9484340Z PASS title_credit_present
+2026-10-19T01:13:09.9485620Z PASS title_credit_visible_sprite
+2026-10-19T01:13:09.9517450Z title_credit_pixels=1239.377,19.99996..1896,91.04079; viewport=(x:0.00, y:0.00, width:1920.00, height:1080.00)
+2026-10-19T01:13:09.9518480Z PASS title_credit_inside_canvas
+2026-10-19T01:13:09.9521030Z PASS render_dimensions_consistent 01-title-idle 
+2026-10-19T01:13:09.9524670Z capture_requested 01-title-idle frame=12527
+2026-10-19T01:13:10.0066000Z PASS png_complete_fullhd 01-title-idle.png
+2026-10-19T01:13:10.0076200Z PASS button_interactable StartButton
+2026-10-19T01:13:10.0117720Z PASS graphic_raycast_top StartButton at=(960.00, 444.00) hit=StartButton
+2026-10-19T01:13:10.3127650Z PASS start_hover_matches_highlight actual=RGBA(0.613, 0.613, 0.613, 1.000) expected=RGBA(0.613, 0.613, 0.613, 1.000)
+2026-10-19T01:13:10.3129480Z PASS start_hover_differs_from_idle
+2026-10-19T01:13:10.3130760Z PASS render_dimensions_consistent 02-title-gamestart-hover 
+2026-10-19T01:13:10.3131860Z capture_requested 02-title-gamestart-hover frame=12832
+2026-10-19T01:13:10.3659710Z PASS png_complete_fullhd 02-title-gamestart-hover.png
+2026-10-19T01:13:10.3661390Z PASS button_interactable SettingButton
+2026-10-19T01:13:10.3662810Z PASS graphic_raycast_top SettingButton at=(960.00, 280.00) hit=SettingButton
+2026-10-19T01:13:10.3708190Z native_pointer_click SettingButton
+2026-10-19T01:13:10.7721390Z PASS setting_panel_visible
+2026-10-19T01:13:10.7736300Z setting_text=
+2026-10-19T01:13:10.7738040Z PASS render_dimensions_consistent 03-title-setting 
+2026-10-19T01:13:10.7739690Z capture_requested 03-title-setting frame=13122
+2026-10-19T01:13:10.8380240Z PASS png_complete_fullhd 03-title-setting.png
+2026-10-19T01:13:10.8382750Z PASS button_interactable HideSetting
+2026-10-19T01:13:10.8386990Z PASS graphic_raycast_top HideSetting at=(1595.77, 839.94) hit=HideSetting
+2026-10-19T01:13:10.8418920Z native_pointer_click HideSetting
+2026-10-19T01:13:11.2430440Z PASS setting_panel_closed
+2026-10-19T01:13:11.2442270Z PASS button_interactable StartButton
+2026-10-19T01:13:11.2444470Z PASS graphic_raycast_top StartButton at=(960.00, 444.00) hit=StartButton
+2026-10-19T01:13:11.2727530Z native_pointer_click StartButton
+2026-10-19T01:13:13.6229610Z scene_entered Story
+2026-10-19T01:13:13.6231400Z story_page=0; unscaled=35.54521
+2026-10-19T01:13:13.9812560Z PASS render_dimensions_consistent 04-opening-story 
+2026-10-19T01:13:13.9815020Z capture_requested 04-opening-story frame=14260
+2026-10-19T01:13:14.0432030Z PASS png_complete_fullhd 04-opening-story.png
+2026-10-19T01:13:17.7105460Z story_page=1; unscaled=40.2586823
+2026-10-19T01:13:22.4079870Z story_page=2; unscaled=44.9589844
+2026-10-19T01:13:27.1078990Z story_page=3; unscaled=49.6591949
+2026-10-19T01:13:31.8085230Z story_page=4; unscaled=54.3598251
+2026-10-19T01:13:32.7091950Z PASS render_dimensions_consistent 04b-opening-story-last 
+2026-10-19T01:13:32.7093920Z capture_requested 04b-opening-story-last frame=21454
+2026-10-19T01:13:32.7685230Z PASS png_complete_fullhd 04b-opening-story-last.png
+2026-10-19T01:13:36.5100060Z story_page=5; unscaled=59.060112
+2026-10-19T01:13:39.0589440Z scene_entered CraftSpace
+2026-10-19T01:13:39.0592410Z arrival_page=0; unscaled=61.1769333
+2026-10-19T01:13:39.5598370Z PASS arrival_text_visible page0
+2026-10-19T01:13:39.5602080Z arrival_layout page0; rect=(x:-359.00, y:-69.00, width:718.00, height:138.00); overflow=False; lines=ここが、あなたの工房兼宿舎です。 / 防衛の後は、ここで次の戦いに備えましょう。
+2026-10-19T01:13:39.5603410Z PASS arrival_text_no_overflow page0
+2026-10-19T01:13:39.5605260Z PASS render_dimensions_consistent 04c-dorm-arrival 
+2026-10-19T01:13:39.5606650Z capture_requested 04c-dorm-arrival frame=24946
+2026-10-19T01:13:39.6347520Z PASS png_complete_fullhd 04c-dorm-arrival.png
+2026-10-19T01:13:43.8297450Z arrival_page=1; unscaled=66.37708
+2026-10-19T01:13:45.3311800Z PASS arrival_text_visible page1
+2026-10-19T01:13:45.3315510Z arrival_layout page1; rect=(x:-359.00, y:-69.00, width:718.00, height:138.00); overflow=False; lines=A / D で左へ進み、ベッドで休みましょう。 / ベッドのそばで Space を押すと眠れます。
+2026-10-19T01:13:45.3318710Z PASS arrival_text_no_overflow page1
+2026-10-19T01:13:45.3320290Z PASS render_dimensions_consistent 04d-dorm-arrival-bed-controls 
+2026-10-19T01:13:45.3321870Z capture_requested 04d-dorm-arrival-bed-controls frame=27611
+2026-10-19T01:13:45.4079270Z PASS png_complete_fullhd 04d-dorm-arrival-bed-controls.png
+2026-10-19T01:13:49.0279900Z arrival_page=2; unscaled=71.57769
+2026-10-19T01:13:50.3508550Z PASS native_story_and_arrival_observed
+2026-10-19T01:13:50.3518190Z PASS all_five_story_pages_observed
+2026-10-19T01:13:50.3519860Z PASS both_arrival_pages_observed
+2026-10-19T01:13:50.3521160Z PASS both_arrival_pages_captured_for_visual_review
+2026-10-19T01:13:50.3522510Z first_day_state status=True; started=False; stage_counter_exists=False; stage=NOT_CREATED
+2026-10-19T01:13:50.3523810Z PASS first_day_preparation_preserved
+2026-10-19T01:13:50.3525110Z PASS dorm_task_panel_visible
+2026-10-19T01:13:50.3529280Z dorm_task_text=ベッドで眠って明日に備える A / D：移動　ベッドのそばで Space
+2026-10-19T01:13:50.3530710Z PASS first_bed_goal_visible
+2026-10-19T01:13:50.3532030Z PASS first_bed_controls_visible
+2026-10-19T01:13:50.3534840Z PASS task_background_flush_top_left
+2026-10-19T01:13:50.3561460Z PASS arrow_inside_view a
+2026-10-19T01:13:50.3566190Z PASS arrow_left_middle_anchor a
+2026-10-19T01:13:50.3568020Z PASS arrow_has_visible_sprite a
+2026-10-19T01:13:50.3569530Z arrow a anchored=(70.21, 0.00) size=(51.00, 96.00) pixels=(44.71, 492.00)..(95.71, 588.00)
+2026-10-19T01:13:50.3570960Z PASS render_dimensions_consistent 05-dorm-bed-arrow-a 
+2026-10-19T01:13:50.3572580Z capture_requested 05-dorm-bed-arrow-a frame=29944
+2026-10-19T01:13:50.4264050Z PASS png_complete_fullhd 05-dorm-bed-arrow-a.png
+2026-10-19T01:13:50.6586000Z PASS arrow_inside_view b
+2026-10-19T01:13:50.6588440Z PASS arrow_left_middle_anchor b
+2026-10-19T01:13:50.6590830Z PASS arrow_has_visible_sprite b
+2026-10-19T01:13:50.6592190Z arrow b anchored=(52.39, 0.00) size=(51.00, 96.00) pixels=(26.89, 492.00)..(77.89, 588.00)
+2026-10-19T01:13:50.6593410Z arrow_sway_delta_x=-17.825
+2026-10-19T01:13:50.6594950Z PASS render_dimensions_consistent 06-dorm-bed-arrow-b 
+2026-10-19T01:13:50.6596550Z capture_requested 06-dorm-bed-arrow-b frame=30134
+2026-10-19T01:13:50.7653250Z PASS png_complete_fullhd 06-dorm-bed-arrow-b.png
+2026-10-19T01:13:50.7666520Z scene=CraftSpace; play=True; screen_reference=1672x924; render_target=(1920.00, 1080.00)
+
+Scope: rendered native UI / EventSystem synthetic pointer dispatch, not OS mouse or physical keyboard. Story/arrival are observed through their native Update and timers; no page-advance method is invoked by QA. See timeline/events for actual observed progress. No sleep / day advance performed. Keep evidence, then stop Play and run current-session canonical restoration.

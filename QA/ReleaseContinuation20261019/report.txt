@@ -1,0 +1,61 @@
+GearCraft 継続検証レポート（2026-10-19）
+状態: 本ファイル下部の停止時点記録は保持。2026-10-19 10:08 JSTにEditor復帰後のcanonical Restore/Verifyが完了し、16項目のPlayerPrefs・Editor設定・正確なfixed ticks・GameView・logger・DOTweenの一致を確認。後続の再検証は ../ReleaseVerification20261019/ に新しい退避データで実施する。
+
+今回確定した結果
+
+SteamThrowerのEK再試行が完走した。終盤構成（STR/ACC20・工房module20、final_day11_thrower_fitted_damage_defense_module20）、stage31、seed77、60 game fpsで、出現から60.0666656秒（約60.07秒）でEKを撃破し、最終waveからED3へ接続した。
+ボス戦中は本人HP97・門100を維持、本人・門の被害0、BOOST実使用0。前座を含む全体では被害3・回復3で終端HP100。全体94.400 game秒 / 137.316 wall秒は討伐時間に含めない。
+入力5663フレーム重複なし、受付3730回、二重弾の期待生成数7460、本人・門の被害/回復収支など独立8チェックPASS。期待生成数は入力から計算した数で、7460実体を別観測したという意味ではない。
+敵の移動・攻撃・物理付き、本編共通攻撃受付による当日ボット試験1件である。初期構成を注入しており、素材取得からの通しプレイや人間の平均成功率ではない。今回追加のバランス値調整は行っていない。
+旧2件のEditor停止を伴う中断試行は保持し、敗北や討伐時間には数えない。旧長試行と今回の57.9秒時点は受付3474回で一致、残HP差は44.16。操作時刻・位置は完全一致ではなく、パーティクル修正による火力上昇とは解釈しない。
+根拠: combat-result-audit.txt / combat-result-audit.json / performance-report.txt、gate_continuation_EK9_SteamThrower_velocityfixed_seed77_fps60-*。
+
+初回UI経路の確認とQA判定修正
+
+今回の初回UI試行はTitleのGAMESTART hover、SETTING開閉、Story全5ページ、宿舎到着メッセージ全2ページまで本編の自動進行で到達した。GraphicRaycasterで対象を確かめ、EventSystem合成pointerを使って既存ボタンを操作。実OSマウス/キーボード操作の検証ではない。
+GAMESTART色は idle RGBA(0.961,0.961,0.961,1) → hover RGBA(0.613,0.613,0.613,1) で設定色と一致。01〜04cの計6枚のPNGは1920×1080で保存された。
+保存済みresult.txtは「FAIL exception」のまま保持しているが、失敗箇所 first_day_preparation_preserved はQA側の誤判定だった。初回CraftSpaceではStageCounterが未生成なのが正常で、Main入場前にStageCounter.Instanceの存在を必須にした旧assertが原因。StatusManagerあり・hasStartedFirstDay=false、StageCounterが未生成またはStageCount==1を許容するようprobeを修正済み。ゲーム側の初日フロー不具合としては扱わない。
+修正probeによる最後の宿舎タスク・操作表示・ベッド矢印までの一括PASSは未取得。旧FAILをPASSへ書き換えてはいない。
+根拠: ui-visual-20261019-002056-356-9b652d1d/events.txt / timeline.csv / result.txt / PNG6枚、first-time-ui-visual-notes.txt。
+
+画面寸法のQA訂正
+
+MCP Editor contextのScreen/Displayは1672×924でも、同時点のGameView targetRenderSize・Camera pixelWidth/height・Canvas pixelRectは1920×1080だった。Screen値だけで実描画サイズ変更と判定していたQA条件を修正し、描画サイズ/配置判定にはGameView・Camera・Canvasと実PNGを使う。
+旧資料は上書きしない。以前のScreen値の不一致は実GameViewリサイズの証拠とはしない。戦闘中のCamera寸法は未記録なので、SteamThrower新旧戦闘の描画条件同等は未確認。異解像度だったとの断定もしない。
+
+制作側へ適用済み、再検証待ちの修正
+
+1. Title右下の曲名表示
+   実画像で右下の切れを確認。Title.unityの対象RectTransformを右下アンカー・右下pivotへ変更し、端から右24/下20の余白を確保。サイズ/内容は変更せず、画面内へ置く。修正後の画像・bounds確認は待機中。
+2. 宿舎到着文の不自然な末尾折返し
+   CraftSpaceArrivalMessage.assetを短文化し、移動と睡眠の説明を別行にした。「防衛の後は、ここで次の戦いに備えましょう。」「A / D で左へ進めます。」「ベッドのそばで Space を押すと眠れます。」。カメラ演出・自動進行秒数は維持。修正後の表示確認は待機中。
+3. EndingManagerのTween/遅延の寿命
+   Image.DOFade 3本へSetLink(gameObject, KillOnDestroy)を追加。FadeOutAndLoadSceneのDelayをowner破棄tokenで中止し、fade待機終了後もtokenを確認して、破棄済みownerから次のシーンを要求しないようにした。
+   過去のDOTween Image missing/null 3件はsetterの破棄後アクセスまで確認できるが、生成元/target個体はログにない。EndingManagerは時系列と整合する未保護経路への局所予防修正であり、過去3件の原因を確定したとは扱わない。
+   候補コードの静的コンパイルはerror0、SerializeField未代入のCS0649が7件。制作適用後のUnity本コンパイル・実行回帰、早期退場/Delay中退場/fade中退場、通常ED→Gallery告知→Titleの確認はまだ待機中。
+根拠: Assets/GearCraft/Scenes/Title.unity、Assets/GearCraft/ScriptableObject/Story/CraftSpaceArrivalMessage.asset、Assets/GearCraft/Scripts/Ending/EndingManager.cs、dotween-image-lifetime-audit.txt、EndingManager-lifetime-candidate.diff。候補metaのproduction_modified=falseは候補作成時点の記録で、rootによる後の適用状態とは区別する。
+
+既存残件と今回の範囲
+
+BB Gear/Thrower、EK Gearの以前の本人死亡結果は未解消の観測として残す。EK Throwerだけ今回討伐確認へ更新する。1seed・ボット制約のある結果を人間の攻略不能とはしない。
+SteamThrowerの粒子Velocity修正後、今回は当日戦闘が完走した。戦闘完走は確認済みだが、本レポートでは今回Console全件の独立採取結果をまだ保持していないため、完走だけを根拠に全警告/エラー0とはしない。
+R22の終了時Thread/ComputeBuffer注意は、Mono診断/Unity管理ラッパー由来という種類と2D Animationのfallback buffer候補まで読取調査済み。個別bufferの所有者・実影響・初回停止との因果は未確定。制作コードによる推測修正はしていない。termination-warning-audit.txt参照。
+前回macOSビルド・standalone正常終了2件は前回記録のまま。今回のTitle/文/Ending変更を含む新ビルドやstandalone確認は未実施。実OS入力、実音量変更後のOSプロセス再起動、他画面比率、公証/別OSは本継続試験のPASSに含めない。
+
+停止原因の確認
+
+2026-10-19 09:32 JST、Unity PID22789のeditor-stall-sample.txtではmain thread全176サンプルがEditorSceneManager::HandleOpenScenesChangeOnDisk → DisplayDialogPlatformSpecific → NSAlert.runModalに入っていた。Title.unity外部変更の再読み込み確認で待っており、単なるMCP接続不調としては扱わない。
+rootはユーザーへUnityのReloadを手動で選ぶよう依頼済み。実OS入力権限がなく、このmodal中はMCP経由でも操作できないため、応答再開を待っている。
+EndingManager.csの更新時刻は2026-10-19T00:26:38Z、Library/ScriptAssemblies/Assembly-CSharp.dllは2026-10-18T07:25:28Zのまま。制作ファイルへの適用とUnityでの再コンパイル完了を区別し、現在のDLLで新修正を実行確認したとはしない。
+
+保存状態と終了条件
+
+今回fresh session: 20261019-001012-875-20240fc5f6004f7fb25cebb8921f88a3。
+typed PlayerPrefs16項目・Editor/scene・正確time ticks・GameView・logger・DOTweenの今回バックアップを使用する。旧日のバックアップを流用しない。
+batch-restore-pending.txtに従い、rootによる今回セッションのcanonical Restore/Verifyは未完了。本レポート作成時点では復元済み、全作業完了、配布確認完了とは記載しない。
+prefs-pending-inspection.json（2026-10-19T00:30:59Z）の読取検査では、disk/defaults上の16項目のうちGearCraft.Gallery.Progress.v1だけがfresh backupと異なる。残り15項目のdisk上の一致は、Unity in-memory cacheやEditor設定までの復元完了を意味しない。native Restore/Verifyと全状態照合は引き続きpending。
+次の確認対象はReload後のUnityコンパイル、UI修正後の実画面/ベッド誘導、Ending寿命の局所回帰、および全保存状態の復元。新しい証拠を受けて本レポートを更新する。
+
+復帰後の追記（2026-10-19 10:08 JST）
+
+上記の未復元・旧DLL・再読み込み待ちは停止時点の記録である。Editorがidle/compile falseへ戻り、Assembly-CSharp.dllは2026-10-19 09:41:55 JSTに更新済み。canonical-restoration.txtとcanonical-final-verification.jsonにより当sessionの16keys等の復元を確認した。固定ticks2822399、GameView index3、Title clean、Play=false。新テストの結果は次のQAフォルダで記録し、過去のFAILを改変しない。

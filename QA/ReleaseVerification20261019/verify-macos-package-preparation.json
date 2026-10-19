@@ -1,0 +1,24 @@
+{
+  "prepared_utc": "2026-10-19T01:21:00.861355+00:00",
+  "inspector_executed_by_preparer": false,
+  "production_modified": false,
+  "static_validation": {
+    "python_syntax": "PASS",
+    "cecil_helper_CSharp6": "PASS errors0 warnings0"
+  },
+  "files": {
+    "verify_macos_package.py": {
+      "bytes": 19195,
+      "sha256": "4e469780d8eeeb6e3b332b909ae228f8849bfb1f06778d5efd8e023439c31a19"
+    },
+    "ReadManagedMarkers.cs": {
+      "bytes": 2796,
+      "sha256": "cbb96562abcf4fc3773efc0bfc3168d924c7e7807985746ac41190ffbff25282"
+    },
+    "ReadManagedMarkers.exe": {
+      "bytes": 9216,
+      "sha256": "138e0c75de25b057afcf950c455f5d518cd2f0ac54f7a80ced9cf5bd6857101c"
+    }
+  },
+  "generic_fix": "package-marker-generic-fix.json; inspection itself not rerun"
+}

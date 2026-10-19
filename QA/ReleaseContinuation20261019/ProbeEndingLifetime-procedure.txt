@@ -1,0 +1,26 @@
+EndingManager lifetime probe — prepared, NOT RUN
+
+実行主体: root の Unity MCP。準備担当は Play / MCP を実行していない。
+本体: QA/ReleaseContinuation20261019/ProbeEndingLifetime.cs.txt
+C#6 method body。Unity bundled Roslyn の静的コンパイルは errors 0 / warnings 0。
+
+前提・手順
+1. root の fresh セーブ退避を保ったまま、最新 EndingManager がコンパイル済みの Title Play を使う。
+2. Title が遷移演出を終えた後、timeScale=1 / Editor pause=false / PendingEndingNum=0 / IsLoadingEnding=false を確認。他テストと併走させず、実行中のUI入力を避ける。
+3. 本体を execute_code に渡す。独立 EndingManager が存在せず、Title の SceneTransitionManager が1件でidleの場合だけ登録する。既存結果や同probe RUNNING時は上書き拒否。
+4. ending-lifetime-progress.txt と ending-lifetime-result.txt を確認。正常時は5項目PASS、コールバック解除、生成GO破棄、Title scene handle維持、transition idle、Pending0、Gallery保存キーの存在/文字列不変、該当ログ0。wall timeoutは20秒。
+5. Playは停止しない。正常終了後のrootによるセーブ全体とEditor状態の最終確認・復元を妨げない。FAIL時は結果を読んでから次へ進み、再試験は既存結果を明示的に退避する。
+
+検証の範囲
+- inactive ownerを生成し、native EndingManager/Image のserialized fieldを設定してからactivate。既存Title UIを変更することなく、CanvasなしのImageで実際のDOTweenフレーム更新を観測する。
+- native Startのpanel fade、private ShowEndingAsyncの画像fade、public FadeOutAndLoadSceneのDelay中とpanel fade中の4経路でownerをDestroy。
+- Destroy後のTween inactive / native UniTask正常完了を検証。FadeOut2経路では本来のdelay+fade終了時刻を超えて待ち、SceneTransition要求が無いことを観測。
+- 5項目目はownerをSetActive(false)だけにし、Tweenが継続してalpha=1まで到達することを確認。KillOnDisableになっていないことを実際のDOTween更新で確かめる。
+- PendingEndingNumは一度も書き換えず0を維持するためAwakeのRecordEndingを通らない。PlayerPrefs Set/Save/Deleteの呼出しは一切ない。Galleryキーの存在・文字列の前後一致を別途確認する。これはPlayerPrefs全域の型付きスナップショット照合の代用ではない。
+- シーンロード引数はbuild未登録の専用sentinel。バグが残って遷移が要求された場合も実在する本編シーンを指定しない。要求を検出するとFAILにし、当該Title transition coroutine/tweenを停止し元の表示/入力状態に戻す。正常系ではTitle transitionに操作しない。
+- テスト所有Tween/生成GOのみ掃除し、KillAllを使用しない。Editor update、log、scene監視コールバックを成功・失敗とも解除する。
+
+限界
+このQAは非表示の局所寿命検証。実ED画像のレイアウト、正規ED分岐、通常のタイトル遷移そのものは対象外。
+過去3件のMissing Imageログの発生元がEndingManagerだったと証明するものではない。
+Application.logMessageReceivedは該当DOTween missing/null/safe-mode、MissingReference、sentinelの現在試験ログを記録する。過去ログは加算しない。

@@ -1,0 +1,13 @@
+{
+  "utc": "2026-10-19T00:30:59.332185+00:00",
+  "read_only": true,
+  "source": "disk/defaults; does not verify Unity in-memory cache",
+  "keys_checked": 16,
+  "differences": [
+    {
+      "key": "GearCraft.Gallery.Progress.v1",
+      "reason": "value"
+    }
+  ],
+  "restoration_status": "pending native restore and verification"
+}

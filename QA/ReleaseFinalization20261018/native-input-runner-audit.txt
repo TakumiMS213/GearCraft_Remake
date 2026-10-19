@@ -1,0 +1,59 @@
+本編の攻撃受付を使用する日次防衛テスト：変更点と旧ボットの制約
+2026-10-18 / production・MCP操作なし
+
+必要だった変更
+1. 旧RegressionSurvivalRoute.cs.txt:430-470は、coolTimeを読み書きしてPerformMeleeAttackを直接呼び、射撃はInstantiate/spread/double/configure/反動を複製していた。:477のCoolTimeUpdateも別途呼んでいたため、PlayerControllerの受付修正そのものを検証できなかった。
+2. 新NativeInputSurvivalRouteはprivate int ProcessAttackInput(bool pressed,bool held,float delta,Vector3 aimWorld)をreflectionで取得し、ゲームframeCountごとに一度だけ呼ぶ。UI・無対象時もfalse/falseを送る。coolTimeの書込み、別の時間減算、近接直呼び、弾の手動生成を取り除いた。
+3. rootがHandleAttackを実マウス入力のwrapperにし、PerformShotAttack(Vector3 aimWorld)へ照準入力を分離した。新ボットは以前の銃口offset/重力補正からworldAimを求めるだけで、弾の生成以降は本編を通す。
+4. 毎frameのnative-input.csvにdelta、pressed/held、戻り値の受付数、cooldown前後、武器、照準と入力理由を記録する。attack_eventsは実際の本編受付数。expected_projectilesは受付数×既存double/line分岐の期待数であり、実Instantiate数や命中数ではない。近接は弾を作らないため0。
+5. 旧BB projectile観測はEnemyBulletControllerだけを調べていたが、強弾prefabはEnemyProjectileDamageable。新観測は後者を読み、contactDamageはprivate fieldをreflectionで読む。観測だけの変更で、発射・HP・迎撃は変更しない。first-seenは生成直後の同期probeではない。
+
+生成物と使用順
+  CanonicalCapture.cs.txt：rootの今回のfresh legacy8keys/editor等を保持し、正規・legacy・audio計16キーを追加捕捉する。Play前のclean Titleでのみ実行。今回はroot実行済み。
+  NativeInputBootstrap.cs.txt：Title Playから指定した初期ビルドのMainをロードし、paused READYまで待つ。native-survival-config.csvに weapon,startStage,profile,seed の1行を置く。
+  NativeInputSurvivalRoute.cs.txt：paused READY Mainで単体実行。native-survival-name.txtがラベル、native-survival-fps.txtが30/60/120（既定60）。終了時Play停止。
+  BatchNativeInput.cs.txt / LoadBatchNativeInput.cs.txt：native-input-cases.csvの連続日次試験。既存のcase結果を上書きしない。各case間にTitleへ戻り、通常のMain初期化をやり直す。
+  prepare_native_input_runner.py：旧QAのコード/装備配置だけを読んで新QAへ生成する。旧保存データ・session backupをコピーしない。実行中の再生成は禁止。
+  初期計画はEK GearCraft、BB GearCraft、BB SteamThrowerのseed77、各60fpsの3件。FPS数だけで戦闘の同一性を断定せず、受付テストと生存テストを分けて読む。
+
+セッションの保護
+  typed-prefs-before.json（明示型・存在状態・Base64値）と同じ内容の.txt、session-id.txt、canonical-backup-ready.txtを使用する。
+  manifestには今回の追加16キー退避、元の8キー退避、editor/GameView/logger/audio sidecar等のSHA256を記録。各runnerはmanifestの整合、正規キーの包含、同じEditor SessionStateのIDを必須にする。単に旧backupファイルが存在するだけでは起動しない。
+  既存backupを上書きせず、復元済みのsessionは再使用しない。Editor再起動でSessionStateのIDが失われた場合も勝手に旧backupで新試験を始めない。
+  旧8キーのうち6つはCraftTutorial.*というlegacy表記で、現コードのGearCraft.CraftTutorial.*とは異なった。今回16キーでは双方を保護する。過去試験の不正復元をこの差だけから断定しない（別の正規キー退避・復元を行ったprobeもある）。
+  復元は存在しなかったキーをDeleteKeyし、存在したものは明示型で復元後に値・存在状態を比較する必要がある。JSON/TXTもmanifestのhashで照合する。rootが最終復元を担当。
+
+旧敗北ログの解釈（現修正の実測ではない）
+対象：DefenseBugfix20261016/gate_release2_*_seed77 のbosses/events/samples。
+
+BB + GearCraft
+  出現後15.700秒で本人死亡、門100、敵残HP7007/13000。ボス中67攻撃を記録している。
+  対象変更のreactive_intercept_targetは0件。近接の通常攻撃が偶然敵弾に触れた可能性はあり、「迎撃命中0」を直接測ったログではない。
+  移動先は敵の左bounds-1.1で固定され、迎撃対象ができても敵弾へは近づかない。さらに本編射撃の右向き制約に合わせ、FirePointより左へ通過した弾は迎撃対象にしない。
+  近接の受付距離3.8はplayer原点からAABB最近点までの距離で、実swing colliderの命中を保証しない。1秒サンプル16件で最近点距離1.020～4.118、melee_out_of_rangeは1件。これを全フレームの未命中率へ換算できない。
+  旧ボットは敵の大きなbounds中心がplayerより2.7高いと跳ぶ。BBの浮遊に対応する狙いだが、強弾の予告・射線に合わせた跳躍ではない。本人被害125の攻撃元別内訳は既存ログでは未確定。
+
+BB + SteamThrower
+  出現後47.550秒で本人死亡、門100、敵残HP9590.854/13000。ボス中1053攻撃、本人HP97→-23（純減120）。日全体には前座での回復18もある。
+  迎撃対象へ切り替え18件、通常敵へ戻る記録17件。旧報告の35件は両方を合わせた対象変更数であり、35発迎撃成功の意味ではない。
+  プレイヤーは地上Y=-3.822で、ボスAABB最近点距離は1秒サンプル上3.598～5.140。水平距離3.2を狙う固定位置取りのため、浮遊する敵・動く敵弾に対して一定の実飛翔距離/命中率にならない。
+  照準は現在のbounds中心を狙い、重力補正は水平距離/弾速の近似（最大1.5秒）。敵弾の移動を先読みした交差点ではない。0.2秒ごとの脅威更新もあるため、高速弾への追従を過大評価しない。
+  この時点のdirect damageはACC10+flat9で0.3+0.024×19=0.756、強弾HP20に対し最低27回のダメージ通知が必要（module0、追加BOOST damageカードなし）。ただしSteamThrowerBulletControllerは敵弾に対してEnemy用0.18秒間隔辞書を使わずOnTriggerEnter/Stayから再加算するため、「必要27発」とは言えない。同じ蒸気弾の複数物理通知を含み得る。
+  実際の迎撃成功数/重なり時間/ヒット通知数が未記録なので、理論27回を射撃間隔で割って所要時間とする計算は不適切。
+
+EK + GearCraft
+  出現後89.367秒で本人死亡、門100、敵残HP44296/147600。ボス中991攻撃。迎撃対象選択5件、解除5件、ダッシュ4回。
+  1秒サンプル89件で最近点距離0.908～1.657、melee_out_of_rangeはない。攻撃受付が止まることが主因という記録ではないが、受付回数と実swing命中回数は異なる。
+  巨大な地上車体でもbounds中心が高いため自動jump条件が成立する。player Yは約-3.838～-0.155を往復し、地上ボス相手にも繰り返し跳ぶ。銃口・突進予告に反応した合理的回避とは言えない。
+  回避候補は水平ダッシュの両端だけで、敵body/壁に塞がれる向きは除外。近接位置で大きい車体に挟まれたとき、ジャンプ停止/歩き退避/待機迎撃など複合判断をしない。
+  このボットの死亡をそのまま最大強化GearCraftの攻略不能や純DPS不足と断定しない。地上ボスで自動jumpを抑える感度試験は、本編攻撃受付修正とは別条件として区別する。
+
+今回残した比較上の制約
+  距離・照準・毎frame近接クリック・5秒剣/5秒斧の直接EquipWeapon・報酬選択は旧方針を維持した。実入力に合わせた変形操作ではないため、変形歯車カードの通常収支を再現しない。
+  入力pressedを近接射程内の毎frameでtrueにするのは連打モデルで、人間の実クリック頻度ではない。自動射撃のFPS改善と近接入力頻度を混同しない。
+  無敵や敵への直ダメージは使わない。ボットの操作方針を同時に強化するとFPS修正との差が分離できないため、今回の3件はまず同じ制約を持つ入力経路の回帰として扱う。
+  pure cadence205項目のPASSはroot側の別証拠。本体の弾生成・Twin・物理命中はnative-shot-probe、敵動作込みの生存はこの日次runnerで別途検証する。
+
+静的検証
+  CanonicalCapture / NativeInputBootstrap / NativeInputSurvivalRoute / BatchNativeInput の4本文をUnity既存DLL参照、mcs -langversion:6でコンパイル。全4件の.compile.logは空、.compile.dll生成を確認。
+  native-input-build-manifest.jsonに生成物と旧read-only入力のhashを記録。これは構文/API解決確認であり、Unity内実行や生存結果を証明するものではない。

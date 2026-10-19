@@ -1,0 +1,9 @@
+{
+  "source": "Assets/GearCraft/Scripts/Craft/CraftTutorialController.cs",
+  "source_sha256": "504bc78c92b61559ac48f5cd02628c9e78f11e6fb8fc96c571db56e89f1565ea",
+  "production_edited": false,
+  "patch": "craft-tutorial-cadence.patch.txt",
+  "full_proposal": "CraftTutorialController.cadence-proposal.cs.txt",
+  "lines_added": 37,
+  "lines_removed": 4
+}

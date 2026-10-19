@@ -1,0 +1,11 @@
+{
+  "source_batch_sha256": "d3d3f20da18c4f5ccdf2e66d357cc0e5726732f77b1e949b191abf8a40366519",
+  "source_plan_sha256": "7970438534bde9f5625308c83a83b31d74017097b31a0af0ba80e0753a587e55",
+  "new_plan_sha256": "a1304ee797a3e916c6384aa08d85a77af1c9b4016340a6ad2d94013bfe83bec6",
+  "output_sha256": "9962612d0f36793a4bd0a11df23cb3faed7efe62610ec9170438a17474018868",
+  "case_count": 4,
+  "changes": [
+    "Plan filename and plan SHA only; native route/bootstrap unchanged"
+  ],
+  "runtime_verification": "pending root execution"
+}

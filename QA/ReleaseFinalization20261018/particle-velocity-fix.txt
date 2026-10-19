@@ -1,0 +1,23 @@
+SteamThrower粒子のVelocity曲線モード修正（2026-10-18）
+
+変更内容
+・SteamThrowerAttack.prefabのParticleSystem 2件とSteamThrowerOverheatSparks.prefabの1件で、enabled VelocityModule.z.minMaxStateを0(Constant)から3(TwoConstants)へ変更した。
+・x/yのTwoConstantsと一致させる修正。z.scalar=0、z.minScalar=0を維持し、z速度は0〜0のまま。
+・対象各ファイルはsource-before/Assets/GearCraft/Paticlesへ事前退避。
+・実際の差分は3文字（各minMaxStateの0→3）のみ。その他のbytes/設定は不変。*.velocity-fix.diffとparticle-velocity-changes.jsonへ保存。
+
+静的検証
+・Assets以下の.prefab/.unity/.asset内、!u!198 ParticleSystemのVelocityModuleを走査。
+・11ファイル、ParticleSystem19件、disabled module13件、有効module6件。
+・有効6件すべてXYZ mode一致、不一致0、parse error0。
+・結果: particle-velocity-audit-after.json。再実行: python3 QA/ReleaseFinalization20261018/audit_particle_velocity.py
+・git diff --check通過。
+・Assets/GearCraft/Scripts内のvelocityOverLifetime/VelocityOverLifetimeModuleを変更するコードは見つからなかった。
+・PackageCacheや実行時に別スクリプトが生成するものまで静的検査した主張ではない。
+
+任意の隔離probe（準備済み・未実行）
+ProbeSteamVelocity.cs.txt: Play中のみ実行。2 prefabのruntime cloneを作り、XYZ mode/zの0〜0を確認し、ParticleSystem.Simulateで各20秒を手動進行する。
+Application.logMessageReceivedで該当Velocityエラーと他Error/Exception/Assertを収集する。cloneは必ず破棄しtimeScaleを元に戻す。scene/assetは保存しない。
+結果はsteam-velocity-isolated-result.txt。既存結果は上書きを拒否する。
+probeはC#6静的コンパイル成功（error0/warning0）。MCP実行はこの担当では行っていない。
+手動Simulationは通常SteamThrowerを20秒発射する検証を代替しない。rootのnative発射/粒子ログ再発チェックが別途必要。

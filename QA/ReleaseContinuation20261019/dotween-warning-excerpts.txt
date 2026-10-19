@@ -1,0 +1,177 @@
+Bounded historical extracts only; original line numbers preserved.
+
+549497: Total: 28.023583 ms (FindLiveObjects: 0.686917 ms CreateObjectMapping: 0.255708 ms MarkObjects: 26.085542 ms  DeleteObjects: 0.994500 ms)
+549498: 
+549499: Unloading 42 Unused Serialized files (Serialized files now loaded: 0)
+549500: UnloadTime: 3.040333 ms
+549501: Loaded scene 'Temp/__Backupscenes/0.backup'
+549502: 	Deserialize:            557.349 ms
+549503: 	Integration:            357.698 ms
+549504: 	Integration of assets:  0.515 ms
+549505: 	Thread Wait Time:       0.826 ms
+549506: 	Total Operation Time:   916.387 ms
+549507: Unloading 807 unused Assets / (6.1 MB). Loaded Objects now: 10408.
+549508: Memory consumption went from 474.8 MB to 468.8 MB.
+549509: Total: 24.859250 ms (FindLiveObjects: 0.643167 ms CreateObjectMapping: 0.247500 ms MarkObjects: 22.953125 ms  DeleteObjects: 1.014292 ms)
+549510: 
+549511: <color=#0099bc><b>DOTWEEN ► </b></color>Target or field is missing/null (Void TryThrowEditorNullExceptionObject(UnityEngine.Object, System.String)) ► The object of type 'UnityEngine.UI.Image' has been destroyed but you are still trying to access it.
+549512: Your script should either check if it is null or you should not destroy the object.
+549513: 
+549514:   at UnityEngine.Object+MarshalledUnityObject.TryThrowEditorNullExceptionObject (UnityEngine.Object unityObj, System.String parameterName) [0x00064] in /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:870
+549515:   at UnityEngine.Bindings.ThrowHelper.ThrowNullReferenceException (System.Object obj) [0x00010] in /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/BindingsHelpers.cs:61
+549516:   at UnityEngine.Behaviour.get_isActiveAndEnabled () [0x00006] in <4c1d5365a3f847d28f9c439d0c68dbed>:0
+549517:   at UnityEngine.EventSystems.UIBehaviour.IsActive () [0x00000] in ./Library/PackageCache/com.unity.ugui@cec3688a7c38/Runtime/UGUI/EventSystem/UIBehaviour.cs:28
+549518:   at UnityEngine.UI.Graphic.SetVerticesDirty () [0x00000] in ./Library/PackageCache/com.unity.ugui@cec3688a7c38/Runtime/UGUI/UI/Core/Graphic.cs:295
+549519:   at UnityEngine.UI.Graphic.set_color (UnityEngine.Color value) [0x0000e] in ./Library/PackageCache/com.unity.ugui@cec3688a7c38/Runtime/UGUI/UI/Core/Graphic.cs:156
+549520:   at DG.Tweening.DOTweenModuleUI+<>c__DisplayClass4_0.<DOFade>b__1 (UnityEngine.Color x) [0x00000] in /Users/sora/Desktop/Unity/GearCraft_Remake/Assets/GearCraft/Plugins/Demigiant/DOTween/Modules/DOTweenModuleUI.cs:79
+549521:   at DG.Tweening.Plugins.ColorPlugin.EvaluateAndApply (DG.Tweening.Plugins.Options.ColorOptions options, DG.Tweening.Tween t, System.Boolean isRelative, DG.Tweening.Core.DOGetter`1[T] getter, DG.Tweening.Core.DOSetter`1[T] setter, System.Single elapsed, UnityEngine.Color startValue, UnityEngine.Color changeValue, System.Single duration, System.Boolean usingInversePosition, System.Int32 newCompletedSteps, DG.Tweening.Core.Enums.UpdateNotice updateNotice) [0x0013c] in <5ae618ea15ea4f2ebfe58b132c1de82d>:0
+549522:   at DG.Tweening.Core.TweenerCore`3[T1,T2,TPlugOptions].ApplyTween (System.Single prevPosition, System.Int32 prevCompletedLoops, System.Int32 newCompletedSteps, System.Boolean useInversePosition, DG.Tweening.Core.Enums.UpdateMode updateMode, DG.Tweening.Core.Enums.UpdateNotice updateNotice) [0x00043] in <5ae618ea15ea4f2ebfe58b132c1de82d>:0
+549523: 
+549524: UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+549525: UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+549526: UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+549527: UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+549528: UnityEngine.Logger:Log (UnityEngine.LogType,object)
+549529: UnityEngine.Debug:LogWarning (object)
+549530: DG.Tweening.Core.Debugger:LogSafeModeCapturedError (object,DG.Tweening.Tween)
+549531: DG.Tweening.Core.TweenerCore`3<UnityEngine.Color, UnityEngine.Color, DG.Tweening.Plugins.Options.ColorOptions>:ApplyTween (single,int,int,bool,DG.Tweening.Core.Enums.UpdateMode,DG.Tweening.Core.Enums.UpdateNotice)
+549532: DG.Tweening.Tween:DoGoto (DG.Tweening.Tween,single,int,DG.Tweening.Core.Enums.UpdateMode)
+549533: DG.Tweening.Core.TweenManager:Update (DG.Tweening.Tween,single,single,bool)
+549534: DG.Tweening.Core.TweenManager:Update (DG.Tweening.UpdateType,single,single)
+549535: DG.Tweening.Core.DOTweenComponent:Update ()
+549536: 
+549537: Unloading 180 Unused Serialized files (Serialized files now loaded: 0)
+549538: UnloadTime: 0.767500 ms
+549539: Loaded scene 'Assets/GearCraft/Scenes/Main.unity'
+
+549559: Total: 23.783292 ms (FindLiveObjects: 0.677084 ms CreateObjectMapping: 0.349458 ms MarkObjects: 22.323166 ms  DeleteObjects: 0.432584 ms)
+549560: 
+549561: Unloading 42 Unused Serialized files (Serialized files now loaded: 0)
+549562: UnloadTime: 1.319833 ms
+549563: Loaded scene 'Temp/__Backupscenes/0.backup'
+549564: 	Deserialize:            551.937 ms
+549565: 	Integration:            364.007 ms
+549566: 	Integration of assets:  0.552 ms
+549567: 	Thread Wait Time:       0.923 ms
+549568: 	Total Operation Time:   917.418 ms
+549569: Unloading 807 unused Assets / (7.3 MB). Loaded Objects now: 10409.
+549570: Memory consumption went from 474.4 MB to 467.1 MB.
+549571: Total: 24.676708 ms (FindLiveObjects: 0.586959 ms CreateObjectMapping: 0.258916 ms MarkObjects: 22.860709 ms  DeleteObjects: 0.969291 ms)
+549572: 
+549573: <color=#0099bc><b>DOTWEEN ► </b></color>Target or field is missing/null (Void TryThrowEditorNullExceptionObject(UnityEngine.Object, System.String)) ► The object of type 'UnityEngine.UI.Image' has been destroyed but you are still trying to access it.
+549574: Your script should either check if it is null or you should not destroy the object.
+549575: 
+549576:   at UnityEngine.Object+MarshalledUnityObject.TryThrowEditorNullExceptionObject (UnityEngine.Object unityObj, System.String parameterName) [0x00064] in /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:870
+549577:   at UnityEngine.Bindings.ThrowHelper.ThrowNullReferenceException (System.Object obj) [0x00010] in /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/BindingsHelpers.cs:61
+549578:   at UnityEngine.Behaviour.get_isActiveAndEnabled () [0x00006] in <4c1d5365a3f847d28f9c439d0c68dbed>:0
+549579:   at UnityEngine.EventSystems.UIBehaviour.IsActive () [0x00000] in ./Library/PackageCache/com.unity.ugui@cec3688a7c38/Runtime/UGUI/EventSystem/UIBehaviour.cs:28
+549580:   at UnityEngine.UI.Graphic.SetVerticesDirty () [0x00000] in ./Library/PackageCache/com.unity.ugui@cec3688a7c38/Runtime/UGUI/UI/Core/Graphic.cs:295
+549581:   at UnityEngine.UI.Graphic.set_color (UnityEngine.Color value) [0x0000e] in ./Library/PackageCache/com.unity.ugui@cec3688a7c38/Runtime/UGUI/UI/Core/Graphic.cs:156
+549582:   at DG.Tweening.DOTweenModuleUI+<>c__DisplayClass4_0.<DOFade>b__1 (UnityEngine.Color x) [0x00000] in /Users/sora/Desktop/Unity/GearCraft_Remake/Assets/GearCraft/Plugins/Demigiant/DOTween/Modules/DOTweenModuleUI.cs:79
+549583:   at DG.Tweening.Plugins.ColorPlugin.EvaluateAndApply (DG.Tweening.Plugins.Options.ColorOptions options, DG.Tweening.Tween t, System.Boolean isRelative, DG.Tweening.Core.DOGetter`1[T] getter, DG.Tweening.Core.DOSetter`1[T] setter, System.Single elapsed, UnityEngine.Color startValue, UnityEngine.Color changeValue, System.Single duration, System.Boolean usingInversePosition, System.Int32 newCompletedSteps, DG.Tweening.Core.Enums.UpdateNotice updateNotice) [0x0013c] in <5ae618ea15ea4f2ebfe58b132c1de82d>:0
+549584:   at DG.Tweening.Core.TweenerCore`3[T1,T2,TPlugOptions].ApplyTween (System.Single prevPosition, System.Int32 prevCompletedLoops, System.Int32 newCompletedSteps, System.Boolean useInversePosition, DG.Tweening.Core.Enums.UpdateMode updateMode, DG.Tweening.Core.Enums.UpdateNotice updateNotice) [0x00043] in <5ae618ea15ea4f2ebfe58b132c1de82d>:0
+549585: 
+549586: UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+549587: UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+549588: UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+549589: UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+549590: UnityEngine.Logger:Log (UnityEngine.LogType,object)
+549591: UnityEngine.Debug:LogWarning (object)
+549592: DG.Tweening.Core.Debugger:LogSafeModeCapturedError (object,DG.Tweening.Tween)
+549593: DG.Tweening.Core.TweenerCore`3<UnityEngine.Color, UnityEngine.Color, DG.Tweening.Plugins.Options.ColorOptions>:ApplyTween (single,int,int,bool,DG.Tweening.Core.Enums.UpdateMode,DG.Tweening.Core.Enums.UpdateNotice)
+549594: DG.Tweening.Tween:DoGoto (DG.Tweening.Tween,single,int,DG.Tweening.Core.Enums.UpdateMode)
+549595: DG.Tweening.Core.TweenManager:Update (DG.Tweening.Tween,single,single,bool)
+549596: DG.Tweening.Core.TweenManager:Update (DG.Tweening.UpdateType,single,single)
+549597: DG.Tweening.Core.DOTweenComponent:Update ()
+549598: 
+549599: Unloading 179 Unused Serialized files (Serialized files now loaded: 0)
+549600: UnloadTime: 0.603042 ms
+549601: Loaded scene 'Assets/GearCraft/Scenes/Main.unity'
+
+549621: Total: 25.025125 ms (FindLiveObjects: 0.617375 ms CreateObjectMapping: 0.239375 ms MarkObjects: 23.791500 ms  DeleteObjects: 0.376583 ms)
+549622: 
+549623: Unloading 42 Unused Serialized files (Serialized files now loaded: 0)
+549624: UnloadTime: 1.234750 ms
+549625: Loaded scene 'Temp/__Backupscenes/0.backup'
+549626: 	Deserialize:            542.426 ms
+549627: 	Integration:            355.353 ms
+549628: 	Integration of assets:  0.476 ms
+549629: 	Thread Wait Time:       0.893 ms
+549630: 	Total Operation Time:   899.148 ms
+549631: Unloading 807 unused Assets / (6.0 MB). Loaded Objects now: 10408.
+549632: Memory consumption went from 474.5 MB to 468.4 MB.
+549633: Total: 24.341167 ms (FindLiveObjects: 0.568208 ms CreateObjectMapping: 0.226584 ms MarkObjects: 22.687584 ms  DeleteObjects: 0.857791 ms)
+549634: 
+549635: <color=#0099bc><b>DOTWEEN ► </b></color>Target or field is missing/null (Void TryThrowEditorNullExceptionObject(UnityEngine.Object, System.String)) ► The object of type 'UnityEngine.UI.Image' has been destroyed but you are still trying to access it.
+549636: Your script should either check if it is null or you should not destroy the object.
+549637: 
+549638:   at UnityEngine.Object+MarshalledUnityObject.TryThrowEditorNullExceptionObject (UnityEngine.Object unityObj, System.String parameterName) [0x00064] in /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:870
+549639:   at UnityEngine.Bindings.ThrowHelper.ThrowNullReferenceException (System.Object obj) [0x00010] in /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/BindingsHelpers.cs:61
+549640:   at UnityEngine.Behaviour.get_isActiveAndEnabled () [0x00006] in <4c1d5365a3f847d28f9c439d0c68dbed>:0
+549641:   at UnityEngine.EventSystems.UIBehaviour.IsActive () [0x00000] in ./Library/PackageCache/com.unity.ugui@cec3688a7c38/Runtime/UGUI/EventSystem/UIBehaviour.cs:28
+549642:   at UnityEngine.UI.Graphic.SetVerticesDirty () [0x00000] in ./Library/PackageCache/com.unity.ugui@cec3688a7c38/Runtime/UGUI/UI/Core/Graphic.cs:295
+549643:   at UnityEngine.UI.Graphic.set_color (UnityEngine.Color value) [0x0000e] in ./Library/PackageCache/com.unity.ugui@cec3688a7c38/Runtime/UGUI/UI/Core/Graphic.cs:156
+549644:   at DG.Tweening.DOTweenModuleUI+<>c__DisplayClass4_0.<DOFade>b__1 (UnityEngine.Color x) [0x00000] in /Users/sora/Desktop/Unity/GearCraft_Remake/Assets/GearCraft/Plugins/Demigiant/DOTween/Modules/DOTweenModuleUI.cs:79
+549645:   at DG.Tweening.Plugins.ColorPlugin.EvaluateAndApply (DG.Tweening.Plugins.Options.ColorOptions options, DG.Tweening.Tween t, System.Boolean isRelative, DG.Tweening.Core.DOGetter`1[T] getter, DG.Tweening.Core.DOSetter`1[T] setter, System.Single elapsed, UnityEngine.Color startValue, UnityEngine.Color changeValue, System.Single duration, System.Boolean usingInversePosition, System.Int32 newCompletedSteps, DG.Tweening.Core.Enums.UpdateNotice updateNotice) [0x0013c] in <5ae618ea15ea4f2ebfe58b132c1de82d>:0
+549646:   at DG.Tweening.Core.TweenerCore`3[T1,T2,TPlugOptions].ApplyTween (System.Single prevPosition, System.Int32 prevCompletedLoops, System.Int32 newCompletedSteps, System.Boolean useInversePosition, DG.Tweening.Core.Enums.UpdateMode updateMode, DG.Tweening.Core.Enums.UpdateNotice updateNotice) [0x00043] in <5ae618ea15ea4f2ebfe58b132c1de82d>:0
+549647: 
+549648: UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+549649: UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+549650: UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+549651: UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+549652: UnityEngine.Logger:Log (UnityEngine.LogType,object)
+549653: UnityEngine.Debug:LogWarning (object)
+549654: DG.Tweening.Core.Debugger:LogSafeModeCapturedError (object,DG.Tweening.Tween)
+549655: DG.Tweening.Core.TweenerCore`3<UnityEngine.Color, UnityEngine.Color, DG.Tweening.Plugins.Options.ColorOptions>:ApplyTween (single,int,int,bool,DG.Tweening.Core.Enums.UpdateMode,DG.Tweening.Core.Enums.UpdateNotice)
+549656: DG.Tweening.Tween:DoGoto (DG.Tweening.Tween,single,int,DG.Tweening.Core.Enums.UpdateMode)
+549657: DG.Tweening.Core.TweenManager:Update (DG.Tweening.Tween,single,single,bool)
+549658: DG.Tweening.Core.TweenManager:Update (DG.Tweening.UpdateType,single,single)
+549659: DG.Tweening.Core.DOTweenComponent:Update ()
+549660: 
+549661: Unloading 183 Unused Serialized files (Serialized files now loaded: 0)
+549662: UnloadTime: 0.813375 ms
+549663: Loaded scene 'Assets/GearCraft/Scenes/Main.unity'
+
+2072500: Particle Velocity curves must all be in the same mode
+2072501: Particle Velocity curves must all be in the same mode
+2072502: Particle Velocity curves must all be in the same mode
+2072503: Particle Velocity curves must all be in the same mode
+2072504: Particle Velocity curves must all be in the same mode
+2072505: Particle Velocity curves must all be in the same mode
+2072506: Particle Velocity curves must all be in the same mode
+2072507: Particle Velocity curves must all be in the same mode
+2072508: Particle Velocity curves must all be in the same mode
+2072509: Particle Velocity curves must all be in the same mode
+2072510: Particle Velocity curves must all be in the same mode
+2072511: Particle Velocity curves must all be in the same mode
+2072512: Particle Velocity curves must all be in the same mode
+2072513: Thread 0x16c823000 may have been prematurely finalized
+2072514: <color=#ff7337><color=#0099bc><b>DOTWEEN ► </b></color> SAFE MODE ►</color> DOTween's safe mode captured 3 errors. This is usually ok (it's what safe mode is there for) but if your game is encountering issues you should set Log Behaviour to Default in DOTween Utility Panel in order to get detailed warnings when an error is captured (consider that these errors are always on the user side).
+2072515: - 3 missing target or field errors
+2072516: UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+2072517: UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+2072518: UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+2072519: UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+2072520: UnityEngine.Logger:Log (UnityEngine.LogType,object)
+2072521: UnityEngine.Debug:LogWarning (object)
+2072522: DG.Tweening.Core.Debugger:LogSafeModeReport (object)
+2072523: DG.Tweening.Core.DOTweenComponent:OnDestroy ()
+2072524: 
+2072525: Unloading 37 Unused Serialized files (Serialized files now loaded: 0)
+2072526: Loaded scene 'Temp/__Backupscenes/0.backup'
+2072527: 	Deserialize:            16.108 ms
+2072528: 	Integration:            369.080 ms
+2072529: 	Integration of assets:  11.469 ms
+2072530: 	Thread Wait Time:       0.287 ms
+2072531: 	Total Operation Time:   396.943 ms
+2072532: Unloading 806 unused Assets / (10.7 MB). Loaded Objects now: 10297.
+2072533: Memory consumption went from 0.83 GB to 0.82 GB.
+2072534: Total: 40.530250 ms (FindLiveObjects: 0.728375 ms CreateObjectMapping: 0.379167 ms MarkObjects: 37.909000 ms  DeleteObjects: 1.512833 ms)
+2072535: 
+2072536: [Licensing::Client] Successfully resolved entitlement details
+2072537: [Licensing::Client] Successfully resolved entitlement details
+2072538: [ScriptCompilation] Requested script compilation because: Assetdatabase observed changes in script compilation related files
+2072539: AssetDatabase: script compilation time: 0.005515s
+2072540: [Licensing::Client] Successfully resolved entitlement details
+2072541: [40m[32minfo[39m[22m[49m: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+2072542:       Request starting HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/Ping application/grpc -

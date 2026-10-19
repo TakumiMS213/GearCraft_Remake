@@ -1,0 +1,41 @@
+{
+  "kind": "one-native-thrower-ek-continuation",
+  "label": "gate_continuation_EK9_SteamThrower_velocityfixed_seed77_fps60",
+  "case_count": 1,
+  "source_folder": "QA/ReleaseFinalization20261018/",
+  "output_folder": "QA/ReleaseContinuation20261019/",
+  "source_read_only_sha256": {
+    "native-thrower-velocityfixed-cases.csv": "23b7f6ab53806f83894b8f36973085796aed18efc5f463769487a7f8f1c6f762",
+    "NativeInputBootstrap.cs.txt": "26b5c61c817a223049812b64474f2bbe7e0584a4ff1bc627925d36805d2c6b24",
+    "NativeInputSurvivalRoute.cs.txt": "bf9b350e9f7f3bfed2aa64d695124412f48be36dd4d09873ea6a7e056c440ff1",
+    "BatchNativeThrowerVelocityFixed.cs.txt": "cf5ae487bde84f7d9cc9748bfea1a0920b7754d972531edc705cc939a162ace0",
+    "LoadBatchNativeThrowerVelocityFixed.cs.txt": "cb9e34355b1d43276975656dd6780a11fabaf1097a6e0e5156bb614871c82555",
+    "loadouts.csv": "9901d6f57ffa7856a281af1163a6b918df0e975dc3c83387060873430cd709f0",
+    "loadout-placements.csv": "f56e188685b6d2eaeadf7029e62988696b0e6f0bb192989bc4b43d679994b8c7"
+  },
+  "outputs_sha256": {
+    "native-thrower-velocityfixed-cases.csv": "e7b4a727ff30ea6fc3627b0723ddd71b688abaad01c3e0b73ca3ac99cbb8cc1c",
+    "NativeInputBootstrap.cs.txt": "226addf26f5256b7abe0ff2d4171f363193e3f342328c9d3d1d1857835728436",
+    "NativeInputSurvivalRoute.cs.txt": "681b0da40fe6f13a0214d30544b6b3d7a8d2494d37c0e534fdf1613127f4163f",
+    "BatchNativeThrowerVelocityFixed.cs.txt": "dd4311472864ae6859712063bf3f4d63d8bf284f8a979302e8fdebf56d14ea96",
+    "LoadBatchNativeThrowerVelocityFixed.cs.txt": "7299ddba7ab0aa60bfc3a81026fe3630307640b85aea28587b0559a0545fb6c2",
+    "loadouts.csv": "9901d6f57ffa7856a281af1163a6b918df0e975dc3c83387060873430cd709f0",
+    "loadout-placements.csv": "f56e188685b6d2eaeadf7029e62988696b0e6f0bb192989bc4b43d679994b8c7"
+  },
+  "configuration_changes": [
+    "label only"
+  ],
+  "runner_changes": [
+    "QA folder",
+    "fresh SessionState key",
+    "plan/bootstrap/route hash guards",
+    "route wall deadline 300 -> 140 seconds",
+    "batch route watchdog 340 -> 145 seconds",
+    "whole batch wall deadline -> 150 seconds"
+  ],
+  "native_attack_bot_physics_changes": [],
+  "source_files_unchanged": true,
+  "backup_or_result_files_copied": false,
+  "deadline_limitation": "Editor update watchdog; a blocked Editor main thread cannot execute cancellation until it resumes. Not an OS-enforced timeout.",
+  "runtime_verification": "pending root execution"
+}

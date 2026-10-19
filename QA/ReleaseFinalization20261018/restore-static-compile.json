@@ -1,0 +1,10 @@
+[
+  {
+    "name": "RestoreCanonicalSession",
+    "exit_code": 0
+  },
+  {
+    "name": "VerifyCanonicalSession",
+    "exit_code": 0
+  }
+]

@@ -1,0 +1,105 @@
+// C#6 execute_code body. Run AFTER root visually reviews ending3-native-notice.png.
+const string folder="QA/ReleaseVerification20261019/";
+const string label="ending3-native-run2";
+System.Action<bool,string> require=(ok,s)=>{if(!ok)throw new System.Exception(s);};
+require(System.IO.File.Exists(folder+label+"-notice-result.txt")&&System.IO.File.ReadAllText(folder+label+"-notice-result.txt").StartsWith("READY_NOTICE_REVIEW"),"Native notice probe must finish first");
+require(System.IO.File.Exists(folder+"canonical-backup-ready.txt")&&System.IO.File.Exists(folder+"typed-prefs-before.txt")&&!System.IO.File.Exists(folder+"canonical-restoration.txt"),"Fresh current-session backup must remain active");
+string session=System.IO.File.ReadAllText(folder+"session-id.txt").Trim();
+require(UnityEditor.SessionState.GetString("GearCraft.QA.ReleaseVerification.Session","")==session,"Session mismatch");
+require(Application.isPlaying&&!UnityEditor.EditorApplication.isPaused&&Time.timeScale==1f,"Unpaused Play required");
+require(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name=="Ending","Native notice scene required");
+require(!System.IO.File.Exists(folder+label+"-title-result.txt")&&!System.IO.File.Exists(folder+label+"-title.png"),"Refuse result/capture overwrite");
+foreach(string file in System.IO.Directory.GetFiles(folder,"*progress.txt")){string text=System.IO.File.ReadAllText(file);require(!text.StartsWith("RUNNING")&&!text.StartsWith("LOADING"),"Another callback active: "+file);}
+var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.NonPublic;
+var viewType=typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.GameView");
+var gameView=Resources.FindObjectsOfTypeAll(viewType).OfType<UnityEditor.EditorWindow>().FirstOrDefault();
+require(gameView!=null,"Keep GameView open");
+var sizeProperty=viewType.GetProperty("targetRenderSize",flags);
+require(sizeProperty!=null,"GameView targetRenderSize unavailable");
+System.Func<Vector2> renderSize=()=>gameView==null?Vector2.zero:(Vector2)sizeProperty.GetValue(gameView,null);
+System.Func<string> renderMismatch=()=>{
+    var size=renderSize();
+    if(size.x<1||size.y<1)return "GameView targetRenderSize="+size;
+    var camera=Camera.main;
+    if(camera==null||Mathf.Abs(camera.pixelWidth-size.x)>.5f||Mathf.Abs(camera.pixelHeight-size.y)>.5f)return "Camera pixels="+(camera==null?"NONE":camera.pixelWidth+"x"+camera.pixelHeight)+"; GameView="+size;
+    var canvases=UnityEngine.Object.FindObjectsByType<Canvas>(FindObjectsInactive.Exclude,FindObjectsSortMode.None).Where(c=>c.isRootCanvas&&c.isActiveAndEnabled&&c.targetDisplay==0&&c.renderMode!=RenderMode.WorldSpace&&c.gameObject.scene==UnityEngine.SceneManagement.SceneManager.GetActiveScene()).ToArray();
+    if(canvases.Length==0)return "No active screen-space root Canvas";
+    foreach(var canvas in canvases){var rect=canvas.pixelRect;if(Mathf.Abs(rect.width-size.x)>1f||Mathf.Abs(rect.height-size.y)>1f)return "Canvas "+canvas.name+" pixelRect="+rect+"; GameView="+size;}
+    return "";
+};
+require(renderMismatch().Length==0,"GameView/Camera/Canvas mismatch: "+renderMismatch());
+Vector2 capturedRenderSize=Vector2.zero;
+var viewer=UnityEngine.Object.FindFirstObjectByType<ImageSequenceViewer>();
+require(viewer!=null,"Native ImageSequenceViewer required");
+require((bool)typeof(ImageSequenceViewer).GetField("showingGalleryUnlockNotice",flags).GetValue(viewer),"Not displaying Gallery notice");
+var button=(UnityEngine.UI.Button)typeof(ImageSequenceViewer).GetField("galleryNoticeButton",flags).GetValue(viewer);
+require(button!=null&&button.IsActive()&&button.IsInteractable(),"Native notice button is not ready");
+require(UnityEngine.EventSystems.EventSystem.current!=null,"Native EventSystem required");
+var sourceTransition=UnityEngine.Object.FindFirstObjectByType<SceneTransitionManager>();
+require(sourceTransition!=null&&!sourceTransition.IsLoading,"Notice transition is not idle");
+var evidence=new System.Text.StringBuilder();
+System.Action<string> note=s=>evidence.AppendLine(System.DateTime.UtcNow.ToString("O")+" "+s);
+var errors=new System.Collections.Generic.List<string>();
+UnityEngine.Application.LogCallback log=(message,stack,type)=>{string lower=message.ToLowerInvariant();if(type==LogType.Exception||type==LogType.Error||type==LogType.Assert||lower.Contains("dotween")&&(lower.Contains("safe mode")||lower.Contains("missing")||lower.Contains("null")))errors.Add(type+": "+message+"\n"+stack);};
+UnityEngine.Events.UnityAction<UnityEngine.SceneManagement.Scene,UnityEngine.SceneManagement.Scene> sceneChanged=(a,b)=>note("scene "+a.name+" -> "+b.name);
+UnityEditor.EditorApplication.CallbackFunction tick=null;
+bool done=false;int stage=0,titleFrame=0,captureFrame=0;double wallStart=UnityEditor.EditorApplication.timeSinceStartup,captureAt=0;
+string output=System.IO.Path.GetFullPath(folder+label+"-title.png");
+System.Action<string> finish=outcome=>{
+    if(done)return;done=true;
+    if(tick!=null)UnityEditor.EditorApplication.update-=tick;
+    Application.logMessageReceived-=log;UnityEngine.SceneManagement.SceneManager.activeSceneChanged-=sceneChanged;
+    // Remove only the native StageCounter fixture created by the preceding Title-only probe.
+    string ownedPath=folder+label+"-stagecounter-owned.txt";
+    if(System.IO.File.Exists(ownedPath)) {
+        int id; if(int.TryParse(System.IO.File.ReadAllText(ownedPath).Trim(),out id)) {
+            var owned=UnityEditor.EditorUtility.InstanceIDToObject(id) as GameObject;
+            if(owned!=null&&owned.name=="__QA_Ending3NativeStageCounter"&&owned.GetComponent<StageCounter>()!=null) {UnityEngine.Object.DestroyImmediate(owned);note("QA StageCounter fixture removed");}
+        }
+    }
+    if(errors.Count!=0)outcome="FAIL";
+    foreach(string error in errors)note("ERROR "+error);
+    note("outcome="+outcome+"; scene="+UnityEngine.SceneManagement.SceneManager.GetActiveScene().name+"; Gallery unlocked="+GearCraft.Gallery.GalleryProgress.IsUnlocked+"; PendingEndingNum="+EndingManager.PendingEndingNum+"; callbacks_removed=true");
+    System.IO.File.WriteAllText(folder+label+"-title-result.txt",outcome+"\n"+evidence+"\nNative flow complete only when PASS_NATIVE_FLOW_REVIEW_IMAGES. Root must visually inspect both PNGs and then stop Play / restore all fresh 16 typed keys plus Editor state. This does not represent a combat-earned ED3.\n");
+    System.IO.File.WriteAllText(folder+label+"-progress.txt",outcome+"\n");
+};
+Application.logMessageReceived+=log;UnityEngine.SceneManagement.SceneManager.activeSceneChanged+=sceneChanged;
+System.IO.File.WriteAllText(folder+label+"-progress.txt","RUNNING native notice -> Title\n");
+try {
+    var pointer=new UnityEngine.EventSystems.PointerEventData(UnityEngine.EventSystems.EventSystem.current){button=UnityEngine.EventSystems.PointerEventData.InputButton.Left};
+    UnityEngine.EventSystems.ExecuteEvents.Execute<UnityEngine.EventSystems.IPointerClickHandler>(button.gameObject,pointer,UnityEngine.EventSystems.ExecuteEvents.pointerClickHandler);
+    note("clicked native Gallery notice Button through IPointerClickHandler");
+    tick=()=>{
+        try {
+            double now=UnityEditor.EditorApplication.timeSinceStartup;
+            require(Application.isPlaying&&!UnityEditor.EditorApplication.isPaused,"Play stopped/paused externally");
+            require(now-wallStart<20,"20-second wall watchdog");
+            require(errors.Count==0,"Native error/relevant DOTween warning captured");
+            string scene=UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+            require(scene=="Ending"||scene=="Title","Unexpected scene "+scene);
+            if(stage==0){if(scene!="Title")return;titleFrame=Time.frameCount;stage=1;return;}
+            require(scene=="Title","Title departed unexpectedly");
+            if(stage==1) {
+                var transition=UnityEngine.Object.FindFirstObjectByType<SceneTransitionManager>();
+                if(transition==null||transition.IsLoading||Time.frameCount-titleFrame<3)return;
+                require(Time.timeScale==1f&&GearCraft.Gallery.GalleryProgress.IsUnlocked,"Title resumed locked or paused");
+                var entrance=UnityEngine.Object.FindObjectsByType<GearCraft.Gallery.GalleryEntranceButton>(FindObjectsSortMode.None).FirstOrDefault(x=>x.gameObject.scene.name=="Title");
+                require(entrance!=null&&entrance.GetComponent<UnityEngine.UI.Button>().IsInteractable(),"Title Gallery button is not unlocked/interactable");
+                require(StageCounter.Instance==null||StageCounter.Instance.StageCount==1,"Native return failed to reset stage");
+                note("Title idle; Gallery Button="+entrance.gameObject.name+" interactable; timeScale="+Time.timeScale+"; stage="+(StageCounter.Instance==null?"null":StageCounter.Instance.StageCount.ToString()));
+                require(renderMismatch().Length==0,"Title capture render mismatch: "+renderMismatch());capturedRenderSize=renderSize();
+                Canvas.ForceUpdateCanvases();ScreenCapture.CaptureScreenshot(output,1);captureAt=now;captureFrame=Time.frameCount;stage=2;note("Title native GameView capture requested");return;
+            }
+            require(now-captureAt<12,"Title screenshot did not complete");
+            if(Time.frameCount<=captureFrame||!System.IO.File.Exists(output))return;
+            byte[] png=System.IO.File.ReadAllBytes(output);if(png.Length<33)return;
+            require(png[0]==137&&png[1]==80&&png[2]==78&&png[3]==71,"Title capture is not PNG");
+            int w=(png[16]<<24)|(png[17]<<16)|(png[18]<<8)|png[19];int h=(png[20]<<24)|(png[21]<<16)|(png[22]<<8)|png[23];
+            require(w==Mathf.RoundToInt(capturedRenderSize.x)&&h==Mathf.RoundToInt(capturedRenderSize.y),"Title screenshot dimensions differ from requested GameView targetRenderSize");
+            note("capture complete "+w+"x"+h+"; bytes="+png.Length+"; visual review required");
+            finish("PASS_NATIVE_FLOW_REVIEW_IMAGES");
+        } catch(System.Exception ex){note(ex.ToString());finish("FAIL");}
+    };
+    UnityEditor.EditorApplication.update+=tick;
+} catch(System.Exception ex){note(ex.ToString());finish("FAIL");}
+return "Scheduled native notice Button -> Title (<=20 seconds). Root visual review and fresh-session restoration remain required.";

@@ -1,0 +1,26 @@
+{
+  "started_utc": "2026-10-18T11:06:08.641095+00:00",
+  "scope": "Standalone launch and normal termination only; no UI/audio restart verification",
+  "player_pid": 30457,
+  "quit_helper_pid": 30480,
+  "normal_exit_confirmed": false,
+  "player_domain_restoration": "not_attempted",
+  "restoration_pending": true,
+  "process_may_still_be_running": true,
+  "normal_quit_reply": {
+    "accepted": true,
+    "alreadyTerminated": false,
+    "pid": 30457,
+    "reason": "Normal termination request sent; caller must wait for owned process exit"
+  },
+  "result": "STOPPED_REVIEW_REQUIRED",
+  "reason": "RuntimeError: Player did not exit within 15 seconds; no force termination attempted",
+  "player_exit_code": null,
+  "application_support_changes": {
+    "directory_existence_changed": false,
+    "added": [],
+    "removed": [],
+    "changed": []
+  },
+  "finished_utc": "2026-10-18T11:33:59.317651+00:00"
+}

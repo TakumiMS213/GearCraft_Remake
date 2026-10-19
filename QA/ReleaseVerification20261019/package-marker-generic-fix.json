@@ -1,0 +1,31 @@
+{
+  "utc": "2026-10-19T01:21:43.141252+00:00",
+  "production_modified": false,
+  "first_result_preserved": true,
+  "new_app_inspection_executed_by_this_agent": false,
+  "reason": "Cecil encodes actual generic call names as SetLink<T>(...), while prior substring searched only SetLink(.",
+  "observed_first_report_call_sites": [
+    [
+      "EndingManager/<FadeOutAndLoadScene>d__26",
+      "System.Void EndingManager/<FadeOutAndLoadScene>d__26::MoveNext()",
+      "!!0 DG.Tweening.TweenSettingsExtensions::SetLink<DG.Tweening.Core.TweenerCore`3<UnityEngine.Color,UnityEngine.Color,DG.Tweening.Plugins.Options.ColorOptions>>(!!0,UnityEngine.GameObject,DG.Tweening.LinkBehaviour)",
+      273
+    ],
+    [
+      "EndingManager/<ShowEndingAsync>d__25",
+      "System.Void EndingManager/<ShowEndingAsync>d__25::MoveNext()",
+      "!!0 DG.Tweening.TweenSettingsExtensions::SetLink<DG.Tweening.Core.TweenerCore`3<UnityEngine.Color,UnityEngine.Color,DG.Tweening.Plugins.Options.ColorOptions>>(!!0,UnityEngine.GameObject,DG.Tweening.LinkBehaviour)",
+      195
+    ],
+    [
+      "EndingManager/<Start>d__22",
+      "System.Void EndingManager/<Start>d__22::MoveNext()",
+      "!!0 DG.Tweening.TweenSettingsExtensions::SetLink<DG.Tweening.Core.TweenerCore`3<UnityEngine.Color,UnityEngine.Color,DG.Tweening.Plugins.Options.ColorOptions>>(!!0,UnityEngine.GameObject,DG.Tweening.LinkBehaviour)",
+      92
+    ]
+  ],
+  "saved_callsite_match_checks": "3/3 PASS",
+  "synthetic_boundary_checks": "nongeneric accepted; SetLinkOther and other declaring type rejected",
+  "python_syntax": "PASS",
+  "next_output": "macos-package-verification-run2.json"
+}

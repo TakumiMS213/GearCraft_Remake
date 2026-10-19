@@ -1,0 +1,31 @@
+Standalone 起動後処理・正常終了の比較（2026-10-19、read-only解析）
+
+結論: 単一描画と元のthreaded描画の両方で、起動約5秒のsampleにUnity/Mono処理と待機からの復帰が見られ、20秒観測後に正常終了した。最初の停止は再現していない。direct成功を修正完了・描画方式が原因とする根拠にはできない。
+
+原典
+standalone-smoke-run1（初回失敗）、standalone-direct-run1、standalone-threaded-recheck1のresult.json/player.log/sample/app-before.json。
+同appのInfo.plist・実行ファイル・Managed DLLのSHAは3回とも一致。解析結果の数値はstandalone-runtime-comparison.jsonに保存。
+
+初回 threaded
+正常終了要求後15秒を超えて残存。約17分後のsampleではmain 2097/2097、UnityGfxDeviceWorker 2097/2097がUnity内部semaphore待機。原因はシンボル不足で不明。その後rootがSIGTERMで退出させ、全PlayerPrefs復元を検証済み（run1/cleanup-result.json）。初回sampleは後の2回と採取タイミング・間隔が違うため、単純な処理時間比率の比較には使わない。
+
+単一描画 direct（PID 33457）
+ログでkGfxThreadingModeDirectを確認。5.049秒時から約2秒sample。
+main 170samples中150はAppKitイベント待機、20はUnity timer callbackで、Mono管理コード呼出し、Metal render encoder/pipeline作成などが観測される。mainのdispatch semaphore固定待機は0samples。
+終了コード0、強制回収なし、全試験20.543秒。Player domain型値・存在とprotected domainsの復元確認済み。
+
+元の描画 threaded再試験（PID 33556）
+ログでkGfxThreadingModeThreadedを確認。5.052秒時から約2秒sample。
+main 169samples中99はAppKitイベント待機、70はUnity timer callback。その内52はUnity内部semaphore待機だが、他にMono管理コード処理が観測され、初回のように全sampleが一つの待機位置ではない。
+描画workerも169samples中161はsemaphore待機だが、残りにMetal render encoder/render pipeline処理があり、処理を実行している。workerが待機するsampleの割合だけでハングと判定しない。
+終了コード0、強制回収なし、全試験20.467秒。Player domain型値・存在とprotected domainsの復元確認済み。
+
+解釈と限界
+両成功試験ともmainがUnity内処理とOSのイベント待ちに分散し、初回の固定待機状態とは異なる。起動後に処理が進んでいた証拠である。一方、sample数はframe数ではなく、FPS・特定MonoBehaviour.Update回数・画面表示内容を測定していない。スクリーンショットやユーザー入力の確認はなく、ゲーム画面/ボタン操作/音量の再起動保持の合格とは分ける。
+約50秒間隔のdirect→threaded順で両方成功した。環境時間差、初回起動状態、キャッシュ、同時稼働負荷などは統制できていない。追加の実行や恒久設定変更をこの解析から正当化せず、現時点は「初回停止あり、2回再試験では未再現、原因未確定」とする。
+実行実体は3回ともMono（Mono初期化ログ/Monoライブラリのcall stack）。BuildReportのIL2CPP表記を優先しない。
+
+ログ品質
+両成功試験とも例外/Assertion/Fatal/Crash検出は0件だが、終了時に「may have been prematurely finalized」5件とComputeBufferをGCが破棄する旨1件がある。「エラー検出0」と「警告も出力されていない」は異なる。これらだけで最初の長時間停止との因果を確定できない。
+
+この解析で新規起動・プロセス終了・制作コード変更・OS設定変更は実行していない。

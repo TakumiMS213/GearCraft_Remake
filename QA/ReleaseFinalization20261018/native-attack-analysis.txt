@@ -1,0 +1,25 @@
+Native射撃48ケース集計 / 2026-10-18
+実行root、解析のみupgrade_benchmark。制作/MCP変更なし。
+全48ケースPASS、12構成それぞれ4パターンの受付数・生成数・設定ダメージが一致。
+10秒共通終点、初回即時射撃と終点発射を含む。601回/10秒は60回/秒の定常間隔+初回1回であり61回/秒化ではない。
+
+SteamCannon / initial: 攻撃11回、実生成11個、damage 57、4パターン一致。
+SteamCannon / final: 攻撃67回、実生成134個、damage 102.6、4パターン一致。
+SteamCannon / boost_configured: 攻撃121回、実生成242個、damage 102.6、4パターン一致。
+RailCraft / initial: 攻撃6回、実生成6個、damage 300、4パターン一致。
+RailCraft / final: 攻撃36回、実生成72個、damage 532、4パターン一致。
+RailCraft / boost_configured: 攻撃67回、実生成134個、damage 532、4パターン一致。
+SteamGatling / initial: 攻撃301回、実生成301個、damage 10、4パターン一致。
+SteamGatling / final: 攻撃601回、実生成1202個、damage 31.6、4パターン一致。
+SteamGatling / boost_configured: 攻撃601回、実生成1202個、damage 31.6、4パターン一致。
+SteamThrower / initial: 攻撃121回、実生成121個、damage 0.3、4パターン一致。
+SteamThrower / final: 攻撃601回、実生成1202個、damage 4.564、4パターン一致。
+SteamThrower / boost_configured: 攻撃601回、実生成1202個、damage 4.564、4パターン一致。
+
+本編のTimeScale0/StageFlow当フレーム停止で0発、解除後1発、同時刻の再入力でCTバイパスなし。
+現在4武器はLineHitbox未使用。追加の一時Railクローン(useLineHitbox=true)でTwinありでも1判定、damage532、collider/visual生成を確認。実アセットは変更しない。
+runtimeStatus/materials/16Prefsは起動時値と同一、終了autoStop。rootによるcanonical最終復元は別記録。
+
+範囲: 指定deltaTimeを本編ProcessAttackInputへ渡した射撃受付→本編Instantiate→設定検査。
+弾は即時破棄するためStart/物理命中/再ヒット/寿命、実描画fpsの変更、Q素材消費/BOOST寿命は測っていない。
+従って各fpsでの実戦DPSまで完全一致したとは扱わない。

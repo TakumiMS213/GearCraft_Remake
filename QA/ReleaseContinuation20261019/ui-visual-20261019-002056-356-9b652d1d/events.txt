@@ -1,0 +1,57 @@
+2026-10-19T00:20:56.3676450Z session=20261019-001012-875-20240fc5f6004f7fb25cebb8921f88a3; title_selection=StartButton
+2026-10-19T00:20:56.3719220Z Only Title InputModule and navigation temporarily disabled to avoid physical pointer overriding synthetic hover. Persistent data not directly modified; final canonical restore required.
+2026-10-19T00:20:56.3885950Z scene_entered Title
+2026-10-19T00:20:56.9930470Z start_idle_color=RGBA(0.961, 0.961, 0.961, 1.000)
+2026-10-19T00:20:56.9938000Z PASS render_dimensions_consistent 01-title-idle 
+2026-10-19T00:20:56.9945520Z capture_requested 01-title-idle frame=66483
+2026-10-19T00:20:57.0792260Z PASS png_complete_fullhd 01-title-idle.png
+2026-10-19T00:20:57.0806900Z PASS button_interactable StartButton
+2026-10-19T00:20:57.0874290Z PASS graphic_raycast_top StartButton at=(960.00, 444.00) hit=StartButton
+2026-10-19T00:20:57.3893280Z PASS start_hover_matches_highlight actual=RGBA(0.613, 0.613, 0.613, 1.000) expected=RGBA(0.613, 0.613, 0.613, 1.000)
+2026-10-19T00:20:57.3896040Z PASS start_hover_differs_from_idle
+2026-10-19T00:20:57.3897610Z PASS render_dimensions_consistent 02-title-gamestart-hover 
+2026-10-19T00:20:57.3899370Z capture_requested 02-title-gamestart-hover frame=66637
+2026-10-19T00:20:57.4621830Z PASS png_complete_fullhd 02-title-gamestart-hover.png
+2026-10-19T00:20:57.4625130Z PASS button_interactable SettingButton
+2026-10-19T00:20:57.4627220Z PASS graphic_raycast_top SettingButton at=(960.00, 280.00) hit=SettingButton
+2026-10-19T00:20:57.4718720Z native_pointer_click SettingButton
+2026-10-19T00:20:57.8751410Z PASS setting_panel_visible
+2026-10-19T00:20:57.8774110Z setting_text=
+2026-10-19T00:20:57.8776400Z PASS render_dimensions_consistent 03-title-setting 
+2026-10-19T00:20:57.8777940Z capture_requested 03-title-setting frame=66808
+2026-10-19T00:20:57.9611600Z PASS png_complete_fullhd 03-title-setting.png
+2026-10-19T00:20:57.9616610Z PASS button_interactable HideSetting
+2026-10-19T00:20:57.9624070Z PASS graphic_raycast_top HideSetting at=(1595.77, 839.94) hit=HideSetting
+2026-10-19T00:20:57.9785670Z native_pointer_click HideSetting
+2026-10-19T00:20:58.3801840Z PASS setting_panel_closed
+2026-10-19T00:20:58.3816920Z PASS button_interactable StartButton
+2026-10-19T00:20:58.3819160Z PASS graphic_raycast_top StartButton at=(960.00, 444.00) hit=StartButton
+2026-10-19T00:20:58.4174170Z native_pointer_click StartButton
+2026-10-19T00:21:00.9357070Z scene_entered Story
+2026-10-19T00:21:00.9362120Z story_page=0; unscaled=147.814468
+2026-10-19T00:21:01.2350540Z PASS render_dimensions_consistent 04-opening-story 
+2026-10-19T00:21:01.2353290Z capture_requested 04-opening-story frame=67902
+2026-10-19T00:21:01.3042150Z PASS png_complete_fullhd 04-opening-story.png
+2026-10-19T00:21:04.9339440Z story_page=1; unscaled=152.5213
+2026-10-19T00:21:09.6323820Z story_page=2; unscaled=157.2213
+2026-10-19T00:21:14.3324190Z story_page=3; unscaled=161.921326
+2026-10-19T00:21:19.0329600Z story_page=4; unscaled=166.622
+2026-10-19T00:21:19.9337350Z PASS render_dimensions_consistent 04b-opening-story-last 
+2026-10-19T00:21:19.9339910Z capture_requested 04b-opening-story-last frame=75563
+2026-10-19T00:21:19.9956970Z PASS png_complete_fullhd 04b-opening-story-last.png
+2026-10-19T00:21:23.7357380Z story_page=5; unscaled=171.32222
+2026-10-19T00:21:26.4692210Z scene_entered CraftSpace
+2026-10-19T00:21:26.4695190Z arrival_page=0; unscaled=173.551865
+2026-10-19T00:21:26.4698150Z PASS render_dimensions_consistent 04c-dorm-arrival 
+2026-10-19T00:21:26.4699170Z capture_requested 04c-dorm-arrival frame=78714
+2026-10-19T00:21:26.5501330Z PASS png_complete_fullhd 04c-dorm-arrival.png
+2026-10-19T00:21:31.1716940Z arrival_page=1; unscaled=178.75499
+2026-10-19T00:21:36.3686170Z arrival_page=2; unscaled=183.955444
+2026-10-19T00:21:37.8001420Z PASS native_story_and_arrival_observed
+2026-10-19T00:21:37.8008440Z PASS all_five_story_pages_observed
+2026-10-19T00:21:37.8009560Z PASS both_arrival_pages_observed
+2026-10-19T00:21:37.8010330Z FAIL first_day_preparation_preserved
+2026-10-19T00:21:37.8034500Z System.Exception: first_day_preparation_preserved
+  at MCPDynamicCode+<Execute>c__AnonStorey0.<>m__6 (System.Boolean ok, System.String text) [0x0002c] in <e86d21a2aef14b76bfcedfb46926056e>:0 
+  at MCPDynamicCode+<Execute>c__AnonStorey0.<>m__E () [0x00e70] in <e86d21a2aef14b76bfcedfb46926056e>:0 
+2026-10-19T00:21:37.8039240Z scene=CraftSpace; play=True; screen_reference=1672x924; render_target=(1920.00, 1080.00)

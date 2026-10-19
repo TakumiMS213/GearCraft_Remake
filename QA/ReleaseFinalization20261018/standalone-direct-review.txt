@@ -1,0 +1,24 @@
+standalone_direct_probe.py: 準備済み、実行していない（2026-10-19）
+
+実行候補（rootレビュー後、必要な承認経由）:
+python3 QA/ReleaseFinalization20261018/standalone_direct_probe.py --execute
+
+出力先は新規standalone-direct-run1。存在する場合は上書き拒否。
+run1のcleanup成功・同appのInfo/exe/ManagedのSHA一致・同名Player不在を確認する。
+既存standalone-smoke-run1/normal-quit-helperを再利用し、Swiftはコンパイルしない。
+Player domain全体をfresh export/raw/metaとして退避。既存domainのdisk/export不一致やdomain不在では起動せず、rootへ戻す。
+Editor/互換domainはhash比較のみで、一切書き戻さない。
+
+比較条件は前回と同じwindow1280x720/専用logFile/直接実行に-force-gfx-directだけ追加。
+20秒の観測内、起動約5秒にsample2秒を採取。正常終了要求は既存helperで送り、要求開始から最大15秒を待つ。
+Popenのpoll/waitで完全退出を確認。残存時はfinallyで保持した子PopenのみTERM→wait5→必要時KILL→wait5。終了遷移中のps文字列照合はしない。
+正常終了と強制回収を結果で分離。強制回収は試験の合格にしない。
+
+退出後にafterの全domainを記録し、書込み直前にもfresh snapshotが同じことを確認。
+defaults importのmerge仕様に対応し、before不在/after記録あり/現在も同じ型値の追加キーだけを削除。各削除前にdomain全体が期待値と一致することを確認。
+最後に全キーの型・値・domain存在状態、disk/export、protected domainsを比較する。失敗はrestoration_pendingとrestore_errorに残し、未検証を成功扱いしない。
+
+外部コマンドは全てtimeoutつき。準備が5秒を超えると起動せず終了。20+15+cleanup最大10秒と復元用時間を確保し、外部コマンドは総59秒deadlineまで、最終記録に1秒を残す設計。OS/ストレージ自体の無応答はPythonで絶対実時間保証できないため、elapsed_seconds/within_60_secondsも結果に記録する。
+OS入力・画面API・権限変更は使わない。Application Supportはmanifest比較のみで削除しない。UI・音量再起動の検証ではない。
+
+静的確認: Python ast.parse / compile PASS。スクリプト本体、Player、helper、sample、defaults書込みのいずれもこの準備作業では実行していない。

@@ -14,14 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pages:
   - portrait: {fileID: 21300000, guid: b80efaa4c3b416e4798415a5c4a51759, type: 3}
-    text: "ここが、あなたの工房兼宿舎です。\n防衛から戻ったら、ここで次の戦いに備えましょう。"
+    text: "ここが、あなたの工房兼宿舎です。\n防衛の後は、ここで次の戦いに備えましょう。"
     autoAdvanceSeconds: 4
     moveCamera: 0
     cameraPosition: {x: 0, y: 0, z: -10}
     cameraOrthographicSize: 4
     cameraMoveDuration: 1.2
   - portrait: {fileID: 21300000, guid: b80efaa4c3b416e4798415a5c4a51759, type: 3}
-    text: "今夜は、まずベッドで休みましょう。\nA / D で左へ進み、ベッドのそばで Space を押してください。"
+    text: "A / D で左へ進み、ベッドで休みましょう。\nベッドのそばで Space を押すと眠れます。"
     autoAdvanceSeconds: 4
     moveCamera: 1
     cameraPosition: {x: -22.665, y: -1, z: 0}

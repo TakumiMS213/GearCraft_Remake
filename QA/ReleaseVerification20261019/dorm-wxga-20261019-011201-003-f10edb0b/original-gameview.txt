@@ -1,0 +1,9 @@
+session=20261019-010910-317-110653f0ec5245b8ad468da33de3bd20
+index=3
+Free Aspect
+16:9 Aspect
+16:10 Aspect
+Full HD (1920x1080)
+WXGA (1366x768)
+QHD (2560x1440)
+4K UHD (3840x2160)

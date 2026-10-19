@@ -1,0 +1,144 @@
+{
+  "scope": "All serialized !u!198 ParticleSystem blocks with VelocityModule under Assets (*.prefab, *.unity, *.asset); excludes runtime-generated systems and PackageCache",
+  "files_with_velocity_modules": 11,
+  "particle_systems": 19,
+  "disabled_velocity_modules": 13,
+  "enabled_velocity_modules": 6,
+  "mismatch_count": 0,
+  "parse_errors": [],
+  "mismatches": [],
+  "enabled_records": [
+    {
+      "path": "Assets/GearCraft/Paticles/Burn loop.prefab",
+      "particle_id": "6421650024529045224",
+      "line": 1555,
+      "axes": {
+        "x": {
+          "mode": 0,
+          "scalar": 0.0,
+          "minScalar": 0.0
+        },
+        "y": {
+          "mode": 0,
+          "scalar": -1.0,
+          "minScalar": 0.0
+        },
+        "z": {
+          "mode": 0,
+          "scalar": 0.0,
+          "minScalar": 0.0
+        }
+      }
+    },
+    {
+      "path": "Assets/GearCraft/Paticles/Burn plus.prefab",
+      "particle_id": "6421650024529045224",
+      "line": 1555,
+      "axes": {
+        "x": {
+          "mode": 0,
+          "scalar": 0.0,
+          "minScalar": 0.0
+        },
+        "y": {
+          "mode": 0,
+          "scalar": -1.0,
+          "minScalar": 0.0
+        },
+        "z": {
+          "mode": 0,
+          "scalar": 0.0,
+          "minScalar": 0.0
+        }
+      }
+    },
+    {
+      "path": "Assets/GearCraft/Paticles/Burn.prefab",
+      "particle_id": "6421650024529045224",
+      "line": 1555,
+      "axes": {
+        "x": {
+          "mode": 0,
+          "scalar": 0.0,
+          "minScalar": 0.0
+        },
+        "y": {
+          "mode": 0,
+          "scalar": -1.0,
+          "minScalar": 0.0
+        },
+        "z": {
+          "mode": 0,
+          "scalar": 0.0,
+          "minScalar": 0.0
+        }
+      }
+    },
+    {
+      "path": "Assets/GearCraft/Paticles/SteamThrowerAttack.prefab",
+      "particle_id": "8652510959725871487",
+      "line": 1493,
+      "axes": {
+        "x": {
+          "mode": 3,
+          "scalar": 1.7,
+          "minScalar": 0.4
+        },
+        "y": {
+          "mode": 3,
+          "scalar": 0.35,
+          "minScalar": -0.35
+        },
+        "z": {
+          "mode": 3,
+          "scalar": 0.0,
+          "minScalar": 0.0
+        }
+      }
+    },
+    {
+      "path": "Assets/GearCraft/Paticles/SteamThrowerAttack.prefab",
+      "particle_id": "4672238302454395422",
+      "line": 6327,
+      "axes": {
+        "x": {
+          "mode": 3,
+          "scalar": 2.2,
+          "minScalar": 0.5
+        },
+        "y": {
+          "mode": 3,
+          "scalar": 0.45,
+          "minScalar": -0.6
+        },
+        "z": {
+          "mode": 3,
+          "scalar": 0.0,
+          "minScalar": 0.0
+        }
+      }
+    },
+    {
+      "path": "Assets/GearCraft/Paticles/SteamThrowerOverheatSparks.prefab",
+      "particle_id": "3056877626278669757",
+      "line": 1493,
+      "axes": {
+        "x": {
+          "mode": 3,
+          "scalar": 0.7,
+          "minScalar": -0.7
+        },
+        "y": {
+          "mode": 3,
+          "scalar": 1.2,
+          "minScalar": 0.2
+        },
+        "z": {
+          "mode": 3,
+          "scalar": 0.0,
+          "minScalar": 0.0
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,139 @@
+リリース前調整・今回分の結果（2026-10-19更新／今回の検証・復元完了、未確認項目を併記）
+
+最終macOSビルドは成功（error0/warning3）。最初のStandalone試行では正常終了できなかったが、単一スレッド描画と元の描画設定での追加2試行は正常終了・exit0・例外0を確認した。最初のmain/render同期待ちは再現しておらず、描画設定への依存や根本原因は未確定。制作コードや恒久設定を変更して解決したとは扱わない。3試行すべての後片付けと保存復元は完了した。
+
+対象と判定範囲
+前回の ../ReleaseReadiness20261016/report.txt / candidates.csv は当時の記録として保持した。今回の候補一覧22件は candidates-current.csv。
+以下は新しい共通攻撃受付を使った局所検証と、所定装備を初期注入した当日の本編防衛試験である。初日から素材を集めてクラフトした通しプレイ、人間の平均成功率、最適な操作での攻略限界を測ったものではない。
+当日試験では本編の敵AI・移動・攻撃・弾・物理・報酬・日次/ED進行を動かす。HP/門の補充・無敵化・敵への直接ダメージ注入は行わない。初期HP/門は各100、seed77、60ゲームfps。BBはstage16→18、EKはstage31のみ。
+PlayerController.UpdateとArmRotation.Updateは自動操作のため停止し、本編 ProcessAttackInput(bool,bool,float,Vector3) を毎ゲームフレーム1回呼ぶ。攻撃受付や弾生成処理のコピー実装は使わない。照準・移動・迎撃対象判断はボットのため、物理入力や人間操作と同等とは扱わない。
+
+今回修正した項目
+R12：射撃受付のfps依存を修正。遠距離の実効周期を60Hz単位へ切り上げ、最低1/60秒とする。継続入力の余り時間を保持し、1フレーム最大6攻撃まで追い付く。解除・UI・無効化では過去の発射負債を捨て、正の残クールダウンは保持する。近接はクリック単発の受付を維持した。
+  単純に上限を撤去して旧60fps比で高速武器を数倍にする変更ではない。旧float丸めによる0.1秒→7tick等の遅れは正常化されるため、旧動作の完全一致でもない。
+  インベントリの速度表示とクラフトチュートリアルの「速くなった」判定も、遠距離は同じ実効周期へ統一。SpeedGearを付けても周期が同じ場合は成功扱いせず、理由とダメージ強化への代替課題を示す。独力課題でDamage+1しか空きに入らない場合も候補として扱う。
+R17：BGM/SEを2つのfloatキーへ保存。未保存時は既定Mixer値を維持し、変更後0.3秒の非スケール時間で保存、無効化/アプリ一時停止/終了時は即時確定する。保存値の有限性と範囲、slider不在時も扱う。
+R21（新規）：SteamThrowerの粒子で「Particle Velocity curves must all be in the same mode」を実測。2 Prefab内の有効VelocityModule計3件で、zのモードをConstant(0)→TwoConstants(3)へ変更してx/yへ揃えた。変更は3文字、z速度0〜0や他パラメータは維持。
+  Assets内11ファイル/19 ParticleSystemを走査し、有効6件のモード不一致0・解析エラー0。隔離クローン3 ParticleSystemを各Prefab20秒手動Simulateし、該当エラー0・その他エラー0でPASS。その後の実戦再試行ではConsole上で旧Velocityエラーの消失を確認したが、Editor長停止で完走せず、長時間の通常発射検証は未完。
+
+局所検証の数値
+・本番PlayerAttackCadenceを直接リンクした純C#試験：205項目、失敗0。受付・周期・余り・中断・長フレーム・境界を検証。Unityの描画・物理・UIを動かす試験ではない。
+・本編ProcessAttackInput→Instantiate→実生成物の設定値：48ケースPASS（4遠距離×初期/終盤/BOOST設定×30/60/120/jitter）。12構成すべてで同一時刻終点までの受付数/生成数/ダメージが一致。timeScale0・UI当フレーム停止・復帰後の1発・正クールダウン保持も確認。
+・実効周期のインベントリ表示・チュートリアル判定：54チェックPASS。初期配置・返却可能な速度パーツ・Damage代替課題・中断後再判定も確認。実購入/素材消費/画面の視覚確認はこの54件の範囲外。
+・音量保存：PASS。未保存/無効値/範囲/null、ポーズ中の遅延保存、新AudioのStartによるMixer再読込、Pause/Quit/Disable確定を確認。2キー・Mixer・sliderは局所復元一致。OSプロセス終了→再起動による保持と聴感はまだ未確認。
+
+native48ケースの代表値（10秒共通終点、初回即時射撃と終点射撃を含む）
+武器               構成          攻撃受付数  実生成数  1弾設定ダメージ
+SteamCannon        初期                  11        11             57
+SteamCannon        終盤                  67       134            102.6
+SteamCannon        BOOST設定            121       242            102.6
+RailCraft          初期                   6         6            300
+RailCraft          終盤                  36        72            532
+RailCraft          BOOST設定             67       134            532
+SteamGatling       初期                 301       301             10
+SteamGatling       終盤                 601      1202             31.6
+SteamGatling       BOOST設定            601      1202             31.6
+SteamThrower       初期                 121       121              0.3
+SteamThrower       終盤                 601      1202              4.564
+SteamThrower       BOOST設定            601      1202              4.564
+601回は60回/秒の定常間隔＋初回1回で、61回/秒への変更ではない。各行は30/60/120/jitterで同値。
+ここでのBOOSTは適用後の状態を設定したもので、Qキー入力/歯車消費/持続時間を測っていない。弾は生成直後に検査・破棄するため、Start/実命中/再ヒット/寿命は測っていない。描画fpsや実戦DPSまで完全一致したとの判定はしない。
+根拠：cadence-tests.txt/json、native-attack-cases.csv/result.txt、cadence-ui-result.txt、audio-persistence-result.txt。
+
+本編防衛7試行の結果
+時刻はボス出現→討伐または失敗までのゲーム秒。日全体のgame_secondsやED演出待ちを「討伐時間」にしない。HP/門はまずボス終了瞬間を示す。
+
+ボス    武器            結果          経過秒    本人HP  門HP  ボス残HP/初期HP       ボス中攻撃受付数
+BB-413  GearCraft       本人死亡       10.467      -25   100   8886/13000                       54
+BB-413  SteamThrower    本人死亡       63.233      -23   100   8296.358/13000                 1366
+EK-9    GearCraft       本人死亡       68.717       -8   100   64900/147600                    778
+EK-9    RailCraft       討伐→ED3       45.367       28   100   -286/147600                     161
+EK-9    SteamGatling    討伐→ED3       44.950       64   100   -5.724972/147600                2697
+EK-9    SteamCannon     討伐→ED3       59.867       10   100   -64.1621552/147600               400
+EK-9    SteamThrower    無効試行       57.933       97   100   6080.447/147600                 3476
+
+Rail/Gatling/Cannonは撃破後の回復+20により、ED到達時のHPが48/84/30。討伐瞬間のHP28/64/10とは区別した。終盤の目標45秒/45秒/60秒に対し、今回の1seedでは45.367/44.950/59.867秒だった。
+BBは初期STR/ACC10・module0・flat+9・速度倍率約0.585225、道中のネイティブ報酬選択を含む。Throwerはボス突入時HP97、ACC報酬等の変化もあり、表は初期値固定の純DPS試験ではない。
+EKは初期STR/ACC20・module20と終盤パーツ。Gear/Rail/Gatling/Cannonはflat+12、Throwerはflat+16。装備profileは各plan CSV、配置はloadout-placements.csvへ記録している。
+各試行とも歯車を実消費してBOOSTを最大2回使用するボット。近接のBB/EK本人死亡は未解消（R20）。0.2秒単位の脅威選択、既存射程/移動/ジャンプ/弾道予測の制約があり、この敗北だけから通常人間プレイで攻略不能・一律弱体化が必要とは結論しない。
+
+Thrower EKの除外理由
+修正前試行は実時間300秒の監視期限で停止し、ゲーム時間73.300秒（ボス区間57.93335秒）までしか進まなかった。粒子エラーが大量発生している状態での打切りで、討伐失敗率・目標60秒未達・生存成功のいずれにも算入しない。
+参考観測としてHP97/門100/ボス残6080.447は保存するが、そこから討伐時間を外挿しない。元結果は保持した。
+同じ構成の新ラベル gate_native_ranged_EK9_SteamThrower_velocityfixed_seed77_fps60 も、Editor長停止のためbatch_stopped_batch_wall_timeoutで中断。実時間934.814秒に対してゲーム時間16.500秒、ボス区間1.76666641秒、HP97/門100/残HP143892.625だった。この再試行も討伐/敗北を判定できない無効試行として分離する。ボス結果は初回7試行（有効6・無効1）と追加無効1であり、成功率へ混ぜない。
+DOTweenのmissing target集約警告3件も原因未特定。再試行はLogBehaviour.Defaultを使ったが、完走できておらず解消とは扱わない。粒子エラーと同一原因とも断定しない。追加の長時間試験はここで止め、ビルド/実配布Player/復元へ進む。
+
+集計整合性
+7試行すべてで、native-input.csvの受付合計/生成期待数合計がresult.txtに一致、同一ゲームフレームの重複受付呼出し0、HPと門の「初期−被害＋回復＝終了値」が一致した。
+当日の expected_projectiles は本編受付数から計算した枝別の期待個数であり、実生成/命中の観測値ではない。native48の実生成数とは別の指標。
+統合数値：boss-results-summary.csv（初回7件）、boss-retry-summary.csv（追加無効1件）、report-source-summary.json。再試行も入力重複0・受付合計一致・HP収支一致。元数値：各 *-bosses.csv / *-events.csv / *-native-input.csv / *-result.txt。
+
+初回UIの部分確認（R15）
+FullHDで01-title-idle、02-title-gamestart-hover、03-title-setting、04-opening-storyのPNG4枚を保存し、rootが画像を確認した。GAMESTARTの初期色RGBA(0.961,0.961,0.961,1)からhover色RGBA(0.613,0.613,0.613,1)への変化は実際のCanvasRendererと一致した。
+StartButton/SettingButton/HideSettingはGraphicRaycasterの最前面ヒットを確認してからEventSystemのpointerイベントを送り、SETTING表示/閉鎖とGAMESTART→Story遷移を確認した。OSのマウス操作ではない。
+その後はStoryでフレーム進行が止まり、設定150秒のwatchdogがEditor再開後に終了させた。終了時の画面は1920x1080から1672x924へ変化していた。宿舎到着・ベッド誘導の画像/位置/揺れまでは確認できていないため、初回導線全体や画面比率のPASSにはしない。PNG4枚のIHDRは1920x1080である。
+根拠：ui-visual-20261018-072956-258-d89c086d/result.txt と同フォルダ4PNG。result末尾の共通Scope説明は試験の設計範囲であり、到着会話まで実際に進行した証拠として扱わない。
+
+配布物と前回表記の訂正（R13）
+最終 /private/tmp/GearCraftReleaseFinalization20261018/GearCraft.app はMono Playerとして扱う。Contents/MonoBleedingEdgeとManaged/Assembly-CSharp.dllに加え、実PlayerログのMono path/MonoManager ReloadAssembly、プロセス採取のlibmonobdwgc-2.0.dylibも確認された。前回reportの「IL2CPPビルド」という表記は誤りであり、ここで訂正する。前回ファイルそのものは上書きしていない。
+最終BuildReportのoptionsにはIl2CPPという文字列があるが、これは実行バックエンドの証拠に採用しない。macos-final-package-checks.jsonで最終成果物のcodesign --verify --deep --strictがexit0、lipoがx86_64/arm64、Managed DLL hashが起動前の記録と一致することを確認した。これは署名整合とアーキテクチャの確認であり、Developer ID、公証、Gatekeeper承認を意味しない。
+最終ビルドとプロセス起動を実施し、初回正常終了失敗に対して追加2試行は正常終了した。OSの実UI操作/画面表示、音量のプロセス再起動保持、Gatekeeper/公証、別OSでの動作は未確認。正式配布OSとOS入力権限についてはユーザー回答待ち。ビルドやsmoke成功だけを正式配布の検証完了とはしない。
+正式な製品名/Bundle ID（現在com.DefaultCompany.2D-URP）も未確定（R18）。
+
+残り
+・R15：宿舎到着以降の初回誘導、実OS入力、他画面比率は未確認。Title4枚の部分確認を全体完了にしない。
+・R20：BB/EK近接とBB Throwerの敗北は未解消。EK Throwerは粒子修正前後とも無効試行で討伐未判定。DOTween警告の原因確認も未完。長時間試験はこれ以上広げない。
+・R13：Standalone初回停止は追加2試行で再現しなかった。main/render待機の根本原因と設定依存は未確定。OSの実UI操作/画面・音量再起動は未検証で、コード変更による解決扱いにしない。
+・R22：正常終了した両試行にもThread終了とComputeBufferのGC破棄に関する注意メッセージが残る。発生元・影響は未特定で、例外0を警告なしへ読み替えない。
+
+Standalone起動前のEditorセッション復元（確認済み）
+10:33:28 UTCにRestore、10:33:32 UTCに独立Verifyを実行した記録を確認した。
+fresh captureした正規/legacy/audio計16キーが型/存在/値まで一致、退避ファイルhash不変。Play停止・clean Title・TimeManager実体1件。
+Fixed Timestepは既存singletonの正確な2822399tickを復元し、取得floatは0.0199999921。float setterで再変換する方法は使わない。
+GameViewは元の一覧とindex3（Full HD）へ戻し、今回だけ追加したReleaseFinalizationQA480を除去。logger enabled=true/filter=Log、DOTween=ErrorsOnlyも一致。RUNNINGのQA進捗マーカーなし。
+一時Editor再接続スクリプトはrootにより制作側から削除済み。
+run1の後片付け後の23:57:50 UTCと、追加2試行後の2026-10-19 00:02:26 UTCに独立Verifyを再実行し、16キー・Title clean/Play停止・2822399tick・GameView3/一覧・logger/DOTween・退避hashが再び一致した。TimeManager実体1件、RUNNINGマーカーなし。
+根拠：canonical-restoration.txt、canonical-final-verification.json。後続2試行のPlayer保存domain復元と保護Editor保存先不変は、それぞれの試行記録でも確認した。Editor16キーとPlayer domain全体の検証を混同しない。
+
+最終ビルド（成功）
+build_id: build-a735c27343
+状態: Succeeded、StandaloneOSX、error0、warning3、201100969 bytes（約191.785 MiB）。
+結果ファイル: macos-final-build.json
+warning内訳: Hidden/Light2Dのvector truncationがMetal向け2件、GearCraft/Pixelationの潜在未初期化変数SampleSourceが1件。TMP旧API警告の再発や、この3件が解消したとの主張はしない。
+SampleSourceは実ソースの両分岐で各値を初期化してreturnしており、読取り確認では未初期化の実行経路を特定できなかった。Metal変換に伴う警告の可能性に留め、停止原因とは結び付けずshaderは編集していない。
+出力app: /private/tmp/GearCraftReleaseFinalization20261018/GearCraft.app
+実行backend: Mono（上記の実体・runtime根拠）。最終署名deep/strict整合exit0、Universal x86_64/arm64を確認。公証等は未実施。
+起動前の最終Managed DLL SHA256: 0e5476714c94f8f725534cb53d0bb51ae3f8e83794b264a9181450ff4630fe96
+根拠: standalone-smoke-run1/app-before.json。先行07:11 UTCのDLL hashとは区別する。
+
+実配布Playerの初回起動・正常終了（run1不合格、原因未確定）
+試行: standalone-smoke-run1。20:33:24 JSTに最終appを1280x720のwindowed指定で直接起動（PID30457）、20秒後に正常終了を要求。helperのaccepted=trueは要求送信の成功だけを意味し、終了成功ではない。
+結果: 15秒以内に退出せず、result.jsonはSTOPPED_REVIEW_REQUIRED、normal_exit_confirmed=false。20:50:57の採取時も同PIDが存在していた。終了処理へ入ったのか、要求が処理されていないのかは未記録。
+実行環境: Unity6000.0.67f1、Apple M4/ARM64、kGfxThreadingModeThreaded。process-sample.txtではmainとUnityGfxDeviceWorkerがそれぞれ2097/2097サンプルでUnity内部からsemaphore待機していた。待機対象と依存関係はシンボル不足で不明。
+MTLCommandBuffer.waitUntilCompleted等の明示フレームはなく、semaphore待機だけでGPU停止・デッドロック・終了コード不具合を断定しない。Editor側の長時間停滞と同一原因とも確認できていない。
+収録ログには例外/クラッシュ/GPUエラーが見つからないが、初期化とRenderGraph disabled以降のTitle描画・ゲームフレーム更新を証明できない。例外なしを起動UI成功や正常終了PASSへ読み替えない。音量保存が原因という証拠もない。
+根拠: standalone-hang-analysis.txt、standalone-smoke-run1/{result.json,process-sample.txt,player.log,normal-quit-helper.stdout.txt,console-findings.json}。
+下記で単一スレッド描画と元のThreadedを比較したが、初回停止は再現しなかった。LaunchServices起動やEditorを閉じた条件は未実施。恒久設定や製品コードを変更して解決したとの判定はしていない。
+
+Standalone run1後の後片付けと保存復元（確認済み）
+元smoke result.jsonは当時のplayer_domain_restoration=not_attempted、restoration_pending=trueを保持する。その後の完了記録はstandalone-smoke-run1/cleanup-result.json（2026-10-18 23:57:02 UTC）。
+rootの後片付けで所有PID30457へSIGTERMを送った後、プロセス消失を確認した。これは正常終了APIによる試験の成功ではなく、元のnormal_exit_test=FAILED_TIMEOUTは維持する。
+Player domain全体を今回fresh退避の20キーへ復元し、型/値/キー集合を完全一致させた。試験で追加されたGearCraft.Gallery.Progress.v1を除去。保護したunity.Takumi.GearCraft_Remake / com.Takumi.GearCraft_Remakeの両domainは不変、Application Supportの存在・追加・削除・内容変更もなし。
+起動前のEditor16キー復元とは別に、run1で使ったPlayer保存先の復元を確認した。後続比較試行はそれぞれ別のfresh退避と復元記録を持つ。
+
+追加比較（2試行完了）
+1. standalone-direct-run1：同一appに-force-gfx-directを追加し、ログでkGfxThreadingModeDirectを確認。全体20.543秒、PASS_NORMAL_EXIT、exit0、例外0。
+2. standalone-threaded-recheck1：同一appを元の描画設定へ戻し、ログでkGfxThreadingModeThreadedを確認。全体20.467秒、PASS_NORMAL_EXIT、exit0、例外0。
+各所要時間は起動→約20秒の観測→正常終了確認までの全体であり、終了要求だけに20秒かかったという意味ではない。両方とも強制停止なし、signals=[]、forced_cleanup=false、process_may_still_be_running=false。
+両試行で全PlayerPrefsをfresh退避の型/値/存在状態へ復元し、追加Gallery.Progressキーを除去、保護したEditor両domainのbefore/after/finalが一致。Application Supportの存在/追加/削除/変更なし、restoration_pending=false。
+根拠：各runのresult.json、protected-domains-before/after/final.json、player-domain-before/restored.json、application-support-before/after.json。
+Directだけでなく元のThreadedも成功したため、Directへ変えれば不具合が直るという結論にはしない。初回停止の設定依存・根本原因は未確定、制作側の恒久設定変更なし。後片付けと保存復元のpendingはすべて解消した。
+成功2試行の起動約5秒時点のsampleはAppKitのイベント待ち、Unity timer、Mono管理コード、Metal描画処理へ分散し、起動後の処理が進んでいたことを確認できる。初回の全sample固定待機は再現していない。ただしsample数はフレーム数ではなく、画面内容・実FPSの検証には使わない。比較の採取時刻/条件も異なるため、単純な処理時間比率を計算しない。
+根拠：standalone-runtime-comparison.txt/json。3回のapp Info/実行ファイル/Managed DLL hashは一致する。
+
+正常終了時の残る注意メッセージ（R22）
+DirectとThreadedの成功runそれぞれのplayer.logに「Thread ... may have been prematurely finalized」が5件、「GarbageCollector disposing of ComputeBuffer」が1件ある。例外/Assertion/Fatal/Crash検出0件は、注意メッセージも0件という意味ではない。
+Assets/GearCraft配下の制作*.csにはComputeBuffer/GraphicsBufferの直接参照を見つけていない。発生元・影響・初回停止との因果は未特定で、製品コードの修正や解消の判定はしていない。
+OSの実UI操作・音量プロセス再起動保持・正式配布OS/入力権限は別の未確認項目。
+
+status: 今回分を一区切り（実施済み検証・後片付け・保存復元完了）。初回の停止記録は保持し、再試行成功を原因解明や恒久修正と同一視しない。未実施・無効試行・人間の実操作未確認をPASSに含めない。
