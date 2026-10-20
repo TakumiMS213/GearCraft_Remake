@@ -1,0 +1,35 @@
+通常配布候補 Polish — 準備済み / 準備担当によるbuild・検査・app起動・ZIP作成は未実行
+
+今回の出力先
+QA: QA/ReleasePolish20261019/
+通常app: /private/tmp/GearCraftReleasePolish20261019/GearCraft.app
+検査用app: /private/tmp/GearCraftReleasePolish20261019/AudioQA.app（通常候補と別）
+ZIP: /private/tmp/GearCraftReleasePolish20261019/GearCraft-macOS-universal-20261019-Polish.zip
+配布候補の保存先: Builds/ReleaseCandidate20261019-Polish/
+旧ReleaseVerificationのapp/結果、Builds/ReleaseCandidate20261019は上書きしない。新app/ZIP/結果が既にある場合は自動置換せず停止する。
+
+前提
+root作成のsource-build-manifest.jsonはHEAD 25469b8基準の18項目（旧17と、今回のCraft.unity）を保持する。
+Craft SHA256: 5864c7be0297b1c946cc735facfbe766dc786dd6172e9594e2fccd9604455a0a
+Editor UI実測後、同sessionのcanonical復元と16Prefs独立検証を完了させる。音量QAのbuild後にはRemoveAudioQAHarness.cs.txtで一時Assets source/.metaを除去し、compile idle・clean Title Editにする。
+
+rootの実施順序
+1. BuildReleaseCandidate.cs.txt をexecute_codeで実行する。既存macOS設定を維持し、BuildOptions.None・extraScriptingDefines空・有効scene一覧（Title先頭）で通常候補を新規作成する。QA source/global QA defineが残る場合は停止する。18source/manifestをbuild前後照合しmacos-build.jsonへ記録する。
+2. build終了後、プロジェクトrootで以下を実行する。
+   python3 QA/ReleasePolish20261019/verify_macos_package.py --build-report QA/ReleasePolish20261019/macos-build.json
+   PASS_LOCAL_ARTIFACT_CHECKS_WITH_LIMITS を確認する。Info.plistのCFBundleExecutableを使い、deep/strict署名整合性、arm64/x86_64、実Mono構成、Audio/cadence/EndingのIL callsite、QA harness不在、18sourcehashを照合する。追加検査は --output 別名.json を使い既存結果を保持する。
+3. rootが必要な新通常appのsmokeを独立に行う場合はfresh全PlayerPrefs退避と所有PIDの退出・全復元を行う。この資料のスクリプトはappを起動しない。音量QAの2process結果を通常候補のOS入力試験と混同しない。
+4. package検査PASS後、以下で新ZIPを作成して整合性を確認する。
+   python3 QA/ReleasePolish20261019/prepare_release_archive.py
+   --package-report 別名.json で再検査結果の選択も可能。source18hash/検査済appのhashを再確認し、dittoでZIP化・別tempへ展開、全filehash/mode/symlinktarget・署名を照合し、Polish新規保存先へZIP・sha256・READMEを置く。release-archive.json PASSを確認する。
+5. rootが最終source18hash、Editor/Prefs復元、通常候補のQAコード不在、既知課題と各実測結果をまとめる。
+
+静的確認
+BuildReleaseCandidate/音量Install・Build・RemoveはC#6 compile errors0/warnings0。
+verify_macos_package.py / prepare_release_archive.pyはPython構文確認のみ。実app検査・ZIP作成は実施していない。
+
+結果の範囲
+ad-hoc署名整合性はDeveloper ID署名・Apple公証・Gatekeeper許可ではない。
+BuildReportのbackend/options表記より、実際のMonoライブラリとmanaged DLLを優先する。Editor DLLとRelease DLLのbyte一致は要求しない。
+scene名・文章bytesの存在やsourcehashは、Player画面の数値レイアウト検証の代わりにならない。Craftの実画面検証はrootのnative UI試験と分けて記載する。
+R22終了時Thread/ComputeBuffer注意は未解決のまま。音量・署名・ZIP合格を原因解消の根拠にはしない。

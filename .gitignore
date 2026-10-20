@@ -108,3 +108,13 @@ InitTestScene*.unity*
 
 # Backup of the former embedded GearCraft repository after folding it into this repo.
 /[Aa]ssets/GearCraft/.git_backup_do_not_commit/
+
+# Reproducible AI verification artifacts; keep QA reports, captures and source scripts.
+/QA/**/Build/
+/QA/**/swift-module-cache/
+/QA/**/__pycache__/
+/QA/**/*.compile.dll
+/QA/**/*.compile.pdb
+/QA/**/*.compile.rsp
+/QA/**/*.compile.cs.txt
+/QA/**/*.compile.log.txt

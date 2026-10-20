@@ -1,0 +1,57 @@
+{
+  "prepared_only": true,
+  "app_executed": false,
+  "old_runner_sha256": "dc33b3e6c66d041e11b179b7355e41c1afde82b7a6b7a0fc34599dbe7723b108",
+  "new_runner_sha256": "28b6c655f62704fb163b7e4ffd9c194f6b01772949a980659218630506801015",
+  "old_results_preserved": true,
+  "snapshot_deadline_seconds": 1,
+  "stable_export_required": true,
+  "default_and_only_result_folder": "audio-persistence-run2",
+  "dry_run_pass": true,
+  "py_compile_pass": true,
+  "isolated_snapshot_mock_cases": [
+    {
+      "name": "immediate",
+      "pass": true,
+      "outcome": "consistent",
+      "simulated_seconds": 0,
+      "attempts": 1
+    },
+    {
+      "name": "settles_150ms",
+      "pass": true,
+      "outcome": "consistent",
+      "simulated_seconds": 0.15,
+      "attempts": 4
+    },
+    {
+      "name": "export_mutation_rejected",
+      "pass": true,
+      "outcome": "RuntimeError",
+      "simulated_seconds": 0.05,
+      "attempts": 1
+    },
+    {
+      "name": "permanent_mismatch_bounded",
+      "pass": true,
+      "outcome": "TimeoutError",
+      "simulated_seconds": 1.0,
+      "attempts": 20
+    },
+    {
+      "name": "total_budget_bound",
+      "pass": true,
+      "outcome": "TimeoutError",
+      "simulated_seconds": 0.2,
+      "attempts": 4
+    },
+    {
+      "name": "absent_preserves_old_semantics",
+      "pass": true,
+      "outcome": "disk_absent",
+      "simulated_seconds": 0,
+      "attempts": 1
+    }
+  ],
+  "real_player_defaults_or_mcp_executed": false
+}

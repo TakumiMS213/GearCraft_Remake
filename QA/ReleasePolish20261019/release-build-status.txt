@@ -1,0 +1,2 @@
+COMPLETE
+New normal candidate built. Run this QA's verify_macos_package.py, protected standalone validation, then prepare_release_archive.py. Previous candidate was not overwritten.

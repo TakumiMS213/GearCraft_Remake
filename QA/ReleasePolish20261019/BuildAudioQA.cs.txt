@@ -1,0 +1,25 @@
+// C#6 execute_code BODY. Root only. Separate nondev QA app; no global define/settings changes.
+const string folder="QA/ReleasePolish20261019/";
+const string target="Assets/GearCraftQAAudioPersistence.cs";
+const string destination="/private/tmp/GearCraftReleasePolish20261019/AudioQA.app";
+if(Application.isPlaying||UnityEditor.EditorApplication.isCompiling||UnityEditor.BuildPipeline.isBuildingPlayer)throw new System.Exception("Require idle Edit after harness import");
+if(UnityEditor.EditorUserBuildSettings.activeBuildTarget!=UnityEditor.BuildTarget.StandaloneOSX)throw new System.Exception("Keep current macOS target; do not switch target automatically");
+foreach(var scene in Enumerable.Range(0,UnityEngine.SceneManagement.SceneManager.sceneCount).Select(UnityEngine.SceneManagement.SceneManager.GetSceneAt))if(scene.isDirty)throw new System.Exception("Open scene is dirty; no implicit save");
+if(System.IO.Directory.Exists(destination)||System.IO.File.Exists(folder+"audio-qa-build.json"))throw new System.Exception("QA build/evidence already exists; refuse overwrite");
+var install=Newtonsoft.Json.Linq.JObject.Parse(System.IO.File.ReadAllText(folder+"audio-qa-install.json"));
+System.Func<string,string> hash=path=>{using(var sha=System.Security.Cryptography.SHA256.Create())return System.BitConverter.ToString(sha.ComputeHash(System.IO.File.ReadAllBytes(path))).Replace("-","").ToLowerInvariant();};
+if(!System.IO.File.Exists(target)||hash(target)!=(string)install["installed_sha256"])throw new System.Exception("Installed QA source differs from owned source");
+var sourceMap=(Newtonsoft.Json.Linq.JObject)install["production_before"];
+if(sourceMap==null||sourceMap.Count!=18||sourceMap["Assets/GearCraft/Scenes/Craft.unity"]==null)throw new System.Exception("Expected installed 18-file baseline including Craft scene");
+foreach(var property in sourceMap.Properties())if(hash(property.Name)!=(string)property.Value)throw new System.Exception("Protected source changed: "+property.Name);
+string[] scenes=UnityEditor.EditorBuildSettings.scenes.Where(x=>x.enabled).Select(x=>x.path).ToArray();
+if(scenes.Length==0||scenes[0]!="Assets/GearCraft/Scenes/Title.unity")throw new System.Exception("QA app must begin in the real Title scene");
+var options=new UnityEditor.BuildPlayerOptions{scenes=scenes,locationPathName=destination,target=UnityEditor.BuildTarget.StandaloneOSX,options=UnityEditor.BuildOptions.None,extraScriptingDefines=new[]{"GEARCRAFT_QA_AUDIO"}};
+var report=UnityEditor.BuildPipeline.BuildPlayer(options);
+var summary=report.summary;
+var changed=new System.Collections.Generic.List<string>();
+foreach(var property in sourceMap.Properties())if(hash(property.Name)!=(string)property.Value)changed.Add(property.Name);
+var record=new{utc=System.DateTime.UtcNow.ToString("O"),purpose="QA Audio persistence only; never distribute this instrumented app",output=destination,result=summary.result.ToString(),platform=summary.platform.ToString(),options=summary.options.ToString(),developmentRequested=false,extraScriptingDefines=options.extraScriptingDefines,totalErrors=summary.totalErrors,totalWarnings=summary.totalWarnings,totalSize=summary.totalSize,totalSeconds=summary.totalTime.TotalSeconds,production_changes=changed,source_sha256=hash(target),global_defines_modified=false,cleanup_required=true};
+System.IO.File.WriteAllText(folder+"audio-qa-build.json",Newtonsoft.Json.JsonConvert.SerializeObject(record,Newtonsoft.Json.Formatting.Indented)+"\n");
+if(summary.result!=UnityEditor.Build.Reporting.BuildResult.Succeeded||summary.totalErrors!=0||changed.Count!=0)throw new System.Exception("QA build failed or protected source changed; inspect audio-qa-build.json and clean up temporary source");
+return "QA nondev app built. Run RemoveAudioQAHarness.cs.txt before another normal build; then root runs two separate protected Player processes.";

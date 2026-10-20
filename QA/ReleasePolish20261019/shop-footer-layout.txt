@@ -1,0 +1,17 @@
+ショップ一覧とラインナップ更新ボタンの重複修正
+
+根拠
+Craft.unity RectTransform1076957345（ShopScrollView）を子Viewportのレイアウト元として調整。ShopAreaのVerticalLayoutGroup（1316353142）およびUpgradePanelのHorizontalLayoutGroup（535672855）は無効。ScrollRect.SetLayoutHorizontalはAutoHideAndExpandViewport時にviewRectのanchoredPositionとsizeDeltaをゼロへ設定するため、Viewportだけのinset変更は保持されない（Library/PackageCache/com.unity.ugui@cec3688a7c38/Runtime/UGUI/UI/Core/ScrollRect.cs:1156）。
+
+変更
+ShopScrollViewのanchoredPosition.y -20.21997→27.78003、sizeDelta.y -107.65→-203.65。上端は旧値と同じ-74.04497、下端のみ+96 Canvas単位。幅・横位置・スクロール速度・減衰・Content・RefreshButton位置は変更しない。
+
+独立計算
+UpgradePanel高さ938、ShopArea上端-125/高さ760なのでShopArea下端はUpgradePanel下端+53。旧ScrollView下端は53-20.21997+107.65/2=86.60503、変更後182.60503。Refresh上端は101+62=163、差19.60503 Canvas単位。664x415時scale664/1920なら差6.78007px、FullHD scale1なら19.60503px。16:10実測旧viewport y81.48→変更後約114.68、Refresh上端107.90。予測値なので実描画で確認する。
+
+検証
+CraftAspect1610とCraftLayoutFullHDの実GameView/Camera/Canvas/PNG整合、およびShop viewport.yMin>=Refresh.yMax+1px、Refresh中心へのGraphicRaycaster到達をスクロール前後で確認。Refreshはクリックしない。ショップ一覧をwheelで動かし行がFooterへ重ならないことをPNGでも確認。元scene/index/list/input状態へ復元、最後のcanonical restoreはroot管理。
+
+source_before_sha256=2b2f5b9fc00e49cf91270b8f57ee85d31cc16ecb351ca8db6c97a00e8279aba1
+source_after_sha256=5864c7be0297b1c946cc735facfbe766dc786dd6172e9594e2fccd9604455a0a
+root承認後にproductionへ適用。変更対象は対象Rectの2値のみ。

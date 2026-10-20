@@ -1,0 +1,173 @@
+[
+  {
+    "domain": "com.DefaultCompany.2D-URP",
+    "attempts": 1,
+    "initial_disk_matches_export": true,
+    "result": "consistent",
+    "maximum_wait_seconds": 1.0,
+    "export_typed_sha256": "0bb550dadaab9260642e946e8d174a459c3aef843e4c2ea94b05c111413d8b19",
+    "elapsed_seconds": 0.020046
+  },
+  {
+    "domain": "unity.Takumi.GearCraft_Remake",
+    "attempts": 1,
+    "initial_disk_matches_export": true,
+    "result": "consistent",
+    "maximum_wait_seconds": 1.0,
+    "export_typed_sha256": "388083f143788fb677dc472c62d6774d59c6c55fe7606e7f3bba5092cab36137",
+    "elapsed_seconds": 0.016479
+  },
+  {
+    "domain": "com.Takumi.GearCraft_Remake",
+    "attempts": 1,
+    "initial_disk_matches_export": null,
+    "result": "disk_absent",
+    "maximum_wait_seconds": 1.0,
+    "export_typed_sha256": "9261ecceda608ef174256e5fdc774c1e6e3dcf533409c1bc393d490d01c713f1",
+    "elapsed_seconds": 0.018301
+  },
+  {
+    "domain": "unity.Takumi.GearCraft_Remake",
+    "attempts": 1,
+    "initial_disk_matches_export": true,
+    "result": "consistent",
+    "maximum_wait_seconds": 1.0,
+    "export_typed_sha256": "388083f143788fb677dc472c62d6774d59c6c55fe7606e7f3bba5092cab36137",
+    "elapsed_seconds": 0.016668
+  },
+  {
+    "domain": "com.Takumi.GearCraft_Remake",
+    "attempts": 1,
+    "initial_disk_matches_export": null,
+    "result": "disk_absent",
+    "maximum_wait_seconds": 1.0,
+    "export_typed_sha256": "9261ecceda608ef174256e5fdc774c1e6e3dcf533409c1bc393d490d01c713f1",
+    "elapsed_seconds": 0.015015
+  },
+  {
+    "domain": "com.DefaultCompany.2D-URP",
+    "attempts": 1,
+    "initial_disk_matches_export": true,
+    "result": "consistent",
+    "maximum_wait_seconds": 1.0,
+    "export_typed_sha256": "d6c8bf465896c4a3de2455a17323a241d486a75ef3ab29d549bc5a9d77c2c921",
+    "elapsed_seconds": 0.022131
+  },
+  {
+    "domain": "unity.Takumi.GearCraft_Remake",
+    "attempts": 1,
+    "initial_disk_matches_export": true,
+    "result": "consistent",
+    "maximum_wait_seconds": 1.0,
+    "export_typed_sha256": "388083f143788fb677dc472c62d6774d59c6c55fe7606e7f3bba5092cab36137",
+    "elapsed_seconds": 0.02156
+  },
+  {
+    "domain": "com.Takumi.GearCraft_Remake",
+    "attempts": 1,
+    "initial_disk_matches_export": null,
+    "result": "disk_absent",
+    "maximum_wait_seconds": 1.0,
+    "export_typed_sha256": "9261ecceda608ef174256e5fdc774c1e6e3dcf533409c1bc393d490d01c713f1",
+    "elapsed_seconds": 0.014653
+  },
+  {
+    "domain": "com.DefaultCompany.2D-URP",
+    "attempts": 1,
+    "initial_disk_matches_export": true,
+    "result": "consistent",
+    "maximum_wait_seconds": 1.0,
+    "export_typed_sha256": "cb7d8ddf20d3c5a8b3c362ef4567a1eb7d8f6c27e6b1cc5a84e6134a982e1e7f",
+    "elapsed_seconds": 0.024784
+  },
+  {
+    "domain": "com.DefaultCompany.2D-URP",
+    "attempts": 1,
+    "initial_disk_matches_export": true,
+    "result": "consistent",
+    "maximum_wait_seconds": 1.0,
+    "export_typed_sha256": "cb7d8ddf20d3c5a8b3c362ef4567a1eb7d8f6c27e6b1cc5a84e6134a982e1e7f",
+    "elapsed_seconds": 0.0159
+  },
+  {
+    "domain": "unity.Takumi.GearCraft_Remake",
+    "attempts": 1,
+    "initial_disk_matches_export": true,
+    "result": "consistent",
+    "maximum_wait_seconds": 1.0,
+    "export_typed_sha256": "388083f143788fb677dc472c62d6774d59c6c55fe7606e7f3bba5092cab36137",
+    "elapsed_seconds": 0.015279
+  },
+  {
+    "domain": "com.Takumi.GearCraft_Remake",
+    "attempts": 1,
+    "initial_disk_matches_export": null,
+    "result": "disk_absent",
+    "maximum_wait_seconds": 1.0,
+    "export_typed_sha256": "9261ecceda608ef174256e5fdc774c1e6e3dcf533409c1bc393d490d01c713f1",
+    "elapsed_seconds": 0.013099
+  },
+  {
+    "domain": "com.DefaultCompany.2D-URP",
+    "attempts": 1,
+    "initial_disk_matches_export": true,
+    "result": "consistent",
+    "maximum_wait_seconds": 1.0,
+    "export_typed_sha256": "cb7d8ddf20d3c5a8b3c362ef4567a1eb7d8f6c27e6b1cc5a84e6134a982e1e7f",
+    "elapsed_seconds": 0.013849
+  },
+  {
+    "domain": "com.DefaultCompany.2D-URP",
+    "attempts": 1,
+    "initial_disk_matches_export": true,
+    "result": "consistent",
+    "maximum_wait_seconds": 1.0,
+    "export_typed_sha256": "925b0db536c5540031fb674bcf98f39fa146e97e0b90dca2403ba3cbddabda8c",
+    "elapsed_seconds": 0.014428
+  },
+  {
+    "domain": "com.DefaultCompany.2D-URP",
+    "attempts": 1,
+    "initial_disk_matches_export": true,
+    "result": "consistent",
+    "maximum_wait_seconds": 1.0,
+    "export_typed_sha256": "8009101d83c0955c8ee638ef2589681cb0e2f50461db9a622e365138d89e7ff1",
+    "elapsed_seconds": 0.015763
+  },
+  {
+    "domain": "com.DefaultCompany.2D-URP",
+    "attempts": 1,
+    "initial_disk_matches_export": true,
+    "result": "consistent",
+    "maximum_wait_seconds": 1.0,
+    "export_typed_sha256": "f71a7fe8457f791a8b8beca443bc1ded9c479ea4f599ce562464ed009d9c8192",
+    "elapsed_seconds": 0.020239
+  },
+  {
+    "domain": "com.DefaultCompany.2D-URP",
+    "attempts": 1,
+    "initial_disk_matches_export": true,
+    "result": "consistent",
+    "maximum_wait_seconds": 1.0,
+    "export_typed_sha256": "0bb550dadaab9260642e946e8d174a459c3aef843e4c2ea94b05c111413d8b19",
+    "elapsed_seconds": 0.013967
+  },
+  {
+    "domain": "unity.Takumi.GearCraft_Remake",
+    "attempts": 1,
+    "initial_disk_matches_export": true,
+    "result": "consistent",
+    "maximum_wait_seconds": 1.0,
+    "export_typed_sha256": "388083f143788fb677dc472c62d6774d59c6c55fe7606e7f3bba5092cab36137",
+    "elapsed_seconds": 0.013933
+  },
+  {
+    "domain": "com.Takumi.GearCraft_Remake",
+    "attempts": 1,
+    "initial_disk_matches_export": null,
+    "result": "disk_absent",
+    "maximum_wait_seconds": 1.0,
+    "export_typed_sha256": "9261ecceda608ef174256e5fdc774c1e6e3dcf533409c1bc393d490d01c713f1",
+    "elapsed_seconds": 0.012885
+  }
+]

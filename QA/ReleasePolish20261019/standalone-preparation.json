@@ -1,0 +1,25 @@
+{
+  "prepared_only": true,
+  "app_executed": false,
+  "app": "/private/tmp/GearCraftReleasePolish20261019/GearCraft.app",
+  "audio_runner_modified": false,
+  "temporary_audio_harness_must_be_absent": true,
+  "protected_existing_candidate_sha256": "26a4b9729b9d8f480dc26f2eb0da1e56e172386dbdf9105275f78186d29ebcba",
+  "original_sources_sha256": {
+    "standalone_smoke.py": "15524908dd0114d7fb3aca9ab61fa81c2491297ba393a15ddaa99c59e176e36b",
+    "standalone_probe.py": "a7b4d0eff03167bd94fd2f99ad5555e67b6a0d378ff647b5a647c6cc710e7bad"
+  },
+  "new_sources_sha256": {
+    "standalone_smoke.py": "3001cf0674e486548ba6bb6098605beb77ead444149dd086eeda00a8a357e714",
+    "standalone_probe.py": "fe091c635b82bcf5d981f42c261d9afe808d4d927a3e7cce8584291cb9c3c234"
+  },
+  "syntax_pass": true,
+  "dry_run_pass": true,
+  "py_compile_pass": true,
+  "dry_run_scope": "--execute omitted; prepared_only=true. No app/helper/defaults launched; no run folder or app identity created.",
+  "audio_runner_hashes_match": {
+    "audio_persistence_probe.py": true,
+    "audio_qa_common.py": true
+  },
+  "procedure": "standalone-procedure.txt"
+}

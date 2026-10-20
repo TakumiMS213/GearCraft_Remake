@@ -1,0 +1,11 @@
+id,priority,candidate,current_status,evidence
+R24,P1,パーツショップ一覧と更新ボタンの重なり,ShopScrollView下端96単位引上げ・16:10とFullHDの実画像と余白/判定到達PASS,shop-footer-layout.txt; craft-layout-visual-review.txt
+R17,P2,音量保存の実プロセス再起動,独立2PIDでnative Slider保存とAudio.Start復元PASS・OS入力/聴感未実施,audio-persistence-run2/result.json
+R15,P1,主要UIの画面比率,Title/Settings/Craft/WeaponCustomの16:10を追加確認・全比率網羅は未実施,title-16x10-visual-review.txt; craft-layout-visual-review.txt
+R13,P1,通常macOS配布候補,新非開発build/IL/Universal/署名整合/正常終了/ZIP展開照合PASS・正式署名公証公開は未実施,macos-build.json; macos-package-verification.json; standalone-threaded-run1/result.json; release-archive.json
+R20,P1,一部BB/EK構成でbot本人死亡,過去3件を監査しbot制約と制作候補を分離・今回再戦/倍率変更なし,combat-open-issues-audit.txt
+R22,P2,終了時ComputeBuffer/Thread注意,新通常版ComputeBuffer1件・Thread0件・未解決,standalone-threaded-run1/console-findings.json
+R14,P2,Metal shader警告,制作変更なし・音量QA buildで既存3件確認・通常build警告0のみで解決としない,audio-qa-build-messages.json; macos-build.json
+QA06,P2,背景透明余白のはみ出しを不具合と誤判定,SettingPanel透明余白を診断値へ変更・操作UI個別判定で再試験PASS・旧FAIL保持,title-16x10-visual-review.txt
+QA07,P2,macOS設定disk/cacheの即時照合競合,export固定と最大1秒整合待ちをrun2に追加・旧run1保持・両試験fresh復元PASS,audio-run1-snapshot-diagnosis.txt; audio-run2-preparation.json; audio-persistence-run2/result.json
+QA03,P1,テスト状態復元,Editor16PrefsとPlayer全20key復元・build/Player後もEditor再VerifyPASS・一時QAコード除去,canonical-postbuild-verification.json; audio-qa-cleanup.json; audio-qa-cleanup-refresh.json

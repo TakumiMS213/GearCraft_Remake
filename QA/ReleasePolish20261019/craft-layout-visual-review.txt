@@ -1,0 +1,17 @@
+2026-10-19 root visual review / shop footer fix
+
+修正前: craft-16x10-20261019-013824-880-b660474c の05/06画像で、ショップ最下部のパーツ行と「ラインナップ更新」ボタンが重なることを確認。
+旧viewport下端81.48px、Refresh上端107.90px。旧probe全体はPASSだったが、その時点では兄弟UI同士の重なりを検証していなかった。目視で検出した制作不具合として扱う。
+
+制作修正: Assets/GearCraft/Scenes/Craft.unity のShopScrollView RectTransformだけ変更。
+anchoredPosition.y -20.21997 → 27.78003 / sizeDelta.y -107.65 → -203.65。
+上端を維持し、下端を96 Canvas単位上げる。AutoHideAndExpandViewportが子Viewportを駆動するため、親ScrollViewを修正した。更新ボタンの位置とスクロール速度・Clamped設定は維持。
+
+修正後16:10: craft-16x10-20261019-014306-659-adeeb1f0 / 実PNG664×415。
+05/06画像を目視。更新ボタンとの重なりなし。wheel前後とも隙間6.780098px、Refresh中心のGraphicRaycaster到達PASS。両一覧の同じwheel delta -3でcontent移動102 Canvas単位。
+修正後FullHD: craft-fullhd-20261019-014342-629-9c53bd34 / 実PNG1920×1080。
+02/05画像を目視。クラフト・カスタムの主要操作UIが画面内。更新ボタンとの隙間19.6050568px、wheel前後とも余白とraycast PASS。content移動は両一覧とも102 Canvas単位。
+両試験ともnativeUpgradeTabとCloseを通り宿舎へ戻り、fixtureの元Title/FullHDへ復帰。スクロール感度34 / Clamped / elasticity0.1 / deceleration0.135の一致を記録。
+
+範囲: Craft直接読込はレイアウトfixture。Scene内の既存UIを操作し、UI再作成やクラフト/購入/更新ボタン押下はしていない。OS入力、実プレイヤーのドラッグ、全進行状態/全比率の網羅を主張しない。初回ガイド用という画像名であっても今回の保存状態ではガイドが出ていないため、初回チュートリアル再試験の証拠とはしない。
+Editor停止後、今回fresh16Prefs・Title clean・GameView・時刻設定・loggerをcanonical-restoration/verificationで復元確認。

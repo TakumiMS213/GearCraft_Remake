@@ -1,0 +1,14 @@
+{
+  "bgm": {
+    "key": "GearCraft.Audio.BGM.dB.v1",
+    "exists": true,
+    "value": -17.0,
+    "plist_type": "float"
+  },
+  "se": {
+    "key": "GearCraft.Audio.SE.dB.v1",
+    "exists": true,
+    "value": -29.0,
+    "plist_type": "float"
+  }
+}

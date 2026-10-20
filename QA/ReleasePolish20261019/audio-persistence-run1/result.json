@@ -1,0 +1,51 @@
+{
+  "started_utc": "2026-10-19T01:47:56.842562+00:00",
+  "result": "FAIL_OR_INCOMPLETE",
+  "session": "bbc990b4763b49b19fe42542e92e5c55",
+  "scope": "Two separate Player processes; native Slider callbacks then native Audio.Start. No physical OS input or listening.",
+  "normal_exit_confirmed": false,
+  "forced_cleanup": false,
+  "signals": [],
+  "process_may_still_be_running": false,
+  "restoration_pending": false,
+  "player_domain_restoration": "verified_full_type_value_existence",
+  "phase_outcomes": {
+    "write": {
+      "pid": 44737,
+      "exit_code": 0,
+      "elapsed_seconds": 6.749,
+      "harness_status": "PASS_WRITE",
+      "verified": false
+    }
+  },
+  "player_pids": [
+    44737
+  ],
+  "requested_values": {
+    "bgm": -17.25,
+    "se": -28.75
+  },
+  "effective_native_whole_number_values": {
+    "bgm": -17.0,
+    "se": -29.0
+  },
+  "reason": "RuntimeError: Audio phase Player domain disk/cache mismatch",
+  "removed_added_keys": [
+    "GearCraft.Audio.BGM.dB.v1",
+    "GearCraft.Audio.SE.dB.v1",
+    "GearCraft.Gallery.Progress.v1"
+  ],
+  "application_support_changes": {
+    "directory_existence_changed": false,
+    "added": [],
+    "removed": [],
+    "changed": []
+  },
+  "application_support_unchanged": true,
+  "protected_release_candidate_unchanged": true,
+  "console_exception_count": 0,
+  "known_termination_notice_count": 1,
+  "elapsed_seconds": 7.25,
+  "within_59_seconds": true,
+  "finished_utc": "2026-10-19T01:48:04.092249+00:00"
+}

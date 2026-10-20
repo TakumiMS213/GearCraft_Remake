@@ -1,0 +1,20 @@
+{
+  "utc": "2026-10-19T01:52:29.8820000Z",
+  "output": "/private/tmp/GearCraftReleasePolish20261019/GearCraft.app",
+  "result": "Succeeded",
+  "platform": "StandaloneOSX",
+  "options": "None",
+  "developmentRequested": false,
+  "extraScriptingDefines": [],
+  "source_count": 18,
+  "source_manifest_sha256": "acf87ef6579ed07a67dc8773315521d5e5f6a050af8202f86446d9826f8fe129",
+  "source_manifest_unchanged": true,
+  "totalErrors": 0,
+  "totalWarnings": 0,
+  "totalSize": 201101453,
+  "totalSeconds": 25.0545039,
+  "production_changes": [],
+  "qa_source_absent": true,
+  "qa_global_define_absent": true,
+  "scope": "New normal candidate only. BuildReport claims require artifact/Mono/universal/signature checks; no public distribution or notarization claimed."
+}

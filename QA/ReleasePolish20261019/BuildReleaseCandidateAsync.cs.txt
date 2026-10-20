@@ -1,0 +1,53 @@
+// Deferred native build: return the MCP request before BuildPipeline blocks the Editor.
+if (UnityEditor.EditorApplication.isCompiling || UnityEditor.EditorApplication.isPlaying || UnityEditor.BuildPipeline.isBuildingPlayer) throw new System.Exception("Require idle Edit");
+const string status="QA/ReleasePolish20261019/release-build-status.txt";
+if(System.IO.File.Exists(status)) throw new System.Exception("No overwrite of prior build scheduling record");
+System.IO.File.WriteAllText(status,"SCHEDULED\n");
+UnityEditor.EditorApplication.delayCall += () => {
+    try {
+        System.Func<object> build = () => {
+// C#6 execute_code BODY. Root only; a NEW normal candidate, with NO QA define/source.
+const string folder="QA/ReleasePolish20261019/";
+const string destination="/private/tmp/GearCraftReleasePolish20261019/GearCraft.app";
+const string qaAsset="Assets/GearCraftQAAudioPersistence.cs";
+if(Application.isPlaying||UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode||UnityEditor.EditorApplication.isCompiling||UnityEditor.BuildPipeline.isBuildingPlayer)throw new System.Exception("Require idle Edit mode");
+if(UnityEditor.EditorUserBuildSettings.activeBuildTarget!=UnityEditor.BuildTarget.StandaloneOSX)throw new System.Exception("Expected existing macOS target; no implicit target switch");
+var active=UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+if(active.path!="Assets/GearCraft/Scenes/Title.unity"||active.isDirty)throw new System.Exception("Require clean Title Edit");
+foreach(var scene in Enumerable.Range(0,UnityEngine.SceneManagement.SceneManager.sceneCount).Select(UnityEngine.SceneManagement.SceneManager.GetSceneAt))if(scene.isDirty)throw new System.Exception("Do not build while any scene is dirty");
+if(System.IO.File.Exists(qaAsset)||System.IO.File.Exists(qaAsset+".meta"))throw new System.Exception("Remove the owned Audio QA source/meta before normal candidate build");
+string defines=UnityEditor.PlayerSettings.GetScriptingDefineSymbols(UnityEditor.Build.NamedBuildTarget.Standalone);
+if(defines.Split(';').Any(x=>x.Trim()=="GEARCRAFT_QA_AUDIO"))throw new System.Exception("Global QA define must not be present");
+if(System.IO.Directory.Exists(destination)||System.IO.File.Exists(folder+"macos-build.json"))throw new System.Exception("Normal candidate/output record exists; never overwrite an earlier candidate");
+var manifest=Newtonsoft.Json.Linq.JObject.Parse(System.IO.File.ReadAllText(folder+"source-build-manifest.json"));
+var sources=(Newtonsoft.Json.Linq.JObject)manifest["production_and_settings_sha256"];
+if(sources==null||sources.Count!=18||sources["Assets/GearCraft/Scenes/Craft.unity"]==null)throw new System.Exception("Root must prepare latest18 source manifest including Craft scene");
+System.Func<string,string> hash=path=>{using(var sha=System.Security.Cryptography.SHA256.Create())return System.BitConverter.ToString(sha.ComputeHash(System.IO.File.ReadAllBytes(path))).Replace("-","").ToLowerInvariant();};
+string manifestHash=hash(folder+"source-build-manifest.json");
+foreach(var property in sources.Properties())if(hash(property.Name)!=(string)property.Value)throw new System.Exception("Source changed since final manifest: "+property.Name);
+foreach(string file in System.IO.Directory.GetFiles(folder,"*progress.txt")){string text=System.IO.File.ReadAllText(file).TrimStart();if(text.StartsWith("RUNNING")||text.StartsWith("LOADING"))throw new System.Exception("QA callback still running: "+file);}
+string session=System.IO.File.ReadAllText(folder+"session-id.txt").Trim();
+var restored=Newtonsoft.Json.Linq.JObject.Parse(System.IO.File.ReadAllText(folder+"canonical-final-verification.json"));
+if((string)restored["session_id"]!=session||(int)restored["prefs_verified"]!=16||(bool)restored["play"]||(bool)restored["scene_dirty"])throw new System.Exception("Current Editor session restoration/verification incomplete");
+string[] scenes=UnityEditor.EditorBuildSettings.scenes.Where(x=>x.enabled).Select(x=>x.path).ToArray();
+if(scenes.Length==0||scenes[0]!="Assets/GearCraft/Scenes/Title.unity")throw new System.Exception("Normal candidate must start in native Title");
+var options=new UnityEditor.BuildPlayerOptions{scenes=scenes,locationPathName=destination,target=UnityEditor.BuildTarget.StandaloneOSX,options=UnityEditor.BuildOptions.None,extraScriptingDefines=new string[0]};
+var report=UnityEditor.BuildPipeline.BuildPlayer(options);
+var summary=report.summary;
+var changes=new System.Collections.Generic.List<string>();
+foreach(var property in sources.Properties())if(hash(property.Name)!=(string)property.Value)changes.Add(property.Name);
+bool manifestSame=manifestHash==hash(folder+"source-build-manifest.json");
+var result=new{utc=System.DateTime.UtcNow.ToString("O"),output=destination,result=summary.result.ToString(),platform=summary.platform.ToString(),options=summary.options.ToString(),developmentRequested=false,extraScriptingDefines=options.extraScriptingDefines,source_count=sources.Count,source_manifest_sha256=manifestHash,source_manifest_unchanged=manifestSame,totalErrors=summary.totalErrors,totalWarnings=summary.totalWarnings,totalSize=summary.totalSize,totalSeconds=summary.totalTime.TotalSeconds,production_changes=changes,qa_source_absent=!System.IO.File.Exists(qaAsset),qa_global_define_absent=true,scope="New normal candidate only. BuildReport claims require artifact/Mono/universal/signature checks; no public distribution or notarization claimed."};
+System.IO.File.WriteAllText(folder+"macos-build.json",Newtonsoft.Json.JsonConvert.SerializeObject(result,Newtonsoft.Json.Formatting.Indented)+"\n");
+if(summary.result!=UnityEditor.Build.Reporting.BuildResult.Succeeded||summary.totalErrors!=0||changes.Count!=0||!manifestSame)throw new System.Exception("Normal candidate build failed or source changed; inspect macos-build.json");
+return "New normal candidate built. Run this QA's verify_macos_package.py, protected standalone validation, then prepare_release_archive.py. Previous candidate was not overwritten.";
+
+        };
+        var completed=build();
+        System.IO.File.WriteAllText(status,"COMPLETE\n"+completed+"\n");
+    } catch(System.Exception error) {
+        System.IO.File.WriteAllText(status,"FAILED\n"+error+"\n");
+        UnityEngine.Debug.LogException(error);
+    }
+};
+return "Native normal build scheduled; poll release-build-status.txt and macos-build.json; avoid MCP calls until build ends.";

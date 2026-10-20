@@ -1,0 +1,20 @@
+{
+  "utc": "2026-10-19T01:45:43.0364760Z",
+  "purpose": "QA Audio persistence only; never distribute this instrumented app",
+  "output": "/private/tmp/GearCraftReleasePolish20261019/AudioQA.app",
+  "result": "Succeeded",
+  "platform": "StandaloneOSX",
+  "options": "None",
+  "developmentRequested": false,
+  "extraScriptingDefines": [
+    "GEARCRAFT_QA_AUDIO"
+  ],
+  "totalErrors": 0,
+  "totalWarnings": 5,
+  "totalSize": 201116617,
+  "totalSeconds": 37.179543699999996,
+  "production_changes": [],
+  "source_sha256": "d1423e8f51ff8ac04af75a1c68c2259b5ac49ad903f99277846af77753bcf374",
+  "global_defines_modified": false,
+  "cleanup_required": true
+}

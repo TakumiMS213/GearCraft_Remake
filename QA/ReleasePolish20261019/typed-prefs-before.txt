@@ -1,0 +1,16 @@
+GearCraft.Gallery.Progress.v1|string|True|eyJoYXNSZWFjaGVkRW5kaW5nIjpmYWxzZSwiZW5jb3VudGVyZWRFbmVtaWVzIjpbImx2MV9BLTEiLCJsdjNfRmluYWxCb3NzIiwibHYxX0ctMSIsImx2MV9CLTEiLCJsdjNfSUMtNDA4Il0sImFjcXVpcmVkV2VhcG9ucyI6WyJLYXRhbmEiLCJBUiJdLCJjcmFmdGVkUmVjaXBlcyI6WyJQdW5rRHJpdmUiXSwiYWNxdWlyZWRNYXRlcmlhbHMiOlsxLDJdfQ==
+GearCraft.Main.OpeningNotice.Seen.v1|int|True|MQ==
+GearCraft.CraftTutorial.Metrics.Craft.v5|string|True|eyJ0YXNrQXR0ZW1wdHMiOjUsImNvbXBsZXRpb25zIjo0LCJpbmRlcGVuZGVudEF0dGVtcHRzIjoxLCJpbmRlcGVuZGVudFN1Y2Nlc3NlcyI6MSwiaGludFJlcXVlc3RzIjozLCJpbnZhbGlkQXR0ZW1wdHMiOjEyLCJwYXVzZXMiOjEsImVsYXBzZWRTZWNvbmRzIjoxMDIuMzQ2Njc5Njg3NX0=
+GearCraft.CraftTutorial.Metrics.WeaponCustom.v5|string|True|eyJ0YXNrQXR0ZW1wdHMiOjIsImNvbXBsZXRpb25zIjoyLCJpbmRlcGVuZGVudEF0dGVtcHRzIjoxLCJpbmRlcGVuZGVudFN1Y2Nlc3NlcyI6MSwiaGludFJlcXVlc3RzIjowLCJpbnZhbGlkQXR0ZW1wdHMiOjAsInBhdXNlcyI6MCwiZWxhcHNlZFNlY29uZHMiOjIzLjAyNzYyNjAzNzU5NzY1OH0=
+GearCraft.CraftTutorial.Mastery.Craft.v5|int|True|MQ==
+GearCraft.CraftTutorial.Mastery.WeaponCustom.v5|int|True|MQ==
+GearCraft.CraftTutorial.AutoPlayed.Craft.v4|int|True|MQ==
+GearCraft.CraftTutorial.AutoPlayed.WeaponCustom.v3|int|True|MQ==
+CraftTutorial.Metrics.Craft.v5|string|False|
+CraftTutorial.Metrics.WeaponCustom.v5|string|False|
+CraftTutorial.Mastery.Craft.v5|int|False|
+CraftTutorial.Mastery.WeaponCustom.v5|int|False|
+CraftTutorial.AutoPlayed.Craft.v4|int|False|
+CraftTutorial.AutoPlayed.WeaponCustom.v3|int|False|
+GearCraft.Audio.BGM.dB.v1|float|False|
+GearCraft.Audio.SE.dB.v1|float|False|

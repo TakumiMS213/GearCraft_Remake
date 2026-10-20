@@ -1,0 +1,54 @@
+R17 別Playerプロセス音量永続化QA — 準備済み / 未実行
+
+目的と範囲
+Titleに既存のSlider.valueを設定し、そのpersistent UnityEvent→Audio.SetBGM/SetSE→native0.3秒debounce保存を通す。次の独立Player起動で、Audio.Start前のPlayerPrefs値とStart後のMixer/Slider値を確認する。
+Settingsを開く操作やOSマウス/キーボード、実画面操作の試験とは主張しない。既存Title Slider/callbackのプロセスを跨ぐ永続化の試験。OS権限や保護された画面APIを変更・迂回しない。
+
+準備ファイル
+- GearCraftQAAudioPersistence.cs.txt: QA専用runtime MonoBehaviour。
+- InstallAudioQAHarness.cs.txt: clean Title Edit / 現sessionのcanonical復元＋独立検証完了 /16Prefs現在値一致 /旧17productionhash一致＋現在Craft.unity追加の計18保護 /RUNNING無しを確認し、一時Assets sourceを配置。
+- BuildAudioQA.cs.txt: extraScriptingDefinesのみ追加して独立nondev QA appを作成。
+- RemoveAudioQAHarness.cs.txt: 所有source/hash/metaを照合して当該一時assetだけ削除。
+保護対象は旧ReleaseVerificationの17hashが一致することを確認した上で、Install時点のCraft.unityを追加して18に固定する。以後Build/Removeはその18hashを照合する。
+全てC#6静的compile errors0/warnings0。Assetsへの配置、MCP操作、build、Player起動は準備担当では行っていない。
+
+rootの実施順序
+1. 先行Editor UI検証を停止し、ReleasePolish20261019のRestoreCanonicalSession→VerifyCanonicalSessionを実行する。clean Title Edit・16キー復元と検証を確定する。
+2. InstallAudioQAHarness.cs.txtをexecute_code。Assets/GearCraftQAAudioPersistence.csが一時的に追加される。#if GEARCRAFT_QA_AUDIO && !UNITY_EDITOR なのでEditor/通常Playerでは型がコンパイルされない。importより前に所有記録を保存し、domain reloadでも清掃情報を失わない。
+3. compilation idle後、BuildAudioQA.cs.txtをexecute_code。出力は /private/tmp/GearCraftReleasePolish20261019/AudioQA.app のみ。BuildTarget StandaloneOSX / BuildOptions.None / extraScriptingDefines=[GEARCRAFT_QA_AUDIO]。現build scene一覧をそのまま使用し先頭Titleを確認。PlayerSettings・global define・bundleID・元配布候補appを変更しない。
+4. build完了/失敗のいずれでも、idle後にRemoveAudioQAHarness.cs.txtで一時source/.metaを除去する。compile完了後18productionhash一致を再確認。通常buildを後から作る場合にも一時sourceが残らないことを先に確認する。
+5. 外側runner担当のaudio_persistence_probe.pyをrootが実行。独立したfresh全PlayerPrefs domain退避を今回のPlayer実domainに行い、既存配布候補app/保護Editor domainと別管理する。過去8/16キーEditor退避をPlayer全domain復元の代わりにしない。
+6. outerは同じQA appをwrite/readの2プロセスで直列起動し、writerの正常終了/PID退出を確認した後だけreaderを起動する。各20秒・全体59秒の外部期限、自分が起動したPopenのみcleanup・終了確認後の全domain復元を行う。Player内12秒watchdogはmain-loop停止時に動かないため、外側期限を省かない。
+7. 各phase結果と別PID、Mixer/Slider/Prefs一致、native quit callback、実退出0、fresh全domain型値復元・既存キー存在復元・保護domain不変を合わせて結論を出す。結果JSONだけで正常終了/復元完了とはしない。
+
+固定CLI / データ契約
+app: /private/tmp/GearCraftReleasePolish20261019/AudioQA.app
+-player起動引数: -gearcraft-qa-audio write|read -gearcraft-qa-session <英数字32文字>
+出力: /private/tmp/GearCraftReleasePolish20261019/audio-persistence/<session>/
+write-result.json/read-result.json、write-events.jsonl/read-events.jsonl。sessiondirの既存は許容するが、各fileはCreateNewで上書き拒否。新試行は新sessionを使い旧結果を残す。
+型名: GearCraftQAAudioPersistence（managed #Stringsで確認可能）。CLI literalはILのUTF-16文字列。通常配布候補appにこの型を追加しない。
+
+テスト値と条件
+要求値BGM=-17.25、SE=-28.75。実Title SliderはwholeNumbers=trueなのでnative実効値は-17/-29。wholeNumbersや範囲を変えない。初期値が既に実効目標と一致する場合だけ一段階ずらして戻すことで、nativecallbackを必ず観測する。
+write: 各既存Sliderイベント>=1、直後nativepending=true、そのままAudio有効状態のnativeUpdateでpending=falseになることを0.3秒以上待つ。harnessはAudio.SetBGM/SetSE直接呼出やPlayerPrefs.Set/Saveを使わない。
+read: BeforeSceneLoad時点でキー存在と-17/-29、同session writer成功・別PIDを確認する。AfterSceneLoad（Awake後/Start前）でobserverを付け、Audio.Start後Mixer/Slider/Prefsが一致し、Slidercallback0、nativependingfalseを安定観測する。readbranchはSlider値も書き換えない。
+readmodeが『OSへのPrefs書込みを完全に発生させない』とは主張しない。Unity自身は正常終了時にPrefsを保存/flushする仕様であり、他のTitle起動処理も存在する。ここで保証するのはharnessが音量を変更/保存せず、Audioの変更callback/pendingが発生せず、外側でtyped domain前後を照合すること。
+
+JSON schema
+schema=1 / session / mode / success / status(PASS_WRITE|PASS_READ|FAIL) / pid / exit_code_requested / write_pid / message。
+requested_bgm_db=-17.25 / requested_se_db=-28.75 / expected_bgm_db=-17 / expected_se_db=-29。
+mixer_bgm_db,mixer_se_db,slider_bgm_db,slider_se_db,prefs_bgm_db,prefs_se_db,prefs_bgm_exists,prefs_se_exists。
+bgm_callback_count,se_callback_count,native_pending_changes。
+boot_bgm_exists,boot_se_exists,boot_bgm_db,boot_se_db（BeforeSceneLoad）。
+追加: native_pending_seen_after_write,native_debounce_completed,listeners_bound_before_start,bgm_whole_numbers,se_whole_numbers,frames_after_bind,elapsed_seconds,bundle_identifier,evidence_scope。
+PASSはquit要求前に一度だけ保存。実際のプロセス退出は外側で確認する。
+
+根拠（Unity公式6.0）
+BuildPlayerOptions.extraScriptingDefinesはPlayerコンパイルだけに追加defineを渡す。global defineを書き換えない。
+https://docs.unity3d.com/6000.0/Documentation/ScriptReference/BuildPlayerOptions-extraScriptingDefines.html
+RuntimeInitializeのBeforeSceneLoad/AfterSceneLoadの順序を用い、実Audio.Start前後を分ける。
+https://docs.unity3d.com/6000.0/Documentation/ScriptReference/RuntimeInitializeOnLoadMethodAttribute.html
+Unityの通常終了時保存仕様を踏まえ、readmodeの『アプリ全体で絶対書込み0』とは言わない。
+https://docs.unity3d.com/6000.0/Documentation/ScriptReference/PlayerPrefs.Save.html
+
+R22の終了時Thread/ComputeBuffer注意は別件で未解決。音量の永続化PASSを警告解決の根拠にはしない。

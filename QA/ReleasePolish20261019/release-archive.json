@@ -1,0 +1,65 @@
+{
+  "utc": "2026-10-19T01:54:27.003154+00:00",
+  "source_app": "/private/tmp/GearCraftReleasePolish20261019/GearCraft.app",
+  "archive": "/private/tmp/GearCraftReleasePolish20261019/GearCraft-macOS-universal-20261019-Polish.zip",
+  "workspace_destination": "/Users/sora/Desktop/Unity/GearCraft_Remake/Builds/ReleaseCandidate20261019-Polish",
+  "app_started": false,
+  "scope": "Local candidate creation and extraction integrity. Ad-hoc signature check only; no Developer ID, notarization, Gatekeeper acceptance, public release, or new UI/runtime claim.",
+  "errors": [],
+  "package_verification": {
+    "path": "/Users/sora/Desktop/Unity/GearCraft_Remake/QA/ReleasePolish20261019/macos-package-verification.json",
+    "sha256": "fdd5dacc5c74d24e61f02a44b1968eb4d061efe1118404ae4e81be26b0ed0b20"
+  },
+  "create_zip": {
+    "argv": [
+      "/usr/bin/ditto",
+      "-c",
+      "-k",
+      "--sequesterRsrc",
+      "--keepParent",
+      "/private/tmp/GearCraftReleasePolish20261019/GearCraft.app",
+      "/private/tmp/GearCraftReleasePolish20261019/GearCraft-macOS-universal-20261019-Polish.zip"
+    ],
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "zip_entries": 473,
+  "extraction_directory": "/private/tmp/GearCraftReleasePolish20261019/candidate-roundtrip-spi2wld4",
+  "extract_zip": {
+    "argv": [
+      "/usr/bin/ditto",
+      "-x",
+      "-k",
+      "/private/tmp/GearCraftReleasePolish20261019/GearCraft-macOS-universal-20261019-Polish.zip",
+      "/private/tmp/GearCraftReleasePolish20261019/candidate-roundtrip-spi2wld4"
+    ],
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "roundtrip_mismatches": [],
+  "extracted_signature": {
+    "argv": [
+      "/usr/bin/codesign",
+      "--verify",
+      "--deep",
+      "--strict",
+      "/private/tmp/GearCraftReleasePolish20261019/candidate-roundtrip-spi2wld4/GearCraft.app"
+    ],
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "source_app_mismatches": [],
+  "sha256": "05dc7e201becf3b101fbe4db43682d4851758430dc2a02d324bcd86f213ddcb5",
+  "bytes": 61877026,
+  "app_files_and_symlinks": 205,
+  "app_directories": 21,
+  "workspace_archive": "/Users/sora/Desktop/Unity/GearCraft_Remake/Builds/ReleaseCandidate20261019-Polish/GearCraft-macOS-universal-20261019-Polish.zip",
+  "workspace_archive_sha256_verified": true,
+  "roundtrip_all_file_hashes_modes_symlink_targets_match": true,
+  "source_app_unchanged": true,
+  "temporary_extraction_removed": true,
+  "status": "PASS"
+}

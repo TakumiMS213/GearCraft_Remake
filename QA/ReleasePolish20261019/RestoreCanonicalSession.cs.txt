@@ -1,0 +1,81 @@
+// Current-session-only end-of-test protection. Does not read any historical QA backup.
+const string folder="QA/ReleasePolish20261019/";
+const string expectedSession="20261019-012758-463-6f0f725639f04b0eb5ed49381d3c62e3";
+if(Application.isPlaying||UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode||UnityEditor.EditorApplication.isCompiling)throw new System.Exception("Stop Play and wait for Editor compilation/transition before restoration or verification");
+if(System.IO.File.ReadAllText(folder+"session-id.txt").Trim()!=expectedSession||UnityEditor.SessionState.GetString("GearCraft.QA.ReleasePolish.Session","")!=expectedSession)throw new System.Exception("Unexpected current session ID; do not restore another session");
+var invariant=System.Globalization.CultureInfo.InvariantCulture;
+var flags=System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.NonPublic;
+System.Func<string,string> hash=path=>{using(var sha=System.Security.Cryptography.SHA256.Create()){return System.BitConverter.ToString(sha.ComputeHash(System.IO.File.ReadAllBytes(path))).Replace("-","").ToLowerInvariant();}};
+var manifest=System.IO.File.ReadAllLines(folder+"canonical-backup-ready.txt").Where(line=>line.Contains("=")).Select(line=>line.Split(new[]{'='},2)).ToDictionary(c=>c[0],c=>c[1]);
+if(manifest["session_id"]!=expectedSession||manifest["keys"]!="16")throw new System.Exception("Canonical manifest session mismatch");
+foreach(var pair in manifest.Where(pair=>pair.Key.EndsWith(".txt")||pair.Key.EndsWith(".json")))if(hash(folder+pair.Key)!=pair.Value)throw new System.Exception("Backup changed: "+pair.Key);
+if(hash(folder+"time-ticks-before.txt")!="5438d717ea86ecf061bdfadd6541f6ccb79967e7d1f8f488b10488212fb2aca7"||hash(folder+"dotween-before.txt")!="53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3")throw new System.Exception("Original tick/DOTween backup changed");
+foreach(string path in System.IO.Directory.GetFiles(folder,"*progress.txt")){
+ string state=System.IO.File.ReadAllText(path).TrimStart();if(state.StartsWith("RUNNING")||state.StartsWith("LOADING"))throw new System.Exception("Stop and drain current QA callback before restoration: "+System.IO.Path.GetFileName(path));
+}
+for(int i=0;i<UnityEngine.SceneManagement.SceneManager.sceneCount;i++)if(UnityEngine.SceneManagement.SceneManager.GetSceneAt(i).isDirty)throw new System.Exception("Unsaved Editor scene detected; do not save or discard it implicitly");
+var rows=System.IO.File.ReadAllLines(folder+"typed-prefs-before.txt").Where(line=>!string.IsNullOrWhiteSpace(line)).Select(line=>line.Split('|')).ToArray();
+if(rows.Length!=16||rows.Any(c=>c.Length!=4)||rows.Select(c=>c[0]).Distinct().Count()!=16)throw new System.Exception("Invalid typed prefs schema");
+var json=Newtonsoft.Json.Linq.JObject.Parse(System.IO.File.ReadAllText(folder+"typed-prefs-before.json"));
+if((string)json["session_id"]!=expectedSession||(int)json["schema"]!=1)throw new System.Exception("Typed JSON session/schema mismatch");
+var jsonKeys=(Newtonsoft.Json.Linq.JArray)json["keys"];if(jsonKeys.Count!=rows.Length)throw new System.Exception("JSON/TXT key count mismatch");
+foreach(var row in rows){
+ if(!new[]{"string","int","float"}.Contains(row[1]))throw new System.Exception("Unknown pref type: "+row[1]);bool exists=bool.Parse(row[2]);
+ string raw=System.Text.Encoding.UTF8.GetString(System.Convert.FromBase64String(row[3]));
+ if(exists&&row[1]=="int")int.Parse(raw,invariant);if(exists&&row[1]=="float")float.Parse(raw,invariant);
+ var matches=jsonKeys.Where(j=>(string)j["key"]==row[0]).ToArray();if(matches.Length!=1||(string)matches[0]["type"]!=row[1]||(bool)matches[0]["exists"]!=exists||(string)matches[0]["value_base64"]!=row[3])throw new System.Exception("JSON/TXT pref mismatch: "+row[0]);
+}
+var editor=System.IO.File.ReadAllLines(folder+"editor-before.txt");if(editor.Length<7||editor[0]!="Assets/GearCraft/Scenes/Title.unity")throw new System.Exception("Expected original Title backup");
+long expectedTicks=long.Parse(System.IO.File.ReadAllText(folder+"time-ticks-before.txt").Trim(),invariant);
+int expectedDotween=int.Parse(System.IO.File.ReadAllText(folder+"dotween-before.txt").Trim(),invariant);
+var timeManager=UnityEditor.Unsupported.GetSerializedAssetInterfaceSingleton("TimeManager");
+if(timeManager==null||Resources.FindObjectsOfTypeAll(timeManager.GetType()).Length!=1)throw new System.Exception("Exactly one existing TimeManager singleton is required");
+var serializedTime=new UnityEditor.SerializedObject(timeManager);serializedTime.Update();
+var ticksProperty=serializedTime.FindProperty("Fixed Timestep.m_Count");if(ticksProperty==null)throw new System.Exception("Serialized fixed ticks property missing");
+var assembly=typeof(UnityEditor.Editor).Assembly;var viewType=assembly.GetType("UnityEditor.GameView");var view=Resources.FindObjectsOfTypeAll(viewType).FirstOrDefault();
+if(view==null)throw new System.Exception("Original GameView must be open");
+var sizesType=assembly.GetType("UnityEditor.GameViewSizes");var sizes=typeof(UnityEditor.ScriptableSingleton<>).MakeGenericType(sizesType).GetProperty("instance",flags).GetValue(null,null);
+var group=sizesType.GetProperty("currentGroup",flags).GetValue(sizes,null);var groupType=group.GetType();
+var viewBackup=System.IO.File.ReadAllLines(folder+"gameview-before.txt");int originalViewIndex=int.Parse(viewBackup[0],invariant);var originalLabels=viewBackup.Skip(1).ToArray();
+var labels=(string[])groupType.GetMethod("GetDisplayTexts",flags).Invoke(group,null);
+System.Func<string,bool> isSessionSize=text=>text=="ReleaseFinalizationQA480"||text.StartsWith("ReleaseFinalizationQA480 (");
+if(labels.Count(isSessionSize)>1||!labels.Where(text=>!isSessionSize(text)).SequenceEqual(originalLabels))throw new System.Exception("GameView has unexpected changes beyond this session's one QA480 size");
+System.Func<int> verify=()=>{
+ int count=0;
+ foreach(var row in rows){
+  bool existed=bool.Parse(row[2]);if(PlayerPrefs.HasKey(row[0])!=existed)throw new System.Exception("Pref existence mismatch: "+row[0]);
+  if(existed){string raw=row[1]=="string"?PlayerPrefs.GetString(row[0]):row[1]=="float"?PlayerPrefs.GetFloat(row[0]).ToString("R",invariant):PlayerPrefs.GetInt(row[0]).ToString(invariant);if(System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(raw))!=row[3])throw new System.Exception("Pref value mismatch: "+row[0]);}count++;
+ }
+ var scene=UnityEngine.SceneManagement.SceneManager.GetActiveScene();if(scene.path!=editor[0]||scene.isDirty||UnityEngine.SceneManagement.SceneManager.sceneCount!=1)throw new System.Exception("Expected original clean Title only");
+ if(StatusManager.Instance!=null||MaterialManager.Instance!=null||StageFlowManager.Instance!=null||StageCounter.Instance!=null||UnityEngine.Object.FindFirstObjectByType<PlayerController>()!=null)throw new System.Exception("Runtime singleton/player remains after Play teardown");
+ if(QualitySettings.vSyncCount!=int.Parse(editor[1],invariant)||Application.targetFrameRate!=int.Parse(editor[2],invariant)||Application.runInBackground!=bool.Parse(editor[3])||Time.captureDeltaTime!=float.Parse(editor[4],invariant)||Time.timeScale!=float.Parse(editor[6],invariant))throw new System.Exception("Editor/timing settings mismatch");
+ serializedTime.Update();if(ticksProperty.longValue!=expectedTicks||Resources.FindObjectsOfTypeAll(timeManager.GetType()).Length!=1)throw new System.Exception("Exact fixed timestep ticks mismatch");
+ if(Debug.unityLogger.logEnabled!=bool.Parse(System.IO.File.ReadAllText(folder+"logger-enabled-before.txt").Trim())||(int)Debug.unityLogger.filterLogType!=int.Parse(System.IO.File.ReadAllText(folder+"logger-before.txt").Trim(),invariant)||(int)DG.Tweening.DOTween.logBehaviour!=expectedDotween)throw new System.Exception("Logger/DOTween state mismatch");
+ if((int)viewType.GetProperty("selectedSizeIndex",flags).GetValue(view,null)!=originalViewIndex)throw new System.Exception("GameView index mismatch");
+ if(!((string[])groupType.GetMethod("GetDisplayTexts",flags).Invoke(group,null)).SequenceEqual(originalLabels))throw new System.Exception("GameView size list mismatch");
+ return count;
+};
+
+// All source backups and preconditions have been validated before any mutation.
+var currentScene=UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+if(currentScene.path!=editor[0]||UnityEngine.SceneManagement.SceneManager.sceneCount!=1)UnityEditor.SceneManagement.EditorSceneManager.OpenScene(editor[0],UnityEditor.SceneManagement.OpenSceneMode.Single);
+foreach(var row in rows){
+ bool existed=bool.Parse(row[2]);string raw=System.Text.Encoding.UTF8.GetString(System.Convert.FromBase64String(row[3]));
+ if(!existed)PlayerPrefs.DeleteKey(row[0]);else if(row[1]=="string")PlayerPrefs.SetString(row[0],raw);else if(row[1]=="float")PlayerPrefs.SetFloat(row[0],float.Parse(raw,invariant));else PlayerPrefs.SetInt(row[0],int.Parse(raw,invariant));
+}
+PlayerPrefs.Save();
+var galleryCache=typeof(GearCraft.Gallery.GalleryProgress).GetField("data",flags);if(galleryCache!=null)galleryCache.SetValue(null,null);
+QualitySettings.vSyncCount=int.Parse(editor[1],invariant);Application.targetFrameRate=int.Parse(editor[2],invariant);Application.runInBackground=bool.Parse(editor[3]);
+Time.captureDeltaTime=float.Parse(editor[4],invariant);Time.timeScale=float.Parse(editor[6],invariant);
+// Never round-trip the saved fixedDeltaTime float through its setter: restore the original serialized ticks.
+serializedTime.Update();if(ticksProperty.longValue!=expectedTicks){ticksProperty.longValue=expectedTicks;serializedTime.ApplyModifiedPropertiesWithoutUndo();}
+Debug.unityLogger.logEnabled=bool.Parse(System.IO.File.ReadAllText(folder+"logger-enabled-before.txt").Trim());
+Debug.unityLogger.filterLogType=(LogType)int.Parse(System.IO.File.ReadAllText(folder+"logger-before.txt").Trim(),invariant);
+DG.Tweening.DOTween.logBehaviour=(DG.Tweening.LogBehaviour)expectedDotween;
+viewType.GetProperty("selectedSizeIndex",flags).SetValue(view,originalViewIndex,null);
+for(int i=labels.Length-1;i>=0;i--)if(isSessionSize(labels[i]))groupType.GetMethod("RemoveCustomSize",flags).Invoke(group,new object[]{i});
+viewType.GetProperty("selectedSizeIndex",flags).SetValue(view,originalViewIndex,null);
+int restoredCount=verify();
+string result="session_id="+expectedSession+"\nUTC="+System.DateTime.UtcNow.ToString("O")+"\nprefs_verified="+restoredCount+"\nPlay=false\nscene=Title clean\nfixed_ticks="+expectedTicks+"\nfixed_delta_getter="+Time.fixedDeltaTime.ToString("R",invariant)+"\nGameView_index="+originalViewIndex+"\nGameView_sizes_restored=true\nlogger_and_dotween_restored=true\n";
+System.IO.File.WriteAllText(folder+"canonical-restoration.txt",result);
+return result;

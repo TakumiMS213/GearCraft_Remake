@@ -1,0 +1,166 @@
+// C#6 execute_code body. Fresh Title Play; this probe does not leave Title or change audio values.
+// Uses existing 16:10 Aspect index 2. No custom-size creation or screen/OS permissions.
+const string folder = "QA/ReleasePolish20261019/";
+if (!Application.isPlaying || UnityEditor.EditorApplication.isPaused || UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "Title") throw new System.Exception("Require unpaused Title Play");
+string session = System.IO.File.ReadAllText(folder + "session-id.txt").Trim();
+if (session.Length == 0 || UnityEditor.SessionState.GetString("GearCraft.QA.ReleasePolish.Session", "") != session || !System.IO.File.Exists(folder + "canonical-backup-ready.txt") || System.IO.File.Exists(folder + "canonical-restoration.txt")) throw new System.Exception("Current fresh unrestored session required");
+foreach (string file in System.IO.Directory.GetFiles(folder, "*progress.txt")) { string state = System.IO.File.ReadAllText(file); if (state.StartsWith("RUNNING") || state.StartsWith("LOADING")) throw new System.Exception("Another callback may be active: " + file); }
+if (Time.timeScale != 1f || Time.captureDeltaTime != 0f || GameObject.Find("SettingPanel") != null) throw new System.Exception("Require native time settings and closed SettingPanel");
+var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic;
+var assembly = typeof(UnityEditor.Editor).Assembly; var viewType = assembly.GetType("UnityEditor.GameView");
+var view = Resources.FindObjectsOfTypeAll(viewType).OfType<UnityEditor.EditorWindow>().FirstOrDefault();
+if (view == null) throw new System.Exception("Existing GameView required");
+var selectedProperty = viewType.GetProperty("selectedSizeIndex", flags); var targetProperty = viewType.GetProperty("targetRenderSize", flags);
+var sizesType = assembly.GetType("UnityEditor.GameViewSizes"); var sizes = typeof(UnityEditor.ScriptableSingleton<>).MakeGenericType(sizesType).GetProperty("instance", flags).GetValue(null, null);
+var group = sizesType.GetProperty("currentGroup", flags).GetValue(sizes, null);
+System.Func<string[]> labels = () => (string[])group.GetType().GetMethod("GetDisplayTexts", flags).Invoke(group, null);
+System.Func<Vector2> renderSize = () => view == null ? Vector2.zero : (Vector2)targetProperty.GetValue(view, null);
+int originalIndex = (int)selectedProperty.GetValue(view, null); Vector2 originalSize = renderSize(); string[] originalLabels = labels();
+if (originalLabels.Length <= 2 || originalLabels[2] != "16:10 Aspect") throw new System.Exception("Expected existing index 2 label 16:10 Aspect; do not create sizes");
+if (originalIndex < 0 || originalIndex >= originalLabels.Length || originalSize.x < 1f || originalSize.y < 1f) throw new System.Exception("Invalid original GameView state");
+var eventSystem = UnityEngine.EventSystems.EventSystem.current; if (eventSystem == null) throw new System.Exception("Missing native Title EventSystem");
+bool originalNavigation = eventSystem.sendNavigationEvents; var originalSelection = eventSystem.currentSelectedGameObject;
+var modules = eventSystem.GetComponents<UnityEngine.EventSystems.BaseInputModule>().ToDictionary(m => m, m => m.enabled);
+string run = "title-16x10-" + System.DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff") + "-" + System.Guid.NewGuid().ToString("N").Substring(0, 8);
+string output = System.IO.Path.GetFullPath(folder + run); System.IO.Directory.CreateDirectory(output);
+System.IO.File.WriteAllText(output + "/original-gameview.txt", "session=" + session + "\nindex=" + originalIndex + "\ntarget=" + originalSize + "\n" + string.Join("\n", originalLabels) + "\n");
+var invariant = System.Globalization.CultureInfo.InvariantCulture;
+System.Action<string> note = line => System.IO.File.AppendAllText(output + "/events.txt", System.DateTime.UtcNow.ToString("O") + " " + line + "\n");
+System.Action<bool, string> check = (ok, text) => { note((ok ? "PASS " : "FAIL ") + text); if (!ok) throw new System.Exception(text); };
+System.Func<Vector2, bool> aligned = expected => {
+    var target = renderSize(); var camera = Camera.main;
+    if ((target - expected).sqrMagnitude > 1f || camera == null || Mathf.Abs(camera.pixelWidth - target.x) > 1f || Mathf.Abs(camera.pixelHeight - target.y) > 1f) return false;
+    var canvases = UnityEngine.Object.FindObjectsByType<Canvas>(FindObjectsInactive.Exclude, FindObjectsSortMode.None).Where(c => c.isRootCanvas && c.isActiveAndEnabled && c.targetDisplay == 0 && c.renderMode != RenderMode.WorldSpace && c.gameObject.scene == UnityEngine.SceneManagement.SceneManager.GetActiveScene()).ToArray();
+    return canvases.Length > 0 && canvases.All(c => Mathf.Abs(c.pixelRect.width - target.x) < 1f && Mathf.Abs(c.pixelRect.height - target.y) < 1f);
+};
+System.Func<RectTransform, string, Rect> bounds = (rect, label) => {
+    var canvas = rect.GetComponentInParent<Canvas>(); var camera = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
+    var corners = new Vector3[4]; rect.GetWorldCorners(corners); var pixels = corners.Select(c => RectTransformUtility.WorldToScreenPoint(camera, c)).ToArray();
+    Rect area = Rect.MinMaxRect(pixels.Min(p => p.x), pixels.Min(p => p.y), pixels.Max(p => p.x), pixels.Max(p => p.y)); Rect viewport = canvas.rootCanvas.pixelRect;
+    note(label + " pixels=" + area + "; viewport=" + viewport);
+    check(area.xMin >= viewport.xMin - 1f && area.yMin >= viewport.yMin - 1f && area.xMax <= viewport.xMax + 1f && area.yMax <= viewport.yMax + 1f, label + "_inside_canvas");
+    return area;
+};
+System.Func<string, UnityEngine.UI.Button> button = name => {
+    var found = UnityEngine.Object.FindObjectsByType<UnityEngine.UI.Button>(FindObjectsInactive.Exclude, FindObjectsSortMode.None).Where(b => b.name == name && b.gameObject.scene == UnityEngine.SceneManagement.SceneManager.GetActiveScene()).ToArray();
+    if (found.Length != 1) throw new System.Exception("Expected one active button " + name + "; found=" + found.Length);
+    return found[0];
+};
+System.Action<UnityEngine.UI.Button> click = target => {
+    check(target.IsActive() && target.IsInteractable(), "interactable_" + target.name);
+    Rect area = bounds((RectTransform)target.transform, target.name);
+    var current = UnityEngine.EventSystems.EventSystem.current;
+    var data = new UnityEngine.EventSystems.PointerEventData(current) { position = area.center, button = UnityEngine.EventSystems.PointerEventData.InputButton.Left, pointerId = -1, clickCount = 1, eligibleForClick = true };
+    var hits = new System.Collections.Generic.List<UnityEngine.EventSystems.RaycastResult>(); current.RaycastAll(data, hits);
+    check(hits.Count > 0 && hits[0].module is UnityEngine.UI.GraphicRaycaster && hits[0].gameObject.GetComponentInParent<UnityEngine.UI.Button>() == target, "native_raycast_" + target.name);
+    data.pointerCurrentRaycast = hits[0]; data.pointerPressRaycast = hits[0]; data.pointerEnter = target.gameObject; data.pressPosition = area.center; data.pointerPress = target.gameObject; data.rawPointerPress = hits[0].gameObject;
+    UnityEngine.EventSystems.ExecuteEvents.Execute(target.gameObject, data, UnityEngine.EventSystems.ExecuteEvents.pointerEnterHandler);
+    UnityEngine.EventSystems.ExecuteEvents.Execute(target.gameObject, data, UnityEngine.EventSystems.ExecuteEvents.pointerDownHandler);
+    UnityEngine.EventSystems.ExecuteEvents.Execute(target.gameObject, data, UnityEngine.EventSystems.ExecuteEvents.pointerUpHandler);
+    UnityEngine.EventSystems.ExecuteEvents.Execute(target.gameObject, data, UnityEngine.EventSystems.ExecuteEvents.pointerClickHandler);
+    UnityEngine.EventSystems.ExecuteEvents.Execute(target.gameObject, data, UnityEngine.EventSystems.ExecuteEvents.pointerExitHandler);
+};
+UnityEditor.EditorApplication.CallbackFunction tick = null;
+double began = UnityEditor.EditorApplication.timeSinceStartup, phaseAt = began, lastTick = began, lastPump = began, lastProgress = began, captureAt = began;
+int phase = 0, lastFrame = -1, stableFrames = 0, pngWidth = 0, pngHeight = 0;
+Vector2 previousTarget = Vector2.zero, aspectTarget = Vector2.zero;
+string pending = "", outcome = "PASS"; bool done = false, ownedSettings = false;
+System.Action restoreInputs = () => { foreach (var item in modules) if (item.Key != null) item.Key.enabled = item.Value; if (eventSystem != null) { eventSystem.sendNavigationEvents = originalNavigation; if (originalSelection != null && originalSelection.activeInHierarchy) eventSystem.SetSelectedGameObject(originalSelection); } };
+System.Action restoreIndex = () => { if (view != null) { selectedProperty.SetValue(view, originalIndex, null); view.Repaint(); UnityEditor.EditorApplication.QueuePlayerLoopUpdate(); } };
+System.Action closeOwnedSettings = () => { if (ownedSettings && UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Title" && GameObject.Find("SettingPanel") != null) click(button("HideSetting")); ownedSettings = false; };
+System.Action<string> finish = result => {
+    if (done) return; done = true; if (tick != null) UnityEditor.EditorApplication.update -= tick;
+    try { closeOwnedSettings(); } catch (System.Exception ex) { note("close_settings_exception=" + ex); result = "FAIL settings_cleanup_pending; prior=" + result; }
+    try { restoreIndex(); } catch (System.Exception ex) { note("restore_index_exception=" + ex); result = "FAIL view_cleanup_pending; prior=" + result; }
+    restoreInputs();
+    bool settingsClosed = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "Title" || GameObject.Find("SettingPanel") == null;
+    bool restored = view != null && (int)selectedProperty.GetValue(view, null) == originalIndex && (renderSize() - originalSize).sqrMagnitude <= 1f && labels().SequenceEqual(originalLabels);
+    note("original_view_restored=" + restored + "; settings_closed=" + settingsClosed + "; InputModules/navigation restored; target=" + renderSize() + "; Screen_reference=" + Screen.width + "x" + Screen.height);
+    if (!restored || !settingsClosed) result = "FAIL restoration_pending; prior=" + result;
+    System.IO.File.WriteAllText(output + "/result.txt", result + "\n" + System.IO.File.ReadAllText(output + "/events.txt") + "\nScope: actual 16:10 GameView render + native Title/Setting pointer dispatch. Not OS keyboard/mouse. Root inspects pixels; bounds alone do not prove readability. No direct audio/pref/scene/time edits or custom-size creation. Root still performs canonical restoration.\n");
+    System.IO.File.WriteAllText(folder + "title-aspect-progress.txt", result + " " + run + "\n");
+};
+System.Action<string> beginRestore = result => { outcome = result; phase = 4; phaseAt = UnityEditor.EditorApplication.timeSinceStartup; pending = ""; try { closeOwnedSettings(); } finally { restoreIndex(); } note("restore_requested original_index=" + originalIndex); };
+System.Action<string> capture = name => {
+    check(aligned(aspectTarget), "render_canvas_camera_aligned_" + name);
+    pngWidth = Mathf.RoundToInt(aspectTarget.x); pngHeight = Mathf.RoundToInt(aspectTarget.y);
+    pending = output + "/" + name + ".png"; if (System.IO.File.Exists(pending)) throw new System.Exception("Refuse screenshot overwrite");
+    captureAt = UnityEditor.EditorApplication.timeSinceStartup; ScreenCapture.CaptureScreenshot(pending, 1);
+    note("capture=" + name + "; target=" + aspectTarget + "; Screen_reference=" + Screen.width + "x" + Screen.height);
+};
+note("session=" + session + "; preset2=" + originalLabels[2] + "; original_index=" + originalIndex + "; original_target=" + originalSize);
+System.IO.File.WriteAllText(folder + "title-aspect-progress.txt", "RUNNING " + run + " phase=0\n");
+tick = () => {
+    try {
+        double now = UnityEditor.EditorApplication.timeSinceStartup, gap = now - lastTick; lastTick = now;
+        if (now - lastPump >= .1) { lastPump = now; if (view != null) view.Repaint(); UnityEditor.EditorApplication.QueuePlayerLoopUpdate(); }
+        if (now - lastProgress >= 1) { lastProgress = now; System.IO.File.WriteAllText(folder + "title-aspect-progress.txt", "RUNNING " + run + " phase=" + phase + " render=" + renderSize() + " Screen_reference=" + Screen.width + "x" + Screen.height + "\n"); }
+        if (phase < 4 && (gap > 5 || !Application.isPlaying || UnityEditor.EditorApplication.isPaused || UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "Title" || Time.timeScale != 1f || Time.captureDeltaTime != 0f)) { beginRestore("INTERRUPTED environment_changed"); return; }
+        if (phase < 4 && now - began > 30) { beginRestore("FAIL watchdog_30s"); return; }
+        if (phase == 4) {
+            bool restored = view != null && (int)selectedProperty.GetValue(view, null) == originalIndex && (renderSize() - originalSize).sqrMagnitude <= 1f && labels().SequenceEqual(originalLabels);
+            if (restored && Application.isPlaying && UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Title") restored = aligned(originalSize);
+            if (restored && now - phaseAt >= .4) { finish(outcome); return; }
+            if (now - phaseAt > 10) { finish("FAIL restore_timeout; prior=" + outcome); return; }
+            return;
+        }
+        if (phase > 0 && (renderSize() - aspectTarget).sqrMagnitude > 1f) { beginRestore("INTERRUPTED aspect_render_size_changed"); return; }
+        if (pending.Length > 0) {
+            if (now - captureAt > 8) throw new System.Exception("Screenshot deadline 8s");
+            if (!System.IO.File.Exists(pending)) return;
+            byte[] png; try { png = System.IO.File.ReadAllBytes(pending); } catch (System.IO.IOException) { return; }
+            if (png.Length < 32 || png[png.Length - 8] != 73 || png[png.Length - 7] != 69 || png[png.Length - 6] != 78 || png[png.Length - 5] != 68) return;
+            check(png[0] == 137 && png[1] == 80 && png[2] == 78 && png[3] == 71 && (png[16] << 24 | png[17] << 16 | png[18] << 8 | png[19]) == pngWidth && (png[20] << 24 | png[21] << 16 | png[22] << 8 | png[23]) == pngHeight, "png_matches_actual_16x10_target " + System.IO.Path.GetFileName(pending)); pending = "";
+        }
+        if (lastFrame == Time.frameCount) return; lastFrame = Time.frameCount;
+        if (phase == 0) {
+            Vector2 target = renderSize(); var transition = UnityEngine.Object.FindFirstObjectByType<SceneTransitionManager>();
+            bool ready = target.x > 0 && target.y > 0 && Mathf.Abs(target.x - 1.6f * target.y) <= 2f && aligned(target) && (transition == null || !transition.IsLoading) && (target - previousTarget).sqrMagnitude <= 1f;
+            previousTarget = target; stableFrames = ready ? stableFrames + 1 : 0;
+            if (stableFrames < 4 || now - phaseAt < .5) return;
+            aspectTarget = target; note("aspect_ratio=" + (target.x / target.y).ToString("F6", invariant));
+            // Capture completes before visual-bound assertions, preserving evidence even if a control is clipped.
+            capture("01-title-16x10"); phase = 1; phaseAt = now;
+        } else if (phase == 1) {
+            foreach (var targetButton in UnityEngine.Object.FindObjectsByType<UnityEngine.UI.Button>(FindObjectsInactive.Exclude, FindObjectsSortMode.None).Where(b => b.gameObject.scene == UnityEngine.SceneManagement.SceneManager.GetActiveScene())) bounds((RectTransform)targetButton.transform, "Title/" + targetButton.name);
+            var credit = GameObject.Find("bgmTitle_title"); check(credit != null, "title_credit_present"); bounds(credit.GetComponent<RectTransform>(), "title_credit");
+            ownedSettings = true; click(button("SettingButton")); phase = 2; phaseAt = now;
+        } else if (phase == 2 && now - phaseAt >= .4) {
+            capture("02-setting-16x10"); phase = 3;
+        } else if (phase == 3) {
+            var panel = GameObject.Find("SettingPanel"); check(panel != null, "setting_open");
+            // SettingPanel is a background Image with transparent margins, not the controls' parent.
+            // Its full rectangular footprint may overscan; visible controls live under sibling parent Panel.
+            var groupRoot = panel.transform.parent; check(groupRoot != null, "setting_group_present");
+            var backgroundRect = panel.GetComponent<RectTransform>(); var backgroundCanvas = panel.GetComponentInParent<Canvas>();
+            var backgroundCamera = backgroundCanvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : backgroundCanvas.worldCamera;
+            var backgroundCorners = new Vector3[4]; backgroundRect.GetWorldCorners(backgroundCorners);
+            var backgroundPixels = backgroundCorners.Select(c => RectTransformUtility.WorldToScreenPoint(backgroundCamera, c)).ToArray();
+            note("SettingPanel_background_rect_diagnostic_only=" + Rect.MinMaxRect(backgroundPixels.Min(v => v.x), backgroundPixels.Min(v => v.y), backgroundPixels.Max(v => v.x), backgroundPixels.Max(v => v.y)) + "; source_has_transparent_margins; group=" + groupRoot.name);
+            bounds((RectTransform)button("HideSetting").transform, "HideSetting");
+            var sliders = groupRoot.GetComponentsInChildren<UnityEngine.UI.Slider>();
+            check(sliders.Any(slider => slider.name == "BGMslider") && sliders.Any(slider => slider.name == "SEslider"), "both_audio_sliders_present");
+            foreach (var slider in sliders) {
+                bounds((RectTransform)slider.transform, "Setting/" + slider.name);
+                if (slider.handleRect != null) bounds(slider.handleRect, "Setting/" + slider.name + "/handle");
+                note("slider_unchanged_by_probe=" + slider.name + "; value=" + slider.value.ToString("R", invariant));
+            }
+            foreach (string labelName in new[] { "BGM", "SE" }) {
+                var label = groupRoot.Find(labelName); check(label != null, "setting_image_label_present_" + labelName);
+                var labelImage = label.GetComponent<UnityEngine.UI.Image>();
+                check(labelImage != null && labelImage.enabled && labelImage.sprite != null, "setting_image_label_visible_" + labelName);
+                bounds(label.GetComponent<RectTransform>(), "Setting/label/" + labelName);
+            }
+            note("setting_text_labels=" + string.Join(" / ", groupRoot.GetComponentsInChildren<TMPro.TMP_Text>().Select(t => t.text.Replace("\n", " ")).Concat(groupRoot.GetComponentsInChildren<UnityEngine.UI.Text>().Select(t => t.text.Replace("\n", " "))).ToArray()));
+            beginRestore("PASS");
+        }
+    } catch (System.Exception ex) {
+        note(ex.ToString());
+        try { if (phase < 4) beginRestore("FAIL exception"); else finish("FAIL restore_exception"); }
+        catch (System.Exception restoreEx) { note(restoreEx.ToString()); finish("FAIL restore_exception"); }
+    }
+};
+UnityEditor.EditorApplication.update += tick;
+try { foreach (var item in modules) item.Key.enabled = false; eventSystem.sendNavigationEvents = false; selectedProperty.SetValue(view, 2, null); view.Repaint(); UnityEditor.EditorApplication.QueuePlayerLoopUpdate(); }
+catch (System.Exception ex) { note(ex.ToString()); beginRestore("FAIL setup_exception"); }
+return "Title 16:10 probe started: " + run + "; ~3–5s; watchdog30s + restore10s; no custom sizes; keep existing GameView open.";

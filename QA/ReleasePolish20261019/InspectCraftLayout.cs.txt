@@ -1,0 +1,70 @@
+// C#6 execute_code BODY. Read-only snapshot of the currently open native Craft tab.
+// Does not switch tabs, resize GameView, scroll, move content, close tutorials, buy or craft.
+const string folder = "QA/ReleasePolish20261019/";
+if (!Application.isPlaying || UnityEditor.EditorApplication.isPaused || UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "Craft") throw new System.Exception("Require existing Craft Play scene");
+string session = System.IO.File.ReadAllText(folder + "session-id.txt").Trim();
+if (session.Length == 0 || UnityEditor.SessionState.GetString("GearCraft.QA.ReleasePolish.Session", "") != session || !System.IO.File.Exists(folder + "canonical-backup-ready.txt") || System.IO.File.Exists(folder + "canonical-restoration.txt")) throw new System.Exception("Current fresh session required");
+var tabs = UnityEngine.Object.FindFirstObjectByType<CraftTabController>();
+if (tabs == null || tabs.craftPanel == null || tabs.upgradePanel == null) throw new System.Exception("Native CraftTabController/panels missing");
+bool craft = tabs.craftPanel.activeInHierarchy, custom = tabs.upgradePanel.activeInHierarchy;
+if (craft == custom) throw new System.Exception("Exactly one native tab must be active and settled");
+var root = craft ? tabs.craftPanel : tabs.upgradePanel;
+var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic;
+var viewType = typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.GameView");
+var view = Resources.FindObjectsOfTypeAll(viewType).OfType<UnityEditor.EditorWindow>().FirstOrDefault();
+if (view == null) throw new System.Exception("Existing GameView required");
+Vector2 target = (Vector2)viewType.GetProperty("targetRenderSize", flags).GetValue(view, null);
+System.Func<RectTransform, Rect> pixelBounds = rect => {
+    var canvas = rect.GetComponentInParent<Canvas>(); var cam = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
+    var corners = new Vector3[4]; rect.GetWorldCorners(corners); var pixels = corners.Select(c => RectTransformUtility.WorldToScreenPoint(cam, c)).ToArray();
+    return Rect.MinMaxRect(pixels.Min(p => p.x), pixels.Min(p => p.y), pixels.Max(p => p.x), pixels.Max(p => p.y));
+};
+System.Func<Transform, string> path = transform => { var parts = new System.Collections.Generic.List<string>(); while (transform != null) { parts.Add(transform.name); transform = transform.parent; } parts.Reverse(); return string.Join("/", parts.ToArray()); };
+System.Func<Rect, Newtonsoft.Json.Linq.JObject> rectJson = r => new Newtonsoft.Json.Linq.JObject { ["x"] = r.x, ["y"] = r.y, ["width"] = r.width, ["height"] = r.height };
+System.Func<RectTransform, Newtonsoft.Json.Linq.JObject> rectRecord = rect => {
+    Rect pixels = pixelBounds(rect), viewport = rect.GetComponentInParent<Canvas>().rootCanvas.pixelRect;
+    return new Newtonsoft.Json.Linq.JObject { ["path"] = path(rect), ["pixels"] = rectJson(pixels), ["canvas_pixels"] = rectJson(viewport), ["inside_canvas"] = pixels.xMin >= viewport.xMin - 1 && pixels.yMin >= viewport.yMin - 1 && pixels.xMax <= viewport.xMax + 1 && pixels.yMax <= viewport.yMax + 1 };
+};
+var result = new Newtonsoft.Json.Linq.JObject {
+    ["session_id"] = session, ["utc"] = System.DateTime.UtcNow.ToString("O"), ["tab"] = craft ? "CRAFT" : "WeaponCustom",
+    ["gameview_index"] = (int)viewType.GetProperty("selectedSizeIndex", flags).GetValue(view, null), ["render_width"] = target.x, ["render_height"] = target.y,
+    ["screen_reference_width"] = Screen.width, ["screen_reference_height"] = Screen.height,
+    ["camera_width"] = Camera.main == null ? 0 : Camera.main.pixelWidth, ["camera_height"] = Camera.main == null ? 0 : Camera.main.pixelHeight,
+    ["time_scale"] = Time.timeScale, ["frame"] = Time.frameCount, ["panel"] = rectRecord(root.GetComponent<RectTransform>())
+};
+var fixedButtons = new Newtonsoft.Json.Linq.JArray(); var recipeOrShopButtons = new Newtonsoft.Json.Linq.JArray();
+var seen = new System.Collections.Generic.HashSet<int>();
+var buttons = root.GetComponentsInChildren<UnityEngine.UI.Button>().Concat(new[] { tabs.craftTabButton, tabs.upgradeTabButton });
+foreach (var button in buttons) {
+    if (button == null || !button.isActiveAndEnabled || !seen.Add(button.GetInstanceID())) continue;
+    var rect = button.GetComponent<RectTransform>(); var row = rectRecord(rect); Rect pixels = pixelBounds(rect);
+    row["interactable"] = button.IsInteractable();
+    var scroll = button.GetComponentInParent<UnityEngine.UI.ScrollRect>();
+    row["inside_scroll"] = scroll != null;
+    if (scroll != null) { Rect scrollViewport = pixelBounds(scroll.viewport != null ? scroll.viewport : scroll.GetComponent<RectTransform>()); row["overlaps_scroll_viewport"] = pixels.Overlaps(scrollViewport); }
+    var events = UnityEngine.EventSystems.EventSystem.current;
+    if (events != null) {
+        var data = new UnityEngine.EventSystems.PointerEventData(events) { position = pixels.center };
+        var hits = new System.Collections.Generic.List<UnityEngine.EventSystems.RaycastResult>(); events.RaycastAll(data, hits);
+        row["center_top_hit"] = hits.Count == 0 ? "NONE" : path(hits[0].gameObject.transform);
+        row["center_raycast_reaches_button"] = hits.Count > 0 && hits[0].gameObject.GetComponentInParent<UnityEngine.UI.Button>() == button;
+    }
+    if (scroll == null) fixedButtons.Add(row); else recipeOrShopButtons.Add(row);
+}
+result["fixed_buttons"] = fixedButtons; result["scroll_buttons"] = recipeOrShopButtons;
+var scrolls = new Newtonsoft.Json.Linq.JArray();
+foreach (var scroll in root.GetComponentsInChildren<UnityEngine.UI.ScrollRect>()) {
+    var row = rectRecord(scroll.GetComponent<RectTransform>());
+    row["viewport"] = rectRecord(scroll.viewport != null ? scroll.viewport : scroll.GetComponent<RectTransform>());
+    row["content_pixels"] = scroll.content == null ? null : rectJson(pixelBounds(scroll.content));
+    row["content_children"] = scroll.content == null ? 0 : scroll.content.childCount;
+    row["horizontal"] = scroll.horizontal; row["vertical"] = scroll.vertical; row["movement_type"] = scroll.movementType.ToString();
+    row["sensitivity"] = scroll.scrollSensitivity; row["elasticity"] = scroll.elasticity; row["deceleration_rate"] = scroll.decelerationRate;
+    row["normalized_x"] = scroll.normalizedPosition.x; row["normalized_y"] = scroll.normalizedPosition.y; row["velocity_x"] = scroll.velocity.x; row["velocity_y"] = scroll.velocity.y;
+    scrolls.Add(row);
+}
+result["scrolls"] = scrolls;
+result["scope"] = "Read-only native UI bounds/raycast/layout snapshot. Hidden content outside a viewport is expected; raycast blockers may be tutorial/modal by design. Does not claim screenshot validation or input success.";
+string output = folder + "craft-layout-" + (craft ? "craft-" : "custom-") + System.DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff") + "-" + System.Guid.NewGuid().ToString("N").Substring(0, 8) + ".json";
+System.IO.File.WriteAllText(output, result.ToString());
+return "Native layout snapshot written: " + output + "; render=" + target + "; no UI/state changes";

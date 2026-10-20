@@ -1,0 +1,13 @@
+2026-10-19 root visual review
+
+対象: title-16x10-20261019-013422-613-96de8dc6 の 01-title-16x10.png / 02-setting-16x10.png。
+既存 GameView 16:10 Aspect の実描画は 664×415。Camera、root Canvas、PNG寸法の一致を確認。
+
+タイトルの GAME START / SETTINGS / Manual / Gallery / 終了アイコンと右下クレジットを視認。
+設定画面の BGM / SE ラベル、スライダー、ハンドル、閉じるボタンを視認。主要操作部分の見切れは見られない。
+SettingPanel Rect 全体は左右に約18pxはみ出すが、spriteの透明余白を含んでいる。表示される背景部分と操作UIは画面内。
+最初の title-16x10-20261019-013048-000-9aa1291e の FAIL は背景Rect全体へinside判定を適用したQA条件の誤り。旧結果は保持した。
+改訂したprobeは画像保存後に個々の操作UI/ラベルを判定しPASS。設定を開閉するGraphicRaycaster＋EventSystem pointer経路もPASS。
+
+制限: Unity内部の合成pointerによる確認。OSマウス/キーボード操作や視認性の利用者調査ではない。16:10の全解像度や他アスペクト比を網羅しない。
+音量値はこのprobeでは変更しない。元のFullHD index3、設定画面閉、InputModule/navigationを復元。セッション全体の最終復元は別記録。

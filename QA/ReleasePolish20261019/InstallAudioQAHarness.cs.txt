@@ -1,0 +1,42 @@
+// C#6 execute_code BODY. Root only; clean Title Edit; one temporary guarded source.
+const string folder="QA/ReleasePolish20261019/";
+const string source=folder+"GearCraftQAAudioPersistence.cs.txt";
+const string target="Assets/GearCraftQAAudioPersistence.cs";
+const string manifest="QA/ReleaseVerification20261019/source-build-manifest.json";
+if(Application.isPlaying||UnityEditor.EditorApplication.isCompiling||UnityEditor.BuildPipeline.isBuildingPlayer)throw new System.Exception("Require idle Edit mode");
+var scene=UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+if(scene.path!="Assets/GearCraft/Scenes/Title.unity"||scene.isDirty)throw new System.Exception("Require clean Title Edit; do not save a modified scene");
+if(!System.IO.File.Exists(source)||!System.IO.File.Exists(manifest))throw new System.Exception("Prepared harness/source manifest missing");
+// Only install after the root restored and independently verified this Editor QA session.
+foreach(string name in new[]{"session-id.txt","canonical-restoration.txt","canonical-final-verification.json","typed-prefs-before.txt"})if(!System.IO.File.Exists(folder+name))throw new System.Exception("Finish session restoration/verification before QA installation: "+name);
+string session=System.IO.File.ReadAllText(folder+"session-id.txt").Trim();
+if(UnityEditor.SessionState.GetString("GearCraft.QA.ReleasePolish.Session","")!=session||!System.IO.File.ReadAllText(folder+"canonical-restoration.txt").StartsWith("session_id="+session+"\n"))throw new System.Exception("Restoration belongs to another session");
+var verification=Newtonsoft.Json.Linq.JObject.Parse(System.IO.File.ReadAllText(folder+"canonical-final-verification.json"));
+if((string)verification["session_id"]!=session||(int)verification["prefs_verified"]!=16||(bool)verification["play"]||(bool)verification["scene_dirty"]||!(bool)verification["no_running_qa_progress_markers"]||!(bool)verification["backup_hashes_unchanged"])throw new System.Exception("Current session verification is incomplete");
+var prefRows=System.IO.File.ReadAllLines(folder+"typed-prefs-before.txt").Where(x=>!string.IsNullOrWhiteSpace(x)).Select(x=>x.Split('|')).ToArray();
+if(prefRows.Length!=16||prefRows.Any(x=>x.Length!=4))throw new System.Exception("Expected current16 typed backup rows");
+foreach(var row in prefRows){bool exists=bool.Parse(row[2]);if(PlayerPrefs.HasKey(row[0])!=exists)throw new System.Exception("Restored key existence changed: "+row[0]);if(exists){string raw=row[1]=="string"?PlayerPrefs.GetString(row[0]):row[1]=="float"?PlayerPrefs.GetFloat(row[0]).ToString("R",System.Globalization.CultureInfo.InvariantCulture):PlayerPrefs.GetInt(row[0]).ToString(System.Globalization.CultureInfo.InvariantCulture);if(System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(raw))!=row[3])throw new System.Exception("Restored key value changed: "+row[0]);}}
+foreach(string file in System.IO.Directory.GetFiles(folder,"*progress.txt")){string state=System.IO.File.ReadAllText(file).TrimStart();if(state.StartsWith("RUNNING")||state.StartsWith("LOADING"))throw new System.Exception("QA callback still running: "+file);}
+if(StatusManager.Instance!=null||MaterialManager.Instance!=null||StageFlowManager.Instance!=null||StageCounter.Instance!=null)throw new System.Exception("Runtime singleton still present after restore");
+
+if(System.IO.File.Exists(target)||System.IO.File.Exists(target+".meta"))throw new System.Exception("Temporary asset path is already occupied; never overwrite");
+if(System.IO.File.Exists(folder+"audio-qa-install.json"))throw new System.Exception("Install record exists; inspect previous installation instead of overwriting");
+System.Func<string,string> hash=path=>{using(var sha=System.Security.Cryptography.SHA256.Create())return System.BitConverter.ToString(sha.ComputeHash(System.IO.File.ReadAllBytes(path))).Replace("-","").ToLowerInvariant();};
+var original=Newtonsoft.Json.Linq.JObject.Parse(System.IO.File.ReadAllText(manifest));
+var sourceMap=(Newtonsoft.Json.Linq.JObject)original["production_and_settings_sha256"];
+if(sourceMap==null||sourceMap.Count!=17)throw new System.Exception("Expected current 17-source baseline");
+var before=new System.Collections.Generic.Dictionary<string,string>();
+foreach(var property in sourceMap.Properties()){string current=hash(property.Name);if(current!=(string)property.Value)throw new System.Exception("Production changed from latest verified manifest: "+property.Name);before.Add(property.Name,current);}
+const string craftScene="Assets/GearCraft/Scenes/Craft.unity";
+if(before.ContainsKey(craftScene)||!System.IO.File.Exists(craftScene))throw new System.Exception("Expected independent current Craft scene baseline");
+before.Add(craftScene,hash(craftScene));
+if(before.Count!=18)throw new System.Exception("Expected 18 protected files including current Craft scene");
+string contents=System.IO.File.ReadAllText(source);
+if(!contents.StartsWith("#if GEARCRAFT_QA_AUDIO && !UNITY_EDITOR"))throw new System.Exception("Missing player-only QA compile guard");
+using(var writer=new System.IO.StreamWriter(new System.IO.FileStream(target,System.IO.FileMode.CreateNew,System.IO.FileAccess.Write)))writer.Write(contents);
+// Persist ownership before import can schedule a compilation/domain reload.
+var record=new{utc=System.DateTime.UtcNow.ToString("O"),asset=target,source=source,source_sha256=hash(source),installed_sha256=hash(target),meta_sha256=(string)null,production_before=before,qa_define="GEARCRAFT_QA_AUDIO",global_defines_modified=false};
+System.IO.File.WriteAllText(folder+"audio-qa-install.json",Newtonsoft.Json.JsonConvert.SerializeObject(record,Newtonsoft.Json.Formatting.Indented)+"\n");
+UnityEditor.AssetDatabase.ImportAsset(target,UnityEditor.ImportAssetOptions.ForceSynchronousImport);
+if(System.IO.File.Exists(target+".meta")){var saved=Newtonsoft.Json.Linq.JObject.Parse(System.IO.File.ReadAllText(folder+"audio-qa-install.json"));saved["meta_sha256"]=hash(target+".meta");System.IO.File.WriteAllText(folder+"audio-qa-install.json",saved.ToString(Newtonsoft.Json.Formatting.Indented)+"\n");}
+return "Guarded QA source installed. Wait until compilation is idle; then run BuildAudioQA.cs.txt. No PlayerSettings/scene save/production edit.";

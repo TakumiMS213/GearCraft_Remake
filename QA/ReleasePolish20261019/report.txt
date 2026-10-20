@@ -1,0 +1,46 @@
+GearCraft リリース準備継続 — 2026-10-19 Polish
+
+今回の結果
+武器カスタム画面のショップ一覧が「ラインナップ更新」ボタンに重なる不具合を修正した。制作差分はCraft.unityのShopScrollView RectTransformの2値のみ。上端とスクロール設定を維持して下端を96 Canvas単位引き上げた。
+修正後の16:10とFullHD16:9実画像で重なり解消を確認。音量変更→通常終了→別プロセスで再読込も通過した。これらを反映した新しい通常版macOS配布候補を保存した。正式公開はしていない。
+
+配布候補
+Builds/ReleaseCandidate20261019-Polish/GearCraft-macOS-universal-20261019-Polish.zip
+61,877,026 bytes
+SHA256 05dc7e201becf3b101fbe4db43682d4851758430dc2a02d324bcd86f213ddcb5
+旧ReleaseCandidate20261019のZIPは変更していない。
+新通常appは /private/tmp/GearCraftReleasePolish20261019/GearCraft.app。検証専用AudioQA.appとは別で、通常版のAssemblyとruntime initializerに音量QA型が含まれないことを確認した。
+
+画面・UI確認
+Title/Settings: title-16x10-20261019-013422-613-96de8dc6。既存16:10 presetの実描画664×415で各ボタン、クレジット、BGM/SEラベル・Slider・閉じるボタンのboundsと実画像を確認。Settings開閉のGraphicRaycaster/合成pointer経路PASS。
+Craft修正前: craft-16x10-20261019-013824-880-b660474c。従来probeはPASSだったが、目視でショップ行と更新ボタンの重なりを発見。兄弟UI同士の重なりは従来の画面内判定だけでは検出できていなかった。
+Craft修正後: craft-16x10-20261019-014306-659-adeeb1f0 / craft-fullhd-20261019-014342-629-9c53bd34。実描画664×415と1920×1080で、更新ボタンまでの余白6.780098px / 19.6050568pxを確認。wheel前後とも余白と更新ボタン中央へのraycast PASS。両ScrollRectは感度34・Clamped等の設定が一致し、同じwheel -3でcontentが102 Canvas単位移動した。タブ切替と閉じる操作から宿舎へ戻る経路も通過。
+Craftへの直接読込はレイアウトfixture。実OS入力、通常プレイによる作業台到達、購入/クラフト、初回ガイドの再履修は今回の証拠に含めない。PNG名にguideとあっても、この保存状態ではガイドが表示されていない。
+詳細は title-16x10-visual-review.txt / craft-layout-visual-review.txt / shop-footer-layout.txt。
+
+音量の別プロセス保存確認（R17）
+audio-persistence-run2/result.json: PASS_TWO_PROCESS_AUDIO_PERSISTENCE。
+Titleの既存Sliderイベントを通してBGM -17 / SE -29へ変更し、native Audio.Updateの0.3秒debounce保存、正常終了を確認。次の独立PIDではAudio.Start前の保存値と、Start後のMixer/Slider値が一致。読込側のSlider変更callbackは0、native pending変更もfalse。
+writer PID45734、reader PID45792、両exit0、全体9.665秒。元々のSliderが整数設定のため、要求値-17.25/-28.75は実効-17/-29として検証した。OSマウス操作や聴感の確認は別途必要。
+run1はwrite PASS/exit0後、macOSのexportと生plistの読み取り時差で停止した。直後の証跡では同じexport値へdiskが追い付き一致していた。旧結果は保持し、run2のみ最大1秒の整合待ちとexport安定確認を追加。保存を失敗と断定して制作コードを変えていない。詳細はaudio-run1-snapshot-diagnosis.txt。
+
+通常版のbuild・起動・ZIP
+macos-build.json: 非開発BuildOptions.None、エラー0、警告0、25.0545秒、201,101,453bytes。PlayerSettingsやglobal defineを変えず、実体はMono、x86_64/arm64のUniversal。
+macos-package-verification.json: 18source/settings hash一致、15件のIL marker、QA型/initializer除外、ad-hoc署名整合の検査PASS。Developer ID署名・公証・Gatekeeper確認は未実施。
+standalone-threaded-run1/result.json: PASS_NORMAL_EXIT、20.584秒、exit0、強制終了なし、検出例外0。これは起動/終了smokeで、通常Playerでの全UI/ゲームクリア確認ではない。
+release-archive.json: ZIP CRC、展開後の全205ファイル/リンクのhash・mode・link target、および署名整合が一致。workspaceへコピーしたZIPもSHA一致。
+音量QAビルドは別appでエラー0/警告5（既存shader3＋build中MCP接続2）。通常ビルドの警告0だけをshader不具合の解決証拠にはしない。shader制作変更は今回なし。
+
+状態の復元と一時コード
+Editor fresh session: 20261019-012758-463-6f0f725639f04b0eb5ed49381d3c62e3。
+canonical-restoration.txt / canonical-final-verification.json / canonical-postbuild-verification.jsonで、16Prefs型値存在、Title clean、Playfalse、GameView index3/既存サイズ一覧、元fixed ticks2822399、logger/DOTween等の一致を確認。最後の再検証は01:54:26 UTC。
+各Player試験は直前に別途fresh全domainを退避し、全20キーの型値・存在を復元した。試験で増えたGallery/音量キーは限定削除。保護Editor2domain、Application Support、旧候補ZIPは不変。残存Player/復元待ちなし。
+一時Assets/GearCraftQAAudioPersistence.csとmetaは、インストール時hashと18制作ファイルを照合して取り外し、AssetDatabase.Refreshを完了した。MCPのDeleteAssetは静的安全チェックで拒否されたため、安全設定を無効化せず、所有が一致する2ファイルだけ通常のworkspace操作で除去した。通常候補に検証コードの残留なし。
+ビルド予約のdelayCallが進まなかったため、他のEditor callbackを触らず、唯一の当該ビルドdelegateを一回限りのEditor.updateへ移して実行した。release-build-status.txtはCOMPLETE。
+
+残件と判定の限界
+R20: BB Gear/Thrower、EK Gearの過去bot死亡3件は未解決観測として維持。combat-open-issues-audit.txtで、巨大地上ボスへ繰り返し跳ぶbot、弾の中心時刻を使う回避判定の制約を特定した。BB砲口近傍の接触と近接swingの並列書込みは制作候補だが、因果未確定。今回再戦や火力調整は行っておらず、人間の攻略不能とは断定しない。
+R22: 通常版終了時にComputeBufferのGC解放注意1件を再確認。Thread注意は今回観測なし。正常終了/例外0でもR22を修正済みにしない。
+R14: 既存Metal shader警告の原因修正は未実施。
+正式配布に向けてDeveloper ID署名/公証、配布先の確定、人間による実OS操作・聴感・一部防衛構成の確認が残る。今回の到達点は追加UI不具合の修正、未検証だった別比率/音量再起動の確認、および更新版ローカル配布候補の完成。
+commit / push / 公開はしていない。作業開始後にHEADはユーザー側で25469b8へ進んだため、そこに対する今回の制作差分はCraft.unityの2値。

@@ -1,0 +1,48 @@
+16:10画面検査の準備・範囲（2026-10-19）
+
+新セッション
+CaptureFresh.cs.txt は QA/ReleasePolish20261019/ と SessionState GearCraft.QA.ReleasePolish.Session 専用。16項目のtyped Prefs、Editor、正確なtime ticks、GameView、logger、DOTweenの新規バックアップをrootが取得する。以前のフォルダの値/結果をコピーしない。production編集やMCPは本担当から行わない。
+既存index2「16:10 Aspect」を使用する。固定サイズやcustom sizeは追加しないため、RestoreCanonicalの削除対象は増えない。プリセットの名前/元index/元target寸法/サイズ一覧を検証する。16:10 Aspectの実ピクセル数はEditorのGameViewサイズ依存であり、1600×1000固定試験とは表現しない。各PNGは撮影時の実GameView targetRenderSizeと一致する幅/高さ・PNG終端を確認する。Camera/Canvasも実描画寸法と照合し、MCPのScreen寸法は参考記録のみ。
+
+順番と最短の開始条件
+1. TitleAspect1610.cs.txt
+   現在のTitle Play、SETTING閉、timeScale1、captureDelta0、他QA callbackなしで実行。Title/SETTINGの画像を先に保存してから主要UIのboundsを確認し、元index/target/listとInputModules/navigationを復元する。スライダーの値を変更しない。約3〜5秒、watchdog30秒＋復元10秒。
+2. CraftAspect1610.cs.txt
+   最短は同じTitle Playのまま。Title.unityにあるnative StatusManager/MaterialManagerがDontDestroyOnLoadするため両Instanceがあれば別bootstrapは不要。CraftSpace Playからも可。probeがCraftへ直接LoadSceneする明示的fixtureであり、Story・歩行・作業台接近/Spaceキーの実証を含めない。
+   Craft→WeaponCustomの切り替え、スクロール、閉じるは実シーンのnative Button/ScrollRectを使う。UIを新規作成しない。nativeチュートリアルの初期状態を撮影後、「案内を中断」ボタンでガイドを閉じ、主要UIとwheel後を撮影。クラフト・購入・更新・モジュール付与・手引き習得は行わない。
+   Closeから宿舎へ戻り、16:10宿舎画像を取得後、元シーン/index/target/listへfixtureとして戻す。宿舎画像はtask/矢印の見た目をrootが評価する。初日の進行を変えない。約8〜15秒目安、watchdog45秒＋復元12秒。native到着会話が残れば通常timerを待つ。
+   UIシーンを訪れるだけでもnative手引き配布・metrics等が変化する場合がある。最終的にrootがPlayを停止し今回canonical restore/verifyを実行する。fixture終了は保存データの完全復元を意味しない。
+3. InspectCraftLayout.cs.txt
+   native Craft Playで任意のタブを開いた後に使う読み取り専用スナップショット。表示変更・サイズ変更・タブ変更・スクロール・購入をしない。fixed buttons、scroll viewport/content、中心raycastの最上位対象をJSONへ記録する。追加切り分け用であり単体ではPNG検査や復元処理を伴わない（設定を変更しないため）。
+
+UI対象と判断
+Title
+- StartButton、SettingButton、GalleryIcon、Manual、offButtonの可視/操作領域。
+- bgmTitle_titleの矩形と実画像の右下切れ。
+- 01-title画像を先に保存し、bounds FAIL時も証拠を残す。
+SETTING
+- SettingPanelは子0の背景Image、操作UIの親ではない。実際の共通親はPanel。
+- HideSetting、BGMslider、SEslider、各slider handleとImageラベルBGM/SEの画面内配置を判定。
+- 背景矩形のoverscan自体はdiagnosticのみ。元画像gearcraft_setting_panel.pngは192×108、alpha非透明範囲(24,16)〜(168,96)。初回16:10実測Rectはx=-17.89,width=699.74だったが、非透明横範囲は約69.58〜594.38で664px幅の画面内。透明余白まで全て画面内とした旧QA条件は誤り。
+- 旧title-16x10-20261019-013048-000-9aa1291eのFAILはそのまま保持。修正版は背景を操作要素から分けて記録し、02-setting画像保存完了後に判定する。
+宿舎
+- native Close帰還画像で左上のtask背景、チェックボックス、目的文とA/D・Space表示、中央左端矢印の位置を確認。
+- 本fixtureは歩行やベッド入力、視認性の人間評価そのものを合格させない。
+CRAFT（Assets/GearCraft/Scenes/Craft.unity）
+- Canvas/HeaderArea/CraftTabButton、UpgradeTabButton。
+- Canvas/CraftPanel/Close、craft_button、question。
+- CraftRecipeScrollView/Viewportは画面内。Contentと画面外のレシピ項目は意図したスクロール対象なので、全Contentが画面内であることを要求しない。
+- 初期guide表示→native pause後→wheel後の3画像。無効レシピの？/半透明、素材欄、作成結果欄、主要ボタンの重なりは画像で確認。
+WeaponCustom（別シーンではなく同Craft.unityのUpgradePanel）
+- UpgradePanel/Close、RefreshButton、GridArea/RotateButton、question。
+- UpgradePanel/ShopArea/ShopScrollView/Viewport、GridArea/GridContainer、EffectSummary。
+- 初期guide表示→native pause後→wheel後の3画像。RefreshはGearを消費するため押さず、boundsとinteractableだけ記録。
+- native CraftTabController.SwitchTab(1) はlineup初期化・grid更新・tutorial開始を行う。QAが直接内容を再生成/配置しない。
+
+スクロールの解釈
+CraftRecipeScrollView（Craft.unity:12188付近）とShopScrollView（同6809付近）はどちらもhorizontal=false、vertical=true、movementType=Clamped、elasticity0.1、deceleration0.135、scrollSensitivity34。Shopにはnative bottom padding最低96が追加される（UpgradeShopManager.ConfigureShopScrollPadding）。
+同じwheel delta=-3をnative ScrollRect.OnScrollへ送るが、画面縮尺やcontent量が違うため移動ピクセルが完全同一とは要求しない。viewportをcontentが超えるか、normalized位置が端か、実content差分を併せて評価する。3パーツが収まる場合に動かなくても機能失敗とはしない。記録は実値で、動いたと断言する自動assertは追加していない。終了時に元normalizedPosition/velocityを戻す。
+スクロール内項目の中心raycastが届かない場合、viewport外の項目、手引き/確認ウィンドウが意図して遮っている状態、実誤遮蔽を区別する。read-only inspectorは最上位hitを残す。
+
+検証済みの準備品質と未実施範囲
+CaptureFresh、TitleAspect1610、InspectCraftLayout、CraftAspect1610のC#6オフラインコンパイルは成功。一時wrapper/DLLは/private/tmpへ作り削除し、Unity refreshやPlay/MCP操作は本担当から行っていない。実行結果と画像評価はrootの記録に従う。boundsだけで文字の読みやすさ、実OS入力、他比率、全解像度を合格とはしない。

@@ -1,0 +1,42 @@
+{
+  "prepared_utc": "2026-10-19T01:46:04.114627+00:00",
+  "status": "PREPARED_NOT_EXECUTED_BY_PREPARER",
+  "MCP_used": false,
+  "production_modified_by_preparer": false,
+  "app_started_by_preparer": false,
+  "build_executed_by_preparer": false,
+  "archive_created_by_preparer": false,
+  "source_count": 18,
+  "new_manifest_sha256": "acf87ef6579ed07a67dc8773315521d5e5f6a050af8202f86446d9826f8fe129",
+  "CSharp6_compile": "BuildReleaseCandidate PASS 0 errors 0 warnings",
+  "python_syntax": {
+    "verify_macos_package.py": "PASS (parse only, not run)",
+    "prepare_release_archive.py": "PASS (parse only, not run)"
+  },
+  "files": {
+    "BuildReleaseCandidate.cs.txt": {
+      "sha256": "ee0098c82d6d476b01e8f85279c26962089a471c6db583097e824292e3241a5d",
+      "bytes": 5399
+    },
+    "verify_macos_package.py": {
+      "sha256": "7556be510a4dcf79dcbd095443452e3d38b8019fd696e46e8de254108d6b645a",
+      "bytes": 20164
+    },
+    "prepare_release_archive.py": {
+      "sha256": "6be0da3c38f0165bd9c4595dafc39e369d3012ca36dc1e847294d18b41fceeb3",
+      "bytes": 10354
+    },
+    "ReadManagedMarkers.cs": {
+      "sha256": "cbb96562abcf4fc3773efc0bfc3168d924c7e7807985746ac41190ffbff25282",
+      "bytes": 2796
+    },
+    "ReadManagedMarkers.exe": {
+      "sha256": "138e0c75de25b057afcf950c455f5d518cd2f0ac54f7a80ced9cf5bd6857101c",
+      "bytes": 9216
+    },
+    "normal-candidate-procedure.txt": {
+      "sha256": "b5aa6e78ae5fa1f38b901da08e614b8f63f34720e9e5795640bb601d618e028a",
+      "bytes": 3693
+    }
+  }
+}

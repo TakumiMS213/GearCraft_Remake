@@ -1,0 +1,22 @@
+ReleasePolish 通常版 macOS Player 起動・正常終了確認（準備のみ）
+
+対象は /private/tmp/GearCraftReleasePolish20261019/GearCraft.app。
+AudioQA.app および音量永続化 runner とは別試験。新しい通常版ビルドのパッケージ検査が完了し、ほかの GearCraft Player が終了してから root が実行する。
+
+確認のみ（アプリ起動・defaults 読み書き・結果フォルダ作成なし）:
+python3 -B QA/ReleasePolish20261019/standalone_probe.py
+
+実行用（この準備作業では未実行）:
+python3 -B QA/ReleasePolish20261019/standalone_probe.py --execute --graphics threaded --run-dir QA/ReleasePolish20261019/standalone-threaded-run1
+
+20 秒観測し、既存の hash 固定済み normal-quit-helper で通常終了を要求する。終了待ちは最大 15 秒、全体は 60 秒以内を合格条件とする。強制停止した試行は合格にしない。失敗時の TERM/KILL は、この runner が Popen で起動して保持している子プロセスだけが対象。
+
+起動前に、この時点の PlayerPrefs 全 domain を型・値・存在情報とともに新規保存する。過去のセーブ退避は使わない。Editor の保護 domain、Application Support、既存の配布候補 ZIP の SHA256 も記録する。Player 終了後に PlayerPrefs 全体を復元し、今回増えたキーだけを記録値と domain 全体の一致ガードを通して削除する。プロセス生存中や想定外の同時変更時は復元を強行せず、要確認として記録する。
+
+今回の app identity は初回実行時に standalone-build-identity.json へ新規保存し、同じ記録で異なるビルドを起動しない。通常版に GearCraftQAAudioPersistence または音量 QA 用 CLI 文字列が残っている場合は起動を拒否する。
+
+既存配布候補は Builds/ReleaseCandidate20261019/GearCraft-macOS-universal-20261019.zip、保護 SHA256 は 26a4b9729b9d8f480dc26f2eb0da1e56e172386dbdf9105275f78186d29ebcba。変更・上書きしない。
+
+合格は PASS_NORMAL_EXIT、exit 0、強制停止なし、例外検出 0、Threaded モード確認、PlayerPrefs 全復元、Editor/AppSupport/既存 ZIP 不変を要求する。警告は別途記録し、例外 0 を警告なしと読み替えない。これは起動・正常終了の確認であり、実 OS 入力、画面の目視、音量の再起動永続化、公証・正式公開の確認には数えない。
+
+準備時検証: dry-run 成功、py_compile 成功。実行・MCP 操作なし。音量 runner 2 ファイルは準備時 hash と一致し、変更していない。

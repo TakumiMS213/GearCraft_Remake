@@ -1,0 +1,7 @@
+{"utc": "2026-10-19T01:53:33.119701+00:00", "event": "player_started", "pid": 45903, "graphics": "threaded"}
+{"utc": "2026-10-19T01:53:38.151002+00:00", "event": "sampling_at_five_seconds", "pid": 45903, "elapsed_seconds": 5.031}
+{"utc": "2026-10-19T01:53:41.319995+00:00", "event": "observing_player", "pid": 45903, "elapsed_seconds": 8.201}
+{"utc": "2026-10-19T01:53:43.154023+00:00", "event": "observing_player", "pid": 45903, "elapsed_seconds": 10.035}
+{"utc": "2026-10-19T01:53:48.135357+00:00", "event": "observing_player", "pid": 45903, "elapsed_seconds": 15.016}
+{"utc": "2026-10-19T01:53:53.119835+00:00", "event": "requesting_normal_termination", "pid": 45903}
+{"utc": "2026-10-19T01:53:53.558254+00:00", "event": "finished", "result": "PASS_NORMAL_EXIT", "pid": 45903, "normal_exit": true, "forced_cleanup": false, "restoration_pending": false, "elapsed_seconds": 20.584}

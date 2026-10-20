@@ -1,0 +1,9 @@
+{
+  "added_key_count": 1,
+  "added_keys": [
+    "GearCraft.Gallery.Progress.v1"
+  ],
+  "before_key_count": 20,
+  "domain": "com.DefaultCompany.2D-URP",
+  "delete_rule": "absent before, present in after, current typed value still equals recorded after"
+}

@@ -1,0 +1,117 @@
+// C#6 execute_code body. SHORTEST START: fresh Title Play with native Status/Material managers.
+// Also accepts idle CraftSpace Play. Direct LoadScene("Craft") is an explicit layout fixture,
+// not proof of Story, walking, workstation proximity, or keyboard input. Native UI is never recreated.
+// Existing 16:10 preset only. Captures current Craft/WeaponCustom UI, native tabs/wheel/Close, then
+// restores original scene/index/list. Native tutorial pause may write metrics; root canonical restore is required.
+const string folder = "QA/ReleasePolish20261019/";
+string originalScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+if (!Application.isPlaying || UnityEditor.EditorApplication.isPaused || (originalScene != "Title" && originalScene != "CraftSpace")) throw new System.Exception("Require fresh Title Play or idle CraftSpace Play");
+if (StatusManager.Instance == null || MaterialManager.Instance == null || Time.timeScale != 1f || Time.captureDeltaTime != 0f || ArrivalMessagePresenter.IsMessagePlaying || ArrivalMessagePresenter.IsCameraPresentationPlaying) throw new System.Exception("Native managers, idle UI and timeScale1/captureDelta0 required");
+string session = System.IO.File.ReadAllText(folder + "session-id.txt").Trim();
+if (session.Length == 0 || UnityEditor.SessionState.GetString("GearCraft.QA.ReleasePolish.Session", "") != session || !System.IO.File.Exists(folder + "canonical-backup-ready.txt") || System.IO.File.Exists(folder + "canonical-restoration.txt")) throw new System.Exception("Current fresh unrestored session required");
+foreach (string file in System.IO.Directory.GetFiles(folder, "*progress.txt")) { string state = System.IO.File.ReadAllText(file); if (state.StartsWith("RUNNING") || state.StartsWith("LOADING")) throw new System.Exception("Another callback active: " + file); }
+var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic;
+var assembly = typeof(UnityEditor.Editor).Assembly; var viewType = assembly.GetType("UnityEditor.GameView");
+var view = Resources.FindObjectsOfTypeAll(viewType).OfType<UnityEditor.EditorWindow>().FirstOrDefault(); if (view == null) throw new System.Exception("Keep existing GameView open");
+var selectedProperty = viewType.GetProperty("selectedSizeIndex", flags); var targetProperty = viewType.GetProperty("targetRenderSize", flags);
+var sizesType = assembly.GetType("UnityEditor.GameViewSizes"); var sizes = typeof(UnityEditor.ScriptableSingleton<>).MakeGenericType(sizesType).GetProperty("instance", flags).GetValue(null, null); var group = sizesType.GetProperty("currentGroup", flags).GetValue(sizes, null);
+System.Func<string[]> labels = () => (string[])group.GetType().GetMethod("GetDisplayTexts", flags).Invoke(group, null);
+System.Func<Vector2> renderSize = () => view == null ? Vector2.zero : (Vector2)targetProperty.GetValue(view, null);
+int originalIndex = (int)selectedProperty.GetValue(view, null); Vector2 originalSize = renderSize(); string[] originalLabels = labels();
+if (originalLabels.Length <= 2 || originalLabels[2] != "16:10 Aspect") throw new System.Exception("Expected existing preset 2: 16:10 Aspect");
+string run = "craft-16x10-" + System.DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff") + "-" + System.Guid.NewGuid().ToString("N").Substring(0, 8); string output = System.IO.Path.GetFullPath(folder + run); System.IO.Directory.CreateDirectory(output);
+System.IO.File.WriteAllText(output + "/fixture.txt", "session=" + session + "\nDirect Craft scene load is fixture setup; original_scene=" + originalScene + "\noriginal_index=" + originalIndex + "\noriginal_render=" + originalSize + "\n" + string.Join("\n", originalLabels) + "\n");
+var invariant = System.Globalization.CultureInfo.InvariantCulture;
+System.Action<string> note = line => System.IO.File.AppendAllText(output + "/events.txt", System.DateTime.UtcNow.ToString("O") + " " + line + "\n");
+System.Action<bool, string> check = (ok, name) => { note((ok ? "PASS " : "FAIL ") + name); if (!ok) throw new System.Exception(name); };
+System.Func<RectTransform, Rect> pixels = rect => { var canvas = rect.GetComponentInParent<Canvas>(); var cam = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera; var corners = new Vector3[4]; rect.GetWorldCorners(corners); var points = corners.Select(c => RectTransformUtility.WorldToScreenPoint(cam, c)).ToArray(); return Rect.MinMaxRect(points.Min(p => p.x), points.Min(p => p.y), points.Max(p => p.x), points.Max(p => p.y)); };
+System.Action<RectTransform, string> inside = (rect, name) => { Rect area = pixels(rect), viewport = rect.GetComponentInParent<Canvas>().rootCanvas.pixelRect; note(name + " pixels=" + area + "; canvas=" + viewport); check(area.xMin >= viewport.xMin - 1 && area.yMin >= viewport.yMin - 1 && area.xMax <= viewport.xMax + 1 && area.yMax <= viewport.yMax + 1, name + "_inside_canvas"); };
+System.Func<Vector2, bool> aligned = expected => { var target = renderSize(); var cam = Camera.main; if ((target - expected).sqrMagnitude > 1f || cam == null || Mathf.Abs(cam.pixelWidth - target.x) > 1 || Mathf.Abs(cam.pixelHeight - target.y) > 1) return false; var canvases = UnityEngine.Object.FindObjectsByType<Canvas>(FindObjectsInactive.Exclude, FindObjectsSortMode.None).Where(c => c.isRootCanvas && c.isActiveAndEnabled && c.targetDisplay == 0 && c.renderMode != RenderMode.WorldSpace && c.gameObject.scene == UnityEngine.SceneManagement.SceneManager.GetActiveScene()).ToArray(); return canvases.Length > 0 && canvases.All(c => Mathf.Abs(c.pixelRect.width - target.x) < 1 && Mathf.Abs(c.pixelRect.height - target.y) < 1); };
+System.Func<UnityEngine.UI.Button, UnityEngine.EventSystems.PointerEventData> buttonPointer = target => {
+    check(target != null && target.IsActive() && target.IsInteractable(), "button_interactable_" + (target == null ? "NULL" : target.name)); inside((RectTransform)target.transform, target.name);
+    var data = new UnityEngine.EventSystems.PointerEventData(UnityEngine.EventSystems.EventSystem.current) { position = pixels((RectTransform)target.transform).center, button = UnityEngine.EventSystems.PointerEventData.InputButton.Left, pointerId = -1, clickCount = 1, eligibleForClick = true };
+    var hits = new System.Collections.Generic.List<UnityEngine.EventSystems.RaycastResult>(); UnityEngine.EventSystems.EventSystem.current.RaycastAll(data, hits);
+    check(hits.Count > 0 && hits[0].module is UnityEngine.UI.GraphicRaycaster && hits[0].gameObject.GetComponentInParent<UnityEngine.UI.Button>() == target, "raycast_button_" + target.name);
+    data.pointerCurrentRaycast = hits[0]; data.pointerPressRaycast = hits[0]; data.pointerEnter = target.gameObject; data.pressPosition = data.position; data.pointerPress = target.gameObject; data.rawPointerPress = hits[0].gameObject; return data;
+};
+System.Action<UnityEngine.UI.Button> click = target => { var data = buttonPointer(target); UnityEngine.EventSystems.ExecuteEvents.Execute(target.gameObject, data, UnityEngine.EventSystems.ExecuteEvents.pointerEnterHandler); UnityEngine.EventSystems.ExecuteEvents.Execute(target.gameObject, data, UnityEngine.EventSystems.ExecuteEvents.pointerDownHandler); UnityEngine.EventSystems.ExecuteEvents.Execute(target.gameObject, data, UnityEngine.EventSystems.ExecuteEvents.pointerUpHandler); UnityEngine.EventSystems.ExecuteEvents.Execute(target.gameObject, data, UnityEngine.EventSystems.ExecuteEvents.pointerClickHandler); if (target != null) UnityEngine.EventSystems.ExecuteEvents.Execute(target.gameObject, data, UnityEngine.EventSystems.ExecuteEvents.pointerExitHandler); };
+System.Action pauseGuide = () => { var root = GameObject.Find("CraftTutorialRoot"); if (root == null) return; var close = root.GetComponentsInChildren<UnityEngine.UI.Button>().FirstOrDefault(b => b.name == "CloseButton"); check(close != null, "tutorial_pause_available"); click(close); note("native tutorial pause; metrics may change, canonical restore remains required"); };
+System.Func<GameObject, string, UnityEngine.UI.Button> panelButton = (root, name) => root.GetComponentsInChildren<UnityEngine.UI.Button>().Single(b => b.name == name);
+var modules = new System.Collections.Generic.Dictionary<UnityEngine.EventSystems.BaseInputModule, bool>();
+UnityEngine.EventSystems.EventSystem craftEvents = null; bool craftNavigation = true;
+System.Action restoreInputs = () => { foreach (var item in modules) if (item.Key != null) item.Key.enabled = item.Value; if (craftEvents != null) craftEvents.sendNavigationEvents = craftNavigation; };
+UnityEngine.UI.ScrollRect activeScroll = null; Vector2 scrollOriginal = Vector2.zero, velocityOriginal = Vector2.zero, scrollBefore = Vector2.zero; bool scrollNeedsMovement = false;
+System.Action restoreScroll = () => { if (activeScroll != null) { activeScroll.normalizedPosition = scrollOriginal; activeScroll.velocity = velocityOriginal; } activeScroll = null; };
+// Footer stays outside the clipped shop list; raycast-only inspection must never reroll the lineup.
+System.Action<GameObject, string> inspectShopFooter = (root, label) => {
+    var refresh = panelButton(root, "RefreshButton"); var scroll = root.GetComponentsInChildren<UnityEngine.UI.ScrollRect>().Single();
+    var viewport = scroll.viewport != null ? scroll.viewport : scroll.GetComponent<RectTransform>(); Rect viewPixels = pixels(viewport), refreshPixels = pixels((RectTransform)refresh.transform);
+    float gap = viewPixels.yMin - refreshPixels.yMax; note(label + " footer_gap_pixels=" + gap.ToString("R", invariant) + "; required_margin_pixels=1; viewport=" + viewPixels + "; refresh=" + refreshPixels);
+    check(gap >= 1f, label + "_viewport_above_refresh_with_margin");
+    var data = new UnityEngine.EventSystems.PointerEventData(UnityEngine.EventSystems.EventSystem.current) { position = refreshPixels.center, button = UnityEngine.EventSystems.PointerEventData.InputButton.Left, pointerId = -1 };
+    var hits = new System.Collections.Generic.List<UnityEngine.EventSystems.RaycastResult>(); UnityEngine.EventSystems.EventSystem.current.RaycastAll(data, hits);
+    note(label + " refresh_center_top_hit=" + (hits.Count == 0 ? "NONE" : hits[0].gameObject.name) + "; interactable=" + refresh.IsInteractable() + "; no_click_dispatched");
+    check(hits.Count > 0 && hits[0].module is UnityEngine.UI.GraphicRaycaster && hits[0].gameObject.GetComponentInParent<UnityEngine.UI.Button>() == refresh, label + "_refresh_center_raycast_reachable");
+};
+System.Action<GameObject, string> inspectPanel = (root, label) => {
+    foreach (var button in root.GetComponentsInChildren<UnityEngine.UI.Button>().Where(b => b.GetComponentInParent<UnityEngine.UI.ScrollRect>() == null)) { inside((RectTransform)button.transform, label + "/" + button.name); note("button=" + button.name + "; interactable=" + button.IsInteractable()); }
+    var tabs = UnityEngine.Object.FindFirstObjectByType<CraftTabController>(); inside((RectTransform)tabs.craftTabButton.transform, "CraftTabButton"); inside((RectTransform)tabs.upgradeTabButton.transform, "UpgradeTabButton");
+    var scrolls = root.GetComponentsInChildren<UnityEngine.UI.ScrollRect>(); check(scrolls.Length == 1, label + "_one_native_scroll");
+    var scroll = scrolls[0]; var viewport = scroll.viewport != null ? scroll.viewport : scroll.GetComponent<RectTransform>(); inside(viewport, label + "/viewport");
+    check(scroll.content != null, label + "_content_present"); note(label + " scroll=" + scroll.name + "; viewport=" + pixels(viewport) + "; content=" + pixels(scroll.content) + "; child_count=" + scroll.content.childCount + "; vertical=" + scroll.vertical + "; movement=" + scroll.movementType + "; sensitivity=" + scroll.scrollSensitivity + "; elasticity=" + scroll.elasticity + "; deceleration=" + scroll.decelerationRate);
+    if (label == "WeaponCustom") inspectShopFooter(root, "WeaponCustom/before_wheel");
+    activeScroll = scroll; scrollOriginal = scroll.normalizedPosition; velocityOriginal = scroll.velocity; scrollBefore = scroll.content.anchoredPosition;
+    scrollNeedsMovement = pixels(scroll.content).height > pixels(viewport).height + 1f;
+    // Native OnScroll, after checking the actual top raycast belongs to this ScrollRect.
+    var data = new UnityEngine.EventSystems.PointerEventData(UnityEngine.EventSystems.EventSystem.current) { position = pixels(viewport).center, scrollDelta = new Vector2(0, -3) };
+    var hits = new System.Collections.Generic.List<UnityEngine.EventSystems.RaycastResult>(); UnityEngine.EventSystems.EventSystem.current.RaycastAll(data, hits);
+    check(hits.Count > 0 && hits[0].gameObject.GetComponentInParent<UnityEngine.UI.ScrollRect>() == scroll, label + "_scroll_raycast_reachable");
+    UnityEngine.EventSystems.ExecuteEvents.Execute(scroll.gameObject, data, UnityEngine.EventSystems.ExecuteEvents.scrollHandler); note(label + " native_wheel_delta=-3");
+};
+UnityEditor.EditorApplication.CallbackFunction tick = null; double began = UnityEditor.EditorApplication.timeSinceStartup, phaseAt = began, lastTick = began, lastPump = began, lastProgress = began, captureAt = began; int phase = 0, lastFrame = -1, stableFrames = 0, pngWidth = 0, pngHeight = 0; Vector2 aspectTarget = Vector2.zero, lastTarget = Vector2.zero; string pending = "", outcome = "PASS"; bool done = false;
+System.Action restoreView = () => { if (view != null) { selectedProperty.SetValue(view, originalIndex, null); view.Repaint(); UnityEditor.EditorApplication.QueuePlayerLoopUpdate(); } };
+System.Action<string> finish = result => {
+    if (done) return; done = true; if (tick != null) UnityEditor.EditorApplication.update -= tick; restoreScroll(); restoreInputs();
+    try { restoreView(); } catch (System.Exception ex) { note("restore_view_exception=" + ex); result = "FAIL restore_pending; prior=" + result; }
+    bool restored = view != null && (int)selectedProperty.GetValue(view, null) == originalIndex && (renderSize() - originalSize).sqrMagnitude <= 1f && labels().SequenceEqual(originalLabels) && UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == originalScene;
+    note("fixture_restored=" + restored + "; scene=" + UnityEngine.SceneManagement.SceneManager.GetActiveScene().name + "; target=" + renderSize() + "; Screen_reference=" + Screen.width + "x" + Screen.height); if (!restored) result = "FAIL fixture_restore_pending; prior=" + result;
+    System.IO.File.WriteAllText(output + "/result.txt", result + "\n" + System.IO.File.ReadAllText(output + "/events.txt") + "\nDirect Craft load and original-scene reload are fixtures. Native tabs/wheel/Close use actual scene UI. No crafting, purchases, rerolls, guide mastery or physical input. Runtime tutorial state/material grants may differ; root must stop Play and canonical-restore current session prefs/settings.\n"); System.IO.File.WriteAllText(folder + "craft-aspect-progress.txt", result + " " + run + "\n");
+};
+System.Action<string> beginRestore = result => { outcome = result; phase = 90; phaseAt = UnityEditor.EditorApplication.timeSinceStartup; pending = ""; restoreScroll(); restoreInputs(); restoreView(); if (Application.isPlaying && UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != originalScene) UnityEngine.SceneManagement.SceneManager.LoadScene(originalScene); note("fixture_restore_requested; outcome=" + result); };
+System.Action<string> capture = name => { check(aligned(aspectTarget), "capture_dimensions_" + name); pngWidth = Mathf.RoundToInt(aspectTarget.x); pngHeight = Mathf.RoundToInt(aspectTarget.y); pending = output + "/" + name + ".png"; if (System.IO.File.Exists(pending)) throw new System.Exception("Refuse screenshot overwrite"); captureAt = UnityEditor.EditorApplication.timeSinceStartup; ScreenCapture.CaptureScreenshot(pending, 1); note("capture=" + name + "; target=" + aspectTarget + "; Screen_reference=" + Screen.width + "x" + Screen.height); };
+note("session=" + session + "; layout_fixture_original_scene=" + originalScene + "; existing preset2=" + originalLabels[2]); System.IO.File.WriteAllText(folder + "craft-aspect-progress.txt", "RUNNING " + run + " phase=0\n");
+tick = () => {
+    try {
+        double now = UnityEditor.EditorApplication.timeSinceStartup, gap = now - lastTick; lastTick = now; string scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        if (now - lastPump >= .1) { lastPump = now; if (view != null) view.Repaint(); UnityEditor.EditorApplication.QueuePlayerLoopUpdate(); }
+        if (now - lastProgress >= 1) { lastProgress = now; System.IO.File.WriteAllText(folder + "craft-aspect-progress.txt", "RUNNING " + run + " phase=" + phase + " scene=" + scene + " render=" + renderSize() + "\n"); }
+        if (phase < 90 && (gap > 5 || !Application.isPlaying || UnityEditor.EditorApplication.isPaused || Time.timeScale != 1f || Time.captureDeltaTime != 0f)) { beginRestore("INTERRUPTED environment_changed"); return; }
+        if (phase < 90 && now - began > 45) { beginRestore("FAIL watchdog_45s"); return; }
+        if (phase == 90) { bool restored = scene == originalScene && view != null && (int)selectedProperty.GetValue(view, null) == originalIndex && (renderSize() - originalSize).sqrMagnitude <= 1f && labels().SequenceEqual(originalLabels); if (restored && Application.isPlaying) restored = aligned(originalSize); if (restored && now - phaseAt >= .5) { finish(outcome); return; } if (now - phaseAt > 12) { finish("FAIL restore_timeout; prior=" + outcome); return; } return; }
+        if (phase > 0 && (renderSize() - aspectTarget).sqrMagnitude > 1f) { beginRestore("INTERRUPTED aspect_target_changed"); return; }
+        if (pending.Length > 0) { if (now - captureAt > 8) throw new System.Exception("Screenshot deadline 8s"); if (!System.IO.File.Exists(pending)) return; byte[] png; try { png = System.IO.File.ReadAllBytes(pending); } catch (System.IO.IOException) { return; } if (png.Length < 32 || png[png.Length - 8] != 73 || png[png.Length - 7] != 69 || png[png.Length - 6] != 78 || png[png.Length - 5] != 68) return; check(png[0] == 137 && png[1] == 80 && png[2] == 78 && png[3] == 71 && (png[16] << 24 | png[17] << 16 | png[18] << 8 | png[19]) == pngWidth && (png[20] << 24 | png[21] << 16 | png[22] << 8 | png[23]) == pngHeight, "png_matches_render_" + System.IO.Path.GetFileName(pending)); pending = ""; }
+        if (lastFrame == Time.frameCount) return; lastFrame = Time.frameCount;
+        var tabs = UnityEngine.Object.FindFirstObjectByType<CraftTabController>(); var transition = UnityEngine.Object.FindFirstObjectByType<SceneTransitionManager>();
+        if (phase == 0) {
+            var manager = UnityEngine.Object.FindFirstObjectByType<CraftManager>(); Vector2 target = renderSize();
+            bool ready = scene == "Craft" && tabs != null && tabs.craftPanel.activeInHierarchy && manager != null && manager.IsReadyForTutorial && target.x > 0 && target.y > 0 && Mathf.Abs(target.x - 1.6f * target.y) <= 2 && aligned(target) && (target - lastTarget).sqrMagnitude <= 1f && (transition == null || !transition.IsLoading);
+            lastTarget = target; stableFrames = ready ? stableFrames + 1 : 0; if (stableFrames < 4 || now - phaseAt < 1) return;
+            aspectTarget = target; craftEvents = UnityEngine.EventSystems.EventSystem.current; check(craftEvents != null, "craft_eventsystem_present"); craftNavigation = craftEvents.sendNavigationEvents; foreach (var module in craftEvents.GetComponents<UnityEngine.EventSystems.BaseInputModule>()) { modules[module] = module.enabled; module.enabled = false; } craftEvents.sendNavigationEvents = false;
+            capture("01-craft-initial-native-guide"); phase = 1; phaseAt = now;
+        } else if (phase == 1) { pauseGuide(); capture("02-craft-main"); phase = 2;
+        } else if (phase == 2) { inspectPanel(tabs.craftPanel, "CRAFT"); phase = 3; phaseAt = now;
+        } else if (phase == 3 && now - phaseAt >= .35) { note("CRAFT wheel_content_delta=" + (activeScroll.content.anchoredPosition - scrollBefore) + "; content_overflows=" + scrollNeedsMovement); capture("03-craft-after-wheel"); phase = 4;
+        } else if (phase == 4) { restoreScroll(); click(tabs.upgradeTabButton); phase = 5; phaseAt = now;
+        } else if (phase == 5 && now - phaseAt >= .8) { check(tabs.upgradePanel.activeInHierarchy, "native_upgrade_tab_open"); capture("04-custom-initial-native-guide"); phase = 6;
+        } else if (phase == 6) { pauseGuide(); capture("05-custom-main"); phase = 7;
+        } else if (phase == 7) { inspectPanel(tabs.upgradePanel, "WeaponCustom"); phase = 8; phaseAt = now;
+        } else if (phase == 8 && now - phaseAt >= .35) { note("WeaponCustom wheel_content_delta=" + (activeScroll.content.anchoredPosition - scrollBefore) + "; content_overflows=" + scrollNeedsMovement); capture("06-custom-after-wheel"); inspectShopFooter(tabs.upgradePanel, "WeaponCustom/after_wheel"); phase = 9;
+        } else if (phase == 9) { restoreScroll(); restoreInputs(); click(panelButton(tabs.upgradePanel, "Close")); phase = 10; phaseAt = now;
+        } else if (phase == 10 && scene == "CraftSpace" && (transition == null || !transition.IsLoading) && !ArrivalMessagePresenter.IsMessagePlaying && !ArrivalMessagePresenter.IsCameraPresentationPlaying && now - phaseAt >= 1) { check(aligned(aspectTarget), "native_close_arrived_at_dorm"); capture("07-dorm-native-return"); phase = 11;
+        } else if (phase == 11) beginRestore("PASS");
+    } catch (System.Exception ex) { note(ex.ToString()); try { if (phase < 90) beginRestore("FAIL exception"); else finish("FAIL restore_exception"); } catch (System.Exception restoreEx) { note(restoreEx.ToString()); finish("FAIL restore_exception"); } }
+};
+UnityEditor.EditorApplication.update += tick;
+try { selectedProperty.SetValue(view, 2, null); view.Repaint(); UnityEditor.EditorApplication.QueuePlayerLoopUpdate(); UnityEngine.SceneManagement.SceneManager.LoadScene("Craft"); }
+catch (System.Exception ex) { note(ex.ToString()); beginRestore("FAIL fixture_setup"); }
+return "Craft 16:10 layout fixture started: " + run + "; shortest start Title Play; ~8–15s; watchdog45s + restore12s; no Story/walking replay.";

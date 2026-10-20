@@ -1,0 +1,38 @@
+音量保存の別プロセス再起動検証 — 外側runner（準備済み、Player実行はroot）
+
+対象: /private/tmp/GearCraftReleasePolish20261019/AudioQA.app
+bundle ID: com.DefaultCompany.2D-URP。実行ファイル名はInfo.plistから読み、app外を拒否。
+一時harness GearCraftQAAudioPersistenceを含む専用QA build。永続配布候補ZIPを上書きしない。
+
+rootの手順
+1. QA専用ビルドが完了し、EditorのUI試験/Playを停止したことを確認。別GearCraft Playerを起動しない。現実行直前のPlayer domainをfresh退避するため、旧canonical/旧Player保存データは渡さない。
+2. 計画表示のみ:
+   python3 -B QA/ReleasePolish20261019/audio_persistence_probe.py
+3. 実行（新規結果folder限定）:
+   python3 -B QA/ReleasePolish20261019/audio_persistence_probe.py --execute --run-dir QA/ReleasePolish20261019/audio-persistence-run1
+   32文字UUID hex nonceを自動生成する。必要時だけ --session <英数字32文字> を指定可能。既存nonce dir/結果fileは拒否。
+4. result.jsonがPASS_TWO_PROCESS_AUDIO_PERSISTENCE、両phase exit0/verified=true/別PID、forced_cleanup=false、within_59_seconds=true、restoration_pending=false、process_may_still_be_running=falseを確認。
+5. Player全domain復元・Editor保護domain・AppSupport不変・正式候補ZIP不変を確認。rootは一時harness制作ファイル/ビルド用定義を別途撤去し、Editorの今回fresh session復元を行う。これはrunnerの権限/役割には含めない。
+
+実行内容
+・write PlayerをCLI -gearcraft-qa-audio write -gearcraft-qa-session <nonce>で起動。harnessがTitleのnative Slider callback経由でBGM=-17.25/SE=-28.75を要求する。
+・現native SliderはwholeNumbersを維持するため、実効BGM=-17/SE=-29を期待する。要求小数を無理に保存したとは扱わない。
+・native Audioのdebounce完了後、harnessが結果を書きApplication.Quit(0)。外側は正常終了を待ち、defaults exportから2キー存在/実効値を直接確認する。
+・別PIDのread Playerを起動。BeforeSceneLoad時点の保存値とAudio.Start後のMixer/Slider/Prefs一致、callback0/pendingfalse、write_pid対応を照合。harnessはreadでテスト値を再設定せず、Audio.Startによる復元を確認する。
+・各phaseの限度20秒、全体59秒。内部操作予算58秒から復元用12秒を確保してphaseを打ち切るため、開始が遅い場合は20秒より短い期限になる。harness自身のwatchdogは12秒。
+・期待スキーマschema1のsession/mode/status/success/PID/要求値/実効値/Mixer/Slider/Prefs/callback/boot値まで外側でも検証。Native結果は固定base /private/tmp/GearCraftReleasePolish20261019/audio-persistence/<nonce>/ に保持し、結果JSONをQAのwrite/read subfolderへコピーする。
+・外側は通常quit helperを呼ばず、harness自身のApplication.Quitを観測。期限超過時のみ保持する未reapの自己Popen子へTERM→2秒→必要ならKILL→2秒。任意PID/名前/プロセスグループの終了は行わない。強制cleanupはPASSにならない。
+
+保存保護
+実行前に既存app identityを新規記録し、Info/exe/Managed/主要scene dataのhashとQA型/CLI markerを確認する。各phase前/終了復元前も照合する。
+Player domain全キーをfresh型付きplistで退避。プレイヤーがすべて終了してから全復元。defaults import後に残る追加Gallery/音量キー等は「実行前不在・終了時の値一致・削除直前の全domain一致」を満たす追加キーだけを個別削除する。事前に存在した音量キーは元の値/型に戻す。domain全削除は禁止。
+Editorのunity.Takumi.GearCraft_Remake / com.Takumi.GearCraft_Remakeは比較だけで変更しない。AppSupportもmanifest比較のみ。途中に別Player/保護領域変化/identity変化があれば自動復元を中止してRESTORE_REVIEW_REQUIREDを残す。
+正式候補ZIP Builds/ReleaseCandidate20261019/GearCraft-macOS-universal-20261019.zipは前後SHA256=26a4b9729b9d8f480dc26f2eb0da1e56e172386dbdf9105275f78186d29ebcbaを要求する。
+他アプリやEditorの保存状態を推測で書き戻さない。失敗後もfresh backup・phase結果・ログを保持する。OS/ファイルI/O自体が停止した場合の絶対時間保証はできないため、実時間と未復元状態を必ず結果へ残す。
+
+判定範囲
+これは別OSプロセスでのnative UI callback保存→Audio.Start復元試験で、実OSマウス/キーボード操作や音の聴感ではない。署名操作、Gatekeeper/画面/入力権限の変更は行わない。Console例外数とThread/ComputeBuffer既知注意は分けて記録する。
+
+準備時の確認
+Python compile()とpy_compileはPASS。dry-runはprepared_only=trueを返した（--executeなし、Player/defaults/helper未実行、結果folder未作成）。
+副作用を持つrunner本体を呼ばず、純粋なschema validatorだけで正常write/readの2件、不一致/欠落の拒否12件を確認してPASS。audio-runner-preparation.json参照。

@@ -1,0 +1,112 @@
+2026-10-19T01:43:06.6682440Z session=20261019-012758-463-6f0f725639f04b0eb5ed49381d3c62e3; layout_fixture_original_scene=Title; existing preset2=16:10 Aspect
+2026-10-19T01:43:08.0277820Z PASS craft_eventsystem_present
+2026-10-19T01:43:08.0297580Z PASS capture_dimensions_01-craft-initial-native-guide
+2026-10-19T01:43:08.0304090Z capture=01-craft-initial-native-guide; target=(664.00, 415.00); Screen_reference=1672x924
+2026-10-19T01:43:08.0447430Z PASS png_matches_render_01-craft-initial-native-guide.png
+2026-10-19T01:43:08.0461180Z PASS capture_dimensions_02-craft-main
+2026-10-19T01:43:08.0463050Z capture=02-craft-main; target=(664.00, 415.00); Screen_reference=1672x924
+2026-10-19T01:43:08.0598980Z PASS png_matches_render_02-craft-main.png
+2026-10-19T01:43:08.0659740Z CRAFT/craft_button pixels=(x:383.88, y:96.83, width:62.25, height:93.37); canvas=(x:0.00, y:0.00, width:664.00, height:415.00)
+2026-10-19T01:43:08.0661080Z PASS CRAFT/craft_button_inside_canvas
+2026-10-19T01:43:08.0662090Z button=craft_button; interactable=True
+2026-10-19T01:43:08.0663390Z CRAFT/question pixels=(x:609.70, y:298.83, width:41.50, height:41.50); canvas=(x:0.00, y:0.00, width:664.00, height:415.00)
+2026-10-19T01:43:08.0664180Z PASS CRAFT/question_inside_canvas
+2026-10-19T01:43:08.0664840Z button=question; interactable=True
+2026-10-19T01:43:08.0666650Z CRAFT/Close pixels=(x:609.50, y:346.46, width:41.50, height:41.50); canvas=(x:0.00, y:0.00, width:664.00, height:415.00)
+2026-10-19T01:43:08.0668860Z PASS CRAFT/Close_inside_canvas
+2026-10-19T01:43:08.0670040Z button=Close; interactable=True
+2026-10-19T01:43:08.0672680Z CraftTabButton pixels=(x:7.44, y:6.57, width:77.81, height:58.79); canvas=(x:0.00, y:0.00, width:664.00, height:415.00)
+2026-10-19T01:43:08.0673790Z PASS CraftTabButton_inside_canvas
+2026-10-19T01:43:08.0674890Z UpgradeTabButton pixels=(x:85.25, y:6.57, width:77.81, height:58.79); canvas=(x:0.00, y:0.00, width:664.00, height:415.00)
+2026-10-19T01:43:08.0675630Z PASS UpgradeTabButton_inside_canvas
+2026-10-19T01:43:08.0679060Z PASS CRAFT_one_native_scroll
+2026-10-19T01:43:08.0681330Z CRAFT/viewport pixels=(x:9.68, y:98.56, width:149.40, height:210.96); canvas=(x:0.00, y:0.00, width:664.00, height:415.00)
+2026-10-19T01:43:08.0682280Z PASS CRAFT/viewport_inside_canvas
+2026-10-19T01:43:08.0683430Z PASS CRAFT_content_present
+2026-10-19T01:43:08.0686820Z CRAFT scroll=CraftRecipeScrollView; viewport=(x:9.68, y:98.56, width:149.40, height:210.96); content=(x:9.68, y:-71.59, width:149.40, height:381.11); child_count=10; vertical=True; movement=Clamped; sensitivity=34; elasticity=0.1; deceleration=0.135
+2026-10-19T01:43:08.0695450Z PASS CRAFT_scroll_raycast_reachable
+2026-10-19T01:43:08.0702650Z CRAFT native_wheel_delta=-3
+2026-10-19T01:43:08.4117490Z CRAFT wheel_content_delta=(0.00, 102.00); content_overflows=True
+2026-10-19T01:43:08.4120410Z PASS capture_dimensions_03-craft-after-wheel
+2026-10-19T01:43:08.4122170Z capture=03-craft-after-wheel; target=(664.00, 415.00); Screen_reference=1672x924
+2026-10-19T01:43:08.4276500Z PASS png_matches_render_03-craft-after-wheel.png
+2026-10-19T01:43:08.4298250Z PASS button_interactable_UpgradeTabButton
+2026-10-19T01:43:08.4300370Z UpgradeTabButton pixels=(x:85.25, y:6.57, width:77.81, height:58.79); canvas=(x:0.00, y:0.00, width:664.00, height:415.00)
+2026-10-19T01:43:08.4301790Z PASS UpgradeTabButton_inside_canvas
+2026-10-19T01:43:08.4304800Z PASS raycast_button_UpgradeTabButton
+2026-10-19T01:43:09.2310930Z PASS native_upgrade_tab_open
+2026-10-19T01:43:09.2314670Z PASS capture_dimensions_04-custom-initial-native-guide
+2026-10-19T01:43:09.2317110Z capture=04-custom-initial-native-guide; target=(664.00, 415.00); Screen_reference=1672x924
+2026-10-19T01:43:09.2489520Z PASS png_matches_render_04-custom-initial-native-guide.png
+2026-10-19T01:43:09.2493960Z PASS capture_dimensions_05-custom-main
+2026-10-19T01:43:09.2495500Z capture=05-custom-main; target=(664.00, 415.00); Screen_reference=1672x924
+2026-10-19T01:43:09.2652550Z PASS png_matches_render_05-custom-main.png
+2026-10-19T01:43:09.2657050Z WeaponCustom/UpgradeGrid pixels=(x:237.59, y:260.76, width:58.79, height:58.79); canvas=(x:0.00, y:0.00, width:664.00, height:415.00)
+2026-10-19T01:43:09.2658620Z PASS WeaponCustom/UpgradeGrid_inside_canvas
+2026-10-19T01:43:09.2659760Z button=UpgradeGrid; interactable=True
+2026-10-19T01:43:09.2660920Z WeaponCustom/UpgradeGrid pixels=(x:299.15, y:260.76, width:58.79, height:58.79); canvas=(x:0.00, y:0.00, width:664.00, height:415.00)
+2026-10-19T01:43:09.2661890Z PASS WeaponCustom/UpgradeGrid_inside_canvas
+2026-10-19T01:43:09.2662810Z button=UpgradeGrid; interactable=True
+2026-10-19T01:43:09.2663930Z WeaponCustom/UpgradeGrid pixels=(x:360.70, y:260.76, width:58.79, height:58.79); canvas=(x:0.00, y:0.00, width:664.00, height:415.00)
+2026-10-19T01:43:09.2664880Z PASS WeaponCustom/UpgradeGrid_inside_canvas
+2026-10-19T01:43:09.2665730Z button=UpgradeGrid; interactable=True
+2026-10-19T01:43:09.2666720Z WeaponCustom/UpgradeGrid pixels=(x:237.59, y:199.20, width:58.79, height:58.79); canvas=(x:0.00, y:0.00, width:664.00, height:415.00)
+2026-10-19T01:43:09.2667600Z PASS WeaponCustom/UpgradeGrid_inside_canvas
+2026-10-19T01:43:09.2668500Z button=UpgradeGrid; interactable=True
+2026-10-19T01:43:09.2669410Z WeaponCustom/UpgradeGrid pixels=(x:299.15, y:199.20, width:58.79, height:58.79); canvas=(x:0.00, y:0.00, width:664.00, height:415.00)
+2026-10-19T01:43:09.2670200Z PASS WeaponCustom/UpgradeGrid_inside_canvas
+2026-10-19T01:43:09.2671180Z button=UpgradeGrid; interactable=True
+2026-10-19T01:43:09.2672230Z WeaponCustom/UpgradeGrid pixels=(x:360.70, y:199.20, width:58.79, height:58.79); canvas=(x:0.00, y:0.00, width:664.00, height:415.00)
+2026-10-19T01:43:09.2673110Z PASS WeaponCustom/UpgradeGrid_inside_canvas
+2026-10-19T01:43:09.2673990Z button=UpgradeGrid; interactable=True
+2026-10-19T01:43:09.2675880Z WeaponCustom/UpgradeGrid pixels=(x:237.59, y:137.64, width:58.79, height:58.79); canvas=(x:0.00, y:0.00, width:664.00, height:415.00)
+2026-10-19T01:43:09.2677090Z PASS WeaponCustom/UpgradeGrid_inside_canvas
+2026-10-19T01:43:09.2678920Z button=UpgradeGrid; interactable=True
+2026-10-19T01:43:09.2680500Z WeaponCustom/UpgradeGrid pixels=(x:299.15, y:137.64, width:58.79, height:58.79); canvas=(x:0.00, y:0.00, width:664.00, height:415.00)
+2026-10-19T01:43:09.2681850Z PASS WeaponCustom/UpgradeGrid_inside_canvas
+2026-10-19T01:43:09.2683340Z button=UpgradeGrid; interactable=True
+2026-10-19T01:43:09.2684410Z WeaponCustom/UpgradeGrid pixels=(x:360.70, y:137.64, width:58.79, height:58.79); canvas=(x:0.00, y:0.00, width:664.00, height:415.00)
+2026-10-19T01:43:09.2685300Z PASS WeaponCustom/UpgradeGrid_inside_canvas
+2026-10-19T01:43:09.2686240Z button=UpgradeGrid; interactable=True
+2026-10-19T01:43:09.2687310Z WeaponCustom/Close pixels=(x:449.58, y:344.10, width:41.50, height:41.50); canvas=(x:0.00, y:0.00, width:664.00, height:415.00)
+2026-10-19T01:43:09.2688260Z PASS WeaponCustom/Close_inside_canvas
+2026-10-19T01:43:09.2689050Z button=Close; interactable=True
+2026-10-19T01:43:09.2690270Z WeaponCustom/RefreshButton pixels=(x:16.22, y:86.46, width:129.75, height:21.44); canvas=(x:0.00, y:0.00, width:664.00, height:415.00)
+2026-10-19T01:43:09.2691350Z PASS WeaponCustom/RefreshButton_inside_canvas
+2026-10-19T01:43:09.2692270Z button=RefreshButton; interactable=True
+2026-10-19T01:43:09.2693250Z WeaponCustom/question pixels=(x:449.10, y:299.21, width:41.50, height:41.50); canvas=(x:0.00, y:0.00, width:664.00, height:415.00)
+2026-10-19T01:43:09.2694240Z PASS WeaponCustom/question_inside_canvas
+2026-10-19T01:43:09.2695110Z button=question; interactable=True
+2026-10-19T01:43:09.2697890Z CraftTabButton pixels=(x:7.44, y:6.57, width:77.81, height:58.79); canvas=(x:0.00, y:0.00, width:664.00, height:415.00)
+2026-10-19T01:43:09.2698800Z PASS CraftTabButton_inside_canvas
+2026-10-19T01:43:09.2699960Z UpgradeTabButton pixels=(x:85.25, y:6.57, width:77.81, height:58.79); canvas=(x:0.00, y:0.00, width:664.00, height:415.00)
+2026-10-19T01:43:09.2700980Z PASS UpgradeTabButton_inside_canvas
+2026-10-19T01:43:09.2702040Z PASS WeaponCustom_one_native_scroll
+2026-10-19T01:43:09.2703140Z WeaponCustom/viewport pixels=(x:6.92, y:114.68, width:150.18, height:192.40); canvas=(x:0.00, y:0.00, width:664.00, height:415.00)
+2026-10-19T01:43:09.2704490Z PASS WeaponCustom/viewport_inside_canvas
+2026-10-19T01:43:09.2705370Z PASS WeaponCustom_content_present
+2026-10-19T01:43:09.2706750Z WeaponCustom scroll=ShopScrollView; viewport=(x:6.92, y:114.68, width:150.18, height:192.40); content=(x:6.92, y:-7.62, width:150.18, height:314.71); child_count=6; vertical=True; movement=Clamped; sensitivity=34; elasticity=0.1; deceleration=0.135
+2026-10-19T01:43:09.2735370Z WeaponCustom/before_wheel footer_gap_pixels=6.780098; required_margin_pixels=1; viewport=(x:6.92, y:114.68, width:150.18, height:192.40); refresh=(x:16.22, y:86.46, width:129.75, height:21.44)
+2026-10-19T01:43:09.2736650Z PASS WeaponCustom/before_wheel_viewport_above_refresh_with_margin
+2026-10-19T01:43:09.2739440Z WeaponCustom/before_wheel refresh_center_top_hit=Text (TMP); interactable=True; no_click_dispatched
+2026-10-19T01:43:09.2740420Z PASS WeaponCustom/before_wheel_refresh_center_raycast_reachable
+2026-10-19T01:43:09.2742190Z PASS WeaponCustom_scroll_raycast_reachable
+2026-10-19T01:43:09.2743430Z WeaponCustom native_wheel_delta=-3
+2026-10-19T01:43:09.6160370Z WeaponCustom wheel_content_delta=(0.00, 102.00); content_overflows=True
+2026-10-19T01:43:09.6164710Z PASS capture_dimensions_06-custom-after-wheel
+2026-10-19T01:43:09.6168870Z capture=06-custom-after-wheel; target=(664.00, 415.00); Screen_reference=1672x924
+2026-10-19T01:43:09.6172630Z WeaponCustom/after_wheel footer_gap_pixels=6.780098; required_margin_pixels=1; viewport=(x:6.92, y:114.68, width:150.18, height:192.40); refresh=(x:16.22, y:86.46, width:129.75, height:21.44)
+2026-10-19T01:43:09.6174680Z PASS WeaponCustom/after_wheel_viewport_above_refresh_with_margin
+2026-10-19T01:43:09.6178240Z WeaponCustom/after_wheel refresh_center_top_hit=Text (TMP); interactable=True; no_click_dispatched
+2026-10-19T01:43:09.6179480Z PASS WeaponCustom/after_wheel_refresh_center_raycast_reachable
+2026-10-19T01:43:09.6323500Z PASS png_matches_render_06-custom-after-wheel.png
+2026-10-19T01:43:09.6337570Z PASS button_interactable_Close
+2026-10-19T01:43:09.6339830Z Close pixels=(x:449.58, y:344.10, width:41.50, height:41.50); canvas=(x:0.00, y:0.00, width:664.00, height:415.00)
+2026-10-19T01:43:09.6340980Z PASS Close_inside_canvas
+2026-10-19T01:43:09.6343660Z PASS raycast_button_Close
+2026-10-19T01:43:12.6066840Z PASS native_close_arrived_at_dorm
+2026-10-19T01:43:12.6070260Z PASS capture_dimensions_07-dorm-native-return
+2026-10-19T01:43:12.6071560Z capture=07-dorm-native-return; target=(664.00, 415.00); Screen_reference=2940x40
+2026-10-19T01:43:12.6599810Z PASS png_matches_render_07-dorm-native-return.png
+2026-10-19T01:43:12.6612890Z fixture_restore_requested; outcome=PASS
+2026-10-19T01:43:13.7752950Z fixture_restored=True; scene=Title; target=(1920.00, 1080.00); Screen_reference=2940x40

@@ -1,0 +1,16 @@
+// C#6 execute_code BODY. Root only; removes exactly the source owned by install record.
+const string folder="QA/ReleasePolish20261019/";
+const string target="Assets/GearCraftQAAudioPersistence.cs";
+if(Application.isPlaying||UnityEditor.EditorApplication.isCompiling||UnityEditor.BuildPipeline.isBuildingPlayer)throw new System.Exception("Require idle Edit");
+if(System.IO.File.Exists(folder+"audio-qa-cleanup.json"))throw new System.Exception("Cleanup record exists; do not overwrite");
+var record=Newtonsoft.Json.Linq.JObject.Parse(System.IO.File.ReadAllText(folder+"audio-qa-install.json"));
+System.Func<string,string> hash=path=>{using(var sha=System.Security.Cryptography.SHA256.Create())return System.BitConverter.ToString(sha.ComputeHash(System.IO.File.ReadAllBytes(path))).Replace("-","").ToLowerInvariant();};
+if((string)record["asset"]!=target||!System.IO.File.Exists(target)||hash(target)!=(string)record["installed_sha256"])throw new System.Exception("Temporary source ownership mismatch; do not delete");
+if(record["meta_sha256"].Type!=Newtonsoft.Json.Linq.JTokenType.Null&&(!System.IO.File.Exists(target+".meta")||hash(target+".meta")!=(string)record["meta_sha256"]))throw new System.Exception("Temporary meta ownership mismatch; inspect before deleting");
+if(!UnityEditor.AssetDatabase.DeleteAsset(target))throw new System.Exception("AssetDatabase could not remove owned QA source");
+var changed=new System.Collections.Generic.List<string>();
+foreach(var property in ((Newtonsoft.Json.Linq.JObject)record["production_before"]).Properties())if(hash(property.Name)!=(string)property.Value)changed.Add(property.Name);
+bool removed=!System.IO.File.Exists(target)&&!System.IO.File.Exists(target+".meta");
+System.IO.File.WriteAllText(folder+"audio-qa-cleanup.json",Newtonsoft.Json.JsonConvert.SerializeObject(new{utc=System.DateTime.UtcNow.ToString("O"),temporary_source_and_meta_removed=removed,production_changes=changed,global_defines_modified=false},Newtonsoft.Json.Formatting.Indented)+"\n");
+if(!removed||changed.Count!=0)throw new System.Exception("QA cleanup requires review");
+return "Temporary QA source/meta removed, protected18 source hashes unchanged. Wait for compile idle; original release candidate app was never modified.";

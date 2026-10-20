@@ -1,0 +1,7 @@
+{"utc": "2026-10-19T01:52:53.564347+00:00", "event": "phase_started", "mode": "write", "pid": 45734}
+{"utc": "2026-10-19T01:52:56.589937+00:00", "event": "phase_waiting", "mode": "write", "pid": 45734, "elapsed_seconds": 3.026}
+{"utc": "2026-10-19T01:52:58.424506+00:00", "event": "phase_passed", "mode": "write", "pid": 45734}
+{"utc": "2026-10-19T01:52:58.507245+00:00", "event": "phase_started", "mode": "read", "pid": 45792}
+{"utc": "2026-10-19T01:53:01.550567+00:00", "event": "phase_waiting", "mode": "read", "pid": 45792, "elapsed_seconds": 3.044}
+{"utc": "2026-10-19T01:53:02.695520+00:00", "event": "phase_passed", "mode": "read", "pid": 45792}
+{"utc": "2026-10-19T01:53:02.988679+00:00", "event": "finished", "result": "PASS_TWO_PROCESS_AUDIO_PERSISTENCE", "restoration_pending": false, "process_may_still_be_running": false, "elapsed_seconds": 9.665}

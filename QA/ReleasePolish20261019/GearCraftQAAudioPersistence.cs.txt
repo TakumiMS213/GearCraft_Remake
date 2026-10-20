@@ -1,0 +1,317 @@
+#if GEARCRAFT_QA_AUDIO && !UNITY_EDITOR
+// QA-only Player harness. Not shipped in a normal build; never invokes OS input/capture APIs.
+using System;
+using System.IO;
+using System.Reflection;
+using System.Diagnostics;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+
+public sealed class GearCraftQAAudioPersistence : MonoBehaviour
+{
+    private const string OutputBase = "/private/tmp/GearCraftReleasePolish20261019/audio-persistence";
+    private const string ExpectedIdentifier = "com.DefaultCompany.2D-URP";
+    private const string BgmKey = "GearCraft.Audio.BGM.dB.v1";
+    private const string SeKey = "GearCraft.Audio.SE.dB.v1";
+    private const float RequestedBgm = -17.25f;
+    private const float RequestedSe = -28.75f;
+    private const float ExpectedBgm = -17f;
+    private const float ExpectedSe = -29f;
+    private const float Tolerance = 0.01f;
+    private const double WatchdogSeconds = 12.0;
+    private static GearCraftQAAudioPersistence instance;
+
+    [Serializable]
+    public sealed class Result
+    {
+        public int schema = 1;
+        public string session;
+        public string mode;
+        public bool success;
+        public string status;
+        public int pid;
+        public int exit_code_requested;
+        public float requested_bgm_db = RequestedBgm;
+        public float requested_se_db = RequestedSe;
+        public float expected_bgm_db = ExpectedBgm;
+        public float expected_se_db = ExpectedSe;
+        public float mixer_bgm_db;
+        public float mixer_se_db;
+        public float slider_bgm_db;
+        public float slider_se_db;
+        public float prefs_bgm_db;
+        public float prefs_se_db;
+        public bool prefs_bgm_exists;
+        public bool prefs_se_exists;
+        public int bgm_callback_count;
+        public int se_callback_count;
+        public bool native_pending_changes;
+        public bool boot_bgm_exists;
+        public bool boot_se_exists;
+        public float boot_bgm_db;
+        public float boot_se_db;
+        public int write_pid;
+        public int frames_after_bind;
+        public double elapsed_seconds;
+        public bool native_pending_seen_after_write;
+        public bool native_debounce_completed;
+        public bool listeners_bound_before_start;
+        public bool bgm_whole_numbers;
+        public bool se_whole_numbers;
+        public string bundle_identifier;
+        public string message;
+        public string evidence_scope = "Separate-process native Title Slider events / Audio persistence; not OS mouse/keyboard input, visual UI, or fractional Slider precision.";
+    }
+
+    [Serializable]
+    private sealed class Event
+    {
+        public string utc;
+        public string kind;
+        public int frame;
+        public float unscaled_seconds;
+        public double wall_seconds;
+        public string detail;
+    }
+
+    private Result result;
+    private string output;
+    private StreamWriter events;
+    private Stopwatch clock;
+    private global::Audio controller;
+    private Slider bgm;
+    private Slider se;
+    private FieldInfo pendingField;
+    private int bindFrame;
+    private bool bound;
+    private bool finished;
+    private bool changed;
+    private bool hasStableSample;
+    private double stableSince;
+    private float writeUnscaledTime;
+    private int errors;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    private static void Bootstrap()
+    {
+        if (instance != null) return;
+        var owner = new GameObject("__GEARCRAFT_QA_AUDIO_PERSISTENCE__");
+        DontDestroyOnLoad(owner);
+        instance = owner.AddComponent<GearCraftQAAudioPersistence>();
+        instance.Begin();
+    }
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    private static void BindBeforeNativeStart()
+    {
+        if (instance == null || instance.finished) return;
+        try { instance.Bind(); }
+        catch (Exception error) { instance.Finish(false, error.ToString()); }
+    }
+
+    private static string Argument(string name)
+    {
+        string[] args = Environment.GetCommandLineArgs();
+        string value = null;
+        for (int i = 0; i < args.Length; i++)
+        {
+            if (args[i] != name) continue;
+            if (value != null || i + 1 >= args.Length) throw new InvalidOperationException("Missing/duplicate argument " + name);
+            value = args[++i];
+        }
+        return value;
+    }
+
+    private static void Check(bool condition, string message)
+    {
+        if (!condition) throw new InvalidOperationException(message);
+    }
+
+    private static bool Near(float a, float b)
+    {
+        return !float.IsNaN(a) && !float.IsInfinity(a) && Mathf.Abs(a - b) <= Tolerance;
+    }
+
+    private void Begin()
+    {
+        clock = Stopwatch.StartNew();
+        result = new Result();
+        result.pid = Process.GetCurrentProcess().Id;
+        result.write_pid = result.pid;
+        try
+        {
+            result.mode = Argument("-gearcraft-qa-audio");
+            result.session = Argument("-gearcraft-qa-session");
+            Check(result.mode == "write" || result.mode == "read", "Expected -gearcraft-qa-audio write|read");
+            Check(result.session != null && result.session.Length == 32, "Expected 32-character alphanumeric session");
+            foreach (char c in result.session) Check(c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z', "Invalid session character");
+            Check(Application.platform == RuntimePlatform.OSXPlayer && !UnityEngine.Debug.isDebugBuild, "Requires isolated non-development macOS Player");
+            Check(Application.identifier == ExpectedIdentifier, "PlayerPrefs domain identifier differs from the protected expected domain");
+            string dataPath = Application.dataPath.Replace('\\', '/');
+            Check(dataPath == "/private/tmp/GearCraftReleasePolish20261019/AudioQA.app/Contents" || dataPath == "/tmp/GearCraftReleasePolish20261019/AudioQA.app/Contents", "Wrong app; QA must not run inside release candidate");
+            result.bundle_identifier = Application.identifier;
+            output = Path.Combine(OutputBase, result.session);
+            Directory.CreateDirectory(output);
+            Check(!File.Exists(Path.Combine(output, result.mode + "-result.json")), "Never overwrite an existing phase result");
+            events = new StreamWriter(new FileStream(Path.Combine(output, result.mode + "-events.jsonl"), FileMode.CreateNew, FileAccess.Write, FileShare.Read));
+            events.AutoFlush = true;
+            Application.logMessageReceived += OnLog;
+            result.boot_bgm_exists = PlayerPrefs.HasKey(BgmKey);
+            result.boot_se_exists = PlayerPrefs.HasKey(SeKey);
+            result.boot_bgm_db = result.boot_bgm_exists ? PlayerPrefs.GetFloat(BgmKey) : 0f;
+            result.boot_se_db = result.boot_se_exists ? PlayerPrefs.GetFloat(SeKey) : 0f;
+            Note("boot_before_scene", "mode=" + result.mode + "; BGM_exists=" + result.boot_bgm_exists + "; SE_exists=" + result.boot_se_exists + "; no setters or PlayerPrefs.Save invoked by harness");
+            if (result.mode == "read")
+            {
+                string previousPath = Path.Combine(output, "write-result.json");
+                Check(File.Exists(previousPath), "Write result must precede read process");
+                Result previous = JsonUtility.FromJson<Result>(File.ReadAllText(previousPath));
+                Check(previous != null && previous.schema == 1 && previous.mode == "write" && previous.session == result.session && previous.success && previous.status == "PASS_WRITE", "Write result does not identify a successful same-session write");
+                Check(previous.pid != result.pid && previous.exit_code_requested == 0, "Read must run in a new process after writer normal exit");
+                Check(Near(previous.expected_bgm_db, ExpectedBgm) && Near(previous.expected_se_db, ExpectedSe), "Write expected values differ");
+                result.write_pid = previous.pid;
+                Check(result.boot_bgm_exists && result.boot_se_exists && Near(result.boot_bgm_db, ExpectedBgm) && Near(result.boot_se_db, ExpectedSe), "Read process did not load persisted audio keys before Audio.Start");
+            }
+        }
+        catch (Exception error) { Finish(false, error.ToString()); }
+    }
+
+    private void Bind()
+    {
+        Check(!bound && SceneManager.GetActiveScene().name == "Title", "Expected first native Title scene");
+        var found = UnityEngine.Object.FindObjectsByType<global::Audio>(FindObjectsSortMode.None);
+        Check(found.Length == 1, "Expected one native Title Audio component");
+        controller = found[0]; bgm = controller.BGMSlider; se = controller.SESlider;
+        Check(controller.isActiveAndEnabled && controller.audioMixer != null && bgm != null && se != null, "Native Audio/Mixer/Slider references missing");
+        Check(bgm.wholeNumbers && se.wholeNumbers, "Expected unchanged native integer Slider configuration");
+        Check(Near(Mathf.Round(Mathf.Clamp(RequestedBgm, bgm.minValue, bgm.maxValue)), ExpectedBgm) && Near(Mathf.Round(Mathf.Clamp(RequestedSe, se.minValue, se.maxValue)), ExpectedSe), "Native Slider clamp/round expectations differ");
+        Check(HasNativeListener(bgm, "SetBGM") && HasNativeListener(se, "SetSE"), "Existing native Slider callbacks not connected to Audio");
+        pendingField = typeof(global::Audio).GetField("hasPendingChanges", BindingFlags.Instance | BindingFlags.NonPublic);
+        Check(pendingField != null, "Native Audio pending flag missing");
+        bgm.onValueChanged.AddListener(OnBgm); se.onValueChanged.AddListener(OnSe);
+        bindFrame = Time.frameCount; bound = true;
+        result.listeners_bound_before_start = true;
+        result.bgm_whole_numbers = bgm.wholeNumbers; result.se_whole_numbers = se.wholeNumbers;
+        Note("after_scene_before_start", "Observers installed before native Audio.Start; existing persistent callback configuration retained");
+    }
+
+    private bool HasNativeListener(Slider slider, string method)
+    {
+        for (int i = 0; i < slider.onValueChanged.GetPersistentEventCount(); i++)
+            if (slider.onValueChanged.GetPersistentTarget(i) == controller && slider.onValueChanged.GetPersistentMethodName(i) == method && slider.onValueChanged.GetPersistentListenerState(i) != UnityEngine.Events.UnityEventCallState.Off) return true;
+        return false;
+    }
+
+    private void OnBgm(float value) { result.bgm_callback_count++; Note("BGM_native_slider_event", value.ToString("R", System.Globalization.CultureInfo.InvariantCulture)); }
+    private void OnSe(float value) { result.se_callback_count++; Note("SE_native_slider_event", value.ToString("R", System.Globalization.CultureInfo.InvariantCulture)); }
+
+    private void Update()
+    {
+        if (finished) return;
+        try
+        {
+            Check(clock.Elapsed.TotalSeconds < WatchdogSeconds, "12-second main-loop watchdog; external runner must also bound process lifetime");
+            Check(errors == 0, "Native error/exception captured");
+            if (!bound) return;
+            Check(SceneManager.GetActiveScene().name == "Title" && controller != null && controller.isActiveAndEnabled, "Native Title/Audio lifecycle changed unexpectedly");
+            Check(Time.timeScale == 1f, "Native Title timeScale changed");
+            if (Time.frameCount - bindFrame < 3 || Time.unscaledTime < 0.25f) return;
+            Sample();
+            if (result.mode == "read")
+            {
+                Check(result.bgm_callback_count == 0 && result.se_callback_count == 0 && !result.native_pending_changes, "Read mode observed an unexpected Slider change or pending audio write");
+                CheckExpected();
+                if (!hasStableSample) { hasStableSample = true; stableSince = clock.Elapsed.TotalSeconds; Note("read_native_restored", "Audio.Start restored disk values into Mixer and integer Sliders without change callbacks"); }
+                if (clock.Elapsed.TotalSeconds - stableSince >= 0.5) Finish(true, "New-process Prefs before Start and native Mixer/Slider after Start match; no read-mode UI callback or pending Audio changes");
+                return;
+            }
+            if (!changed)
+            {
+                Check(!result.native_pending_changes && result.bgm_callback_count == 0 && result.se_callback_count == 0, "Unexpected write before requested native Slider operation");
+                // Use the unchanged real Slider setter. If already at target, make a one-step UI change first
+                // so callback execution is observed without depending on the user's initial audio values.
+                if (Near(bgm.value, ExpectedBgm)) bgm.value = ExpectedBgm - 1f;
+                bgm.value = RequestedBgm;
+                if (Near(se.value, ExpectedSe)) se.value = ExpectedSe - 1f;
+                se.value = RequestedSe;
+                changed = true; writeUnscaledTime = Time.unscaledTime;
+                Sample();
+                Check(result.bgm_callback_count > 0 && result.se_callback_count > 0 && result.native_pending_changes, "Native Slider callbacks did not create pending Audio save");
+                result.native_pending_seen_after_write = true;
+                CheckExpected();
+                Note("write_native_requested", "requests=-17.25,-28.75; native wholeNumbers effective=-17,-29; pending true; no direct SetBGM/SetSE or Prefs write in harness");
+                return;
+            }
+            CheckExpected();
+            if (result.native_pending_changes) return;
+            Check(Time.unscaledTime - writeUnscaledTime >= 0.29f, "Native pending cleared before expected debounce interval");
+            result.native_debounce_completed = true;
+            if (!hasStableSample) { hasStableSample = true; stableSince = clock.Elapsed.TotalSeconds; Note("native_debounce_completed", "Pending flag transitioned true -> false while same enabled Audio remained active"); }
+            if (clock.Elapsed.TotalSeconds - stableSince >= 0.4) Finish(true, "Existing Slider events changed Mixer/Prefs; native Audio.Update debounce cleared pending before normal quit request");
+        }
+        catch (Exception error) { Finish(false, error.ToString()); }
+    }
+
+    private void Sample()
+    {
+        Check(controller.audioMixer.GetFloat("BGM", out result.mixer_bgm_db) && controller.audioMixer.GetFloat("SE", out result.mixer_se_db), "Native Mixer exposed parameters unavailable after startup");
+        result.slider_bgm_db = bgm.value; result.slider_se_db = se.value;
+        result.prefs_bgm_exists = PlayerPrefs.HasKey(BgmKey); result.prefs_se_exists = PlayerPrefs.HasKey(SeKey);
+        result.prefs_bgm_db = result.prefs_bgm_exists ? PlayerPrefs.GetFloat(BgmKey) : 0f;
+        result.prefs_se_db = result.prefs_se_exists ? PlayerPrefs.GetFloat(SeKey) : 0f;
+        result.native_pending_changes = (bool)pendingField.GetValue(controller);
+        result.frames_after_bind = Time.frameCount - bindFrame;
+    }
+
+    private void CheckExpected()
+    {
+        Check(result.prefs_bgm_exists && result.prefs_se_exists, "Audio keys missing");
+        Check(Near(result.mixer_bgm_db, ExpectedBgm) && Near(result.slider_bgm_db, ExpectedBgm) && Near(result.prefs_bgm_db, ExpectedBgm), "BGM native state mismatch");
+        Check(Near(result.mixer_se_db, ExpectedSe) && Near(result.slider_se_db, ExpectedSe) && Near(result.prefs_se_db, ExpectedSe), "SE native state mismatch");
+    }
+
+    private void Note(string kind, string detail)
+    {
+        if (events == null) return;
+        events.WriteLine(JsonUtility.ToJson(new Event { utc = DateTime.UtcNow.ToString("O"), kind = kind, frame = Time.frameCount, unscaled_seconds = Time.unscaledTime, wall_seconds = clock == null ? 0 : clock.Elapsed.TotalSeconds, detail = detail }));
+    }
+
+    private void OnLog(string message, string stack, LogType type)
+    {
+        if (type != LogType.Exception && type != LogType.Error && type != LogType.Assert) return;
+        errors++; Note("native_error", message + "\n" + stack);
+    }
+
+    private void Finish(bool success, string message)
+    {
+        if (finished) return;
+        finished = true;
+        if (bgm != null) bgm.onValueChanged.RemoveListener(OnBgm);
+        if (se != null) se.onValueChanged.RemoveListener(OnSe);
+        result.success = success && errors == 0;
+        result.status = result.success ? (result.mode == "write" ? "PASS_WRITE" : "PASS_READ") : "FAIL";
+        result.exit_code_requested = result.success ? 0 : 2;
+        result.message = message;
+        result.elapsed_seconds = clock == null ? 0 : clock.Elapsed.TotalSeconds;
+        try
+        {
+            Note("finish", result.status + "; native Application.Quit requested; actual process exit must be verified by outer runner");
+            if (output != null)
+                using (var file = new StreamWriter(new FileStream(Path.Combine(output, result.mode + "-result.json"), FileMode.CreateNew, FileAccess.Write, FileShare.Read))) file.WriteLine(JsonUtility.ToJson(result, true));
+        }
+        catch (Exception error) { UnityEngine.Debug.LogError("QA Audio evidence write failed: " + error); result.exit_code_requested = 2; }
+        Application.Quit(result.exit_code_requested);
+    }
+
+    private void OnApplicationQuit() { Note("OnApplicationQuit", "Unity quit callback observed; outer runner still verifies actual process exit and restores fresh full domain"); }
+    private void OnDestroy()
+    {
+        Application.logMessageReceived -= OnLog;
+        if (bgm != null) bgm.onValueChanged.RemoveListener(OnBgm);
+        if (se != null) se.onValueChanged.RemoveListener(OnSe);
+        if (events != null) { events.Dispose(); events = null; }
+        if (instance == this) instance = null;
+    }
+}
+#endif

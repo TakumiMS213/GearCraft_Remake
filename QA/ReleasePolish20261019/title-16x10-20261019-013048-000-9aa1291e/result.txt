@@ -1,0 +1,38 @@
+FAIL exception
+2026-10-19T01:30:48.0079960Z session=20261019-012758-463-6f0f725639f04b0eb5ed49381d3c62e3; preset2=16:10 Aspect; original_index=3; original_target=(1920.00, 1080.00)
+2026-10-19T01:30:48.5088540Z aspect_ratio=1.600000
+2026-10-19T01:30:48.5150620Z Title/SettingButton pixels=(x:192.02, y:86.47, width:279.97, height:52.49); viewport=(x:0.00, y:0.00, width:664.00, height:415.00)
+2026-10-19T01:30:48.5152920Z PASS Title/SettingButton_inside_canvas
+2026-10-19T01:30:48.5154440Z Title/offButton pixels=(x:589.22, y:50.02, width:45.49, height:52.50); viewport=(x:0.00, y:0.00, width:664.00, height:415.00)
+2026-10-19T01:30:48.5155610Z PASS Title/offButton_inside_canvas
+2026-10-19T01:30:48.5156850Z Title/StartButton pixels=(x:192.02, y:146.26, width:279.97, height:52.49); viewport=(x:0.00, y:0.00, width:664.00, height:415.00)
+2026-10-19T01:30:48.5157810Z PASS Title/StartButton_inside_canvas
+2026-10-19T01:30:48.5158900Z Title/Manual pixels=(x:477.67, y:146.26, width:52.50, height:52.50); viewport=(x:0.00, y:0.00, width:664.00, height:415.00)
+2026-10-19T01:30:48.5159890Z PASS Title/Manual_inside_canvas
+2026-10-19T01:30:48.5161030Z Title/GalleryIcon pixels=(x:477.67, y:86.47, width:52.50, height:52.50); viewport=(x:0.00, y:0.00, width:664.00, height:415.00)
+2026-10-19T01:30:48.5161970Z PASS Title/GalleryIcon_inside_canvas
+2026-10-19T01:30:48.5163080Z PASS title_credit_present
+2026-10-19T01:30:48.5164420Z title_credit pixels=(x:415.89, y:7.29, width:239.37, height:25.90); viewport=(x:0.00, y:0.00, width:664.00, height:415.00)
+2026-10-19T01:30:48.5165420Z PASS title_credit_inside_canvas
+2026-10-19T01:30:48.5169830Z PASS render_canvas_camera_aligned_01-title-16x10
+2026-10-19T01:30:48.5175200Z capture=01-title-16x10; target=(664.00, 415.00); Screen_reference=1672x924
+2026-10-19T01:30:48.5342500Z PASS png_matches_actual_16x10_target 01-title-16x10.png
+2026-10-19T01:30:48.5361170Z PASS interactable_SettingButton
+2026-10-19T01:30:48.5362890Z SettingButton pixels=(x:192.02, y:86.47, width:279.97, height:52.49); viewport=(x:0.00, y:0.00, width:664.00, height:415.00)
+2026-10-19T01:30:48.5364000Z PASS SettingButton_inside_canvas
+2026-10-19T01:30:48.5366020Z PASS native_raycast_SettingButton
+2026-10-19T01:30:48.9345490Z PASS setting_open
+2026-10-19T01:30:48.9347850Z SettingPanel pixels=(x:-17.89, y:10.58, width:699.74, height:393.77); viewport=(x:0.00, y:0.00, width:664.00, height:415.00)
+2026-10-19T01:30:48.9349600Z FAIL SettingPanel_inside_canvas
+2026-10-19T01:30:48.9372150Z System.Exception: SettingPanel_inside_canvas
+  at MCPDynamicCode+<Execute>c__AnonStorey0.<>m__3 (System.Boolean ok, System.String text) [0x0002c] in <ee73661cfe7f45a1a750bf9599dc7450>:0 
+  at MCPDynamicCode+<Execute>c__AnonStorey0.<>m__5 (UnityEngine.RectTransform rect, System.String label) [0x001ad] in <ee73661cfe7f45a1a750bf9599dc7450>:0 
+  at MCPDynamicCode+<Execute>c__AnonStorey0.<>m__D () [0x00760] in <ee73661cfe7f45a1a750bf9599dc7450>:0 
+2026-10-19T01:30:48.9375330Z PASS interactable_HideSetting
+2026-10-19T01:30:48.9376380Z HideSetting pixels=(x:550.64, y:303.71, width:26.24, height:26.25); viewport=(x:0.00, y:0.00, width:664.00, height:415.00)
+2026-10-19T01:30:48.9377040Z PASS HideSetting_inside_canvas
+2026-10-19T01:30:48.9379440Z PASS native_raycast_HideSetting
+2026-10-19T01:30:48.9452310Z restore_requested original_index=3
+2026-10-19T01:30:49.3404180Z original_view_restored=True; settings_closed=True; InputModules/navigation restored; target=(1920.00, 1080.00); Screen_reference=1672x924
+
+Scope: actual 16:10 GameView render + native Title/Setting pointer dispatch. Not OS keyboard/mouse. Root inspects pixels; bounds alone do not prove readability. No custom size/audio/pref/scene/time changes. Root still performs canonical restoration.

@@ -1,0 +1,5 @@
+{"utc": "2026-10-19T01:47:57.085199+00:00", "event": "phase_started", "mode": "write", "pid": 44737}
+{"utc": "2026-10-19T01:48:00.137571+00:00", "event": "phase_waiting", "mode": "write", "pid": 44737, "elapsed_seconds": 3.048}
+{"utc": "2026-10-19T01:48:03.137897+00:00", "event": "phase_waiting", "mode": "write", "pid": 44737, "elapsed_seconds": 6.053}
+{"utc": "2026-10-19T01:48:03.848094+00:00", "event": "probe_failed", "reason": "RuntimeError: Audio phase Player domain disk/cache mismatch"}
+{"utc": "2026-10-19T01:48:04.092582+00:00", "event": "finished", "result": "FAIL_OR_INCOMPLETE", "restoration_pending": false, "process_may_still_be_running": false, "elapsed_seconds": 7.25}

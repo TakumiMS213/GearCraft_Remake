@@ -1,0 +1,20 @@
+音量 2 プロセス検証 run1 の保存読み取り競合（読み取り監査）
+
+結論: native write は PASS_WRITE / exit 0。QA は終了直後の raw plist と defaults export の瞬間的な差で停止し、read プロセスは未起動。これを音量の再起動永続化成功とは扱わない。一方、保存失敗とする証拠もなく、有限の整合待ちを加えた新規 run2 を準備した。
+
+根拠:
+・audio-persistence-run1/write/harness-result.json: native Slider callback は各 1 回、Mixer / Slider / PlayerPrefs は BGM -17 / SE -29。native debounce 完了、pending false、write 子 PID 44737 は exit 0。
+・player-domain-after-write は defaults export 23 keys / typed SHA 3c4f8ceff76697ecd107650b82b599a4698402972edd4ee6635659cda1526bca。raw は音量 2 keys と Gallery key が未反映で、画面位置・Unity session 2 keys も export と差があった。
+・直後の player-domain-after は export が同一 typed SHA のまま raw と完全一致。この snapshot は defaults import より前に取得する実装なので、復元によって音量値を作ったものではない。
+・旧 snapshot は raw を先に読み、その後 export を読んで即一致を要求していた。保存反映中の異なる時点を比較する競合で説明できる。ログだけから内部 flush 完了時刻までは断定しない。
+・result.json は FAIL_OR_INCOMPLETE だが restoration_pending=false / verified_full_type_value_existence。player-domain-restored は元の 20 keys、型・値・存在、raw SHA と完全一致。追加 3 keys の限定削除、Editor 保護 domains / AppSupport / 既存 ZIP 不変、強制停止なし。復元失敗ではない。
+
+修正は新規 QA/ReleasePolish20261019/audio_persistence_probe_run2.py のみ。
+旧 runner、旧記録、共通 helper、制作コードは維持。各 snapshot は最初の export の型付き値を固定し、最大 1 秒か総予算の残り時間の短い方だけ、ディスク一致を待つ。途中で export 自体が変われば同時変更として拒否。一致時も disk 読み取り後に export を再確認する。待機回数・所要時間は snapshot-consistency-checks.json に別記し、保護 domains の同値比較には不定な計時情報を混ぜない。従来どおり PlayerPrefs 全復元・追加 key 限定削除・Editor/AppSupport/候補 ZIP 保護を必須とする。
+
+run2 の準備確認: dry-run と py_compile は exit 0。実 defaults / Player / MCP は呼び出していない。隔離 mock 6 件で即一致、150ms 後一致、export 変化拒否、1 秒不一致 timeout、残予算 200ms timeout、元から disk 不在の扱いを確認した。
+
+root 実行用（この監査では未実行）:
+python3 -B QA/ReleasePolish20261019/audio_persistence_probe_run2.py --execute
+
+新しい nonce と fresh 全 domain 退避を取得し、audio-persistence-run2 だけを出力先にする。旧 run1 の FAIL と read 未実施の記録は保持する。

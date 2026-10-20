@@ -1,0 +1,45 @@
+{
+  "prepared_utc": "2026-10-19T01:37:31.641979+00:00",
+  "runtime_executed": false,
+  "assets_installed_by_preparer": false,
+  "mcp_used": false,
+  "production_modified_by_preparer": false,
+  "CSharp6_static_compile": {
+    "GearCraftQAAudioPersistence": "PASS 0 errors 0 warnings",
+    "InstallAudioQAHarness": "PASS 0 errors 0 warnings",
+    "BuildAudioQA": "PASS 0 errors 0 warnings",
+    "RemoveAudioQAHarness": "PASS 0 errors 0 warnings"
+  },
+  "harness_has_no_PlayerPrefs_mutation_calls": true,
+  "harness_has_no_OS_input_or_capture_calls": true,
+  "schema_agrees_with_outer_validator": true,
+  "test_requested_db": {
+    "BGM": -17.25,
+    "SE": -28.75
+  },
+  "native_effective_db": {
+    "BGM": -17,
+    "SE": -29
+  },
+  "files": {
+    "GearCraftQAAudioPersistence": {
+      "sha256": "d1423e8f51ff8ac04af75a1c68c2259b5ac49ad903f99277846af77753bcf374",
+      "bytes": 17838
+    },
+    "InstallAudioQAHarness": {
+      "sha256": "40e220c94c62fa103c44d3a3065a6616f1fd6800b3695290d97c93cba49f5a21",
+      "bytes": 6247
+    },
+    "BuildAudioQA": {
+      "sha256": "37b9c01decf13c8db8994007e0152113a45314f4536eb6fa4e90307183b63d18",
+      "bytes": 3865
+    },
+    "RemoveAudioQAHarness": {
+      "sha256": "f1e4f08072500276a327f934239ef863df9eec57b956be5b71e4bef122c89e82",
+      "bytes": 2250
+    }
+  },
+  "updated_utc": "2026-10-19T01:46:04.112979+00:00",
+  "protected_source_count": 18,
+  "protected_source_definition": "Previous verified 17 source hashes unchanged plus current Craft.unity hash captured at Install; Build/Remove compare all18."
+}

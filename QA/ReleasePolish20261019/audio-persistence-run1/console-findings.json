@@ -1,0 +1,15 @@
+{
+  "write": {
+    "matches": [],
+    "count": 0,
+    "known_termination_notices": [
+      {
+        "file": "player.log",
+        "line": 35,
+        "kind": "GarbageCollector disposing of ComputeBuffer"
+      }
+    ],
+    "known_termination_notice_count": 1,
+    "not_a_complete_warning_or_crash_detector": true
+  }
+}

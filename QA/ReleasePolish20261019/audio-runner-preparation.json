@@ -1,0 +1,17 @@
+{
+  "prepared_only": true,
+  "processes_executed": false,
+  "schema_mock_checks": 14,
+  "schema_mock_pass": true,
+  "syntax_pass": true,
+  "new_sources_sha256": {
+    "audio_persistence_probe.py": "dc33b3e6c66d041e11b179b7355e41c1afde82b7a6b7a0fc34599dbe7723b108",
+    "audio_qa_common.py": "e8124dedd7c8f6c8ccc4dea6bc88163660a6a3bac9d794790c007fab65471a8f"
+  },
+  "app": "/private/tmp/GearCraftReleasePolish20261019/AudioQA.app",
+  "protected_candidate_sha256": "26a4b9729b9d8f480dc26f2eb0da1e56e172386dbdf9105275f78186d29ebcba",
+  "no_subprocess_or_prefs_access": "Only AST compilation and isolated pure result validator executed; no runner body/helper/Player/defaults/sample/MCP executed.",
+  "py_compile_pass": true,
+  "dry_run_pass": true,
+  "dry_run_scope": "--execute omitted; prepared_only=true. No app/helper/defaults launched, no run folder created."
+}
