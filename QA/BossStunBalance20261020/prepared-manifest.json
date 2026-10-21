@@ -1,0 +1,24 @@
+{
+  "prepared_only": true,
+  "runtime_executed": false,
+  "session_backup_copied": false,
+  "direct_calibration_cases": 4,
+  "all_cases_per_mode": 14,
+  "files": {
+    "LoadBatchSurvival.cs.txt": "140f5b3b6fb56f25a64af27e6e94965a3b1fa1fc841da9517e29410cc2d4a5e2",
+    "LoadBatchDirect.cs.txt": "08edf18fac39c1310656808279aff86e4d3c61d33e743a3871d557055aaeaa59",
+    "CaptureFresh.cs.txt": "4856921263ecd7e2c8d058f52d96c343da6bbe325192af9a18026c61bc30a717",
+    "NativeInputBootstrap.cs.txt": "2b22e99a1b3db8f8558e5735650e26d432fe714eb8d729c1207f30e51e35642e",
+    "BossStunStateTests.cs.txt": "bb769182e08c20e6c6ada671ce76201483fc3ad84e975aef3d9d15fc16729d90",
+    "BatchSurvival.cs.txt": "26412d9f63331e1eef6aec1ee7b752c85b439ed635096fa46b003acb029827f1",
+    "RestoreSession.cs.txt": "4e1d1f934d8f9fc62417682cde178d8a05ce13064f4f163dc3b5e8993f0fcc3b",
+    "BatchDirect.cs.txt": "83132defdb0644cac04743abd0c7d132c242545eb64cef546760542bc1d80c3d",
+    "StunObserver.fragment.cs.txt": "fc1dc4c415942b8049928c46ee698cf35a6b5afbe42968dfb47ba4018748b6f8",
+    "NativeInputSurvivalRoute.cs.txt": "8456cb8d2b5e1117631d27347bdcb17d678db092708a083878e03f7d616191d3"
+  },
+  "source_readonly": [
+    "/Users/sora/Desktop/Unity/GearCraft_Remake/QA/ReleaseFinalization20261018",
+    "/Users/sora/Desktop/Unity/GearCraft_Remake/QA/ReleasePolish20261019",
+    "/Users/sora/Desktop/Unity/GearCraft_Remake/QA/DefenseBalance20261016"
+  ]
+}

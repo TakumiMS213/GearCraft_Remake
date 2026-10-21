@@ -1,0 +1,239 @@
+using System;
+
+// BossStunState.cs の実ソースと一緒にコンパイルして実行する回帰テスト。
+// Unity ランタイムやセーブデータは使用しない。生成した実行ファイルは /private/tmp で実行後に削除する。
+public static class BossStunStateTests
+{
+    private static int passed;
+    private static int failed;
+
+    private static void Equal(int expected, int actual, string message)
+    {
+        if (expected != actual)
+            throw new Exception(message + ": expected=" + expected + ", actual=" + actual);
+    }
+
+    private static void Near(float expected, float actual, string message)
+    {
+        if (Math.Abs(expected - actual) > 0.0001f)
+            throw new Exception(message + ": expected=" + expected + ", actual=" + actual);
+    }
+
+    private static void Active(BossStunState state, bool expected)
+    {
+        if (state.IsActive != expected)
+            throw new Exception("IsActive: expected=" + expected + ", actual=" + state.IsActive);
+    }
+
+    private static void Test(string name, Action action)
+    {
+        try
+        {
+            action();
+            passed++;
+            Console.WriteLine("PASS " + name);
+        }
+        catch (Exception exception)
+        {
+            failed++;
+            Console.WriteLine("FAIL " + name + ": " + exception.Message);
+        }
+    }
+
+    public static int Main()
+    {
+        Test("生成直後は未発動", () =>
+        {
+            var state = new BossStunState(100f);
+            Equal(0, state.TriggerCount, "count");
+            Near(0f, state.RemainingTime, "remaining");
+            Active(state, false);
+        });
+
+        Test("HP 70% より上では発動せず、70% で初回発動", () =>
+        {
+            var state = new BossStunState(100f);
+            Equal(0, state.ApplyDamage(70.01f, 2f), "before boundary");
+            Active(state, false);
+            Equal(1, state.ApplyDamage(70f, 2f), "70%");
+            Equal(1, state.TriggerCount, "count");
+            Near(2f, state.RemainingTime, "remaining");
+            Active(state, true);
+        });
+
+        Test("HP 40% と 10% の境界で追加発動", () =>
+        {
+            var state = new BossStunState(100f);
+            state.ApplyDamage(70f, 2f);
+            state.Tick(2f);
+            Equal(0, state.ApplyDamage(40.01f, 3f), "before 40%");
+            Equal(1, state.ApplyDamage(40f, 3f), "40%");
+            Equal(2, state.TriggerCount, "second count");
+            Near(3f, state.RemainingTime, "second duration");
+            state.Tick(3f);
+            Equal(0, state.ApplyDamage(10.01f, 4f), "before 10%");
+            Equal(1, state.ApplyDamage(10f, 4f), "10%");
+            Equal(3, state.TriggerCount, "third count");
+            Near(4f, state.RemainingTime, "third duration");
+        });
+
+        Test("日数補正済み最大 HP を基準に発動", () =>
+        {
+            var state = new BossStunState(1000f);
+            Equal(0, state.ApplyDamage(701f, 2f), "before first");
+            Equal(1, state.ApplyDamage(700f, 2f), "first");
+            Equal(1, state.ApplyDamage(400f, 2f), "second");
+            Equal(1, state.ApplyDamage(100f, 2f), "third");
+            Equal(3, state.TriggerCount, "count");
+            Near(6f, state.RemainingTime, "stacked duration");
+        });
+
+        Test("致死ダメージでは新しいスタンを発生させない", () =>
+        {
+            foreach (float hp in new[] { 0f, -100f })
+            {
+                var state = new BossStunState(100f);
+                Equal(0, state.ApplyDamage(hp, 2f), "lethal damage");
+                Equal(0, state.TriggerCount, "count");
+                Near(0f, state.RemainingTime, "remaining");
+                Active(state, false);
+            }
+        });
+
+        Test("一撃で 70% と 40% を越えると 2 回分加算", () =>
+        {
+            var state = new BossStunState(100f);
+            Equal(2, state.ApplyDamage(35f, 2f), "crossed boundaries");
+            Equal(2, state.TriggerCount, "count");
+            Near(4f, state.RemainingTime, "duration");
+            Equal(0, state.ApplyDamage(35f, 2f), "same HP");
+            Near(4f, state.RemainingTime, "no duplicate duration");
+        });
+
+        Test("一撃で 3 境界を越えて生存すると 3 回分加算", () =>
+        {
+            var state = new BossStunState(100f);
+            Equal(3, state.ApplyDamage(1f, 2f), "crossed boundaries");
+            Equal(3, state.TriggerCount, "count");
+            Near(6f, state.RemainingTime, "duration");
+        });
+
+        Test("スタン中の次の境界は残り時間へ加算", () =>
+        {
+            var state = new BossStunState(100f);
+            state.ApplyDamage(70f, 2f);
+            state.Tick(0.75f);
+            Near(1.25f, state.RemainingTime, "elapsed");
+            Equal(1, state.ApplyDamage(40f, 3f), "second boundary");
+            Near(4.25f, state.RemainingTime, "extended");
+            state.Tick(4f);
+            Active(state, true);
+            Near(0.25f, state.RemainingTime, "still active");
+            state.Tick(0.25f);
+            Active(state, false);
+        });
+
+        Test("HP 回復後も消費済み境界を再使用しない", () =>
+        {
+            var state = new BossStunState(100f);
+            state.ApplyDamage(35f, 2f);
+            state.Tick(4f);
+            Equal(0, state.ApplyDamage(100f, 2f), "healed");
+            Equal(0, state.ApplyDamage(70f, 2f), "first repeated");
+            Equal(0, state.ApplyDamage(40f, 2f), "second repeated");
+            Active(state, false);
+            Equal(1, state.ApplyDamage(10f, 2f), "unused third");
+            Equal(3, state.TriggerCount, "count");
+        });
+
+        Test("同じ境界内で追加被弾しても時間を増やさない", () =>
+        {
+            var state = new BossStunState(100f);
+            state.ApplyDamage(70f, 2f);
+            state.Tick(1f);
+            Equal(0, state.ApplyDamage(69f, 2f), "hit");
+            Equal(0, state.ApplyDamage(41f, 2f), "another hit");
+            Near(1f, state.RemainingTime, "remaining");
+        });
+
+        Test("ポーズ中の delta=0 と負の delta で残り時間を変えない", () =>
+        {
+            var state = new BossStunState(100f);
+            state.ApplyDamage(70f, 2f);
+            state.Tick(0f);
+            Near(2f, state.RemainingTime, "paused");
+            state.Tick(-1f);
+            Near(2f, state.RemainingTime, "negative delta");
+            Active(state, true);
+        });
+
+        Test("大きな delta でも 0 を下回らず終了", () =>
+        {
+            var state = new BossStunState(100f);
+            state.ApplyDamage(70f, 2f);
+            state.Tick(10f);
+            Near(0f, state.RemainingTime, "remaining");
+            Active(state, false);
+            state.Tick(1f);
+            Near(0f, state.RemainingTime, "after completion");
+        });
+
+        Test("Cancel は残り時間を消し、発動済み履歴を維持", () =>
+        {
+            var state = new BossStunState(100f);
+            state.ApplyDamage(70f, 2f);
+            state.Cancel();
+            Near(0f, state.RemainingTime, "cancelled");
+            Active(state, false);
+            Equal(1, state.TriggerCount, "history");
+            Equal(0, state.ApplyDamage(70f, 2f), "consumed boundary");
+            Equal(1, state.ApplyDamage(40f, 2f), "next boundary");
+            state.Cancel();
+            state.Cancel();
+            Near(0f, state.RemainingTime, "idempotent cancel");
+            Equal(2, state.TriggerCount, "history retained");
+        });
+
+        Test("死亡通知は新規加算せず、Cancel で進行中も終了", () =>
+        {
+            var state = new BossStunState(100f);
+            state.ApplyDamage(70f, 2f);
+            state.Tick(0.5f);
+            Equal(0, state.ApplyDamage(0f, 2f), "lethal hit");
+            Near(1.5f, state.RemainingTime, "no extra duration");
+            state.Cancel();
+            Active(state, false);
+            Near(0f, state.RemainingTime, "death cleanup");
+        });
+
+        Test("全 3 回を消費した後は残存 HP や回復で追加発動しない", () =>
+        {
+            var state = new BossStunState(100f);
+            state.ApplyDamage(10f, 2f);
+            state.Tick(6f);
+            foreach (float hp in new[] { 9f, 1f, 0.01f, 100f, 70f, 40f, 10f })
+                Equal(0, state.ApplyDamage(hp, 2f), "HP=" + hp);
+            Equal(3, state.TriggerCount, "maximum count");
+            Near(0f, state.RemainingTime, "no fourth stun");
+            Active(state, false);
+        });
+
+        Test("無効な最大 HP と時間では発動回数を消費しない", () =>
+        {
+            foreach (float maxHP in new[] { 0f, -100f })
+            {
+                var state = new BossStunState(maxHP);
+                Equal(0, state.ApplyDamage(1f, 2f), "invalid max HP");
+                Active(state, false);
+            }
+            var valid = new BossStunState(100f);
+            Equal(0, valid.ApplyDamage(70f, 0f), "zero duration");
+            Equal(0, valid.ApplyDamage(70f, -1f), "negative duration");
+            Equal(0, valid.TriggerCount, "unused boundary");
+            Equal(1, valid.ApplyDamage(70f, 2f), "valid retry");
+        });
+
+        Console.WriteLine("RESULT passed=" + passed + " failed=" + failed);
+        return failed == 0 ? 0 : 1;
+    }
+}

@@ -1,0 +1,12 @@
+Unity MCPによる最終確認（2026-10-20）
+Play=false
+scene=Assets/GearCraft/Scenes/Title.unity
+scene_dirty=false
+EditorUtility.scriptCompilationFailed=false
+Console error CS entries=0
+Temporary BossStunQaLocalBridge type absent from all loaded assemblies=true
+Temporary bridge .cs/.meta absent from Assets=true
+Production source hashes match final1-source-sha256.json (temporary bridge excluded)=true
+QA compiler .dll/.rsp/.exe files=0
+Scripts git diff --check=passed
+PlayerPrefs restoration: canonical-restoration.txt; 16 keys verified with zero mismatches.

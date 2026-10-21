@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyName: AR-227
   prefab: {fileID: 1105495981581323202, guid: b62d09db7f4444c0d85ef4f3f86ff831, type: 3}
-  baseHP: 4000
+  baseHP: 60000
   speed: 5
   attackInterval: 2
   bulletSpeed: 10

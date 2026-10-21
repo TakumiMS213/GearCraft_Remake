@@ -23,6 +23,9 @@ public class EnemyDataSO : ScriptableObject
     public bool isBoss = false;
     public bool isHighlighted = false;
 
+    [Header("Boss Stun")]
+    [Min(0.1f)] public float bossStunDuration = 3f;
+
     [Header("Circle Move")]
     public float circleRadius = 3f;
     public float circleDuration = 1.5f;

@@ -1,0 +1,2 @@
+stage,scaling_stage,result,start_game_seconds,end_game_seconds,wave_seconds,start_hp,start_gate,end_hp,end_gate,player_damage,gate_damage,player_healed,gate_healed,attack_events
+"28","28","gate_destroyed","1.2166748","10.3500061","9.133331","100","100","98","0","2","100","0","0","547"

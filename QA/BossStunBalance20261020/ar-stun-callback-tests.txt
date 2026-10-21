@@ -1,0 +1,26 @@
+AR-227 スタン停止・復帰コールバック回帰テスト
+実施日時: 2026-10-20T16:14:36+09:00
+実装 SHA-256: a6d9783e088162338df2d63084feb3bf17178f21777e46eb8e0068958ce5bd50
+抽出メソッド SHA-256: 51f99a1d54ad40215e99d87347ce052172b7f3c32d5b5f8830efacef90bf1401
+検証中の実装変更なし: True
+SetStunned / StopTweens / OnDisable / OnDeath を実ソースから機械的に抽出して実行。
+Tween は呼出し記録用のテストダブル。Unity/DOTween 実ランタイムでの位置・時間・発射の確認ではない。
+生成した一時ソース・実行ファイルは /private/tmp から削除済み。ゲームアプリのビルドなし。
+コンパイル終了コード: 0
+コンパイル出力なし（エラー・警告なし）
+実行終了コード: 0
+PASS 進行中の移動・連射を両方停止して同じTweenを再開
+PASS スタン延長の重複通知でも元の再開状態を失わない
+PASS 復帰の重複通知を無視
+PASS スタン前から停止中のTweenは勝手に再開しない
+PASS 移動だけ進行中なら移動だけ再開
+PASS 連射だけ進行中なら連射だけ再開
+PASS Tween未作成時の停止・復帰は安全
+PASS 死亡後は停止していた攻撃も移動も再開しない
+PASS 無効化された個体のTweenを再開しない
+PASS ownerが消えても再開せず安全
+PASS スタン中に破棄されたTweenを再開しない
+PASS OnDisableでTween参照と停止履歴を破棄
+PASS OnDeath後の復帰通知で攻撃を復活させない
+PASS オーバーヒート等で設定済みのtimeScaleを保持
+RESULT passed=14 failed=0

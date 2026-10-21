@@ -1,0 +1,86 @@
+Boss stun/balance probes (2026-10-20)
+
+Current status
+QA only. No game build or Unity test has been launched by the preparation agent.
+All eight code bodies compile with C# 6 against the current Unity Editor assemblies.
+Compilation DLL/rsp/source wrappers are removed immediately by compile_probes.py.
+CaptureFresh was executed by root; all generated source scripts use that new session.
+Never execute historical capture/restore files from another dated QA folder.
+
+Run first four calibration cases
+1. Keep the current canonical backup intact. Do not run CaptureFresh again.
+2. Stop any separate controlled probe, drain its callbacks, and enter clean Title Play.
+3. Execute LoadBatchDirect.cs.txt through Unity MCP execute_code.
+   This loader retains MCP blocked-pattern validation and its own CodeDom compiler.
+4. Read batch-progress.txt / native-survival-progress.txt. No long blocking call needed.
+5. The four cases are IC GearCraft, BB SteamCannon, AR SteamGatling, EK SteamGatling,
+   seed77, label suffix calibration1. Batch stops Play after completion.
+6. Run python3 QA/BossStunBalance20261020/summarize.py for recorded outcomes.
+
+Direct mode semantics
+Main loads normally, the native day introduction completes, then the first ordinary
+spawn group is cancelled/removed and one requested boss is instantiated through its
+production prefab/EnemyController.Start. Native day scaling remains 7/16/28/31,
+as in the previous full-day tests (not 9/18/30 stage scaling).
+Boss AI, collision, projectile code, attack input, HP100/gate100 and death remain
+production behavior. No healing, boss damage injection, invulnerability or recovery
+is added. Native ProcessAttackInput is called once per game frame at capture60fps.
+Two Gear items are supplied once as the direct-mode carry budget; BOOST consumes
+them normally at most twice. This differs from survival starting with Gear0 and
+earning materials/rewards during the lead-in waves. Direct is not a full campaign.
+Appropriate parts, module20 only in AR/EK, and unlocked defensive modules/Punk are
+the same plans as earlier defense tests. These are representative assumptions,
+not measured averages from real player acquisition.
+
+Bot changes (QA only)
+Avoid automatic jumping merely because a ground IC/EK has a high body center.
+Predict straight projectile threats from expanded-bounds first-contact time,
+not centers' closest approach. Existing bomb ground-explosion prediction remains.
+Bot still does not read every attack telegraph. A failure is not proof that humans
+cannot clear. Boss motion and actual damage remain native in either mode.
+
+After production HP/movement adjustment, run all 14 under a new label
+python3 QA/BossStunBalance20261020/select_cases.py --mode direct --pass-name pass2
+Enter clean Title Play, execute LoadBatchDirect.cs.txt again.
+select_cases.py updates the plan SHA in the batch and refuses existing case outputs.
+It refuses RUNNING/LOADING progress markers; ensure prior callbacks finished.
+All 14 original rows are preserved in all-direct-cases.csv.
+Do not rerun prepare_runner.py after selecting a custom plan, because that generator
+intentionally rebuilds the initial four calibration plan.
+
+Examples for focused repeat / full-day defense
+python3 QA/BossStunBalance20261020/select_cases.py --mode direct --boss IC --pass-name repeat1 --seeds 77,101,202
+python3 QA/BossStunBalance20261020/select_cases.py --mode survival --boss EK --weapon SteamGatling --pass-name defense1 --seeds 77,101,202
+Use LoadBatchSurvival.cs.txt for survival mode. Full-day mode keeps ordinary waves,
+rewards, drops and progression, starting at the representative morning configuration.
+Survival never provisions the direct-mode two Gear and never restores HP/gate.
+Do not interpret direct and full-day times as identical conditions.
+
+Records and success criteria
+*-bosses.csv: exact direct spawn request time to defeated, or observed native spawn
+to defeated in full-day mode. Defeated requires observing HP<=0. A lost Unity object
+without HP0 is unobserved despawn. Player death/gate destruction/timeouts are distinct.
+*-stun.csv: threshold_damage is synchronous with production Damaged (after stun
+state update). Records HP, BossStunCount, remaining seconds, LastStunHitPosition.
+started/ended are frame observations; max root drift only includes active stunned
+frames, excluding legitimate movement on the first resumed frame. Visual variation
+and child smoke particle counts are sampled. A lethal hit may end a stun early.
+*-particles.csv: actual first-seen BossStunExplosion root positions, compared to
+LastStunHitPosition, not inferred from the enemy center.
+*-samples/-geometry/-native-input CSV: runtime AI/HP/positions/attack acceptance.
+summary.json contains only cases with a result; kill_seconds is null for failures.
+60-second criterion applies only to actual defeated times. Survived is a separate
+boolean. Do not synthesize a kill time from partial HP, timeout, or old DPS.
+
+Cancellation and restoration
+Write cancel-defense-batch.txt or cancel-native-survival.txt in this folder.
+The next Editor update stops and drains batch/route callbacks and then stops Play.
+Keep cancellation evidence until reviewed; remove only those own sentinels before
+a later run. Do not clear all PlayerPrefs, import old plists, or alter saved assets.
+After all measurements (and Play stops), execute RestoreSession.cs.txt.
+It validates this Editor SessionState ID and hashes from the current backup,
+restores/verifies all 16 typed keys, exact fixed timestep ticks, logger/DOTween,
+GameView size index/list and clean Title. It refuses outstanding RUNNING/LOADING
+markers and unsaved scenes. canonical-restoration.txt closes the session; no more
+tests may start under that snapshot. Further tests require a new session directory.
+Historical backups are never copied or restored.

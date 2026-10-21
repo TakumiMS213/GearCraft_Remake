@@ -109,7 +109,8 @@ public sealed class BossArena
                 surface.isTrigger || !surface.CompareTag("Ground")) continue;
 
             Bounds bounds = surface.bounds;
-            if (bounds.min.x <= position.x + bodyMin.x && bounds.max.x >= position.x + bodyMax.x)
+            // 右端から進入中の巨体も、接地している前部の床面を使う。
+            if (bounds.min.x <= position.x + bodyMax.x && bounds.max.x >= position.x + bodyMin.x)
                 floor = Mathf.Max(floor, bounds.max.y);
         }
 

@@ -1,0 +1,15 @@
+label,weapon,start_stage,profile,seed,STR,ACC,moduleDamage,repair,barrier,punk,scrap_module,initial_hp,initial_gate,fps
+stun_direct_IC408_GearCraft_seed77_pass3,GearCraft,7,early_day3_common,77,4,4,0,0,0,1,1,100,100,60
+stun_direct_BB413_GearCraft_seed77_pass3,GearCraft,16,mid_day4_common,77,10,10,0,1,0,1,1,100,100,60
+stun_direct_BB413_SteamCannon_seed77_pass3,SteamCannon,16,mid_day4_common,77,10,10,0,1,0,1,1,100,100,60
+stun_direct_BB413_SteamThrower_seed77_pass3,SteamThrower,16,mid_day4_common,77,10,10,0,1,0,1,1,100,100,60
+stun_direct_AR227_GearCraft_seed77_pass3,GearCraft,28,late_day7_melee_defense_module20,77,18,18,20,1,1,1,1,100,100,60
+stun_direct_AR227_SteamCannon_seed77_pass3,SteamCannon,28,late_day7_ranged_defense_module20,77,18,18,20,1,1,1,1,100,100,60
+stun_direct_AR227_SteamThrower_seed77_pass3,SteamThrower,28,late_day7_ranged_defense_module20,77,18,18,20,1,1,1,1,100,100,60
+stun_direct_AR227_RailCraft_seed77_pass3,RailCraft,28,late_day7_ranged_defense_module20,77,18,18,20,1,1,1,1,100,100,60
+stun_direct_AR227_SteamGatling_seed77_pass3,SteamGatling,28,late_day7_ranged_defense_module20,77,18,18,20,1,1,1,1,100,100,60
+stun_direct_EK9_GearCraft_seed77_pass3,GearCraft,31,final_day11_melee_defense_module20,77,20,20,20,1,1,1,1,100,100,60
+stun_direct_EK9_SteamCannon_seed77_pass3,SteamCannon,31,final_day11_ranged_fitted_speed_defense_module20,77,20,20,20,1,1,1,1,100,100,60
+stun_direct_EK9_SteamThrower_seed77_pass3,SteamThrower,31,final_day11_thrower_fitted_damage_defense_module20,77,20,20,20,1,1,1,1,100,100,60
+stun_direct_EK9_RailCraft_seed77_pass3,RailCraft,31,final_day11_ranged_fitted_speed_defense_module20,77,20,20,20,1,1,1,1,100,100,60
+stun_direct_EK9_SteamGatling_seed77_pass3,SteamGatling,31,final_day11_ranged_defense_module20,77,20,20,20,1,1,1,1,100,100,60

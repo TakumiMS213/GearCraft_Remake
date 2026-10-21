@@ -1,0 +1,420 @@
+[
+  {
+    "label": "stun_direct_IC408_GearCraft_seed77_pass3",
+    "mode": "direct",
+    "weapon": "GearCraft",
+    "result": "direct_boss_defeated",
+    "boss": "IC-408",
+    "boss_result": "defeated",
+    "killed": true,
+    "survived": true,
+    "kill_seconds": 71.86667,
+    "failure_or_timeout_seconds": null,
+    "meets_60_seconds": true,
+    "start_boss_hp": 11560.0,
+    "remaining_boss_hp": -15.31205,
+    "end_hp": 100.0,
+    "end_gate": 100.0,
+    "stun_count": 3,
+    "threshold_damage_hp": [
+      8042.86,
+      4590.59961,
+      1116.69409
+    ],
+    "completed_stun_durations": [
+      3.0,
+      3.0,
+      3.0
+    ],
+    "max_stunned_body_drift": 0.0,
+    "max_visual_vibration": 0.00500944257,
+    "observed_explosion_components": 9,
+    "max_explosion_position_error": 0.0
+  },
+  {
+    "label": "stun_direct_BB413_GearCraft_seed77_pass3",
+    "mode": "direct",
+    "weapon": "GearCraft",
+    "result": "player_dead",
+    "boss": "BB-413",
+    "boss_result": "player_dead",
+    "killed": false,
+    "survived": false,
+    "kill_seconds": null,
+    "failure_or_timeout_seconds": 7.8666687,
+    "meets_60_seconds": false,
+    "start_boss_hp": 18200.0,
+    "remaining_boss_hp": 15012.0,
+    "end_hp": -20.0,
+    "end_gate": 100.0,
+    "stun_count": 0,
+    "threshold_damage_hp": [],
+    "completed_stun_durations": [],
+    "max_stunned_body_drift": 0,
+    "max_visual_vibration": 0,
+    "observed_explosion_components": 0,
+    "max_explosion_position_error": null
+  },
+  {
+    "label": "stun_direct_BB413_SteamCannon_seed77_pass3",
+    "mode": "direct",
+    "weapon": "SteamCannon",
+    "result": "direct_boss_defeated",
+    "boss": "BB-413",
+    "boss_result": "defeated",
+    "killed": true,
+    "survived": true,
+    "kill_seconds": 65.51666,
+    "failure_or_timeout_seconds": null,
+    "meets_60_seconds": true,
+    "start_boss_hp": 18200.0,
+    "remaining_boss_hp": -66.61174,
+    "end_hp": 100.0,
+    "end_gate": 100.0,
+    "stun_count": 3,
+    "threshold_damage_hp": [
+      12712.81,
+      7225.59473,
+      1810.58789
+    ],
+    "completed_stun_durations": [
+      3.0,
+      3.0,
+      3.0
+    ],
+    "max_stunned_body_drift": 0.0,
+    "max_visual_vibration": 0.008349071,
+    "observed_explosion_components": 6,
+    "max_explosion_position_error": 0.0
+  },
+  {
+    "label": "stun_direct_BB413_SteamThrower_seed77_pass3",
+    "mode": "direct",
+    "weapon": "SteamThrower",
+    "result": "direct_boss_defeated",
+    "boss": "BB-413",
+    "boss_result": "defeated",
+    "killed": true,
+    "survived": true,
+    "kill_seconds": 241.833344,
+    "failure_or_timeout_seconds": null,
+    "meets_60_seconds": true,
+    "start_boss_hp": 18200.0,
+    "remaining_boss_hp": -0.590074539,
+    "end_hp": 100.0,
+    "end_gate": 100.0,
+    "stun_count": 3,
+    "threshold_damage_hp": [
+      12739.6719,
+      7279.34375,
+      1819.8291
+    ],
+    "completed_stun_durations": [
+      3.0,
+      3.0,
+      3.0
+    ],
+    "max_stunned_body_drift": 0.0,
+    "max_visual_vibration": 0.008349071,
+    "observed_explosion_components": 6,
+    "max_explosion_position_error": 0.0
+  },
+  {
+    "label": "stun_direct_AR227_GearCraft_seed77_pass3",
+    "mode": "direct",
+    "weapon": "GearCraft",
+    "result": "player_dead",
+    "boss": "AR-227",
+    "boss_result": "player_dead",
+    "killed": false,
+    "survived": false,
+    "kill_seconds": null,
+    "failure_or_timeout_seconds": 107.950012,
+    "meets_60_seconds": false,
+    "start_boss_hp": 228000.0,
+    "remaining_boss_hp": 157637.5,
+    "end_hp": -3.0,
+    "end_gate": 100.0,
+    "stun_count": 1,
+    "threshold_damage_hp": [
+      159542.266
+    ],
+    "completed_stun_durations": [
+      3.0
+    ],
+    "max_stunned_body_drift": 0.0,
+    "max_visual_vibration": 0.0166981425,
+    "observed_explosion_components": 3,
+    "max_explosion_position_error": 0.0
+  },
+  {
+    "label": "stun_direct_AR227_SteamCannon_seed77_pass3",
+    "mode": "direct",
+    "weapon": "SteamCannon",
+    "result": "player_dead",
+    "boss": "AR-227",
+    "boss_result": "player_dead",
+    "killed": false,
+    "survived": false,
+    "kill_seconds": null,
+    "failure_or_timeout_seconds": 178.866638,
+    "meets_60_seconds": false,
+    "start_boss_hp": 228000.0,
+    "remaining_boss_hp": 32376.2656,
+    "end_hp": -4.0,
+    "end_gate": 100.0,
+    "stun_count": 2,
+    "threshold_damage_hp": [
+      159529.3,
+      91100.0
+    ],
+    "completed_stun_durations": [
+      3.0,
+      3.0
+    ],
+    "max_stunned_body_drift": 0.0,
+    "max_visual_vibration": 0.0166981425,
+    "observed_explosion_components": 6,
+    "max_explosion_position_error": 0.0
+  },
+  {
+    "label": "stun_direct_AR227_SteamThrower_seed77_pass3",
+    "mode": "direct",
+    "weapon": "SteamThrower",
+    "result": "player_dead",
+    "boss": "AR-227",
+    "boss_result": "player_dead",
+    "killed": false,
+    "survived": false,
+    "kill_seconds": null,
+    "failure_or_timeout_seconds": 150.099976,
+    "meets_60_seconds": false,
+    "start_boss_hp": 228000.0,
+    "remaining_boss_hp": 84891.6953,
+    "end_hp": -18.0,
+    "end_gate": 100.0,
+    "stun_count": 2,
+    "threshold_damage_hp": [
+      159597.3,
+      91196.8359
+    ],
+    "completed_stun_durations": [
+      3.0,
+      3.0
+    ],
+    "max_stunned_body_drift": 0.0,
+    "max_visual_vibration": 0.0166981425,
+    "observed_explosion_components": 6,
+    "max_explosion_position_error": 0.0
+  },
+  {
+    "label": "stun_direct_AR227_RailCraft_seed77_pass3",
+    "mode": "direct",
+    "weapon": "RailCraft",
+    "result": "player_dead",
+    "boss": "AR-227",
+    "boss_result": "player_dead",
+    "killed": false,
+    "survived": false,
+    "kill_seconds": null,
+    "failure_or_timeout_seconds": 153.950073,
+    "meets_60_seconds": false,
+    "start_boss_hp": 228000.0,
+    "remaining_boss_hp": 15476.0938,
+    "end_hp": 0.0,
+    "end_gate": 100.0,
+    "stun_count": 3,
+    "threshold_damage_hp": [
+      159541.891,
+      90812.45,
+      22739.1133
+    ],
+    "completed_stun_durations": [
+      3.0,
+      3.0,
+      3.0
+    ],
+    "max_stunned_body_drift": 0.0,
+    "max_visual_vibration": 0.0166981425,
+    "observed_explosion_components": 9,
+    "max_explosion_position_error": 0.0
+  },
+  {
+    "label": "stun_direct_AR227_SteamGatling_seed77_pass3",
+    "mode": "direct",
+    "weapon": "SteamGatling",
+    "result": "direct_boss_defeated",
+    "boss": "AR-227",
+    "boss_result": "defeated",
+    "killed": true,
+    "survived": true,
+    "kill_seconds": 64.94995,
+    "failure_or_timeout_seconds": null,
+    "meets_60_seconds": true,
+    "start_boss_hp": 228000.0,
+    "remaining_boss_hp": -133.218384,
+    "end_hp": 74.0,
+    "end_gate": 100.0,
+    "stun_count": 3,
+    "threshold_damage_hp": [
+      159575.25,
+      91174.45,
+      22794.1719
+    ],
+    "completed_stun_durations": [
+      3.0,
+      3.0,
+      3.0
+    ],
+    "max_stunned_body_drift": 0.0,
+    "max_visual_vibration": 0.0166981425,
+    "observed_explosion_components": 9,
+    "max_explosion_position_error": 0.0
+  },
+  {
+    "label": "stun_direct_EK9_GearCraft_seed77_pass3",
+    "mode": "direct",
+    "weapon": "GearCraft",
+    "result": "gate_destroyed",
+    "boss": "EK-9",
+    "boss_result": "gate_destroyed",
+    "killed": false,
+    "survived": false,
+    "kill_seconds": null,
+    "failure_or_timeout_seconds": 67.916626,
+    "meets_60_seconds": false,
+    "start_boss_hp": 225500.0,
+    "remaining_boss_hp": 146681.328,
+    "end_hp": 59.0,
+    "end_gate": 0.0,
+    "stun_count": 1,
+    "threshold_damage_hp": [
+      157824.0
+    ],
+    "completed_stun_durations": [
+      3.0
+    ],
+    "max_stunned_body_drift": 0.0,
+    "max_visual_vibration": 0.00569254858,
+    "observed_explosion_components": 3,
+    "max_explosion_position_error": 0.0
+  },
+  {
+    "label": "stun_direct_EK9_SteamCannon_seed77_pass3",
+    "mode": "direct",
+    "weapon": "SteamCannon",
+    "result": "player_dead",
+    "boss": "EK-9",
+    "boss_result": "player_dead",
+    "killed": false,
+    "survived": false,
+    "kill_seconds": null,
+    "failure_or_timeout_seconds": 56.4666748,
+    "meets_60_seconds": false,
+    "start_boss_hp": 225500.0,
+    "remaining_boss_hp": 66101.73,
+    "end_hp": -8.0,
+    "end_gate": 100.0,
+    "stun_count": 2,
+    "threshold_damage_hp": [
+      157788.125,
+      90107.67
+    ],
+    "completed_stun_durations": [
+      3.0,
+      3.0
+    ],
+    "max_stunned_body_drift": 0.0,
+    "max_visual_vibration": 0.00569254858,
+    "observed_explosion_components": 6,
+    "max_explosion_position_error": 0.0
+  },
+  {
+    "label": "stun_direct_EK9_SteamThrower_seed77_pass3",
+    "mode": "direct",
+    "weapon": "SteamThrower",
+    "result": "player_dead",
+    "boss": "EK-9",
+    "boss_result": "player_dead",
+    "killed": false,
+    "survived": false,
+    "kill_seconds": null,
+    "failure_or_timeout_seconds": 41.05005,
+    "meets_60_seconds": false,
+    "start_boss_hp": 225500.0,
+    "remaining_boss_hp": 107832.7,
+    "end_hp": -8.0,
+    "end_gate": 100.0,
+    "stun_count": 1,
+    "threshold_damage_hp": [
+      157849.563
+    ],
+    "completed_stun_durations": [
+      3.0
+    ],
+    "max_stunned_body_drift": 0.0,
+    "max_visual_vibration": 0.00569254858,
+    "observed_explosion_components": 3,
+    "max_explosion_position_error": 0.0
+  },
+  {
+    "label": "stun_direct_EK9_RailCraft_seed77_pass3",
+    "mode": "direct",
+    "weapon": "RailCraft",
+    "result": "player_dead",
+    "boss": "EK-9",
+    "boss_result": "player_dead",
+    "killed": false,
+    "survived": false,
+    "kill_seconds": null,
+    "failure_or_timeout_seconds": 43.4500732,
+    "meets_60_seconds": false,
+    "start_boss_hp": 225500.0,
+    "remaining_boss_hp": 57078.6641,
+    "end_hp": -8.0,
+    "end_gate": 100.0,
+    "stun_count": 2,
+    "threshold_damage_hp": [
+      157404.0,
+      89685.33
+    ],
+    "completed_stun_durations": [
+      3.0,
+      3.0
+    ],
+    "max_stunned_body_drift": 0.0,
+    "max_visual_vibration": 0.00569254858,
+    "observed_explosion_components": 6,
+    "max_explosion_position_error": 0.0
+  },
+  {
+    "label": "stun_direct_EK9_SteamGatling_seed77_pass3",
+    "mode": "direct",
+    "weapon": "SteamGatling",
+    "result": "player_dead",
+    "boss": "EK-9",
+    "boss_result": "player_dead",
+    "killed": false,
+    "survived": false,
+    "kill_seconds": null,
+    "failure_or_timeout_seconds": 50.44995,
+    "meets_60_seconds": false,
+    "start_boss_hp": 225500.0,
+    "remaining_boss_hp": 62142.82,
+    "end_hp": -8.0,
+    "end_gate": 100.0,
+    "stun_count": 2,
+    "threshold_damage_hp": [
+      157826.188,
+      90168.71
+    ],
+    "completed_stun_durations": [
+      3.0,
+      3.0
+    ],
+    "max_stunned_body_drift": 0.0,
+    "max_visual_vibration": 0.00569254858,
+    "observed_explosion_components": 6,
+    "max_explosion_position_error": 0.0
+  }
+]

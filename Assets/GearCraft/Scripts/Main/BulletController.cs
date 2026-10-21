@@ -399,7 +399,7 @@ public class BulletController : MonoBehaviour
 
     private void ApplyDirectHitKnockback(EnemyController enemy)
     {
-        if (enemy == null || directHitKnockback <= 0f)
+        if (enemy == null || enemy.IsStunned || directHitKnockback <= 0f)
         {
             return;
         }

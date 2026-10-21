@@ -36,7 +36,7 @@ public class EnemyAI_BossArtillery : MonoBehaviour, IEnemyAI
         summonTimer = Mathf.Max(1f, data.summonInterval);
         arena = new BossArena(owner);
         owner.transform.position = arena.GetPosition(1f, 0.6f);
-        sprite = owner.GetComponent<SpriteRenderer>();
+        sprite = owner.GetComponentInChildren<SpriteRenderer>();
         if (sprite != null) originalColor = sprite.color;
         GameObject player = GameObject.FindGameObjectWithTag("Player");
         if (player != null) playerTarget = player.transform;
@@ -44,7 +44,7 @@ public class EnemyAI_BossArtillery : MonoBehaviour, IEnemyAI
 
     public void UpdateAI()
     {
-        if (owner == null || owner.HP <= 0f) return;
+        if (owner == null || owner.HP <= 0f || owner.IsStunned) return;
         float hpRatio = runtimeMaxHp > 0f ? owner.HP / runtimeMaxHp : 1f;
         phase = hpRatio <= 0.3f ? 2 : hpRatio <= 0.6f ? 1 : 0;
 
@@ -80,7 +80,7 @@ public class EnemyAI_BossArtillery : MonoBehaviour, IEnemyAI
 
     private void LateUpdate()
     {
-        if (!windingUp || owner == null || !owner.isActiveAndEnabled || owner.HP <= 0f ||
+        if (!windingUp || owner == null || !owner.isActiveAndEnabled || owner.HP <= 0f || owner.IsStunned ||
             sprite == null || !sprite.enabled) return;
         // 被弾点滅の終了処理より後に予告色を確定させる。
         sprite.color = new Color(1f, 0.45f, 0.2f, originalColor.a);
@@ -88,7 +88,7 @@ public class EnemyAI_BossArtillery : MonoBehaviour, IEnemyAI
 
     public void OnAttack()
     {
-        if (owner == null || owner.HP <= 0f || playerTarget == null || windingUp) return;
+        if (owner == null || owner.HP <= 0f || owner.IsStunned || playerTarget == null || windingUp) return;
         windingUp = true;
         windupTimer = AttackWindup;
         if (sprite != null) sprite.color = new Color(1f, 0.45f, 0.2f, originalColor.a);

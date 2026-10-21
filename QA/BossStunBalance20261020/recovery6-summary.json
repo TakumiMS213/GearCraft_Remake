@@ -1,0 +1,458 @@
+[
+  {
+    "label": "stun_direct_EK9_GearCraft_seed77_recovery6",
+    "mode": "direct",
+    "weapon": "GearCraft",
+    "result": "gate_destroyed",
+    "boss": "EK-9",
+    "boss_result": "gate_destroyed",
+    "killed": false,
+    "survived": false,
+    "kill_seconds": null,
+    "failure_or_timeout_seconds": 70.1,
+    "meets_60_seconds": false,
+    "start_boss_hp": 246000.0,
+    "remaining_boss_hp": 162972.0,
+    "end_hp": 100.0,
+    "end_gate": 0.0,
+    "stun_count": 1,
+    "threshold_damage_hp": [
+      172164.0
+    ],
+    "completed_stun_durations": [
+      3.0
+    ],
+    "max_stunned_body_drift": 0.0,
+    "max_visual_vibration": 0.00569254858,
+    "observed_explosion_components": 3,
+    "max_explosion_position_error": 0.0
+  },
+  {
+    "label": "stun_direct_EK9_GearCraft_seed101_recovery6",
+    "mode": "direct",
+    "weapon": "GearCraft",
+    "result": "gate_destroyed",
+    "boss": "EK-9",
+    "boss_result": "gate_destroyed",
+    "killed": false,
+    "survived": false,
+    "kill_seconds": null,
+    "failure_or_timeout_seconds": 70.09999,
+    "meets_60_seconds": false,
+    "start_boss_hp": 246000.0,
+    "remaining_boss_hp": 162774.0,
+    "end_hp": 100.0,
+    "end_gate": 0.0,
+    "stun_count": 1,
+    "threshold_damage_hp": [
+      172176.0
+    ],
+    "completed_stun_durations": [
+      3.0
+    ],
+    "max_stunned_body_drift": 0.0,
+    "max_visual_vibration": 0.00569254858,
+    "observed_explosion_components": 3,
+    "max_explosion_position_error": 0.0
+  },
+  {
+    "label": "stun_direct_EK9_GearCraft_seed202_recovery6",
+    "mode": "direct",
+    "weapon": "GearCraft",
+    "result": "gate_destroyed",
+    "boss": "EK-9",
+    "boss_result": "gate_destroyed",
+    "killed": false,
+    "survived": false,
+    "kill_seconds": null,
+    "failure_or_timeout_seconds": 70.11667,
+    "meets_60_seconds": false,
+    "start_boss_hp": 246000.0,
+    "remaining_boss_hp": 162870.0,
+    "end_hp": 100.0,
+    "end_gate": 0.0,
+    "stun_count": 1,
+    "threshold_damage_hp": [
+      172172.0
+    ],
+    "completed_stun_durations": [
+      3.0
+    ],
+    "max_stunned_body_drift": 0.0,
+    "max_visual_vibration": 0.00569254858,
+    "observed_explosion_components": 3,
+    "max_explosion_position_error": 0.0
+  },
+  {
+    "label": "stun_direct_EK9_SteamCannon_seed77_recovery6",
+    "mode": "direct",
+    "weapon": "SteamCannon",
+    "result": "gate_destroyed",
+    "boss": "EK-9",
+    "boss_result": "gate_destroyed",
+    "killed": false,
+    "survived": false,
+    "kill_seconds": null,
+    "failure_or_timeout_seconds": 77.20001,
+    "meets_60_seconds": false,
+    "start_boss_hp": 246000.0,
+    "remaining_boss_hp": 26827.2969,
+    "end_hp": 5.0,
+    "end_gate": 0.0,
+    "stun_count": 2,
+    "threshold_damage_hp": [
+      172132.5,
+      98337.5
+    ],
+    "completed_stun_durations": [
+      3.0,
+      3.0
+    ],
+    "max_stunned_body_drift": 0.0,
+    "max_visual_vibration": 0.00569254858,
+    "observed_explosion_components": 6,
+    "max_explosion_position_error": 0.0
+  },
+  {
+    "label": "stun_direct_EK9_SteamCannon_seed101_recovery6",
+    "mode": "direct",
+    "weapon": "SteamCannon",
+    "result": "gate_destroyed",
+    "boss": "EK-9",
+    "boss_result": "gate_destroyed",
+    "killed": false,
+    "survived": false,
+    "kill_seconds": null,
+    "failure_or_timeout_seconds": 77.20001,
+    "meets_60_seconds": false,
+    "start_boss_hp": 246000.0,
+    "remaining_boss_hp": 27237.6953,
+    "end_hp": 5.0,
+    "end_gate": 0.0,
+    "stun_count": 2,
+    "threshold_damage_hp": [
+      172132.5,
+      98337.5
+    ],
+    "completed_stun_durations": [
+      3.0,
+      3.0
+    ],
+    "max_stunned_body_drift": 0.0,
+    "max_visual_vibration": 0.00569254858,
+    "observed_explosion_components": 6,
+    "max_explosion_position_error": 0.0
+  },
+  {
+    "label": "stun_direct_EK9_SteamCannon_seed202_recovery6",
+    "mode": "direct",
+    "weapon": "SteamCannon",
+    "result": "gate_destroyed",
+    "boss": "EK-9",
+    "boss_result": "gate_destroyed",
+    "killed": false,
+    "survived": false,
+    "kill_seconds": null,
+    "failure_or_timeout_seconds": 77.19998,
+    "meets_60_seconds": false,
+    "start_boss_hp": 246000.0,
+    "remaining_boss_hp": 26827.2969,
+    "end_hp": 5.0,
+    "end_gate": 0.0,
+    "stun_count": 2,
+    "threshold_damage_hp": [
+      172132.5,
+      98337.5
+    ],
+    "completed_stun_durations": [
+      3.0,
+      3.0
+    ],
+    "max_stunned_body_drift": 0.0,
+    "max_visual_vibration": 0.00569254858,
+    "observed_explosion_components": 6,
+    "max_explosion_position_error": 0.0
+  },
+  {
+    "label": "stun_direct_EK9_SteamThrower_seed77_recovery6",
+    "mode": "direct",
+    "weapon": "SteamThrower",
+    "result": "player_dead",
+    "boss": "EK-9",
+    "boss_result": "player_dead",
+    "killed": false,
+    "survived": false,
+    "kill_seconds": null,
+    "failure_or_timeout_seconds": 71.5333557,
+    "meets_60_seconds": false,
+    "start_boss_hp": 246000.0,
+    "remaining_boss_hp": 62396.25,
+    "end_hp": -32.0,
+    "end_gate": 100.0,
+    "stun_count": 2,
+    "threshold_damage_hp": [
+      172199.938,
+      98397.69
+    ],
+    "completed_stun_durations": [
+      3.0,
+      3.0
+    ],
+    "max_stunned_body_drift": 0.0,
+    "max_visual_vibration": 0.00569254858,
+    "observed_explosion_components": 6,
+    "max_explosion_position_error": 0.0
+  },
+  {
+    "label": "stun_direct_EK9_SteamThrower_seed101_recovery6",
+    "mode": "direct",
+    "weapon": "SteamThrower",
+    "result": "player_dead",
+    "boss": "EK-9",
+    "boss_result": "player_dead",
+    "killed": false,
+    "survived": false,
+    "kill_seconds": null,
+    "failure_or_timeout_seconds": 76.81665,
+    "meets_60_seconds": false,
+    "start_boss_hp": 246000.0,
+    "remaining_boss_hp": 48876.25,
+    "end_hp": -8.0,
+    "end_gate": 100.0,
+    "stun_count": 2,
+    "threshold_damage_hp": [
+      172199.375,
+      98396.375
+    ],
+    "completed_stun_durations": [
+      3.0,
+      3.0
+    ],
+    "max_stunned_body_drift": 0.0,
+    "max_visual_vibration": 0.00569254858,
+    "observed_explosion_components": 6,
+    "max_explosion_position_error": 0.0
+  },
+  {
+    "label": "stun_direct_EK9_SteamThrower_seed202_recovery6",
+    "mode": "direct",
+    "weapon": "SteamThrower",
+    "result": "player_dead",
+    "boss": "EK-9",
+    "boss_result": "player_dead",
+    "killed": false,
+    "survived": false,
+    "kill_seconds": null,
+    "failure_or_timeout_seconds": 65.0333252,
+    "meets_60_seconds": false,
+    "start_boss_hp": 246000.0,
+    "remaining_boss_hp": 82000.0,
+    "end_hp": -32.0,
+    "end_gate": 100.0,
+    "stun_count": 2,
+    "threshold_damage_hp": [
+      172197.938,
+      98395.69
+    ],
+    "completed_stun_durations": [
+      3.0,
+      3.0
+    ],
+    "max_stunned_body_drift": 0.0,
+    "max_visual_vibration": 0.00569254858,
+    "observed_explosion_components": 6,
+    "max_explosion_position_error": 0.0
+  },
+  {
+    "label": "stun_direct_EK9_RailCraft_seed77_recovery6",
+    "mode": "direct",
+    "weapon": "RailCraft",
+    "result": "direct_boss_defeated",
+    "boss": "EK-9",
+    "boss_result": "defeated",
+    "killed": true,
+    "survived": true,
+    "kill_seconds": 63.5,
+    "failure_or_timeout_seconds": null,
+    "meets_60_seconds": true,
+    "start_boss_hp": 246000.0,
+    "remaining_boss_hp": -460.0,
+    "end_hp": 46.0,
+    "end_gate": 100.0,
+    "stun_count": 3,
+    "threshold_damage_hp": [
+      172052.0,
+      98032.0,
+      24544.0
+    ],
+    "completed_stun_durations": [
+      3.0,
+      3.0,
+      3.0
+    ],
+    "max_stunned_body_drift": 0.0,
+    "max_visual_vibration": 0.00569254858,
+    "observed_explosion_components": 9,
+    "max_explosion_position_error": 0.0
+  },
+  {
+    "label": "stun_direct_EK9_RailCraft_seed101_recovery6",
+    "mode": "direct",
+    "weapon": "RailCraft",
+    "result": "direct_boss_defeated",
+    "boss": "EK-9",
+    "boss_result": "defeated",
+    "killed": true,
+    "survived": true,
+    "kill_seconds": 63.6333,
+    "failure_or_timeout_seconds": null,
+    "meets_60_seconds": true,
+    "start_boss_hp": 246000.0,
+    "remaining_boss_hp": -460.0,
+    "end_hp": 28.0,
+    "end_gate": 100.0,
+    "stun_count": 3,
+    "threshold_damage_hp": [
+      172052.0,
+      98032.0,
+      24544.0
+    ],
+    "completed_stun_durations": [
+      3.0,
+      3.0,
+      3.0
+    ],
+    "max_stunned_body_drift": 0.0,
+    "max_visual_vibration": 0.00569254858,
+    "observed_explosion_components": 9,
+    "max_explosion_position_error": 0.0
+  },
+  {
+    "label": "stun_direct_EK9_RailCraft_seed202_recovery6",
+    "mode": "direct",
+    "weapon": "RailCraft",
+    "result": "direct_boss_defeated",
+    "boss": "EK-9",
+    "boss_result": "defeated",
+    "killed": true,
+    "survived": true,
+    "kill_seconds": 63.63336,
+    "failure_or_timeout_seconds": null,
+    "meets_60_seconds": true,
+    "start_boss_hp": 246000.0,
+    "remaining_boss_hp": -460.0,
+    "end_hp": 28.0,
+    "end_gate": 100.0,
+    "stun_count": 3,
+    "threshold_damage_hp": [
+      172052.0,
+      98032.0,
+      24544.0
+    ],
+    "completed_stun_durations": [
+      3.0,
+      3.0,
+      3.0
+    ],
+    "max_stunned_body_drift": 0.0,
+    "max_visual_vibration": 0.00569254858,
+    "observed_explosion_components": 9,
+    "max_explosion_position_error": 0.0
+  },
+  {
+    "label": "stun_direct_EK9_SteamGatling_seed77_recovery6",
+    "mode": "direct",
+    "weapon": "SteamGatling",
+    "result": "direct_boss_defeated",
+    "boss": "EK-9",
+    "boss_result": "defeated",
+    "killed": true,
+    "survived": true,
+    "kill_seconds": 71.58331,
+    "failure_or_timeout_seconds": null,
+    "meets_60_seconds": true,
+    "start_boss_hp": 246000.0,
+    "remaining_boss_hp": -14.1430626,
+    "end_hp": 28.0,
+    "end_gate": 100.0,
+    "stun_count": 3,
+    "threshold_damage_hp": [
+      172197.0,
+      98371.6953,
+      24599.6777
+    ],
+    "completed_stun_durations": [
+      3.0,
+      3.0,
+      3.0
+    ],
+    "max_stunned_body_drift": 0.0,
+    "max_visual_vibration": 0.00569254858,
+    "observed_explosion_components": 9,
+    "max_explosion_position_error": 0.0
+  },
+  {
+    "label": "stun_direct_EK9_SteamGatling_seed101_recovery6",
+    "mode": "direct",
+    "weapon": "SteamGatling",
+    "result": "direct_boss_defeated",
+    "boss": "EK-9",
+    "boss_result": "defeated",
+    "killed": true,
+    "survived": true,
+    "kill_seconds": 71.61664,
+    "failure_or_timeout_seconds": null,
+    "meets_60_seconds": true,
+    "start_boss_hp": 246000.0,
+    "remaining_boss_hp": -24.9404259,
+    "end_hp": 28.0,
+    "end_gate": 100.0,
+    "stun_count": 3,
+    "threshold_damage_hp": [
+      172197.0,
+      98371.6953,
+      24588.88
+    ],
+    "completed_stun_durations": [
+      3.0,
+      3.0,
+      3.0
+    ],
+    "max_stunned_body_drift": 0.0,
+    "max_visual_vibration": 0.00569254858,
+    "observed_explosion_components": 9,
+    "max_explosion_position_error": 0.0
+  },
+  {
+    "label": "stun_direct_EK9_SteamGatling_seed202_recovery6",
+    "mode": "direct",
+    "weapon": "SteamGatling",
+    "result": "direct_boss_defeated",
+    "boss": "EK-9",
+    "boss_result": "defeated",
+    "killed": true,
+    "survived": true,
+    "kill_seconds": 71.5999756,
+    "failure_or_timeout_seconds": null,
+    "meets_60_seconds": true,
+    "start_boss_hp": 246000.0,
+    "remaining_boss_hp": -8.143032,
+    "end_hp": 28.0,
+    "end_gate": 100.0,
+    "stun_count": 3,
+    "threshold_damage_hp": [
+      172197.0,
+      98371.6953,
+      24572.0781
+    ],
+    "completed_stun_durations": [
+      3.0,
+      3.0,
+      3.0
+    ],
+    "max_stunned_body_drift": 0.0,
+    "max_visual_vibration": 0.00569254858,
+    "observed_explosion_components": 9,
+    "max_explosion_position_error": 0.0
+  }
+]

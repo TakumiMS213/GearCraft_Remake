@@ -1,0 +1,16 @@
+label,weapon,start_stage,profile,seed,STR,ACC,moduleDamage,repair,barrier,punk,scrap_module,initial_hp,initial_gate,fps
+stun_direct_EK9_GearCraft_seed77_recovery6,GearCraft,31,final_day11_melee_defense_module20,77,20,20,20,1,1,1,1,100,100,60
+stun_direct_EK9_GearCraft_seed101_recovery6,GearCraft,31,final_day11_melee_defense_module20,101,20,20,20,1,1,1,1,100,100,60
+stun_direct_EK9_GearCraft_seed202_recovery6,GearCraft,31,final_day11_melee_defense_module20,202,20,20,20,1,1,1,1,100,100,60
+stun_direct_EK9_SteamCannon_seed77_recovery6,SteamCannon,31,final_day11_ranged_fitted_speed_defense_module20,77,20,20,20,1,1,1,1,100,100,60
+stun_direct_EK9_SteamCannon_seed101_recovery6,SteamCannon,31,final_day11_ranged_fitted_speed_defense_module20,101,20,20,20,1,1,1,1,100,100,60
+stun_direct_EK9_SteamCannon_seed202_recovery6,SteamCannon,31,final_day11_ranged_fitted_speed_defense_module20,202,20,20,20,1,1,1,1,100,100,60
+stun_direct_EK9_SteamThrower_seed77_recovery6,SteamThrower,31,final_day11_thrower_fitted_damage_defense_module20,77,20,20,20,1,1,1,1,100,100,60
+stun_direct_EK9_SteamThrower_seed101_recovery6,SteamThrower,31,final_day11_thrower_fitted_damage_defense_module20,101,20,20,20,1,1,1,1,100,100,60
+stun_direct_EK9_SteamThrower_seed202_recovery6,SteamThrower,31,final_day11_thrower_fitted_damage_defense_module20,202,20,20,20,1,1,1,1,100,100,60
+stun_direct_EK9_RailCraft_seed77_recovery6,RailCraft,31,final_day11_ranged_fitted_speed_defense_module20,77,20,20,20,1,1,1,1,100,100,60
+stun_direct_EK9_RailCraft_seed101_recovery6,RailCraft,31,final_day11_ranged_fitted_speed_defense_module20,101,20,20,20,1,1,1,1,100,100,60
+stun_direct_EK9_RailCraft_seed202_recovery6,RailCraft,31,final_day11_ranged_fitted_speed_defense_module20,202,20,20,20,1,1,1,1,100,100,60
+stun_direct_EK9_SteamGatling_seed77_recovery6,SteamGatling,31,final_day11_ranged_defense_module20,77,20,20,20,1,1,1,1,100,100,60
+stun_direct_EK9_SteamGatling_seed101_recovery6,SteamGatling,31,final_day11_ranged_defense_module20,101,20,20,20,1,1,1,1,100,100,60
+stun_direct_EK9_SteamGatling_seed202_recovery6,SteamGatling,31,final_day11_ranged_defense_module20,202,20,20,20,1,1,1,1,100,100,60

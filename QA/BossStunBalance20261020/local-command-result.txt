@@ -1,0 +1,2 @@
+restore-final-20261020-0836
+{"success":true,"message":"Code executed successfully.","data":{"result":"session_id=20261020-065709-987-da31f0911df54154b44f8c181444fac7\nUTC=2026-10-20T08:36:00.8940830Z\nprefs_verified=16\nPlay=false\nscene=Title clean\nfixed_ticks=2822399\nfixed_delta_getter=0.0199999921\nGameView_index=3\nGameView_sizes_restored=true\nlogger_and_dotween_restored=true\n","compiler":"codedom"}}

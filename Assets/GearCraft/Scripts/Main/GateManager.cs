@@ -64,17 +64,23 @@ public class GateManager : MonoBehaviour
     // ======== ダメージ処理 ========
     private async Task OnTriggerEnter2D(Collider2D collision)
     {
-        EnemyController ec = collision.gameObject.GetComponent<EnemyController>();
-        if (collision.CompareTag("Enemy") && ec != null)
+        EnemyController ec = collision.GetComponentInParent<EnemyController>();
+        if (ec != null && (collision.CompareTag("Enemy") || ec.CompareTag("Enemy")))
         {
             if (MainDebugEnemySpawnWindow.IsDebugModeActive)
             {
                 return;
             }
 
-            // 円軌道型(旧AR)はゲートに衝突しない
+            if (IsBoss(ec))
+            {
+                OnBossReachedGate(ec);
+                return;
+            }
+
+            // 通常の円軌道型はゲートに衝突しない。
             bool isCircleType = ec.enemyData != null && ec.enemyData.aiType == EnemyAIType.CircleMove;
-            if (!isCircleType && !IsGateCollisionImmuneBoss(ec))
+            if (!isCircleType)
             {
                 TakeDamage(10f);
                 // 無敵中に門へ到達した敵も撃ち漏らしとして扱う。
@@ -85,7 +91,7 @@ public class GateManager : MonoBehaviour
         }
     }
 
-    private static bool IsGateCollisionImmuneBoss(EnemyController enemy)
+    private static bool IsBoss(EnemyController enemy)
     {
         if (enemy == null || enemy.enemyData == null)
         {
@@ -93,12 +99,24 @@ public class GateManager : MonoBehaviour
         }
 
         string enemyName = enemy.enemyData.enemyName;
-        return enemy.enemyData.aiType == EnemyAIType.Boss_Tank ||
-            enemy.enemyData.aiType == EnemyAIType.Boss_Speed ||
-            enemy.enemyData.aiType == EnemyAIType.Boss_Artillery ||
-            enemy.enemyData.aiType == EnemyAIType.Boss_Final ||
+        return enemy.enemyData.IsBossType ||
             enemyName == "AR-227" ||
             enemyName == "BB-413";
+    }
+
+    public void OnBossReachedGate(EnemyController boss)
+    {
+        if (!IsBoss(boss) || boss.HP <= 0f) return;
+        if (MainDebugEnemySpawnWindow.IsDebugModeActive || EndingManager.IsLoadingEnding) return;
+        if (statusManager == null) statusManager = StatusManager.Instance;
+        if (statusManager == null) return;
+
+        // ボスの到達は通常ダメージとは別の敗北条件。門の無敵時間も無視する。
+        statusManager.GATE = 0f;
+        HP = 0f;
+        statusManager.killAllEnemies = false;
+        StageFlowManager.Instance?.OnGateHit();
+        GameOver();
     }
 
     public void TakeDamage(float damage)

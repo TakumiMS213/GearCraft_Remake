@@ -5,7 +5,7 @@ using DG.Tweening;
 /// AR-227: 画面内で円弧移動・突進・復帰を繰り返す変則移動型。
 /// 連射・ミサイルのフェーズに定期的な爆弾投下を組み合わせ、登場と突進後の復帰を保証する。
 /// </summary>
-public class EnemyAI_BossSpeed : MonoBehaviour, IEnemyAI
+public class EnemyAI_BossSpeed : MonoBehaviour, IEnemyAI, IBossStunHandler
 {
     private const int ArBulletBurstCount = 10;
     private const float ArBulletBurstInterval = 0.06f;
@@ -15,12 +15,15 @@ public class EnemyAI_BossSpeed : MonoBehaviour, IEnemyAI
     private const float ReturnDuration = 0.8f;
     private const float FirstBombDelay = 4f;
     private const float BombDropClearance = 0.15f;
+    private const float GateClearance = 0.35f;
     private enum MovementState { Entering, Combat, Charging, Returning }
 
     private EnemyController owner;
     private EnemyDataSO data;
     private Transform playerTarget;
     private BossArena arena;
+    private Collider2D gateCollider;
+    private float bodyLeftOffset;
     private MovementState movementState;
     private Vector3 entryStart;
     private float entryTimer;
@@ -33,6 +36,9 @@ public class EnemyAI_BossSpeed : MonoBehaviour, IEnemyAI
     private int summonedCount;
     private float runtimeMaxHp;
     private Sequence attackSequence;
+    private bool resumeMovementAfterStun;
+    private bool resumeAttackAfterStun;
+    private bool stunPaused;
 
     public void Initialize(EnemyController owner, EnemyDataSO data)
     {
@@ -51,7 +57,10 @@ public class EnemyAI_BossSpeed : MonoBehaviour, IEnemyAI
             playerTarget = playerObj.transform;
 
         arena = new BossArena(owner, containSprite: true);
-        owner.transform.position = arena.GetPosition(1f, 0.68f);
+        Collider2D body = owner.GetComponent<Collider2D>();
+        bodyLeftOffset = body != null ? body.bounds.min.x - owner.transform.position.x : 0f;
+        gateCollider = GateManager.Instance != null ? GateManager.Instance.GetComponent<Collider2D>() : null;
+        owner.transform.position = GetCombatPosition(1f, 0.68f);
         entryStart = owner.transform.position;
         movementState = MovementState.Entering;
         entryTimer = 0f;
@@ -59,7 +68,7 @@ public class EnemyAI_BossSpeed : MonoBehaviour, IEnemyAI
 
     public void UpdateAI()
     {
-        if (owner == null || owner.HP <= 0f) return;
+        if (owner == null || owner.HP <= 0f || owner.IsStunned) return;
 
         // 移動だけに減速を反映し、飛行中の付与・解除でも現在の経路を再作成しない。
         float movementSpeedMultiplier = owner.GetMoveSpeed(1f);
@@ -67,7 +76,7 @@ public class EnemyAI_BossSpeed : MonoBehaviour, IEnemyAI
             currentTween.timeScale = movementSpeedMultiplier;
 
         Vector3 position = owner.transform.position;
-        Vector3 boundedPosition = arena.Clamp(position);
+        Vector3 boundedPosition = ClampCombatPosition(position);
         // カメラ変更や外部のノックバックで範囲外に出た場合も、実行中のTweenを中断して復帰する。
         if ((position - boundedPosition).sqrMagnitude > 0.01f)
         {
@@ -80,7 +89,7 @@ public class EnemyAI_BossSpeed : MonoBehaviour, IEnemyAI
         if (movementState == MovementState.Entering)
         {
             entryTimer += Time.deltaTime * movementSpeedMultiplier;
-            owner.transform.position = arena.Clamp(Vector3.Lerp(entryStart, GetHomePosition(), entryTimer / EntryDuration));
+            owner.transform.position = ClampCombatPosition(Vector3.Lerp(entryStart, GetHomePosition(), entryTimer / EntryDuration));
             if (entryTimer >= EntryDuration) movementState = MovementState.Combat;
             return;
         }
@@ -124,7 +133,7 @@ public class EnemyAI_BossSpeed : MonoBehaviour, IEnemyAI
 
     public void OnAttack()
     {
-        if (owner == null || owner.HP <= 0f || playerTarget == null || movementState != MovementState.Combat) return;
+        if (owner == null || owner.HP <= 0f || owner.IsStunned || playerTarget == null || movementState != MovementState.Combat) return;
 
         // 円弧移動しながら射撃
         MoveInArc();
@@ -167,7 +176,7 @@ public class EnemyAI_BossSpeed : MonoBehaviour, IEnemyAI
 
     private void ShootArBullet(GameObject bulletPrefab)
     {
-        if (owner == null || owner.HP <= 0f || playerTarget == null || bulletPrefab == null)
+        if (owner == null || owner.HP <= 0f || owner.IsStunned || playerTarget == null || bulletPrefab == null)
         {
             return;
         }
@@ -188,6 +197,7 @@ public class EnemyAI_BossSpeed : MonoBehaviour, IEnemyAI
 
     private void ShootArMissile()
     {
+        if (owner == null || owner.HP <= 0f || owner.IsStunned) return;
         GameObject missilePrefab = GetArProjectilePrefab("Missile_AR-221", 1);
         if (missilePrefab == null || playerTarget == null)
         {
@@ -207,6 +217,7 @@ public class EnemyAI_BossSpeed : MonoBehaviour, IEnemyAI
 
     private void DropArBomb()
     {
+        if (owner == null || owner.HP <= 0f || owner.IsStunned) return;
         GameObject bombPrefab = GetArProjectilePrefab("Bomb_AR-221", 2);
         if (bombPrefab == null)
         {
@@ -265,9 +276,9 @@ public class EnemyAI_BossSpeed : MonoBehaviour, IEnemyAI
         movementState = MovementState.Charging;
         currentTween?.Kill();
 
-        Vector3 chargeTarget = arena.Clamp(playerTarget.position);
+        Vector3 chargeTarget = ClampCombatPosition(playerTarget.position);
         Vector2 pullDir = (owner.transform.position - chargeTarget).normalized;
-        Vector3 pullPosition = arena.Clamp(owner.transform.position + (Vector3)pullDir * 1.5f);
+        Vector3 pullPosition = ClampCombatPosition(owner.transform.position + (Vector3)pullDir * 1.5f);
         float duration = (phase == 2 ? 0.3f : phase == 1 ? 0.5f : 0.7f) * ChargeDurationMultiplier;
 
         Sequence sequence = DOTween.Sequence();
@@ -306,8 +317,8 @@ public class EnemyAI_BossSpeed : MonoBehaviour, IEnemyAI
         // Sequenceの後半では、直前の移動が終わった位置を開始点にする。
         return DOVirtual.Float(0f, 1f, duration, t =>
         {
-            if (owner == null || owner.HP <= 0f) return;
-            owner.transform.position = arena.Clamp(Vector3.Lerp(start, target, t));
+            if (owner == null || owner.HP <= 0f || owner.IsStunned) return;
+            owner.transform.position = ClampCombatPosition(Vector3.Lerp(start, target, t));
         }).SetEase(ease).OnStart(() => start = owner.transform.position);
     }
 
@@ -315,7 +326,7 @@ public class EnemyAI_BossSpeed : MonoBehaviour, IEnemyAI
     {
         if (currentTween != null && currentTween.IsActive()) return;
 
-        Rect rect = arena.GetMovementRect();
+        Rect rect = GetCombatRect();
         float radius = Mathf.Max(0f, Mathf.Min(data.circleRadius, 2.5f, rect.width * 0.5f, rect.height * 0.5f));
         if (radius < 0.05f) return;
         Vector3 center = GetHomePosition();
@@ -329,18 +340,58 @@ public class EnemyAI_BossSpeed : MonoBehaviour, IEnemyAI
 
         SetMovementTween(DOVirtual.Float(0f, 1f, duration, t =>
         {
-            if (owner == null || owner.HP <= 0f) return;
+            if (owner == null || owner.HP <= 0f || owner.IsStunned) return;
             float angle = (startAngle + turn * t) * Mathf.Deg2Rad;
             // 初回の更新で円周へ瞬間移動しないよう、現在の半径から滑らかに接続する。
             float currentRadius = Mathf.Lerp(startRadius, radius, t);
             Vector3 offset = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0f) * currentRadius;
-            owner.transform.position = arena.Clamp(center + offset);
+            owner.transform.position = ClampCombatPosition(center + offset);
         }).SetEase(Ease.InOutSine));
     }
 
     private Vector3 GetHomePosition()
     {
-        return arena.GetPosition(0.7f, 0.68f);
+        return GetCombatPosition(0.7f, 0.68f);
+    }
+
+    private Rect GetCombatRect()
+    {
+        Rect rect = arena.GetMovementRect();
+        if (gateCollider == null && GateManager.Instance != null)
+            gateCollider = GateManager.Instance.GetComponent<Collider2D>();
+        if (gateCollider == null || !gateCollider.enabled || !gateCollider.gameObject.activeInHierarchy)
+            return rect;
+
+        // 門付近のプレイヤーへ突進しても、本体の左端が門へ入らない範囲で折り返す。
+        // 画面内の制約だけでは、門のTrigger領域を安全な移動先として扱ってしまう。
+        float gateRight = gateCollider.bounds.max.x;
+        if (gateCollider is BoxCollider2D box)
+        {
+            Transform gateTransform = box.transform;
+            float center = gateTransform.TransformPoint(box.offset).x;
+            float extentX = Mathf.Abs(gateTransform.TransformVector(Vector3.right * box.size.x * 0.5f).x);
+            float extentY = Mathf.Abs(gateTransform.TransformVector(Vector3.up * box.size.y * 0.5f).x);
+            gateRight = center + extentX + extentY;
+        }
+        float left = Mathf.Max(rect.xMin, gateRight + GateClearance - bodyLeftOffset);
+        // 極端に狭い画面でも範囲を逆転させず、門との余白を優先する。
+        return Rect.MinMaxRect(left, rect.yMin, Mathf.Max(left, rect.xMax), rect.yMax);
+    }
+
+    private Vector3 ClampCombatPosition(Vector3 position)
+    {
+        Rect rect = GetCombatRect();
+        position.x = Mathf.Clamp(position.x, rect.xMin, rect.xMax);
+        position.y = Mathf.Clamp(position.y, rect.yMin, rect.yMax);
+        position.z = owner.transform.position.z;
+        return position;
+    }
+
+    private Vector3 GetCombatPosition(float horizontal, float vertical)
+    {
+        Rect rect = GetCombatRect();
+        return new Vector3(Mathf.Lerp(rect.xMin, rect.xMax, horizontal),
+            Mathf.Lerp(rect.yMin, rect.yMax, vertical), owner.transform.position.z);
     }
 
     private void UpdateSummon()
@@ -393,6 +444,30 @@ public class EnemyAI_BossSpeed : MonoBehaviour, IEnemyAI
         StopTweens();
     }
 
+    public void SetStunned(bool stunned)
+    {
+        if (stunPaused == stunned) return;
+        stunPaused = stunned;
+        if (stunned)
+        {
+            // UpdateAIの外で進む移動と連射も、残りの経路・発射間隔を保って停止する。
+            resumeMovementAfterStun = currentTween != null && currentTween.IsActive() && currentTween.IsPlaying();
+            resumeAttackAfterStun = attackSequence != null && attackSequence.IsActive() && attackSequence.IsPlaying();
+            if (currentTween != null && currentTween.IsActive()) currentTween.Pause();
+            if (attackSequence != null && attackSequence.IsActive()) attackSequence.Pause();
+            return;
+        }
+
+        if (owner != null && owner.HP > 0f && owner.isActiveAndEnabled)
+        {
+            if (resumeMovementAfterStun && currentTween != null && currentTween.IsActive()) currentTween.Play();
+            if (resumeAttackAfterStun && attackSequence != null && attackSequence.IsActive()) attackSequence.Play();
+        }
+        resumeMovementAfterStun = false;
+        resumeAttackAfterStun = false;
+        stunPaused = false;
+    }
+
     private void OnDisable()
     {
         StopTweens();
@@ -409,5 +484,8 @@ public class EnemyAI_BossSpeed : MonoBehaviour, IEnemyAI
         currentTween?.Kill();
         attackSequence = null;
         currentTween = null;
+        resumeMovementAfterStun = false;
+        resumeAttackAfterStun = false;
+        stunPaused = false;
     }
 }

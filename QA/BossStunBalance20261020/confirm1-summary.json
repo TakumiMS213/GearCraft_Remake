@@ -1,0 +1,194 @@
+[
+  {
+    "label": "stun_direct_IC408_GearCraft_seed101_confirm1",
+    "mode": "direct",
+    "weapon": "GearCraft",
+    "result": "direct_boss_defeated",
+    "boss": "IC-408",
+    "boss_result": "defeated",
+    "killed": true,
+    "survived": true,
+    "kill_seconds": 71.61667,
+    "failure_or_timeout_seconds": null,
+    "meets_60_seconds": true,
+    "start_boss_hp": 11560.0,
+    "remaining_boss_hp": -9.31279,
+    "end_hp": 100.0,
+    "end_gate": 100.0,
+    "stun_count": 3,
+    "threshold_damage_hp": [
+      8043.26,
+      4591.39941,
+      1142.69324
+    ],
+    "completed_stun_durations": [
+      3.0,
+      3.0,
+      3.0
+    ],
+    "max_stunned_body_drift": 0.0,
+    "max_visual_vibration": 0.00500944257,
+    "observed_explosion_components": 9,
+    "max_explosion_position_error": 0.0
+  },
+  {
+    "label": "stun_direct_IC408_GearCraft_seed202_confirm1",
+    "mode": "direct",
+    "weapon": "GearCraft",
+    "result": "direct_boss_defeated",
+    "boss": "IC-408",
+    "boss_result": "defeated",
+    "killed": true,
+    "survived": true,
+    "kill_seconds": 72.3,
+    "failure_or_timeout_seconds": null,
+    "meets_60_seconds": true,
+    "start_boss_hp": 11560.0,
+    "remaining_boss_hp": -45.30354,
+    "end_hp": 100.0,
+    "end_gate": 100.0,
+    "stun_count": 3,
+    "threshold_damage_hp": [
+      8091.6665,
+      4620.606,
+      1146.30286
+    ],
+    "completed_stun_durations": [
+      3.01667023,
+      3.0,
+      3.0
+    ],
+    "max_stunned_body_drift": 0.0,
+    "max_visual_vibration": 0.00500944257,
+    "observed_explosion_components": 9,
+    "max_explosion_position_error": 0.0
+  },
+  {
+    "label": "stun_direct_BB413_SteamCannon_seed101_confirm1",
+    "mode": "direct",
+    "weapon": "SteamCannon",
+    "result": "direct_boss_defeated",
+    "boss": "BB-413",
+    "boss_result": "defeated",
+    "killed": true,
+    "survived": true,
+    "kill_seconds": 65.51666,
+    "failure_or_timeout_seconds": null,
+    "meets_60_seconds": true,
+    "start_boss_hp": 18200.0,
+    "remaining_boss_hp": -66.61174,
+    "end_hp": 100.0,
+    "end_gate": 100.0,
+    "stun_count": 3,
+    "threshold_damage_hp": [
+      12712.81,
+      7225.59473,
+      1810.58789
+    ],
+    "completed_stun_durations": [
+      3.0,
+      3.0,
+      3.0
+    ],
+    "max_stunned_body_drift": 0.0,
+    "max_visual_vibration": 0.008349071,
+    "observed_explosion_components": 6,
+    "max_explosion_position_error": 0.0
+  },
+  {
+    "label": "stun_direct_BB413_SteamCannon_seed202_confirm1",
+    "mode": "direct",
+    "weapon": "SteamCannon",
+    "result": "direct_boss_defeated",
+    "boss": "BB-413",
+    "boss_result": "defeated",
+    "killed": true,
+    "survived": true,
+    "kill_seconds": 65.51665,
+    "failure_or_timeout_seconds": null,
+    "meets_60_seconds": true,
+    "start_boss_hp": 18200.0,
+    "remaining_boss_hp": -66.61174,
+    "end_hp": 100.0,
+    "end_gate": 100.0,
+    "stun_count": 3,
+    "threshold_damage_hp": [
+      12712.81,
+      7225.59473,
+      1810.58789
+    ],
+    "completed_stun_durations": [
+      3.0,
+      3.0,
+      3.0
+    ],
+    "max_stunned_body_drift": 0.0,
+    "max_visual_vibration": 0.008349071,
+    "observed_explosion_components": 6,
+    "max_explosion_position_error": 0.0
+  },
+  {
+    "label": "stun_direct_AR227_SteamGatling_seed101_confirm1",
+    "mode": "direct",
+    "weapon": "SteamGatling",
+    "result": "direct_boss_defeated",
+    "boss": "AR-227",
+    "boss_result": "defeated",
+    "killed": true,
+    "survived": true,
+    "kill_seconds": 66.51666,
+    "failure_or_timeout_seconds": null,
+    "meets_60_seconds": true,
+    "start_boss_hp": 228000.0,
+    "remaining_boss_hp": -1.5195961,
+    "end_hp": 70.0,
+    "end_gate": 100.0,
+    "stun_count": 3,
+    "threshold_damage_hp": [
+      159576.438,
+      91186.625,
+      22773.0156
+    ],
+    "completed_stun_durations": [
+      3.0,
+      3.0,
+      3.0
+    ],
+    "max_stunned_body_drift": 0.0,
+    "max_visual_vibration": 0.0166981425,
+    "observed_explosion_components": 9,
+    "max_explosion_position_error": 0.0
+  },
+  {
+    "label": "stun_direct_AR227_SteamGatling_seed202_confirm1",
+    "mode": "direct",
+    "weapon": "SteamGatling",
+    "result": "direct_boss_defeated",
+    "boss": "AR-227",
+    "boss_result": "defeated",
+    "killed": true,
+    "survived": true,
+    "kill_seconds": 64.9666748,
+    "failure_or_timeout_seconds": null,
+    "meets_60_seconds": true,
+    "start_boss_hp": 228000.0,
+    "remaining_boss_hp": -79.6430359,
+    "end_hp": 75.0,
+    "end_gate": 100.0,
+    "stun_count": 3,
+    "threshold_damage_hp": [
+      159579.828,
+      91183.625,
+      22800.0
+    ],
+    "completed_stun_durations": [
+      3.0,
+      3.0,
+      3.0
+    ],
+    "max_stunned_body_drift": 0.0,
+    "max_visual_vibration": 0.0166981425,
+    "observed_explosion_components": 9,
+    "max_explosion_position_error": 0.0
+  }
+]

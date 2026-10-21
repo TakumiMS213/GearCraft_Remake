@@ -106,7 +106,7 @@ Animator:
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_AnimatePhysics: 0
-  m_WarningMessage:
+  m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
@@ -342,7 +342,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.075, y: 0.1}
+  m_Offset: {x: 0.00846076, y: 0.1057034}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -352,7 +352,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1.05, y: 1.02}
+  m_Size: {x: 1.2591236, y: 1.0846382}
   m_EdgeRadius: 0
 --- !u!50 &2088007294891880288
 Rigidbody2D:
@@ -391,8 +391,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 434b45fcf8dd5cd4283048b25403793d, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   enemyData: {fileID: 11400000, guid: f17cf0d1198f4ce9b4996bf924e7a05f, type: 2}
   isLastEnemy: 0
   deathEffect: {fileID: 6786343413224804731, guid: 309bfd18c797e4111b7470ea476e58ab, type: 3}
@@ -408,8 +408,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d26109d8703084ac19066ef16c165518, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   gunMuzzles:
   - {fileID: 4713213213941221373}
   - {fileID: 2306355956117369431}

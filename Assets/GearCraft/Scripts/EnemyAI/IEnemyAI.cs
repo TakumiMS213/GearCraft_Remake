@@ -10,3 +10,9 @@ public interface IEnemyAI
     void OnAttack();
     void OnDeath();
 }
+
+/// <summary>Update外のTweenなども、ボスのスタンと同時に停止・再開する。</summary>
+public interface IBossStunHandler
+{
+    void SetStunned(bool stunned);
+}

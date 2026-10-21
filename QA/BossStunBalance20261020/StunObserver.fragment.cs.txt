@@ -1,0 +1,70 @@
+// Read-only frame observer. Particle positions are observed first-seen positions, not inferred hits.
+string stunPath=folder+label+"-stun.csv",particlePath=folder+label+"-particles.csv";
+var stunBuffer=new System.Text.StringBuilder();var particleBuffer=new System.Text.StringBuilder();
+var stunPrior=new System.Collections.Generic.Dictionary<int,bool>();
+var stunTimes=new System.Collections.Generic.Dictionary<int,float>();
+var stunPositions=new System.Collections.Generic.Dictionary<int,Vector3>();
+var stunDrift=new System.Collections.Generic.Dictionary<int,float>();
+var stunVisualDrift=new System.Collections.Generic.Dictionary<int,float>();
+var stunVisualInitial=new System.Collections.Generic.Dictionary<int,Vector3>();
+var stunCounts=new System.Collections.Generic.Dictionary<int,int>();
+var seenParticles=new System.Collections.Generic.HashSet<int>();
+var observedBossRefs=new System.Collections.Generic.Dictionary<int,EnemyController>();
+var damageObservers=new System.Collections.Generic.Dictionary<int,System.Action<float>>();
+var stunFlag=typeof(EnemyController).GetProperty("IsStunned",flags);
+if(stunFlag==null)throw new System.Exception("Production IsStunned API not compiled");
+System.IO.File.WriteAllText(stunPath,"game_seconds,frame,boss_id,boss,event,count,hp,stunned_seconds,x,y,stun_hit_x,stun_hit_y,max_body_drift,max_visual_drift,smoke_count,smoke_particles,stun_remaining\n");
+System.IO.File.WriteAllText(particlePath,"game_seconds,frame,id,name,x,y,boss_id,last_hit_x,last_hit_y,distance_to_last_hit\n");
+System.Action flushStuns=()=>{
+ if(stunBuffer.Length>0){System.IO.File.AppendAllText(stunPath,stunBuffer.ToString());stunBuffer.Length=0;}
+ if(particleBuffer.Length>0){System.IO.File.AppendAllText(particlePath,particleBuffer.ToString());particleBuffer.Length=0;}
+};
+float lastStunFlush=Time.time;
+bool inspectStunParticles=false;
+bool stunScreenshotRequested=false;
+System.Action<EnemyController[]> observeStuns=all=>{
+ foreach(var e in all.Where(e=>e!=null&&e.enemyData!=null&&e.enemyData.IsBossType)){
+  int id=e.GetInstanceID();observedBossRefs[id]=e;
+  if(!damageObservers.ContainsKey(id)){
+   int observedTriggerCount=e.BossStunCount;EnemyController observed=e;
+   System.Action<float> onDamage=amount=>{
+    if(observed==null||observed.BossStunCount==observedTriggerCount)return;
+    observedTriggerCount=observed.BossStunCount;var hit=observed.LastStunHitPosition;var pos=observed.transform.position;
+    stunBuffer.AppendLine(string.Join(",",new[]{number(Time.time-started),Time.frameCount.ToString(),id.ToString(),csv(observed.enemyData.enemyName),"threshold_damage",observedTriggerCount.ToString(),number(observed.HP),"0",number(pos.x),number(pos.y),number(hit.x),number(hit.y),"0","0","","",number(observed.BossStunTimeRemaining)}));
+    inspectStunParticles=true;
+   };
+   damageObservers[id]=onDamage;e.Damaged+=onDamage;
+  }
+  bool isStunned=(bool)stunFlag.GetValue(e,null);bool before=stunPrior.ContainsKey(id)&&stunPrior[id];
+  var visual=e.transform.Find("Visual");Vector3 visualPosition=visual!=null?visual.localPosition:Vector3.zero;
+  string evt=null;
+  stunCounts[id]=e.BossStunCount;
+  if(isStunned&&!before){stunTimes[id]=Time.time;stunPositions[id]=e.transform.position;stunVisualInitial[id]=visualPosition;stunDrift[id]=0f;stunVisualDrift[id]=0f;evt="started";inspectStunParticles=true;}
+  if(isStunned){
+   stunDrift[id]=Mathf.Max(stunDrift[id],Vector3.Distance(stunPositions[id],e.transform.position));
+   stunVisualDrift[id]=Mathf.Max(stunVisualDrift[id],Vector3.Distance(stunVisualInitial[id],visualPosition));
+   if(!stunScreenshotRequested&&Time.time-stunTimes[id]>=0.3f){
+    stunScreenshotRequested=true;ScreenCapture.CaptureScreenshot(folder+label+"-stun.png");
+    record("stun_screenshot_requested",folder+label+"-stun.png;0.3s after first observed stun");
+   }
+  }
+  if(before&&!isStunned)evt=e.HP<=0f?"ended_by_death":"ended";
+  if(evt!=null){
+   var hit=e.LastStunHitPosition;var smoke=e.GetComponentsInChildren<ParticleSystem>(true).Where(p=>p.name.ToLowerInvariant().Contains("smoke")).ToArray();
+   stunBuffer.AppendLine(string.Join(",",new[]{number(Time.time-started),Time.frameCount.ToString(),id.ToString(),csv(e.enemyData.enemyName),evt,stunCounts[id].ToString(),number(e.HP),number(Time.time-stunTimes[id]),number(e.transform.position.x),number(e.transform.position.y),number(hit.x),number(hit.y),number(stunDrift[id]),number(stunVisualDrift[id]),smoke.Length.ToString(),smoke.Sum(p=>p.particleCount).ToString(),number(e.BossStunTimeRemaining)}));
+  }
+  stunPrior[id]=isStunned;
+ }
+ if(inspectStunParticles)foreach(var p in UnityEngine.Object.FindObjectsByType<ParticleSystem>(FindObjectsSortMode.None)){
+  Transform root=p.transform;while(root.parent!=null&&root.name!="BossStunExplosion")root=root.parent;
+  if(root.name!="BossStunExplosion")continue;
+  if(!seenParticles.Add(p.GetInstanceID()))continue;
+  var boss=observedBossRefs.Values.Where(e=>e!=null).OrderBy(e=>Vector3.Distance(e.LastStunHitPosition,root.position)).FirstOrDefault();
+  if(boss==null)continue;
+  var hit=boss.LastStunHitPosition;var pos=root.position;
+  particleBuffer.AppendLine(string.Join(",",new[]{number(Time.time-started),Time.frameCount.ToString(),p.GetInstanceID().ToString(),csv(p.name),number(pos.x),number(pos.y),boss.GetInstanceID().ToString(),number(hit.x),number(hit.y),number(Vector3.Distance(hit,pos))}));
+ }
+ inspectStunParticles=false;
+ if(all.Length==0)foreach(var pair in damageObservers){EnemyController e;if(observedBossRefs.TryGetValue(pair.Key,out e)&&e!=null)e.Damaged-=pair.Value;}
+ if(Time.time-lastStunFlush>=1f||all.Length==0){flushStuns();lastStunFlush=Time.time;}
+};

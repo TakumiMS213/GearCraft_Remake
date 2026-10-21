@@ -1,0 +1,202 @@
+[
+  {
+    "boss": "IC408",
+    "stage": 7,
+    "weapon": "GearCraft",
+    "normally_available": true,
+    "profile": "early_day3_common",
+    "STR": 4,
+    "ACC": 4,
+    "module_damage": 0
+  },
+  {
+    "boss": "IC408",
+    "stage": 7,
+    "weapon": "SteamCannon",
+    "normally_available": false,
+    "profile": "early_day3_common",
+    "STR": 4,
+    "ACC": 4,
+    "module_damage": 0
+  },
+  {
+    "boss": "IC408",
+    "stage": 7,
+    "weapon": "SteamThrower",
+    "normally_available": false,
+    "profile": "early_day3_common",
+    "STR": 4,
+    "ACC": 4,
+    "module_damage": 0
+  },
+  {
+    "boss": "IC408",
+    "stage": 7,
+    "weapon": "RailCraft",
+    "normally_available": false,
+    "profile": "early_day3_common",
+    "STR": 4,
+    "ACC": 4,
+    "module_damage": 0
+  },
+  {
+    "boss": "IC408",
+    "stage": 7,
+    "weapon": "SteamGatling",
+    "normally_available": false,
+    "profile": "early_day3_common",
+    "STR": 4,
+    "ACC": 4,
+    "module_damage": 0
+  },
+  {
+    "boss": "BB413",
+    "stage": 16,
+    "weapon": "GearCraft",
+    "normally_available": true,
+    "profile": "mid_day4_common",
+    "STR": 10,
+    "ACC": 10,
+    "module_damage": 0
+  },
+  {
+    "boss": "BB413",
+    "stage": 16,
+    "weapon": "SteamCannon",
+    "normally_available": true,
+    "profile": "mid_day4_common",
+    "STR": 10,
+    "ACC": 10,
+    "module_damage": 0
+  },
+  {
+    "boss": "BB413",
+    "stage": 16,
+    "weapon": "SteamThrower",
+    "normally_available": true,
+    "profile": "mid_day4_common",
+    "STR": 10,
+    "ACC": 10,
+    "module_damage": 0
+  },
+  {
+    "boss": "BB413",
+    "stage": 16,
+    "weapon": "RailCraft",
+    "normally_available": false,
+    "profile": "mid_day4_common",
+    "STR": 10,
+    "ACC": 10,
+    "module_damage": 0
+  },
+  {
+    "boss": "BB413",
+    "stage": 16,
+    "weapon": "SteamGatling",
+    "normally_available": false,
+    "profile": "mid_day4_common",
+    "STR": 10,
+    "ACC": 10,
+    "module_damage": 0
+  },
+  {
+    "boss": "AR227",
+    "stage": 28,
+    "weapon": "GearCraft",
+    "normally_available": true,
+    "profile": "late_day7_melee_defense_module20",
+    "STR": 18,
+    "ACC": 18,
+    "module_damage": 20
+  },
+  {
+    "boss": "AR227",
+    "stage": 28,
+    "weapon": "SteamCannon",
+    "normally_available": true,
+    "profile": "late_day7_ranged_defense_module20",
+    "STR": 18,
+    "ACC": 18,
+    "module_damage": 20
+  },
+  {
+    "boss": "AR227",
+    "stage": 28,
+    "weapon": "SteamThrower",
+    "normally_available": true,
+    "profile": "late_day7_ranged_defense_module20",
+    "STR": 18,
+    "ACC": 18,
+    "module_damage": 20
+  },
+  {
+    "boss": "AR227",
+    "stage": 28,
+    "weapon": "RailCraft",
+    "normally_available": true,
+    "profile": "late_day7_ranged_defense_module20",
+    "STR": 18,
+    "ACC": 18,
+    "module_damage": 20
+  },
+  {
+    "boss": "AR227",
+    "stage": 28,
+    "weapon": "SteamGatling",
+    "normally_available": true,
+    "profile": "late_day7_ranged_defense_module20",
+    "STR": 18,
+    "ACC": 18,
+    "module_damage": 20
+  },
+  {
+    "boss": "EK9",
+    "stage": 31,
+    "weapon": "GearCraft",
+    "normally_available": true,
+    "profile": "final_day11_melee_defense_module20",
+    "STR": 20,
+    "ACC": 20,
+    "module_damage": 20
+  },
+  {
+    "boss": "EK9",
+    "stage": 31,
+    "weapon": "SteamCannon",
+    "normally_available": true,
+    "profile": "final_day11_ranged_fitted_speed_defense_module20",
+    "STR": 20,
+    "ACC": 20,
+    "module_damage": 20
+  },
+  {
+    "boss": "EK9",
+    "stage": 31,
+    "weapon": "SteamThrower",
+    "normally_available": true,
+    "profile": "final_day11_thrower_fitted_damage_defense_module20",
+    "STR": 20,
+    "ACC": 20,
+    "module_damage": 20
+  },
+  {
+    "boss": "EK9",
+    "stage": 31,
+    "weapon": "RailCraft",
+    "normally_available": true,
+    "profile": "final_day11_ranged_fitted_speed_defense_module20",
+    "STR": 20,
+    "ACC": 20,
+    "module_damage": 20
+  },
+  {
+    "boss": "EK9",
+    "stage": 31,
+    "weapon": "SteamGatling",
+    "normally_available": true,
+    "profile": "final_day11_ranged_defense_module20",
+    "STR": 20,
+    "ACC": 20,
+    "module_damage": 20
+  }
+]

@@ -7,6 +7,9 @@ using GearCraft.Scripts.Items;
 public class EnemyController : MonoBehaviour
 {
     private const string EnemyLayerName = "Enemy";
+    private const float HitFlashDuration = 0.05f;
+    private const float StunShakeAmplitude = 0.025f;
+    private const float StunShakeFrequency = 22f;
     private const float BossSmokeStartHpRatio = 0.5f;
     private const float BossSmokeMinEmission = 12f;
     private const float BossSmokeMaxEmission = 60f;
@@ -25,6 +28,11 @@ public class EnemyController : MonoBehaviour
     public bool isLastEnemy = false;
 
     public event Action<float> Damaged;
+    public bool IsHitFlashing => Time.time < hitFlashEndTime;
+    public bool IsStunned => bossStun != null && bossStun.IsActive;
+    public int BossStunCount => bossStun != null ? bossStun.TriggerCount : 0;
+    public float BossStunTimeRemaining => bossStun != null ? bossStun.RemainingTime : 0f;
+    public Vector3 LastStunHitPosition { get; private set; }
     public Vector3 LastHitPosition => hasHitPosition
         ? transform.TransformPoint(lastHitLocalPosition)
         : transform.position;
@@ -36,6 +44,7 @@ public class EnemyController : MonoBehaviour
 
     private SpriteRenderer spriteRenderer;
     private Color originalColor;
+    private float hitFlashEndTime;
     private CameraShake cameraShake;
     private IEnemyAI currentAI;
     private float overheatEndTime;
@@ -51,6 +60,16 @@ public class EnemyController : MonoBehaviour
     private Plane[] galleryCameraPlanes;
     private Vector3 lastHitLocalPosition;
     private bool hasHitPosition;
+    private BossStunState bossStun;
+    private Rigidbody2D stunBody;
+    private RigidbodyConstraints2D constraintsBeforeStun;
+    private Animator stunAnimator;
+    private float animationSpeedBeforeStun;
+    private Transform stunVisual;
+    private Vector3 stunVisualRestPosition;
+    private Vector3 stunPosition;
+    private float stunElapsed;
+    private bool stunPoseCaptured;
 
     private void Awake()
     {
@@ -76,6 +95,7 @@ public class EnemyController : MonoBehaviour
             float stageBonus = scalingStage / 10f;
             HP = enemyData.baseHP + enemyData.baseHP * stageBonus;
             runtimeMaxHP = HP;
+            if (enemyData.IsBossType) bossStun = new BossStunState(runtimeMaxHP);
 
             // AIアタッチ
             AttachAI(enemyData.aiType);
@@ -90,6 +110,14 @@ public class EnemyController : MonoBehaviour
             runtimeMaxHP = HP;
         }
 
+        stunBody = GetComponent<Rigidbody2D>();
+        stunAnimator = GetComponentInChildren<Animator>();
+        if (spriteRenderer != null && spriteRenderer.transform != transform)
+        {
+            stunVisual = spriteRenderer.transform;
+            stunVisualRestPosition = stunVisual.localPosition;
+        }
+
         // StageFlowManagerに登録
         if (StageFlowManager.Instance != null)
             StageFlowManager.Instance.RegisterEnemy(this);
@@ -97,7 +125,8 @@ public class EnemyController : MonoBehaviour
 
     void Update()
     {
-        if (currentAI != null)
+        UpdateBossStun();
+        if (currentAI != null && !IsStunned)
             currentAI.UpdateAI();
 
         UpdateOverheatStatus();
@@ -122,7 +151,125 @@ public class EnemyController : MonoBehaviour
 
     public float GetMoveSpeed(float baseSpeed)
     {
+        if (IsStunned) return 0f;
         return baseSpeed * (Time.time < overheatEndTime ? overheatSpeedMultiplier : 1f);
+    }
+
+    private void TryStartBossStun()
+    {
+        if (bossStun == null || enemyData == null) return;
+        bool alreadyStunned = IsStunned;
+        int triggered = bossStun.ApplyDamage(HP, Mathf.Max(0.1f, enemyData.bossStunDuration));
+        if (triggered == 0) return;
+
+        LastStunHitPosition = LastHitPosition;
+        if (!alreadyStunned)
+        {
+            stunPosition = transform.position;
+            stunElapsed = 0f;
+            stunPoseCaptured = true;
+            if (stunBody != null)
+            {
+                constraintsBeforeStun = stunBody.constraints;
+                stunBody.constraints = RigidbodyConstraints2D.FreezeAll;
+            }
+            if (stunAnimator != null)
+            {
+                animationSpeedBeforeStun = stunAnimator.speed;
+                stunAnimator.speed = 0f;
+            }
+            (currentAI as IBossStunHandler)?.SetStunned(true);
+        }
+        HoldStunPosition();
+        PlayStunExplosion(LastStunHitPosition);
+        UpdateBossSmokeEffect();
+    }
+
+    private void UpdateBossStun()
+    {
+        if (!IsStunned) return;
+        bossStun.Tick(Time.deltaTime);
+        if (!IsStunned)
+        {
+            ReleaseStunPose(true);
+            return;
+        }
+        // EKの通常色更新も停止するため、共通の被弾点滅だけは終了させる。
+        if (spriteRenderer != null && !IsHitFlashing && !IsFinalBossArmored)
+            spriteRenderer.color = originalColor;
+    }
+
+    private void HoldStunPosition()
+    {
+        if (!stunPoseCaptured) return;
+        transform.position = stunPosition;
+        if (stunBody != null)
+        {
+            stunBody.linearVelocity = Vector2.zero;
+            stunBody.angularVelocity = 0f;
+            stunBody.position = stunPosition;
+        }
+    }
+
+    private void FixedUpdate()
+    {
+        if (IsStunned) HoldStunPosition();
+    }
+
+    private void LateUpdate()
+    {
+        if (!IsStunned || HP <= 0f) return;
+        HoldStunPosition();
+        if (stunAnimator != null) stunAnimator.speed = 0f;
+        if (stunVisual == null) return;
+        stunElapsed += Time.deltaTime;
+        float phase = stunElapsed * StunShakeFrequency * Mathf.PI * 2f;
+        Vector3 scale = stunVisual.parent.lossyScale;
+        // 本体の当たり判定は固定し、画像だけをワールド座標で数cm揺らす。
+        stunVisual.localPosition = stunVisualRestPosition + new Vector3(
+            Mathf.Sin(phase) * StunShakeAmplitude / Mathf.Max(0.001f, Mathf.Abs(scale.x)),
+            Mathf.Sin(phase * 0.7f) * StunShakeAmplitude * 0.5f / Mathf.Max(0.001f, Mathf.Abs(scale.y)), 0f);
+    }
+
+    private void ReleaseStunPose(bool resumeAI)
+    {
+        if (!stunPoseCaptured) return;
+        stunPoseCaptured = false;
+        if (stunBody != null) stunBody.constraints = constraintsBeforeStun;
+        if (stunAnimator != null) stunAnimator.speed = animationSpeedBeforeStun;
+        if (stunVisual != null) stunVisual.localPosition = stunVisualRestPosition;
+        if (resumeAI) (currentAI as IBossStunHandler)?.SetStunned(false);
+    }
+
+    private void CancelBossStun()
+    {
+        bossStun?.Cancel();
+        ReleaseStunPose(false);
+    }
+
+    private void OnDisable()
+    {
+        CancelBossStun();
+    }
+
+    private void PlayStunExplosion(Vector3 position)
+    {
+        if (deathEffect == null) return;
+        GameObject effect = Instantiate(deathEffect, position, Quaternion.identity);
+        effect.name = "BossStunExplosion";
+        // 撃破時より小さな局所爆発にし、停止・煙・回避すべき弾を隠さない。
+        effect.transform.localScale *= 0.22f;
+        foreach (ParticleSystem particle in effect.GetComponentsInChildren<ParticleSystem>())
+        {
+            var main = particle.main;
+            main.scalingMode = ParticleSystemScalingMode.Hierarchy;
+        }
+        foreach (ParticleSystemRenderer renderer in effect.GetComponentsInChildren<ParticleSystemRenderer>())
+        {
+            renderer.sortingLayerID = spriteRenderer != null ? spriteRenderer.sortingLayerID : 0;
+            renderer.sortingOrder = spriteRenderer != null ? spriteRenderer.sortingOrder + 2 : 3;
+        }
+        Destroy(effect, 6f);
     }
 
     public void ApplyOverheat(float duration, float speedMultiplier, GameObject effectPrefab)
@@ -268,7 +415,11 @@ public class EnemyController : MonoBehaviour
         }
         else
         {
-            if (amount > 0f) Damaged?.Invoke(amount);
+            if (amount > 0f)
+            {
+                TryStartBossStun();
+                Damaged?.Invoke(amount);
+            }
             // 段階境界のDamagedで装甲が閉じた場合も、装甲色を被弾点滅で上書きしない。
             if (spriteRenderer != null && !IsFinalBossArmored)
             {
@@ -289,6 +440,7 @@ public class EnemyController : MonoBehaviour
             spriteRenderer = GetComponentInChildren<SpriteRenderer>();
         if (spriteRenderer == null || !spriteRenderer.enabled) return;
         spriteRenderer.enabled = false;
+        CancelBossStun();
 
         var collider = GetComponent<Collider2D>();
         if (collider != null)
@@ -352,9 +504,12 @@ public class EnemyController : MonoBehaviour
     private System.Collections.IEnumerator FlashOnHit()
     {
         if (IsFinalBossArmored) yield break;
+        hitFlashEndTime = Time.time + HitFlashDuration;
         spriteRenderer.color = Color.red;
-        yield return new WaitForSeconds(0.05f);
-        if (spriteRenderer != null && !IsFinalBossArmored)
+        yield return new WaitForSeconds(HitFlashDuration);
+        // 連続被弾では、先に開始した点滅が最新の被弾表示を消さないようにする。
+        // EKは自身のUpdateVisualsで現在の予告色・装甲色へ戻す。
+        if (spriteRenderer != null && !IsHitFlashing && !(currentAI is EnemyAI_BossFinal))
             spriteRenderer.color = originalColor;
     }
 
@@ -392,7 +547,7 @@ public class EnemyController : MonoBehaviour
         }
 
         float hpRatio = Mathf.Clamp01(HP / runtimeMaxHP);
-        if (hpRatio > BossSmokeStartHpRatio)
+        if (hpRatio > BossSmokeStartHpRatio && !IsStunned)
         {
             DestroyBossSmokeEffect();
             return;
@@ -407,7 +562,7 @@ public class EnemyController : MonoBehaviour
         }
 
         UpdateBossSmokeFollow();
-        ApplyBossSmokeIntensity(hpRatio);
+        ApplyBossSmokeIntensity(IsStunned ? 0f : hpRatio);
     }
 
     private void DestroyBossSmokeEffect()
@@ -457,7 +612,15 @@ public class EnemyController : MonoBehaviour
             smokeTransform.SetParent(transform, false);
         }
 
-        smokeTransform.localPosition = BossSmokeLocalOffset;
+        if (IsStunned)
+        {
+            // 巨体の中心が画面外でも、爆発した被弾箇所から停止中の煙が見える。
+            smokeTransform.position = LastStunHitPosition + Vector3.up * 0.45f;
+        }
+        else
+        {
+            smokeTransform.localPosition = BossSmokeLocalOffset;
+        }
         smokeTransform.localRotation = Quaternion.identity;
     }
 

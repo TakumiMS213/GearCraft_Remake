@@ -1,0 +1,2 @@
+stage,scaling_stage,result,start_game_seconds,end_game_seconds,wave_seconds,start_hp,start_gate,end_hp,end_gate,player_damage,gate_damage,player_healed,gate_healed,attack_events
+"31","31","direct_boss_defeated","1.2166748","73.4666748","72.25","100","100","10","100","90","0","0","0","4334"

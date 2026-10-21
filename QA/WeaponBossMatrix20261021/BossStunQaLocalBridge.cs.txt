@@ -1,0 +1,97 @@
+#if UNITY_EDITOR
+using System;
+using System.IO;
+using System.Reflection;
+using UnityEditor;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+// Temporary, current-session-only QA fallback while the MCP transport is unavailable.
+[InitializeOnLoad]
+internal static class BossStunQaLocalBridge
+{
+    private const string Folder = "QA/WeaponBossMatrix20261021/";
+    private const string CommandKey = "GearCraft.QA.BossStunLocalCommand";
+    private const string PhaseKey = "GearCraft.QA.BossStunLocalPhase";
+    private static double nextPoll;
+
+    static BossStunQaLocalBridge()
+    {
+        EditorApplication.update += Tick;
+    }
+
+    private static void Tick()
+    {
+        if (EditorApplication.timeSinceStartup < nextPoll || EditorApplication.isCompiling || EditorApplication.isUpdating)
+            return;
+        nextPoll = EditorApplication.timeSinceStartup + 0.5;
+        if (!File.Exists(Folder + "local-command.txt")) return;
+        try
+        {
+            string[] lines = File.ReadAllLines(Folder + "local-command.txt");
+            if (lines.Length != 3) throw new InvalidOperationException("Expected id, action, current session.");
+            string original = File.ReadAllText(Folder + "session-id.txt").Trim();
+            if (lines[2] != original || SessionState.GetString("GearCraft.QA.WeaponBossMatrix.Session", "") != original)
+                throw new InvalidOperationException("Original QA session mismatch.");
+            string id = lines[0], action = lines[1];
+            bool same = SessionState.GetString(CommandKey, "") == id;
+            string phase = SessionState.GetString(PhaseKey, "");
+            if (same && phase != "wait_play") return;
+            if (!same)
+            {
+                if (action != "run_direct" && action != "restore" && action != "status")
+                    throw new InvalidOperationException("Unsupported QA action.");
+                SessionState.SetString(CommandKey, id);
+                SessionState.SetString(PhaseKey, "accepted");
+                if (action == "status")
+                {
+                    Complete(id, "playing=" + EditorApplication.isPlaying + ";scene=" + SceneManager.GetActiveScene().path);
+                    return;
+                }
+                if (EditorApplication.isPlayingOrWillChangePlaymode)
+                    throw new InvalidOperationException("Start from clean Edit mode.");
+                if (SceneManager.GetActiveScene().isDirty || SceneManager.GetActiveScene().name != "Title")
+                    throw new InvalidOperationException("Expected clean Title.");
+                if (action == "restore")
+                {
+                    Complete(id, ExecuteReviewedBody("RestoreSession.cs.txt"));
+                    return;
+                }
+                SessionState.SetString(PhaseKey, "wait_play");
+                File.WriteAllText(Folder + "local-command-result.txt", id + "\nWAITING_PLAY\n");
+                EditorApplication.isPlaying = true;
+                return;
+            }
+            if (!EditorApplication.isPlaying || EditorApplication.isPaused || Time.frameCount < 5 ||
+                SceneManager.GetActiveScene().name != "Title") return;
+            SessionState.SetString(PhaseKey, "executing");
+            Complete(id, ExecuteReviewedBody("BatchDirect.cs.txt"));
+        }
+        catch (Exception e)
+        {
+            SessionState.SetString(PhaseKey, "failed");
+            File.WriteAllText(Folder + "local-command-result.txt", "FAILED\n" + e);
+        }
+    }
+
+    private static string ExecuteReviewedBody(string name)
+    {
+        string body = File.ReadAllText(Folder + name);
+        Type compiler = typeof(MCPForUnity.Editor.Tools.ExecuteCode);
+        BindingFlags flags = BindingFlags.Static | BindingFlags.NonPublic;
+        MethodInfo check = compiler.GetMethod("CheckBlockedPatterns", flags);
+        MethodInfo execute = compiler.GetMethod("CompileAndExecute", flags);
+        if (check == null || execute == null) throw new InvalidOperationException("Native QA compiler unavailable.");
+        object violation = check.Invoke(null, new object[] { body });
+        if (violation != null) throw new InvalidOperationException("Native safety check: " + violation);
+        object result = execute.Invoke(null, new object[] { body, "codedom" });
+        return Newtonsoft.Json.JsonConvert.SerializeObject(result);
+    }
+
+    private static void Complete(string id, string result)
+    {
+        SessionState.SetString(PhaseKey, "complete");
+        File.WriteAllText(Folder + "local-command-result.txt", id + "\n" + result + "\n");
+    }
+}
+#endif

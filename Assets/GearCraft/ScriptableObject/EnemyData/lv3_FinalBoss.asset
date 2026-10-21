@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyName: EK-9
   prefab: {fileID: 1105495981581323202, guid: fdfddfdc569204d49b37c090e9d42f18, type: 3}
-  baseHP: 36000
+  baseHP: 60000
   speed: 0.7
-  attackInterval: 2
+  attackInterval: 6
   bulletSpeed: 12
   aiType: 8
   bulletPrefabs:

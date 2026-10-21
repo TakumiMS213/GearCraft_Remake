@@ -1,0 +1,50 @@
+[
+  {
+    "name": "CaptureFresh",
+    "exit_code": 0,
+    "sha256": "4856921263ecd7e2c8d058f52d96c343da6bbe325192af9a18026c61bc30a717",
+    "compiler_output": "Microsoft (R) Visual C# Compiler version 3.7.0-5.20367.1 (f96dcbb6)\nCopyright (C) Microsoft Corporation. All rights reserved.\n\n"
+  },
+  {
+    "name": "RestoreSession",
+    "exit_code": 0,
+    "sha256": "4e1d1f934d8f9fc62417682cde178d8a05ce13064f4f163dc3b5e8993f0fcc3b",
+    "compiler_output": "Microsoft (R) Visual C# Compiler version 3.7.0-5.20367.1 (f96dcbb6)\nCopyright (C) Microsoft Corporation. All rights reserved.\n\n"
+  },
+  {
+    "name": "NativeInputBootstrap",
+    "exit_code": 0,
+    "sha256": "2b22e99a1b3db8f8558e5735650e26d432fe714eb8d729c1207f30e51e35642e",
+    "compiler_output": "Microsoft (R) Visual C# Compiler version 3.7.0-5.20367.1 (f96dcbb6)\nCopyright (C) Microsoft Corporation. All rights reserved.\n\n"
+  },
+  {
+    "name": "NativeInputSurvivalRoute",
+    "exit_code": 0,
+    "sha256": "5b1839c80f05026866b9cd6492e598554e86a13a5e4cac063766777049fee547",
+    "compiler_output": "Microsoft (R) Visual C# Compiler version 3.7.0-5.20367.1 (f96dcbb6)\nCopyright (C) Microsoft Corporation. All rights reserved.\n\n"
+  },
+  {
+    "name": "BatchDirect",
+    "exit_code": 0,
+    "sha256": "78914d81ee4169773488b92538b4e7c5043fe85ddea2b342781edbe3dd65c827",
+    "compiler_output": "Microsoft (R) Visual C# Compiler version 3.7.0-5.20367.1 (f96dcbb6)\nCopyright (C) Microsoft Corporation. All rights reserved.\n\n"
+  },
+  {
+    "name": "BatchSurvival",
+    "exit_code": 0,
+    "sha256": "729fc8b36c1e7e2036e40e3f69dc24aad93a44c75630de7b19b34a9d180c4574",
+    "compiler_output": "Microsoft (R) Visual C# Compiler version 3.7.0-5.20367.1 (f96dcbb6)\nCopyright (C) Microsoft Corporation. All rights reserved.\n\n"
+  },
+  {
+    "name": "LoadBatchDirect",
+    "exit_code": 0,
+    "sha256": "08edf18fac39c1310656808279aff86e4d3c61d33e743a3871d557055aaeaa59",
+    "compiler_output": "Microsoft (R) Visual C# Compiler version 3.7.0-5.20367.1 (f96dcbb6)\nCopyright (C) Microsoft Corporation. All rights reserved.\n\n"
+  },
+  {
+    "name": "LoadBatchSurvival",
+    "exit_code": 0,
+    "sha256": "140f5b3b6fb56f25a64af27e6e94965a3b1fa1fc841da9517e29410cc2d4a5e2",
+    "compiler_output": "Microsoft (R) Visual C# Compiler version 3.7.0-5.20367.1 (f96dcbb6)\nCopyright (C) Microsoft Corporation. All rights reserved.\n\n"
+  }
+]

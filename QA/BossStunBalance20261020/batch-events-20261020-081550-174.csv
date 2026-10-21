@@ -1,0 +1,8 @@
+wall_seconds,event,case_label,details
+"0.018","case_begin","stun_direct_EK9_SteamGatling_seed77_recovery1","SteamGatling,31,final_day11_ranged_defense_module20,77"
+"0.018","title_requested","stun_direct_EK9_SteamGatling_seed77_recovery1","Native callback removed; wait 6 game seconds in Title to drain death/BOOST continuations"
+"0.584","title_stable","stun_direct_EK9_SteamGatling_seed77_recovery1","6 game seconds and at least 360 frames elapsed at captureDeltaTime=1/60; no Main flow or active scene transition; native Ending runtime reset complete"
+"0.603","bootstrap_invoked","stun_direct_EK9_SteamGatling_seed77_recovery1","Loading paused Main for native survival: SteamGatling,31,final_day11_ranged_defense_module20,77; inspect native-survival-bootstrap-progress.txt for READY"
+"1.468","route_invoked","stun_direct_EK9_SteamGatling_seed77_recovery1","Scheduled one native survival day: stun_direct_EK9_SteamGatling_seed77_recovery1; progress=QA/BossStunBalance20261020/native-survival-progress.txt"
+"10.117","case_complete","stun_direct_EK9_SteamGatling_seed77_recovery1","direct_boss_defeated game_seconds=67.850"
+"10.120","batch_complete","stun_direct_EK9_SteamGatling_seed77_recovery1","all_cases_finished"

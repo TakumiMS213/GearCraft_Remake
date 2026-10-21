@@ -1,0 +1,4 @@
+game_seconds,frame,boss_id,boss,event,count,hp,stunned_seconds,x,y,stun_hit_x,stun_hit_y,max_body_drift,max_visual_drift,smoke_count,smoke_particles,stun_remaining
+25.3986816,45689,-1649942,"EK-9",threshold_damage,1,157847.25,0,9.432144,-0.5680492,10.61716,-2.40790939,0,0,,,3
+25.3999634,45689,-1649942,"EK-9",started,1,157838.125,0,9.432144,-0.5680492,10.61716,-2.40790939,0,0,1,2,2.98333335
+28.3999634,45869,-1649942,"EK-9",ended,1,150333.328,3,9.432144,-0.5680492,10.61716,-2.40790939,0,0.00569254858,0,0,0

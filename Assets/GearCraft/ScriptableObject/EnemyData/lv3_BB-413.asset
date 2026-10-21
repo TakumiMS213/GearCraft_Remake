@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyName: BB-413
   prefab: {fileID: 4862418018048898471, guid: ae21a14c9dbb64a909a4da618ab0639e, type: 3}
-  baseHP: 5000
+  baseHP: 7000
   speed: 2
   attackInterval: 2
   bulletSpeed: 5

@@ -1,0 +1,1 @@
+Root must restore and verify this session's original PlayerPrefs/editor/GameView/logger backups after Play stops. Batch restores only its entry runtime settings.
