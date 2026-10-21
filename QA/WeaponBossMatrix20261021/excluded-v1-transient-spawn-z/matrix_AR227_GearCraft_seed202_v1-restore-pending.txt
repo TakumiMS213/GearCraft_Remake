@@ -1,0 +1,1 @@
+Root must restore and verify the current session PlayerPrefs/editor backup after Play stops. Runner does not write PlayerPrefs.

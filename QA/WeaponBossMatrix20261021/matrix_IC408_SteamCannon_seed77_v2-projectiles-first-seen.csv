@@ -1,0 +1,1 @@
+game_seconds,frame,stage,observation,projectile_id,name,damage,position_x,position_y,velocity_x,velocity_y,min_x,min_y,max_x,max_y,gate_min_x,gate_max_x,gate_min_y,gate_max_y,gate_overlap_x,gate_overlap_y,horizontal_gap_to_gate,boss_id,boss_min_x,boss_min_y,boss_max_x,boss_max_y

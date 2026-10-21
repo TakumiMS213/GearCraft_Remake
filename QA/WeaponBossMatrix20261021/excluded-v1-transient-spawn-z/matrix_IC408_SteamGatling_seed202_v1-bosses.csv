@@ -1,0 +1,3 @@
+boss,stage,scaling_stage,event,result,spawn_game_seconds,event_game_seconds,boss_seconds,start_hp,start_gate,end_hp,end_gate,player_damage,gate_damage,player_healed,gate_healed,start_boss_hp,remaining_boss_hp,attack_events,player_x,player_y,boss_x,boss_y
+"IC-408","7","7","spawned","active","1.2166748","1.23339844","0.0167236328","100","100","100","100","0","0","0","0","11560","11560","0","-4.82","-3.82227063","15.3801508","-0.600620031"
+"IC-408","7","7","ended","defeated","1.2166748","27.9833984","26.7667236","100","100","100","100","0","0","0","0","11560","-0.5","1109","-0.8971404","-3.82227063","11.9147491","-0.600620031"

@@ -1,0 +1,16 @@
+GearCraft,28,late_day7_melee_defense_module20,202
+day=10
+boss_kills=2
+HP=100
+GATE=100
+flat_damage=12
+attack_speed=0.285534739
+module_damage=20
+parts=Damage+2;Damage+2;Damage+2;Damage+2;SpeedGear;SpeedGear;SpeedGear;SpeedGear;SpeedGear+;SpeedGear++;SpeedGear++;SpeedGear++
+placements=late_day7_melee_defense_module20:Damage+2:0:0:0;late_day7_melee_defense_module20:Damage+2:2:0:0;late_day7_melee_defense_module20:Damage+2:0:1:0;late_day7_melee_defense_module20:Damage+2:2:1:0;late_day7_melee_defense_module20:SpeedGear++:4:0:0;late_day7_melee_defense_module20:SpeedGear++:0:2:0;late_day7_melee_defense_module20:SpeedGear++:1:2:0;late_day7_melee_defense_module20:SpeedGear+:2:2:0;late_day7_melee_defense_module20:SpeedGear:3:2:0;late_day7_melee_defense_module20:SpeedGear:4:2:0;late_day7_melee_defense_module20:SpeedGear:0:4:1;late_day7_melee_defense_module20:SpeedGear:2:4:1
+double_shot=False
+spread_modifier=0
+ricochet=0
+bullet_size=1
+initial_hit_damage=90
+asset=Assets/GearCraft/ScriptableObject/WeaponData/GearCraft_Sword.asset

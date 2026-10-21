@@ -62,6 +62,9 @@ public class PlayerController : MonoBehaviour
     private float currentCoolTime;
     private float currentDamage;
     private readonly PlayerAttackCadence attackCadence = new PlayerAttackCadence();
+    private readonly PlayerChargedShot chargedShot = new PlayerChargedShot();
+    private RailChargeIndicator chargeIndicator;
+    private bool attackFocusLost;
 
     // --- Components ---
     private Rigidbody2D rb;
@@ -204,6 +207,7 @@ public class PlayerController : MonoBehaviour
 
         appliedWeapon = currentWeapon;
         attackCadence.Interrupt();
+        chargedShot.Cancel();
         lastArmTriggerName = null;
 
         if (meleeWeapon != null)
@@ -368,10 +372,29 @@ public class PlayerController : MonoBehaviour
     {
         SyncWeaponFromStatus();
         bool automatic = IsRanged();
-        bool allowed = !isDeathRetrying && !StageFlowManager.IsPlayerInputBlocked &&
+        bool allowed = !attackFocusLost && !isDeathRetrying && !StageFlowManager.IsPlayerInputBlocked &&
             currentWeapon != null && (automatic || IsMelee());
         if (automatic && (FirePoint == null ||
             (!currentWeapon.useLineHitbox && currentWeapon.bulletPrefab == null))) allowed = false;
+
+        bool charged = currentWeapon != null && currentWeapon.UsesChargedShot;
+        float chargeDuration = charged
+            ? currentWeapon.GetChargeDuration(runtimeStatus != null ? runtimeStatus.attackSpeedMult : 1f) : 1f;
+        bool released = chargedShot.Advance(pressed, held, allowed && charged, deltaTime,
+            chargeDuration, charged ? currentWeapon.coolTime : 0f, out float chargeFraction);
+        UpdateChargeIndicator(charged && allowed);
+        if (charged)
+        {
+            // Keep the regular cadence clock moving while the charged weapon is equipped.
+            attackCadence.Advance(false, false, false, false, deltaTime, 0f);
+            coolTime = chargedShot.RemainingSeconds;
+            if (!released) return 0;
+            currentDamage = runtimeStatus != null
+                ? runtimeStatus.GetWeaponBaseDamage(currentWeapon, chargeFraction)
+                : currentWeapon.GetBaseDamage(chargeFraction);
+            PerformShotAttack(aimWorld);
+            return 1;
+        }
 
         float interval = currentWeapon != null ? currentWeapon.coolTime : 0f;
         if (runtimeStatus != null) interval *= runtimeStatus.attackSpeedMult;
@@ -384,6 +407,14 @@ public class PlayerController : MonoBehaviour
             else PerformMeleeAttack();
         }
         return attacks;
+    }
+
+    private void UpdateChargeIndicator(bool visible)
+    {
+        if (visible && chargeIndicator == null)
+            chargeIndicator = gameObject.AddComponent<RailChargeIndicator>();
+        if (chargeIndicator != null)
+            chargeIndicator.Show(visible && chargedShot.IsCharging, chargedShot.ChargeFraction);
     }
 
     private void PerformMeleeAttack()
@@ -499,6 +530,19 @@ public class PlayerController : MonoBehaviour
 
         ApplyWeaponDataToBullet(bulletController);
         bulletController.bulletDamage = projectileDamage;
+        if (currentWeapon.UsesChargedShot)
+        {
+            // Damage controls thickness; length remains unchanged. Size parts/cards stack.
+            float thickness = Mathf.Clamp(projectileDamage / 200f, 0.5f, 4f);
+            Vector3 scale = bullet.transform.localScale;
+            scale.y *= thickness;
+            bullet.transform.localScale = scale;
+            float sizeBonus = runtimeStatus != null
+                ? Mathf.Max(1f, runtimeStatus.bulletSizeMult) * Mathf.Max(1f, runtimeStatus.railCraftBulletSizeMultiplier)
+                : 1f;
+            bulletController.trailWidth *= thickness * sizeBonus;
+            bulletController.sweptHitRadius *= thickness * sizeBonus;
+        }
 
         if (runtimeStatus != null)
         {
@@ -1017,7 +1061,22 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void OnDisable() => attackCadence.Interrupt();
+    private void OnDisable()
+    {
+        attackCadence.Interrupt();
+        chargedShot.Cancel();
+        UpdateChargeIndicator(false);
+    }
+
+    private void OnApplicationFocus(bool focused)
+    {
+        attackFocusLost = !focused;
+        if (!focused)
+        {
+            chargedShot.Cancel();
+            UpdateChargeIndicator(false);
+        }
+    }
 
     private void OnDestroy() => CancelTemporaryCombatEffects();
 

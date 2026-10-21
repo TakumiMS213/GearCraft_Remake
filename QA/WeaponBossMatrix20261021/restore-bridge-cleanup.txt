@@ -1,0 +1,1 @@
+Removed only this session temporary Editor bridge and its generated .meta after canonical restoration verified 16 keys. Source copy retained as .cs.txt in QA. Pending command archived.

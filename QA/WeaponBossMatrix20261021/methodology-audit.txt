@@ -1,0 +1,90 @@
+工房武装 × ボス比較：方法・解釈の読み取り監査（v2）
+監査時刻: 2026-10-21T12:24:49+09:00
+対象: QA/WeaponBossMatrix20261021。採用条件は *_v2 の60試行。進行中の調査方法と原本ハッシュを確認した時点記録。
+v1 は初期生成Zに条件不一致があり excluded-v1-transient-spawn-z/ へ隔離。v2との混合集計を行わない。
+この監査は MCP 操作、戦闘実行、ゲームビルド、ゲームバランス変更を行っていない。
+
+1. 原本ファイルの不変性
+source-before-sha256.json の 254 ファイルを現在のディスク内容と SHA-256 比較。
+内訳: C# 145、ScriptableObject 等 .asset 36、prefab 73。
+欠落 0、差分 0。結果: 全項目一致。
+これは manifest に含まれるファイルに限定した確認であり、シーン・meta・ProjectSettings 等を含むプロジェクト全体の不変証明ではない。
+実行中の時点確認なので、調査終了後の原本再照合と保存データ復元確認は別途必要。
+manifest SHA-256: 0f87391d2bb6a2459f96c2232dcd517ca0dee9716b746ab1df3d7af819c98532
+
+2. 比較計画
+direct-cases.csv: 60 条件、20 武器×ボス組合せ。20 組合せそれぞれ seed 77 / 101 / 202 を1回ずつ、ラベル重複なし。検査結果: PASS。
+武器: GearCraft / SteamCannon / SteamThrower / RailCraft / SteamGatling。
+テスト開始stage/当日共通スケール: IC-408=7、BB-413=16、AR-227=28、EK-9=31。
+通常のボス出現stageは順に9/18/30/31。StageFlowManager の EnemyScalingStage は当日の開始値を保持するため、上記はボス出現stageそのものを表す値ではない。
+全条件 HP 100 / GATE 100、PunkDrive 有効、スクラップモジュール有効、ゲーム時刻 60 fps。
+初期 STR/ACC とモジュール攻撃力は IC=4/4,+0、BB=10/10,+0、AR=18/18,+20、EK=20/20,+20。
+リペアは BB 以降、バリアは AR 以降。有効なモジュールの回復・防御は製品処理に従う。
+部品構成は IC/BB が同一段階の共通構成、AR/EK は近接・遠隔や個別武器に合う構成を使用する。
+従って比較単位は「指定武器と、その段階に設定した部品・ステータス・補助装備の組合せ」。裸の武器の基礎火力差ではない。
+ボス間では敵の強さとプレイヤーの強化段階が同時に変わる。同じ STR/ACC・部品でのボス間比較として扱わない。
+
+3. 前座と入手過程を省いた条件
+direct モードは Main の最初の通常出現群を停止・除去し、当該日の製品ボス prefab を出現させる。
+v2 は通常前座後の深度条件へ合わせるため、初期生成Zのみを既存 LoopMover の終点平面へ設定する。XYと製品AIの進入配置・移動は変更しない。
+ボスの AI・攻撃・物理・被ダメージ・スタン・門到達判定、およびボス自身の召喚処理は製品ロジックを使用する。
+前座による HP/GATE 消耗、道中報酬、素材獲得、クラフト購入判断を再現する通しプレイではない。
+20 組合せを揃えるため武器と部品を初期配置する。IC 段階に出す後期武器等が通常プレイで入手可能という証拠にはならない。
+ボス単体条件で防衛成功しても、当日の全ウェーブを同じ残存 HP/GATE で乗り切れるとは限らない。
+
+4. 補助ダメージと BOOST
+PunkDrive は全条件で有効。主武器だけの撃破数・DPS とは分離されていない。交戦距離により PunkDrive の寄与も変わりうる。
+初期に実素材 Gear を2個支給し、allow-boost.txt=true、BOT の BOOST 起動予算は最大2回。
+製品 BoostActive を実際に呼び出して所持素材を消費する。2回使用を保証する条件ではないため、実使用回数をログで併記する。
+GearCraft の変形も製品 ChangeGearCraft を経由し、戻り・再使用待ち・素材連動の効果が適用される。
+素材消費や変形による相互作用があるため、全武器が等しい時間だけ同じ倍率を受けたとは断定しない。
+戦闘中に人工的な HP/GATE 補充・無敵化・直接ダメージ加算は行わないが、装備済みリペア等の製品回復処理は有効。
+
+5. 操作・画面・時間の条件
+gameview-test-size.txt: 480×270、16:9、index 7。低解像度での固定画角テストである。
+実製品解像度の視認性・UI 操作性・エフェクトの読みやすさ、人間の反応や成功率を測ったテストではない。
+BOT は PlayerController.Update / ArmRotation.Update を止めて判断を代行し、製品 ProcessAttackInput をゲームフレームごとに1回呼ぶ。
+0.2秒単位の脅威判断、照準・移動・ジャンプ・ダッシュ・迎撃・自動バリアを用いる。武器射程・弾道・敵の移動との相性を含むが、人間の熟練や最適操作を再現しない。
+画面内対象の選択は固定の world 座標範囲を含む。画角・アスペクト比・別解像度へ無条件には一般化しない。
+60 fps の captureDeltaTime で測る値はゲーム内経過秒。実時間の処理性能や配布ビルドの fps 測定ではない。
+ボスの elapsed は生成要求から計測するため、画面への侵入・接近待ちを含む。純粋な初弾命中後の TTK と区別する。
+expected_projectiles は攻撃分岐から計算した期待個数であり、実際の生成数・命中数ではない。
+
+6. 結果の読み方
+HP 0 以下を観測した defeated のみ討伐成功として扱う。未観測の破棄、逃走、自爆、プレイヤー死亡、門崩壊、タイムアウトを討伐と合算しない。
+失敗時の経過時間は討伐タイムではない。討伐件数 n/3、討伐した条件の時間範囲・平均、失敗要因、残 HP/GATE を併記する。
+各組合せ3 seed は小標本。同じ seed でも武器ごとのイベント回数・物理・AI 判断が異なり、厳密に同一攻撃列になる保証はない。
+3/3 は人間の成功率100%やバランス確定を意味しない。差の傾向と再調査対象を見つけるための比較とする。
+オーバーヒート中/非オーバーヒート中の時間は観測状態の集計。デバフ無効の対照実験ではないため、遅延や防衛成功の因果効果量は算出できない。
+45秒/60秒等の目標への適合は実討伐結果から判断する。失敗時間や合計経過秒を目標達成と読み替えない。
+本監査は全60件の完走・最終復元を保証しない。最終レポートは完了した実ログと復元記録を別途照合する。
+
+7. v2 初期生成Z修正の有限監査
+v1 はシーン開始約1.217秒でボスを生成し、初期 Spawner Z=129.2013 から移動途中の Z≈104.872 を引き継いでいた。
+BB の強弾・召喚B-1移動、AR のミサイルに、Vector3正規化後Vector2化で速度が縮む経路がある。v1 の防衛結果を通常ボス戦へ一般化できないため、全条件をv2で再測定する。
+通常ボス生成は現設定の前座9体・最低1秒間隔・追加2秒待ちの後。LoopMover は約6.461ゲーム秒でZ=0の終点へ到達するため、directに残った大きなZ差を含める条件は通常と異なる。
+製品に一般的な2D方向計算上の問題候補が残ることと、今回QAの初期条件修正を区別する。製品側の修正・数値変更は本監査では行っていない。
+
+NativeInputSurvivalRoute.cs.txt の direct 分岐を確認：
+・既存 Spawner の LoopMover と pointA/pointB が存在することを要求する。
+・pointB.position.z を settledZ とし、pointA と player のZが同じ平面（許容差0.0001）であることを assert する。不一致なら処理を中断する。
+・spawnPosition は Spawner の現位置をコピーし、Zだけ settledZ へ置き換える。Spawner 自体、ボスのXY、製品AI・部品・火力・HP・速度・発射処理は変更しない。
+・生成ログへ transient_spawner_z / settled_spawn_z / player_z を追加する。
+・boss-control.csv 末尾へ z / player_z を追加する。追加部分は観測のみ。
+
+BatchDirect.cs.txt は bootstrap / route / plan のSHAを照合する。現在の3ファイルと埋込みガードは一致。
+埋込みルートと単独ルートの差は、従来のbatch用終了処理（Play停止をTime.timeScale=0へ置換、bRouteFinish登録）のみ。Z修正や観測処理の取り込み漏れはない。
+全60条件は *_v2 ラベルで一意。ルート直下に *_v1-result.txt は存在せず、旧結果は excluded-v1-transient-spawn-z/ に隔離されている。
+
+先頭の完了例 matrix_IC408_GearCraft_seed77_v2 を実ファイルで照合：
+・result=direct_boss_defeated。
+・生成イベント: transient_spawner_z=104.872208、settled_spawn_z=0、player_z=0。
+・boss-control.csv の665観測すべて boss Z=0 / player Z=0、列数25で一致。
+この665観測は先頭試行の確認であり、未完了試行やBB/ARの速度修正結果まで確認したことを意味しない。全条件完了後もZ列と実速度・成功条件を確認する。
+
+v2 QAファイルSHA-256:
+NativeInputBootstrap.cs.txt: b4cad20122339dd21f63cab11afa919af360eadd016de5b2ad3b732c06cb31b3
+NativeInputSurvivalRoute.cs.txt: 91c71b938381811df1e591ede746e6aecce1ee3c88c10336b7c6e495a244db17
+direct-cases.csv: 7809ccf94bec30f11e0c08b5d27c222f0443d8d1d1c45e20702dc4333f02985a
+
+参照: source-before-sha256.json / direct-cases.csv / loadouts.csv / loadout-placements.csv / gameview-test-size.txt / allow-boost.txt / BatchDirect.cs.txt / NativeInputSurvivalRoute.cs.txt。

@@ -1,0 +1,1 @@
+FAILED cancelled_by_sentinel completed=32/60 skipped=0

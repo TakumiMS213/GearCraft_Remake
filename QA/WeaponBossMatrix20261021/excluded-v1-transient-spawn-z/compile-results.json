@@ -1,0 +1,32 @@
+[
+  {
+    "name": "CaptureFresh",
+    "exit_code": 0,
+    "sha256": "db81fdc62bf33ca58ca356e55fde1bdf49849f21608f49decb1d5d4bf4bff741",
+    "compiler_output": "Microsoft (R) Visual C# Compiler version 3.7.0-5.20367.1 (f96dcbb6)\nCopyright (C) Microsoft Corporation. All rights reserved.\n\n"
+  },
+  {
+    "name": "RestoreSession",
+    "exit_code": 0,
+    "sha256": "71894e3c5a09214eef5a724e3ae2905c1f952971e653f5eb9c2b8c8c0d6d7e22",
+    "compiler_output": "Microsoft (R) Visual C# Compiler version 3.7.0-5.20367.1 (f96dcbb6)\nCopyright (C) Microsoft Corporation. All rights reserved.\n\n"
+  },
+  {
+    "name": "NativeInputBootstrap",
+    "exit_code": 0,
+    "sha256": "b4cad20122339dd21f63cab11afa919af360eadd016de5b2ad3b732c06cb31b3",
+    "compiler_output": "Microsoft (R) Visual C# Compiler version 3.7.0-5.20367.1 (f96dcbb6)\nCopyright (C) Microsoft Corporation. All rights reserved.\n\n"
+  },
+  {
+    "name": "NativeInputSurvivalRoute",
+    "exit_code": 0,
+    "sha256": "7591b20461e20ed6ed43e7987b1c52219ba0ec0a2df5b666af97e4f59fd6116b",
+    "compiler_output": "Microsoft (R) Visual C# Compiler version 3.7.0-5.20367.1 (f96dcbb6)\nCopyright (C) Microsoft Corporation. All rights reserved.\n\n"
+  },
+  {
+    "name": "BatchDirect",
+    "exit_code": 0,
+    "sha256": "c62bd4ab5490d6696494f5038785b50c1994962b17b340a39eddc4c6f10430b7",
+    "compiler_output": "Microsoft (R) Visual C# Compiler version 3.7.0-5.20367.1 (f96dcbb6)\nCopyright (C) Microsoft Corporation. All rights reserved.\n\n"
+  }
+]

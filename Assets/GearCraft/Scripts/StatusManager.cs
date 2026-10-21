@@ -167,9 +167,20 @@ public class StatusManager : MonoBehaviour
         return multiplier;
     }
 
-    public float GetWeaponDamage(WeaponDataSO weapon)
+    public float GetWeaponDamage(WeaponDataSO weapon, float chargeFraction = 0f)
     {
-        return weapon != null ? weapon.baseDamage + GetWeaponDamageBonus(weapon) : 0f;
+        return weapon != null ? GetWeaponBaseDamage(weapon, chargeFraction) + GetWeaponDamageBonus(weapon) : 0f;
+    }
+
+    public float GetWeaponBaseDamage(WeaponDataSO weapon, float chargeFraction = 0f)
+    {
+        if (weapon == null) return 0f;
+        float damage = weapon.GetBaseDamage(chargeFraction);
+        // RailCraft modules add +5 to both ends of the base damage range.
+        // They are not ACC/grid bonuses and never receive their x10 multipliers.
+        if (weapon.UsesChargedShot && IsCraftedWeapon(weapon))
+            damage += craftWeaponDamagebuff * weapon.craftModuleDamageMultiplier;
+        return damage;
     }
 
     public float GetWeaponDamageBonus(WeaponDataSO weapon)
@@ -180,7 +191,7 @@ public class StatusManager : MonoBehaviour
             ? STR + weapon.GetScaledFlatDamageBonus(bonusDamage)
             : weapon.GetScaledAccDamageBonus(ACC) + weapon.GetScaledFlatDamageBonus(bonusDamage);
 
-        if (IsCraftedWeapon(weapon))
+        if (!weapon.UsesChargedShot && IsCraftedWeapon(weapon))
             damageBonus += craftWeaponDamagebuff * weapon.craftModuleDamageMultiplier;
 
         return damageBonus;

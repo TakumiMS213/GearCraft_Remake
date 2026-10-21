@@ -20,6 +20,21 @@ public class WeaponDataSO : ScriptableObject
     public float craftModuleDamageMultiplier = 1f;
     public float attackRange = 1f;
 
+    [Header("Charged Shot (0 seconds disables)")]
+    [Min(0f)] public float chargeDuration;
+    public float maximumChargedDamage = 400f;
+    public bool UsesChargedShot => weaponType == WeaponType.Ranged && chargeDuration > 0f;
+
+    public float GetChargeDuration(float speedMultiplier)
+    {
+        return Mathf.Max(1f / 60f, chargeDuration * speedMultiplier);
+    }
+
+    public float GetBaseDamage(float chargeFraction = 0f)
+    {
+        return UsesChargedShot ? Mathf.Lerp(baseDamage, maximumChargedDamage, chargeFraction) : baseDamage;
+    }
+
     [Header("Ranged Settings")]
     public float bulletSpeed = 25f;
     public GameObject bulletPrefab;

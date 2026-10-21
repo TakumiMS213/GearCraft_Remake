@@ -1,0 +1,4 @@
+game_seconds,frame,boss_id,boss,event,count,hp,stunned_seconds,x,y,stun_hit_x,stun_hit_y,max_body_drift,max_visual_drift,smoke_count,smoke_particles,stun_remaining
+107.733643,123861,-9397082,"AR-227",threshold_damage,1,159575.859,0,2.6861825,1.29329193,-1.11723471,1.09536421,0,0,,,3
+107.75,123861,-9397082,"AR-227",started,1,159574.063,0,2.6861825,1.29329193,-1.11723471,1.09536421,0,0,1,2,2.98333335
+110.75,124041,-9397082,"AR-227",ended,1,157862.734,3,2.6861825,1.29329193,-1.11723471,1.09536421,0,0.0166981425,0,0,0

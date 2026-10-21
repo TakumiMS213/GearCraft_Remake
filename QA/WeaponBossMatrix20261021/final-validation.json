@@ -1,0 +1,150 @@
+{
+  "generated_at": "2026-10-21T12:55:49+09:00",
+  "audit_scope": "Read-only finite validation of existing v2 logs and baseline manifest; only this JSON is written. No MCP, gameplay, build, or production edits.",
+  "status": "PASS",
+  "issues": [],
+  "plan": {
+    "planned_trials": 60,
+    "unique_labels": 60,
+    "combinations": 20,
+    "seeds": [
+      77,
+      101,
+      202
+    ],
+    "all_v2": true,
+    "sha256": "7809ccf94bec30f11e0c08b5d27c222f0443d8d1d1c45e20702dc4333f02985a"
+  },
+  "results": {
+    "sha256": "43690ffe1d42bfbf152f8c0ecc2952c006e6ff31bdaca163306f7c7dee600566",
+    "groups": 20,
+    "normal_groups": 14,
+    "hypothetical_locked_groups": 6,
+    "completed_trials": 60,
+    "outcome_counts": {
+      "defeated": 26,
+      "player_dead": 28,
+      "gate_destroyed": 6
+    },
+    "success_only_statistics_valid": true,
+    "raw_result_and_terminal_boss_rows_checked": 60
+  },
+  "z_observations": {
+    "files": 60,
+    "rows": 44787,
+    "rows_by_boss": {
+      "IC-408": 9718,
+      "BB-413": 5964,
+      "AR-227": 16331,
+      "EK-9": 12774
+    },
+    "max_abs_boss_z": 0.0,
+    "max_abs_player_z": 0.0,
+    "nonzero_or_invalid": []
+  },
+  "bb_heavy_projectiles": {
+    "files": 15,
+    "first_seen_observations": 242,
+    "min_speed": 4.999999429873087,
+    "max_speed": 5.000000583751171,
+    "expected_speed": 5,
+    "absolute_tolerance": 0.0001,
+    "observations_by_trial": {
+      "matrix_BB413_GearCraft_seed77_v2": 12,
+      "matrix_BB413_GearCraft_seed101_v2": 17,
+      "matrix_BB413_GearCraft_seed202_v2": 10,
+      "matrix_BB413_SteamCannon_seed77_v2": 33,
+      "matrix_BB413_SteamCannon_seed101_v2": 33,
+      "matrix_BB413_SteamCannon_seed202_v2": 34,
+      "matrix_BB413_SteamThrower_seed77_v2": 5,
+      "matrix_BB413_SteamThrower_seed101_v2": 5,
+      "matrix_BB413_SteamThrower_seed202_v2": 5,
+      "matrix_BB413_RailCraft_seed77_v2": 9,
+      "matrix_BB413_RailCraft_seed101_v2": 7,
+      "matrix_BB413_RailCraft_seed202_v2": 5,
+      "matrix_BB413_SteamGatling_seed77_v2": 23,
+      "matrix_BB413_SteamGatling_seed101_v2": 22,
+      "matrix_BB413_SteamGatling_seed202_v2": 22
+    },
+    "invalid": [],
+    "note": "First editor-frame observations, not synchronous spawn events or complete hit counts."
+  },
+  "production_manifest": {
+    "entries": 254,
+    "extensions": {
+      ".cs": 145,
+      ".asset": 36,
+      ".prefab": 73
+    },
+    "manifest_sha256": "0f87391d2bb6a2459f96c2232dcd517ca0dee9716b746ab1df3d7af819c98532",
+    "missing": [],
+    "changed": [],
+    "scope_note": "Only manifest-listed files. Does not certify all scene/meta/settings files."
+  },
+  "v1_exclusion": {
+    "directory": "QA/WeaponBossMatrix20261021/excluded-v1-transient-spawn-z",
+    "root_v1_results": 0,
+    "excluded_v1_results": 33
+  },
+  "restoration": {
+    "status": "recorded_verified",
+    "independently_verified_live_editor": false,
+    "note": "Read-only audit; Unity MCP not used. Only restoration records present at audit time are assessed.",
+    "session_matches_current": true,
+    "canonical_record": {
+      "session_id": "20261021-030356-575-4755ef336d8347348a200fb78981b8f4",
+      "UTC": "2026-10-21T03:53:55.8740040Z",
+      "prefs_verified": "16",
+      "Play": "false",
+      "scene": "Title clean",
+      "fixed_ticks": "2822399",
+      "fixed_delta_getter": "0.0199999921",
+      "GameView_index": "3",
+      "GameView_sizes_restored": "true",
+      "logger_and_dotween_restored": "true"
+    },
+    "canonical_record_sha256": "8f5485ea1115de0dcd74fc2ea090f45a756bb43bf1af03c3ab5426a7c07c2b20",
+    "local_record_sha256": "11d2d6d42a10f28a690bd91b9b63a54c7da454cea2608a0c76bc2925955b3776",
+    "post_cleanup_editor_recompile": "root_log_verified_completed_no_CSharp_errors"
+  },
+  "temporary_editor_restore_bridge": {
+    "path": "Assets/GearCraft/Scripts/Editor/WeaponBossMatrixQaRestoreBridge.cs",
+    "present_at_audit": false,
+    "meta_present_at_audit": false,
+    "classification": "Temporary root-owned restoration helper, not a balance/source-baseline change; root owns removal.",
+    "cleanup_record": "Removed only this session temporary Editor bridge and its generated .meta after canonical restoration verified 16 keys. Source copy retained as .cs.txt in QA. Pending command archived.\n",
+    "cleanup_record_sha256": "021d9ad03eb248f13aec253c8e00e00f7c5fffcf2dc09d9c290d6223e7171c35",
+    "active_restore_command_present_at_audit": false,
+    "removal_verified_from_filesystem": true
+  },
+  "limitations": [
+    "Automated direct-boss comparison with stage-specific supplied builds, PunkDrive and up to two BOOST activations; not a full acquisition campaign or human success-rate estimate.",
+    "Only three seeded trials per combination. Defeat times exclude failures; the end-to-end boss timer includes entry time.",
+    "This audit verifies log consistency and source hashes, not live Editor state or independent reproduction of every outcome."
+  ],
+  "root_cleanup_verification": {
+    "temporary_bridge_removed": true,
+    "temporary_compiler_artifacts_removed": true,
+    "cleanup_domain_reload_completed": true,
+    "compiler_errors_after_cleanup": [],
+    "boost_use_count_distribution": {
+      "2": 60
+    },
+    "evidence_files": [
+      "cleanup-verification.json",
+      "cleanup-editor-log.txt",
+      "restore-bridge-cleanup.txt"
+    ],
+    "verified_at_utc": "2026-10-21T03:57:15.359194+00:00"
+  },
+  "report_review": {
+    "numeric_table_and_all_60_details": "matched_v2_results",
+    "v1_mixed": false,
+    "wording_corrections": [
+      "gate_destroyed is not proof of boss gate contact",
+      "attack acceptance is not confirmed hit count",
+      "AR failed trials have no kill time to compare"
+    ],
+    "report_sha256": "8aebc12d70619c5d75c5d9dbf2c29390f6891e63aac69cf6341ff3cac2653296"
+  }
+}

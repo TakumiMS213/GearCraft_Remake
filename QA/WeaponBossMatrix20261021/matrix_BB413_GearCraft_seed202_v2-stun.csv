@@ -1,0 +1,4 @@
+game_seconds,frame,boss_id,boss,event,count,hp,stunned_seconds,x,y,stun_hit_x,stun_hit_y,max_body_drift,max_visual_drift,smoke_count,smoke_particles,stun_remaining
+15.5673828,79367,-9181038,"BB-413",threshold_damage,1,12730,0,3.63709784,0.0819086954,-2.08320284,2.65367746,0,0,,,3
+15.583374,79367,-9181038,"BB-413",started,1,12729,0,3.63709784,0.0819086954,-2.08320284,2.65367746,0,0,1,2,2.98333335
+18.583374,79547,-9181038,"BB-413",ended,1,11601,3,3.63709784,0.06347875,-2.08320284,2.65367746,0,0.008349071,0,0,0

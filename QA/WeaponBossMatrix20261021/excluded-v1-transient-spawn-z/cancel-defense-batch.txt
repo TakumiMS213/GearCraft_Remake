@@ -1,0 +1,1 @@
+Stop for validation: direct spawn retained transient Spawner Z. Exclude v1 from balance results; correct test setup before restart.

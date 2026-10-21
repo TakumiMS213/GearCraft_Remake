@@ -1,0 +1,16 @@
+SteamCannon,7,early_day3_common,202
+day=3
+boss_kills=0
+HP=100
+GATE=100
+flat_damage=6
+attack_speed=0.765
+module_damage=0
+parts=Damage+2;Damage+2;SpeedGear;SpeedGear+
+placements=early_day3_common:Damage+2:0:0:0;early_day3_common:Damage+2:0:1:0;early_day3_common:SpeedGear+:2:0:0;early_day3_common:SpeedGear:0:2:1
+double_shot=False
+spread_modifier=0
+ricochet=0
+bullet_size=1
+initial_hit_damage=65
+asset=Assets/GearCraft/ScriptableObject/WeaponData/SteamCannon.asset

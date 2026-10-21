@@ -1,0 +1,16 @@
+SteamThrower,28,late_day7_ranged_defense_module20,202
+day=10
+boss_kills=2
+HP=100
+GATE=100
+flat_damage=13
+attack_speed=0.391680032
+module_damage=20
+parts=Damage+2;Damage+2;Damage+2;Damage+2;HeavySlug;SpeedGear;SpeedGear+;SpeedGear++;SpeedGear++;SpeedGear++;TwinBarrel
+placements=late_day7_ranged_defense_module20:HeavySlug:0:0:0;late_day7_ranged_defense_module20:Damage+2:2:0:0;late_day7_ranged_defense_module20:Damage+2:2:1:0;late_day7_ranged_defense_module20:Damage+2:0:2:0;late_day7_ranged_defense_module20:Damage+2:2:2:0;late_day7_ranged_defense_module20:SpeedGear++:4:0:0;late_day7_ranged_defense_module20:SpeedGear++:4:2:0;late_day7_ranged_defense_module20:SpeedGear++:0:3:0;late_day7_ranged_defense_module20:SpeedGear+:1:3:0;late_day7_ranged_defense_module20:SpeedGear:2:3:0;late_day7_ranged_defense_module20:TwinBarrel:3:4:0
+double_shot=True
+spread_modifier=0
+ricochet=0
+bullet_size=1.25
+initial_hit_damage=4.44400024
+asset=Assets/GearCraft/ScriptableObject/WeaponData/SteamThrower.asset

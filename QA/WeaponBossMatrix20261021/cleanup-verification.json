@@ -1,0 +1,9 @@
+{
+  "temporary_bridge_removed": true,
+  "temporary_compiler_artifacts_removed": true,
+  "cleanup_domain_reload_completed": true,
+  "compiler_errors_after_cleanup": [],
+  "boost_use_count_distribution": {
+    "2": 60
+  }
+}

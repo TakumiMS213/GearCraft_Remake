@@ -134,6 +134,16 @@ public class InventoryUI : MonoBehaviour
 
     private string BuildWeaponStatsText(WeaponDataSO weapon, StatusManager status)
     {
+        if (weapon.UsesChargedShot)
+        {
+            float minimum = status != null ? status.GetWeaponDamage(weapon, 0f) : weapon.GetBaseDamage(0f);
+            float maximum = status != null ? status.GetWeaponDamage(weapon, 1f) : weapon.GetBaseDamage(1f);
+            float chargeTime = weapon.GetChargeDuration(status != null ? status.attackSpeedMult : 1f);
+            return $"ダメージ: {FormatNumber(minimum)}〜{FormatNumber(maximum)}\n" +
+                $"最大チャージ: {chargeTime:0.##}秒\n" +
+                $"発射後の待機: {weapon.coolTime:0.##}秒\n" +
+                "左クリック長押しでチャージ／離して発射";
+        }
         float damage = status != null ? status.GetWeaponDamage(weapon) : weapon.baseDamage;
         float attackCooldown = status != null ? weapon.coolTime * status.attackSpeedMult : weapon.coolTime;
         if (weapon.weaponType == WeaponType.Ranged)

@@ -23,7 +23,7 @@ foreach(string bGuardName in new[]{"batch-progress.txt","native-survival-progres
 }
 if(System.IO.File.Exists(bFolder+"cancel-native-survival.txt")||System.IO.File.Exists(bFolder+"cancel-defense-batch.txt"))throw new System.Exception("Cancellation sentinel exists; review before starting");
 System.Func<string,string> bHash=bPath=>{using(var bSha=System.Security.Cryptography.SHA256.Create()){return System.BitConverter.ToString(bSha.ComputeHash(System.IO.File.ReadAllBytes(bPath))).Replace("-","").ToLowerInvariant();}};
-if(bHash(bFolder+"NativeInputBootstrap.cs.txt")!="2b22e99a1b3db8f8558e5735650e26d432fe714eb8d729c1207f30e51e35642e"||bHash(bFolder+"NativeInputSurvivalRoute.cs.txt")!="5b1839c80f05026866b9cd6492e598554e86a13a5e4cac063766777049fee547"||bHash(bFolder+bPlanFile)!="0752ee49f2908c9cade9c5ec213e83cfc6dfa48e20d3762ce290c3cfb2387d6c")throw new System.Exception("QA sources/plan changed; regenerate before execution");
+if(bHash(bFolder+"NativeInputBootstrap.cs.txt")!="b4cad20122339dd21f63cab11afa919af360eadd016de5b2ad3b732c06cb31b3"||bHash(bFolder+"NativeInputSurvivalRoute.cs.txt")!="91c71b938381811df1e591ede746e6aecce1ee3c88c10336b7c6e495a244db17"||bHash(bFolder+bPlanFile)!="7809ccf94bec30f11e0c08b5d27c222f0443d8d1d1c45e20702dc4333f02985a")throw new System.Exception("QA sources/plan changed; regenerate before execution");
 var bPlanLines=System.IO.File.ReadAllLines(bFolder+bPlanFile).Where(bLine=>!string.IsNullOrWhiteSpace(bLine)&&!bLine.TrimStart().StartsWith("#")).ToArray();
 if(bPlanLines.Length<2||bPlanLines[0].Trim()!="label,weapon,start_stage,profile,seed,STR,ACC,moduleDamage,repair,barrier,punk,scrap_module,initial_hp,initial_gate,fps")throw new System.Exception("Invalid batch case header");
 var bHeader=bPlanLines[0].Split(',');
@@ -157,18 +157,18 @@ try{
    if(typeof(StageFlowManager).GetField("dayStartSnapshot",flags).GetValue(flow)==null)return;
    UnityEditor.EditorApplication.update-=readyCheck;
    System.IO.File.WriteAllText(folder+"native-survival-bootstrap-progress.txt","READY "+lines[0]+" Main native Start complete; timeScale="+Time.timeScale+"; run NativeSurvivalRoute.cs.txt\n");
-  }catch(System.Exception ex){UnityEditor.EditorApplication.update-=readyCheck;restoreOnFailure();System.IO.File.WriteAllText(folder+"native-survival-bootstrap-progress.txt","FAILED "+ex+"\n");UnityEditor.EditorApplication.isPlaying=false;}
+  }catch(System.Exception ex){UnityEditor.EditorApplication.update-=readyCheck;restoreOnFailure();System.IO.File.WriteAllText(folder+"native-survival-bootstrap-progress.txt","FAILED "+ex+"\n");Time.timeScale=0f; /* Batch owns Play teardown. */}
  };
  UnityEditor.EditorApplication.update+=readyCheck;
  UnityEngine.SceneManagement.SceneManager.LoadScene("Main",UnityEngine.SceneManagement.LoadSceneMode.Single);
-}catch(System.Exception ex){if(readyCheck!=null)UnityEditor.EditorApplication.update-=readyCheck;restoreOnFailure();System.IO.File.WriteAllText(folder+"native-survival-bootstrap-progress.txt","FAILED "+ex+"\n");UnityEditor.EditorApplication.isPlaying=false;throw;}
+}catch(System.Exception ex){if(readyCheck!=null)UnityEditor.EditorApplication.update-=readyCheck;restoreOnFailure();System.IO.File.WriteAllText(folder+"native-survival-bootstrap-progress.txt","FAILED "+ex+"\n");Time.timeScale=0f; /* Batch owns Play teardown. */throw;}
 return "Loading paused Main for native survival: "+lines[0]+"; inspect native-survival-bootstrap-progress.txt for READY";
 
 };
 System.Func<string> bRunRoute=()=>{
 // C#6 execute_code method body. Gate-aware version: retain player reactions; also intercept gate-bound damageable projectiles.
 // Run only after the caller prepares an owned target weapon/build and loads Main through the normal scene path.
-// This does not reset/stop/replace StageFlowManager or EnemySpawner, heal HP/GATE, or delete enemies/drops.
+// Survival preserves native waves; direct mode explicitly substitutes one native boss. Neither mode heals HP/GATE.
 // Reward cards and the day-end report are confirmed through their actual scene Buttons.
 const string folder="QA/WeaponBossMatrix20261021/";
 if(!Application.isPlaying||UnityEngine.SceneManagement.SceneManager.GetActiveScene().name!="Main")throw new System.Exception("Main Play required");
@@ -231,6 +231,8 @@ var getBulletSpeed=typeof(PlayerController).GetMethod("GetCurrentBulletSpeed",fl
 var sync=typeof(PlayerController).GetMethod("SyncWeaponFromStatus",flags);
 var updateAnim=typeof(PlayerController).GetMethod("UpdateArmAnimation",flags);
 var barrierUpdate=typeof(PlayerController).GetMethod("UpdateAutoBarrier",flags);
+var changeGearCraft=typeof(PlayerController).GetMethod("ChangeGearCraft",flags);
+if(weaponName=="GearCraft"&&changeGearCraft==null)throw new System.Exception("Native GearCraft transform API missing");
 var poseMethod=typeof(ArmRotation).GetMethod("GetPoseIndex",flags);var offsetMethod=typeof(ArmRotation).GetMethod("GetOffset",flags);var scaleMethod=typeof(ArmRotation).GetMethod("GetScale",flags);
 if(getBulletSpeed==null||sync==null||updateAnim==null||barrierUpdate==null||poseMethod==null||offsetMethod==null||scaleMethod==null)throw new System.Exception("Native maintenance/aim members missing");
 int captureFps=System.IO.File.Exists(folder+"native-survival-fps.txt")?int.Parse(System.IO.File.ReadAllText(folder+"native-survival-fps.txt").Trim()):60;
@@ -258,7 +260,7 @@ System.IO.File.WriteAllText(eventsPath,"game_seconds,wall_seconds,event,scene,st
 System.IO.File.WriteAllText(folder+label+"-initial-status.json",JsonUtility.ToJson(status,true));
 if(System.IO.File.Exists(folder+"native-survival-bootstrap-config-used.txt"))System.IO.File.Copy(folder+"native-survival-bootstrap-config-used.txt",folder+label+"-bootstrap-config.txt",true);
 if(MaterialManager.Instance!=null)System.IO.File.WriteAllText(folder+label+"-initial-materials.json",JsonUtility.ToJson(MaterialManager.Instance,true));
-System.IO.File.WriteAllText(folder+label+"-meta.txt","Native-input-v3: mode in run-mode.txt; direct replaces first spawn group with native boss (same day scaling, Gear2 carried); survival preserves full day. No HP/GATE replenishment. Ground-boss autoJump disabled; projectile threats use bounds entry. One native boss day from an injected initial build; not an acquisition playthrough or human success-rate estimate. PlayerController.Update/ArmRotation.Update are disabled for bot input. ProcessAttackInput(bool,bool,float,Vector3) is called exactly once per game frame, including false/false on blocked/no-target frames. No external cooldown assignment/decrement, PerformMeleeAttack call, projectile Instantiate, spread/double-shot/configure duplication. Returned int counts accepted native attack events. expected_projectiles is a branch-derived expectation, not observed Instantiate/hit count; melee=0, line=1, ordinary shot=1 or double=2. Native projectile/AI/physics/rewards/HP/gate/day-end remain active. No invulnerability, healing injection or direct enemy/projectile damage. Existing gate-aware-v1 bot movement/aim/click-repeat/0.2-second threat decisions/BOOST budget2 are retained for comparison; bot geometry and target limitations remain. Native auto-barrier is maintained. Aim applies previous muzzle/gravity correction through a world target passed to native shooting. Shot RNG is isolated as before; changing frame rate can still change bot decisions/physics and reward RNG. Use input CSV for FPS acceptance, not full-day kill-time equality. Fresh canonical 16-key backup is mandatory; root restores after Play. Native geometry observer now includes EnemyProjectileDamageable for BB heavy shots; first-seen is not synchronous spawn.\n");
+System.IO.File.WriteAllText(folder+label+"-meta.txt","Native-input-v4: direct spawn uses native LoopMover settled Z plane after verifying both endpoints and player share it; transient initial Spawner Z is excluded. Mode in run-mode.txt; direct replaces first spawn group with native boss (same day scaling, Gear2 carried); survival preserves full day. No HP/GATE replenishment. Ground-boss autoJump disabled; projectile threats use bounds entry. One native boss day from an injected initial build; not an acquisition playthrough or human success-rate estimate. PlayerController.Update/ArmRotation.Update are disabled for bot input. ProcessAttackInput(bool,bool,float,Vector3) is called exactly once per game frame, including false/false on blocked/no-target frames. No external cooldown assignment/decrement, PerformMeleeAttack call, projectile Instantiate, spread/double-shot/configure duplication. Returned int counts accepted native attack events. expected_projectiles is a branch-derived expectation, not observed Instantiate/hit count; melee=0, line=1, ordinary shot=1 or double=2. Native projectile/AI/physics/rewards/HP/gate/day-end remain active. No invulnerability, healing injection or direct enemy/projectile damage. Existing gate-aware-v1 bot movement/aim/click-repeat/0.2-second threat decisions/BOOST budget2 are retained for comparison; bot geometry and target limitations remain. Native auto-barrier is maintained. GearCraft requests native ChangeGearCraft after the initial 5 seconds only while Sword is equipped and CanUseGearCraft is true; native async return, cooldown and transform material bonuses are preserved. No periodic direct form assignment. Boss control CSV is read-only at 0.1-second intervals and observed state changes, including native slow remaining time, GetMoveSpeed(1), stun, observed displacement velocity, AI phase/state and AR tween progress/timeScale. Control totals attribute each observed game-frame interval to its preceding alive state; slowed/non-slowed time excludes stun and is not a causal no-debuff comparison. Aim applies previous muzzle/gravity correction through a world target passed to native shooting. Shot RNG is isolated as before; changing frame rate can still change bot decisions/physics and reward RNG. Use input CSV for FPS acceptance, not full-day kill-time equality. Fresh canonical 16-key backup is mandatory; root restores after Play. Native geometry observer now includes EnemyProjectileDamageable for BB heavy shots; first-seen is not synchronous spawn.\n");
 System.Action<string,string> record=(eventName,details)=>{
  int stageNow=StageCounter.Instance!=null?StageCounter.Instance.StageCount:lastStage;
  string currentName=status!=null&&status.currentWeapon!=null?status.currentWeapon.weaponName:"";
@@ -581,6 +583,61 @@ System.Action<EnemyController[]> observeGeometry=enemies=>{
  if(Time.time-geometryLastFlush>=1f)geometryFlush();
 };
 
+// Control measurements are read-only: sample at 10 Hz and every observed state change.
+string controlPath=folder+label+"-boss-control.csv",controlTotalsPath=folder+label+"-boss-control-totals.csv";
+var controlBuffer=new System.Text.StringBuilder();
+var controlPreviousTime=new System.Collections.Generic.Dictionary<int,float>();
+var controlPreviousPosition=new System.Collections.Generic.Dictionary<int,Vector3>();
+var controlPreviousMode=new System.Collections.Generic.Dictionary<int,int>();
+var controlPreviousKey=new System.Collections.Generic.Dictionary<int,string>();
+var controlLastWritten=new System.Collections.Generic.Dictionary<int,float>();
+var controlNames=new System.Collections.Generic.Dictionary<int,string>();
+var controlTotals=new System.Collections.Generic.Dictionary<int,float[]>();
+var controlOverheatEnd=typeof(EnemyController).GetField("overheatEndTime",flags);
+var controlOverheatSpeed=typeof(EnemyController).GetField("overheatSpeedMultiplier",flags);
+var controlArTween=typeof(EnemyAI_BossSpeed).GetField("currentTween",flags);
+if(controlOverheatEnd==null||controlOverheatSpeed==null||controlArTween==null)throw new System.Exception("Boss control observation fields missing");
+float controlLastFlush=Time.time;
+System.IO.File.WriteAllText(controlPath,"game_seconds,frame,boss_id,boss,hp,overheat_remaining,move_speed_multiplier,is_stunned,x,y,observed_velocity_x,observed_velocity_y,ai_type,ai_state,ai_phase,ar_tween_active,ar_tween_playing,ar_tween_time_scale,ar_tween_elapsed,ar_tween_duration,weapon,gearcraft_available,write_reason,z,player_z\n");
+System.Action flushControl=()=>{if(controlBuffer.Length>0){System.IO.File.AppendAllText(controlPath,controlBuffer.ToString());controlBuffer.Length=0;}controlLastFlush=Time.time;};
+System.Action<EnemyController[]> observeControl=all=>{
+ foreach(var e in all.Where(e=>e!=null&&e.enemyData!=null&&e.enemyData.IsBossType)){
+  int id=e.GetInstanceID();float currentTime=Time.time;Vector3 position=e.transform.position,velocity=Vector3.zero;
+  if(!controlTotals.ContainsKey(id)){controlTotals[id]=new float[3];controlNames[id]=e.enemyData.enemyName;}
+  float previousTime;
+  if(controlPreviousTime.TryGetValue(id,out previousTime)){
+   float observedDelta=Mathf.Max(0f,currentTime-previousTime);int previousMode=controlPreviousMode[id];
+   if(previousMode>=0)controlTotals[id][previousMode]+=observedDelta;
+   if(observedDelta>0f)velocity=(position-controlPreviousPosition[id])/observedDelta;
+  }
+  float overheatRemaining=Mathf.Max(0f,(float)controlOverheatEnd.GetValue(e)-currentTime);
+  bool slowed=overheatRemaining>0f&&(float)controlOverheatSpeed.GetValue(e)<0.999f;
+  bool stunned=e.IsStunned;int mode=e.HP<=0f||!e.gameObject.activeInHierarchy?-1:stunned?2:slowed?0:1;
+  object ai=enemyAIField.GetValue(e);string aiState="",aiPhase="",aiType="";
+  if(ai!=null){var type=ai.GetType();aiType=type.Name;var stateField=type.GetField("state",flags)??type.GetField("movementState",flags);var phaseField=type.GetField("phase",flags);var winding=type.GetField("windingUp",flags);
+   aiState=stateField!=null?stateField.GetValue(ai).ToString():winding!=null?"windingUp="+winding.GetValue(ai):"native";
+   aiPhase=phaseField!=null?phaseField.GetValue(ai).ToString():"";
+  }
+  var tween=ai is EnemyAI_BossSpeed?controlArTween.GetValue(ai) as DG.Tweening.Tween:null;
+  bool tweenActive=tween!=null&&DG.Tweening.TweenExtensions.IsActive(tween);
+  bool tweenPlaying=tweenActive&&DG.Tweening.TweenExtensions.IsPlaying(tween);
+  string currentWeapon=status!=null&&status.currentWeapon!=null?status.currentWeapon.weaponName:"";
+  string key=mode+"|"+slowed+"|"+aiState+"|"+aiPhase+"|"+tweenActive+"|"+tweenPlaying+"|"+currentWeapon;
+  bool changed=!controlPreviousKey.ContainsKey(id)||controlPreviousKey[id]!=key;
+  if(changed||currentTime-controlLastWritten[id]>=0.1f){
+   var values=new[]{number(currentTime-started),Time.frameCount.ToString(),id.ToString(),csv(e.enemyData.enemyName),number(e.HP),number(overheatRemaining),number(e.GetMoveSpeed(1f)),stunned.ToString(),number(position.x),number(position.y),number(velocity.x),number(velocity.y),csv(aiType),csv(aiState),csv(aiPhase),tweenActive.ToString(),tweenPlaying.ToString(),tweenActive?number(tween.timeScale):"",tweenActive?number(DG.Tweening.TweenExtensions.Elapsed(tween,true)):"",tweenActive?number(DG.Tweening.TweenExtensions.Duration(tween,true)):"",csv(currentWeapon),(player!=null&&player.CanUseGearCraft).ToString(),changed?"state_change":"interval",number(position.z),player!=null?number(player.transform.position.z):""};
+   controlBuffer.AppendLine(string.Join(",",values));controlLastWritten[id]=currentTime;
+  }
+  controlPreviousTime[id]=currentTime;controlPreviousPosition[id]=position;controlPreviousMode[id]=mode;controlPreviousKey[id]=key;
+ }
+ if(Time.time-controlLastFlush>=1f)flushControl();
+};
+System.Action writeControlTotals=()=>{
+ flushControl();var output=new System.Text.StringBuilder("boss_id,boss,observed_seconds,slowed_not_stunned_seconds,not_slowed_not_stunned_seconds,stunned_seconds\n");
+ foreach(var pair in controlTotals){var t=pair.Value;output.AppendLine(string.Join(",",new[]{pair.Key.ToString(),csv(controlNames[pair.Key]),number(t[0]+t[1]+t[2]),number(t[0]),number(t[1]),number(t[2])}));}
+ System.IO.File.WriteAllText(controlTotalsPath,output.ToString());
+};
+
 // Read-only frame observer. Particle positions are observed first-seen positions, not inferred hits.
 string stunPath=folder+label+"-stun.csv",particlePath=folder+label+"-particles.csv";
 var stunBuffer=new System.Text.StringBuilder();var particleBuffer=new System.Text.StringBuilder();
@@ -656,7 +713,7 @@ UnityEditor.EditorApplication.CallbackFunction tick=null;
 System.Action<string> finish=reason=>{
  if(done)return;done=true;UnityEditor.EditorApplication.update-=tick;
  try{
-  observeStuns(new EnemyController[0]);flushStuns();geometryFlush();flushInput();
+  observeStuns(new EnemyController[0]);flushStuns();geometryFlush();flushInput();writeControlTotals();
   attackSuppression="finished:"+reason+";previous="+attackSuppression;sampleDiagnostics(true);
   closeWave(reason);
   foreach(int id in bossStarts.Keys)if(closedBosses.Add(id))recordBoss(id,"ended",reason);
@@ -671,7 +728,7 @@ System.Action<string> finish=reason=>{
   Time.captureDeltaTime=oldCapture;Time.timeScale=oldScale;QualitySettings.vSyncCount=oldVSync;Application.targetFrameRate=oldTarget;Application.runInBackground=oldBackground;
   System.IO.File.WriteAllText(progress,"COMPLETE "+label+" "+reason+"\n");
   // Root owns save restoration after teardown; no persistent cross-case callback is installed.
-  Time.timeScale=0f; // Batch keeps Play until all cases finish.
+  Time.timeScale=0f; /* Batch owns Play teardown. */
  }
 };
 bRouteFinish=finish;
@@ -703,7 +760,7 @@ tick=()=>{bool processCooldown=false,requestPressed=false,requestHeld=false;Vect
  if(Time.frameCount==lastFrame){if(now-lastFrameAt>30)finish("no_game_frames_30s");return;}lastFrame=Time.frameCount;lastFrameAt=now;frames++;processCooldown=true;
  string scene=UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
  var all=scene=="Main"?UnityEngine.Object.FindObjectsByType<EnemyController>(FindObjectsSortMode.None):new EnemyController[0];
- if(scene=="Main"){observeGeometry(all);observeStuns(all);}
+ if(scene=="Main"){observeGeometry(all);observeStuns(all);observeControl(all);}
  attackSuppression="frame_start";diagnosticTarget=null;
  if(status!=null){playerDamage+=Mathf.Max(0f,lastHP-status.HP);gateDamage+=Mathf.Max(0f,lastGate-status.GATE);playerHealed+=Mathf.Max(0f,status.HP-lastHP);gateHealed+=Mathf.Max(0f,status.GATE-lastGate);lastHP=status.HP;lastGate=status.GATE;if(scene=="Main")observeEnemies(all);if(status.HP<=0){finish("player_dead");return;}if(status.GATE<=0){finish("gate_destroyed");return;}}
  if(scene=="Ending"){finish("ending_reached_"+EndingManager.PendingEndingNum);return;}
@@ -756,12 +813,21 @@ tick=()=>{bool processCooldown=false,requestPressed=false,requestHeld=false;Vect
   string bossAsset=firstStage==7?"lv3_IC-408":firstStage==16?"lv3_BB-413":firstStage==28?"lv3_AR-227":firstStage==31?"lv3_FinalBoss":null;
   if(bossAsset==null)throw new System.Exception("No direct boss for initial stage");
   var bossData=UnityEditor.AssetDatabase.LoadAssetAtPath<EnemyDataSO>("Assets/GearCraft/ScriptableObject/EnemyData/"+bossAsset+".asset");
-  var instance=UnityEngine.Object.Instantiate(bossData.prefab,flow.enemySpawner.transform.position,Quaternion.identity);
+  // Direct tests omit the ordinary waves, so the scene's Spawner may still be
+  // travelling from its initial depth. Use its verified settled gameplay plane.
+  // Preserve XY; native boss entry code still owns placement and movement.
+  var spawnMover=flow.enemySpawner.GetComponent<LoopMover>();
+  if(spawnMover==null||spawnMover.pointA==null||spawnMover.pointB==null)throw new System.Exception("Direct spawn requires native LoopMover endpoints");
+  float settledZ=spawnMover.pointB.position.z;
+  if(Mathf.Abs(spawnMover.pointA.position.z-settledZ)>.0001f||Mathf.Abs(player.transform.position.z-settledZ)>.0001f)throw new System.Exception("Native settled spawn plane differs from player plane");
+  Vector3 spawnPosition=flow.enemySpawner.transform.position;
+  float transientZ=spawnPosition.z;spawnPosition.z=settledZ;
+  var instance=UnityEngine.Object.Instantiate(bossData.prefab,spawnPosition,Quaternion.identity);
   directBoss=instance.GetComponent<EnemyController>();if(directBoss==null)throw new System.Exception("Direct boss missing native EnemyController");
   directBoss.enemyData=bossData;directBoss.isLastEnemy=false;directSpawnTime=Time.time;directBossId=directBoss.GetInstanceID();directPrepared=true;
   // Two real BOOST charges model carried resources; this direct condition is distinct from day-survival starting at Gear0.
   MaterialManager.Instance.AddMaterial(MaterialManager.MaterialType.Gear,2);
-  record("direct_boss_spawn_requested","asset="+bossAsset+";native day scaling="+flow.EnemyScalingStage+";no HP/GATE replenishment;Gear2 provisioned");
+  record("direct_boss_spawn_requested","asset="+bossAsset+";native day scaling="+flow.EnemyScalingStage+";no HP/GATE replenishment;Gear2 provisioned;transient_spawner_z="+number(transientZ)+";settled_spawn_z="+number(settledZ)+";player_z="+number(player.transform.position.z));
   return;
  }
  var alive=all.Where(e=>e.HP>0f&&e.GetComponent<Collider2D>()!=null&&e.GetComponent<Collider2D>().enabled).ToArray();
@@ -773,9 +839,12 @@ tick=()=>{bool processCooldown=false,requestPressed=false,requestHeld=false;Vect
  updateReactive(target);
  Collider2D intercept=reactiveAimCollider!=null&&reactiveAimCollider.enabled&&reactiveAimCollider.gameObject.activeInHierarchy?reactiveAimCollider:null;
  bool melee=mainWeapon.weaponType==WeaponType.Melee;
- if(weaponName=="GearCraft"){
-   // Match normal 5s axe / 5s sword transform cadence; no permanent axe equip.
-   var desired=((Time.time-started)%10f<5f)?sword:axe;if(status.currentWeapon!=desired){status.EquipWeapon(desired);player.currentWeapon=desired;sync.Invoke(player,null);updateAnim.Invoke(player,null);}
+ if(weaponName=="GearCraft"&&Time.time-started>=5f&&player.CanUseGearCraft&&player.currentWeapon==sword){
+   // Request the normal transform; its async 5s return and 5s cooldown own all later changes.
+   int gearBefore=MaterialManager.Instance!=null?MaterialManager.Instance.GetMaterial(MaterialManager.MaterialType.Gear):0;
+   changeGearCraft.Invoke(player,null);sync.Invoke(player,null);updateAnim.Invoke(player,null);
+   int gearAfter=MaterialManager.Instance!=null?MaterialManager.Instance.GetMaterial(MaterialManager.MaterialType.Gear):0;
+   record("native_gearcraft_transform","after_initial_5s;CanUseGearCraft="+player.CanUseGearCraft+";gear_delta="+(gearAfter-gearBefore));
  }
  var weapon=status.currentWeapon;
  int pose=(int)poseMethod.Invoke(arm,new object[]{weapon});Vector3 offset=(Vector3)offsetMethod.Invoke(arm,new object[]{pose});Vector3 scale=(Vector3)scaleMethod.Invoke(arm,new object[]{pose});

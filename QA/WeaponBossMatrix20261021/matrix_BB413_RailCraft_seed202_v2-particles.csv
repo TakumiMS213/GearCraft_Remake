@@ -1,0 +1,3 @@
+game_seconds,frame,id,name,x,y,boss_id,last_hit_x,last_hit_y,distance_to_last_hit
+10.25,104803,-9264284,"BossStunExplosion",2.54535556,-2.20214987,-9263514,2.54535556,-2.20214987,0
+10.25,104803,-9264292,"Smoke",2.54535556,-2.20214987,-9263514,2.54535556,-2.20214987,0

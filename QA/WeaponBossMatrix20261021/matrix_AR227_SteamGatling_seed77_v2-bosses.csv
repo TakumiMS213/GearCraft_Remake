@@ -1,0 +1,3 @@
+boss,stage,scaling_stage,event,result,spawn_game_seconds,event_game_seconds,boss_seconds,start_hp,start_gate,end_hp,end_gate,player_damage,gate_damage,player_healed,gate_healed,start_boss_hp,remaining_boss_hp,attack_events,player_x,player_y,boss_x,boss_y
+"AR-227","28","28","spawned","active","1.21655273","1.2331543","0.0166015625","100","100","100","100","0","0","0","0","228000","228000","0","-4.82","-3.82227063","5.14326859","1.2882998"
+"AR-227","28","28","ended","defeated","1.21655273","67.81665","66.6001","100","100","76","100","24","0","0","0","228000","-18.9663124","3995","-6.22093439","-3.82227063","2.69228935","1.2882998"
