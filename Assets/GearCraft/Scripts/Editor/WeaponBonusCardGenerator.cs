@@ -99,7 +99,7 @@ public static class WeaponBonusCardGenerator
             new CardSpec("RailCraft_BulletSize", "RailCraft", "大口径レール", "弾丸サイズが3倍になる", new[] { Effect(CardEffectType.RailCraftBulletSizeMultiplier, 3f) }),
             new CardSpec("RailCraft_Overheat", "RailCraft", "灼熱軌条", "オーバーヒート付与", new[] { Effect(CardEffectType.RailCraftApplyOverheat, 1f) }),
             new CardSpec("RailCraft_Ricochet", "RailCraft", "反射軌道制御", "反射数が倍になる", new[] { Effect(CardEffectType.RailCraftRicochetMultiplier, 2f) }),
-            new CardSpec("SteamGatling_BulletSpeed", "SteamGatling", "倍速機関", "弾速が倍になる\nWeaponCustom値に乗算", new[] { Effect(CardEffectType.SteamGatlingBulletSpeedMultiplier, 2f) }),
+            new CardSpec("SteamGatling_BulletSpeed", "SteamGatling", "倍速機関", "弾速が倍になる", new[] { Effect(CardEffectType.SteamGatlingBulletSpeedMultiplier, 2f) }),
             new CardSpec("SteamGatling_TargetDamage", "SteamGatling", "制圧射撃", "ボスへのダメージ0.7倍\n雑魚へのダメージ1.3倍", new[] { Effect(CardEffectType.SteamGatlingBossDamageMultiplier, 0.7f), Effect(CardEffectType.SteamGatlingNormalDamageMultiplier, 1.3f) }),
             new CardSpec("SteamGatling_RecoilJump", "SteamGatling", "反動跳躍", "下向きに撃つと\n反動で飛べる", new[] { Effect(CardEffectType.SteamGatlingDownwardRecoil, 1f) }),
         };
@@ -161,9 +161,13 @@ public static class WeaponBonusCardGenerator
         icon.preserveAspect = true;
         icon.raycastTarget = false;
 
-        TMP_Text title = EnsureText(root.transform, "Title", font, new Vector2(0.08f, 1f), new Vector2(0.92f, 1f), new Vector2(0f, -275f), new Vector2(0f, 72f));
-        title.text = spec.Title;
+        TMP_Text title = EnsureText(root.transform, "Title", font, new Vector2(0.08f, 1f), new Vector2(0.92f, 1f), new Vector2(0f, -384f), new Vector2(0f, 72f));
+        title.text = $"【{spec.Title}】";
         title.fontSize = 42f;
+        title.textWrappingMode = TextWrappingModes.NoWrap;
+        title.enableAutoSizing = true;
+        title.fontSizeMin = 18f;
+        title.fontSizeMax = 42f;
         title.alignment = TextAlignmentOptions.Center;
         title.color = new Color(1f, 0.96f, 0.82f, 1f);
 

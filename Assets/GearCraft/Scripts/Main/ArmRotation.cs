@@ -19,6 +19,9 @@ public class ArmRotation : MonoBehaviour
     public WeaponArmPoseRule[] poseRules;
 
     private PlayerController playerController;
+    private Coroutine swing;
+    private bool fullChargeShake;
+    private Vector3 chargeShakeOffset;
 
     void Start()
     {
@@ -27,6 +30,9 @@ public class ArmRotation : MonoBehaviour
 
     void Update()
     {
+        // UI操作中は、ポーズ前の武器・肩の向きを維持する。
+        if (StageFlowManager.IsPlayerInputBlocked) return;
+        ClearChargeShakeOffset();
         if (playerController == null) return;
 
         // 近接武器では回転処理をスキップ
@@ -73,6 +79,30 @@ public class ArmRotation : MonoBehaviour
         Vector3 rotatedOffset = sholder.rotation * armOffset;
         arm.position = sholder.position + rotatedOffset;
         arm.rotation = sholder.rotation;
+    }
+
+    public void SetFullChargeShake(bool active)
+    {
+        fullChargeShake = active;
+        // Restore the muzzle before a released shot reads its position.
+        if (!active) ClearChargeShakeOffset();
+    }
+
+    private void LateUpdate()
+    {
+        ClearChargeShakeOffset();
+        if (!fullChargeShake || arm == null || Time.timeScale <= 0f || StageFlowManager.IsPlayerInputBlocked) return;
+
+        float phase = Time.time * Mathf.PI * 2f;
+        chargeShakeOffset = new Vector3(Mathf.Sin(phase * 27f) * 0.045f,
+            Mathf.Sin(phase * 33f + 0.7f) * 0.045f, 0f);
+        arm.position += chargeShakeOffset;
+    }
+
+    private void ClearChargeShakeOffset()
+    {
+        if (arm != null) arm.position -= chargeShakeOffset;
+        chargeShakeOffset = Vector3.zero;
     }
 
     private int GetPoseIndex(WeaponDataSO weapon)
@@ -129,6 +159,8 @@ public class ArmRotation : MonoBehaviour
     {
         if (armScales == null || armScales.Length == 0) return Vector3.one;
         Vector3 scale = armScales[Mathf.Clamp(index, 0, armScales.Length - 1)];
+        if (StatusManager.Instance != null && StatusManager.Instance.HasMeleeEquipped)
+            scale *= StatusManager.Instance.meleeUpgrades.SizeMultiplier;
         if (index == 3 &&
             StatusManager.Instance != null &&
             StatusManager.Instance.gearCraftAxeSizeMultiplier > 1f)
@@ -163,7 +195,21 @@ public class ArmRotation : MonoBehaviour
     // --- 腕を1回転させる ---
     public void RotateArmOnce(float duration = 1f)
     {
-        StartCoroutine(RotateArmCoroutine(duration));
+        CancelSwing();
+        swing = StartCoroutine(RotateArmCoroutine(Mathf.Max(0.03f, duration)));
+    }
+
+    public void CancelSwing()
+    {
+        if (swing != null) StopCoroutine(swing);
+        swing = null;
+        if (arm != null) arm.rotation = Quaternion.Euler(GetBaseRotation(GetPoseIndex(StatusManager.Instance != null ? StatusManager.Instance.currentWeapon : null)));
+    }
+
+    private void OnDisable()
+    {
+        SetFullChargeShake(false);
+        CancelSwing();
     }
 
     private System.Collections.IEnumerator RotateArmCoroutine(float duration)
@@ -198,5 +244,6 @@ public class ArmRotation : MonoBehaviour
         Vector3 finalPivot = sholder.position;
         arm.position = finalPivot + (Quaternion.Euler(0f, 0f, endAngle) * initialOffset);
         arm.rotation = Quaternion.Euler(0f, 0f, endAngle);
+        swing = null;
     }
 }

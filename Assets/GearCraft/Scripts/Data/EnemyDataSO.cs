@@ -36,7 +36,6 @@ public class EnemyDataSO : ScriptableObject
 
     [Header("Bomber")]
     public float explosionRadius = 3f;
-    public float explosionDamage = 30f;
 
     [Header("Summon")]
     public EnemyDataSO summonEnemyData;

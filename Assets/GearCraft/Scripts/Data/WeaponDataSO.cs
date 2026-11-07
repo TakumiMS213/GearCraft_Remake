@@ -14,8 +14,6 @@ public class WeaponDataSO : ScriptableObject
     public float coolTime = 0.5f;
     public float baseDamage = 20f;
     public float accDamageMultiplier = 1f;
-    [Tooltip("Flat damage bonus multiplier. A negative value uses the ACC multiplier for existing weapon data.")]
-    public float flatDamageMultiplier = -1f;
     [Min(0f), Tooltip("Damage gained from Upgrade Modules. Kept separate from ACC and grid parts.")]
     public float craftModuleDamageMultiplier = 1f;
     public float attackRange = 1f;
@@ -23,6 +21,8 @@ public class WeaponDataSO : ScriptableObject
     [Header("Charged Shot (0 seconds disables)")]
     [Min(0f)] public float chargeDuration;
     public float maximumChargedDamage = 400f;
+    [Min(1f), Tooltip("1 = linear damage growth; larger values reward holding closer to full charge.")]
+    public float chargeDamageExponent = 1f;
     public bool UsesChargedShot => weaponType == WeaponType.Ranged && chargeDuration > 0f;
 
     public float GetChargeDuration(float speedMultiplier)
@@ -32,7 +32,9 @@ public class WeaponDataSO : ScriptableObject
 
     public float GetBaseDamage(float chargeFraction = 0f)
     {
-        return UsesChargedShot ? Mathf.Lerp(baseDamage, maximumChargedDamage, chargeFraction) : baseDamage;
+        if (!UsesChargedShot) return baseDamage;
+        float damageFraction = Mathf.Pow(Mathf.Clamp01(chargeFraction), Mathf.Max(1f, chargeDamageExponent));
+        return Mathf.Lerp(baseDamage, maximumChargedDamage, damageFraction);
     }
 
     [Header("Ranged Settings")]
@@ -59,9 +61,4 @@ public class WeaponDataSO : ScriptableObject
         return acc * accDamageMultiplier;
     }
 
-    public float GetScaledFlatDamageBonus(float flatDamage)
-    {
-        float multiplier = flatDamageMultiplier < 0f ? accDamageMultiplier : flatDamageMultiplier;
-        return flatDamage * multiplier;
-    }
 }

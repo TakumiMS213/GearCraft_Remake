@@ -15,7 +15,8 @@ public class SceneTransitionManager : MonoBehaviour
     [Header("Fade Settings")]
     public Image fadeImage;
     public Image LoadfadeImage;
-    public float fadeDuration = 1f;
+    public float fadeDuration = 1.5f;
+    [SerializeField] private GearBlackoutTransition gearBlackout;
 
     [Header("Loading Settings")]
     [SerializeField] private GameObject loadingRoot;
@@ -171,8 +172,17 @@ public class SceneTransitionManager : MonoBehaviour
     {
         bool show = alpha > 0.01f;
         SetLoadingRootActive(show);
-        SetImageAlpha(fadeImage, alpha);
-        SetImageAlpha(LoadfadeImage, alpha);
+        if (gearBlackout != null)
+        {
+            gearBlackout.SetImmediate(show);
+            SetImageAlpha(fadeImage, 0f);
+            SetImageAlpha(LoadfadeImage, 0f);
+        }
+        else
+        {
+            SetImageAlpha(fadeImage, alpha);
+            SetImageAlpha(LoadfadeImage, alpha);
+        }
         SetInputBlockerActive(show);
 
         if (loadingTipText != null)
@@ -204,6 +214,22 @@ public class SceneTransitionManager : MonoBehaviour
         if (duration <= 0f)
         {
             ShowLoadingVisuals(alpha, null);
+            return;
+        }
+
+        if (gearBlackout != null)
+        {
+            SetImageAlpha(fadeImage, 0f);
+            SetImageAlpha(LoadfadeImage, 0f);
+            loadingTipText?.DOFade(alpha, duration).SetUpdate(true).SetLink(gameObject);
+            gearBlackout.Play(blocksInput, duration, () =>
+            {
+                if (!blocksInput)
+                {
+                    SetInputBlockerActive(false);
+                    SetLoadingRootActive(false);
+                }
+            });
             return;
         }
 

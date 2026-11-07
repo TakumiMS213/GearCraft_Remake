@@ -221,14 +221,14 @@ namespace GearCraft.Scripts.Craft
             else if (currentTab == WeaponCustomTab && upgradeGridManager != null && StatusManager.Instance != null)
             {
                 var status = StatusManager.Instance;
-                bool damageUp = status.bonusDamage > progress.baselineDamage + 0.001f;
+                bool damageUp = status.damageBonusPercent > progress.baselineDamage + 0.001f;
                 bool faster = HasFasterAttack(status.currentWeapon, progress.baselineAttackSpeed, status.attackSpeedMult);
                 foreach (var placed in upgradeGridManager.PlacedParts)
                 {
                     var part = placed.partData;
                     if (part == null) continue;
                     bool completedPractice = Step.WaitCondition == CraftTutorialWaitCondition.PlaceDamagePart &&
-                        HasEffect(part, UpgradeEffectType.DamageFlat) && damageUp;
+                        HasEffect(part, UpgradeEffectType.DamagePercent) && damageUp;
                     bool completedChallenge = Step.WaitCondition == CraftTutorialWaitCondition.ImproveWeapon &&
                         IsNewWeaponImprovement(part, damageUp, faster);
                     if (!completedPractice && !completedChallenge) continue;
@@ -270,7 +270,7 @@ namespace GearCraft.Scripts.Craft
             }
             if (currentTab == WeaponCustomTab && progress.stepIndex == 0 && upgradeGridManager != null)
             {
-                var placed = upgradeGridManager.PlacedParts.Find(p => HasEffect(p.partData, UpgradeEffectType.DamageFlat));
+                var placed = upgradeGridManager.PlacedParts.Find(p => HasEffect(p.partData, UpgradeEffectType.DamagePercent));
                 if (placed != null)
                 {
                     progress.practicePartName = placed.partData.name;
@@ -314,7 +314,7 @@ namespace GearCraft.Scripts.Craft
         {
             progress.baselineCaptured = true;
             var status = StatusManager.Instance;
-            progress.baselineDamage = status != null ? status.bonusDamage : 0f;
+            progress.baselineDamage = status != null ? status.damageBonusPercent : 0f;
             progress.baselineAttackSpeed = status != null ? status.attackSpeedMult : 1f;
             progress.baselineCraftWeaponDamageBuff = status != null ? status.craftWeaponDamagebuff : 0;
             progress.baselineParts.Clear();
@@ -534,7 +534,7 @@ namespace GearCraft.Scripts.Craft
             foreach (var part in candidates)
             {
                 if (part == null || (requestedPart == null && Step.Independent && part.name == progress.practicePartName)) continue;
-                if (seekingDamage && !HasEffect(part, UpgradeEffectType.DamageFlat)) continue;
+                if (seekingDamage && !HasEffect(part, UpgradeEffectType.DamagePercent)) continue;
                 for (int y = 0; y < upgradeGridManager.GridSize; y++)
                     for (int x = 0; x < upgradeGridManager.GridSize; x++)
                         for (int rotation = 0; rotation < 4; rotation++)
@@ -622,11 +622,11 @@ namespace GearCraft.Scripts.Craft
             if (!IsTutorialActive() || Step == null || progress.showingFeedback || currentTab != WeaponCustomTab) return;
             var status = StatusManager.Instance;
             if (status == null || part == null) return;
-            bool damageUp = status.bonusDamage > progress.baselineDamage + 0.001f;
+            bool damageUp = status.damageBonusPercent > progress.baselineDamage + 0.001f;
             bool faster = HasFasterAttack(status.currentWeapon, progress.baselineAttackSpeed, status.attackSpeedMult);
             if (IsWaitingFor(CraftTutorialWaitCondition.PlaceDamagePart))
             {
-                if (!HasEffect(part, UpgradeEffectType.DamageFlat) || !damageUp)
+                if (!HasEffect(part, UpgradeEffectType.DamagePercent) || !damageUp)
                 { Fail("パーツは組み込めました。今回は一撃の威力を高めたいので、攻撃力が上がるものを探しましょう。"); return; }
                 progress.practicePartName = part.name;
             }
@@ -642,21 +642,24 @@ namespace GearCraft.Scripts.Craft
                 }
             }
             else return;
-            float addedDamageBonus = status.bonusDamage - progress.baselineDamage;
             WeaponDataSO weapon = status.currentWeapon;
-            string damageResult = weapon != null
-                ? $"パーツが組み込まれ、一撃のダメージが{weapon.GetScaledFlatDamageBonus(addedDamageBonus):0.###}増えました。"
-                : $"パーツが組み込まれ、攻撃力の補正が{addedDamageBonus:0.###}増えました。";
+            string damageResult = $"パーツが組み込まれ、基礎ダメージへの上乗せが合計{status.damageBonusPercent * 100f:0.#}%になりました。";
             string result = damageUp
                 ? damageResult
-                : "パーツが組み込まれ、次の攻撃までの待ち時間が短くなりました。";
-            if (damageUp && faster) result += "\n次の攻撃までの待ち時間も短くなっています。";
+                : (weapon != null && weapon.UsesChargedShot
+                    ? "パーツが組み込まれ、最大チャージまでの時間が短くなりました。"
+                    : "パーツが組み込まれ、次の攻撃までの待ち時間が短くなりました。");
+            if (damageUp && faster) result += weapon != null && weapon.UsesChargedShot
+                ? "\n最大チャージまでの時間も短くなっています。"
+                : "\n次の攻撃までの待ち時間も短くなっています。";
             Succeed(result);
         }
 
         private static bool HasFasterAttack(WeaponDataSO weapon, float beforeMultiplier, float afterMultiplier)
         {
             if (weapon == null || !(afterMultiplier < beforeMultiplier - 0.001f)) return false;
+            if (weapon.UsesChargedShot)
+                return weapon.GetChargeDuration(afterMultiplier) < weapon.GetChargeDuration(beforeMultiplier);
             if (weapon.weaponType != WeaponType.Ranged) return true;
             // Compare both part configurations on the same current weapon: changing weapons alone is not an improvement.
             return PlayerAttackCadence.GetAutomaticInterval(weapon.coolTime * afterMultiplier) <
@@ -676,7 +679,7 @@ namespace GearCraft.Scripts.Craft
             int before = progress.baselineParts.FindAll(p => p == part).Count;
             int after = upgradeGridManager.PlacedParts.FindAll(p => p.partData == part).Count;
             return part.name != progress.practicePartName && after > before &&
-                (damageUp && HasEffect(part, UpgradeEffectType.DamageFlat) ||
+                (damageUp && HasEffect(part, UpgradeEffectType.DamagePercent) ||
                  faster && HasEffect(part, UpgradeEffectType.AttackSpeedMult));
         }
 

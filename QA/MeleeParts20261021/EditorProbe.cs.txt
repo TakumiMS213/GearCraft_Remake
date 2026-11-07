@@ -1,0 +1,144 @@
+#if UNITY_EDITOR
+using System;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Collections.Generic;
+using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using GearCraft.Scripts.Items;
+public static class MeleePartsEditorProbe
+{
+    const string Result="QA/MeleeParts20261021/editor-result.txt";
+    static int checks;
+    const BindingFlags Private=BindingFlags.NonPublic|BindingFlags.Instance;
+    static void Check(bool ok,string msg){checks++;if(!ok)throw new Exception(msg);}
+    static void Near(float a,float b,string msg){Check(Mathf.Abs(a-b)<.002f,msg+": "+a+" vs "+b);}
+    static void Set(object obj,string field,object value){obj.GetType().GetField(field,Private).SetValue(obj,value);}
+    static object Call(object obj,string method,params object[] args){return obj.GetType().GetMethod(method,Private).Invoke(obj,args);}
+    static GameObject Make(string name,Scene scene,Vector3 position)
+    {
+        var go=new GameObject(name){hideFlags=HideFlags.HideAndDontSave};SceneManager.MoveGameObjectToScene(go,scene);go.transform.position=position;return go;
+    }
+    static EnemyController Enemy(Scene scene,Vector3 position,EnemyDataSO data)
+    {
+        var go=Make("QAEnemy",scene,position);go.tag="Enemy";
+        var body=go.AddComponent<Rigidbody2D>();body.bodyType=RigidbodyType2D.Kinematic;
+        go.AddComponent<BoxCollider2D>();var e=go.AddComponent<EnemyController>();e.enemyData=data;e.HP=10000;
+        Set(e,"galleryEncounterRecorded",true);return e;
+    }
+    [MenuItem("Tools/QA/Verify Melee Parts")]
+    static void Run()
+    {
+        if(EditorApplication.isPlayingOrWillChangePlaymode || EditorApplication.isCompiling)return;
+        var oldStatus=StatusManager.Instance;var originalScene=SceneManager.GetActiveScene();bool dirty=originalScene.isDirty;
+        var randomState=UnityEngine.Random.state;
+        Scene preview=EditorSceneManager.NewScene(NewSceneSetup.EmptyScene,NewSceneMode.Additive);SceneManager.SetActiveScene(originalScene);var createdData=new List<UnityEngine.Object>();string result;
+        try
+        {
+            Vector3 origin=new Vector3(20000,20000,0);
+            var host=Make("QAPlayer",preview,origin);var status=host.AddComponent<StatusManager>();StatusManager.Instance=status;
+            var player=host.AddComponent<PlayerController>();player.runtimeStatus=status;
+            var body=host.AddComponent<Rigidbody2D>();body.bodyType=RigidbodyType2D.Kinematic;Set(player,"rb",body);
+            var katana=AssetDatabase.LoadAssetAtPath<WeaponDataSO>("Assets/GearCraft/ScriptableObject/WeaponData/Katana.asset");
+            var axe=AssetDatabase.LoadAssetAtPath<WeaponDataSO>("Assets/GearCraft/ScriptableObject/WeaponData/GearCraft_Axe.asset");
+            var ar=AssetDatabase.LoadAssetAtPath<WeaponDataSO>("Assets/GearCraft/ScriptableObject/WeaponData/AR.asset");
+            var all=Directory.GetFiles("Assets/GearCraft/ScriptableObject/UpgradeParts","*.asset").Select(p=>AssetDatabase.LoadAssetAtPath<UpgradePartSO>(p)).ToArray();
+            var added=all.Where(p=>p.meleeOnly).ToArray();Check(added.Length==18,"18 new parts");
+            string craft=File.ReadAllText("Assets/GearCraft/Scenes/Craft.unity");
+            foreach(var p in added)
+            {
+                Check(p.AppliesTo(katana)&&p.AppliesTo(axe)&&!p.AppliesTo(ar),p.name+" weapon restriction");
+                Check(p.BuildTooltipText().Contains("近接武器"),p.name+" restriction tooltip");
+                Check(p.costs.Length>0&&p.shapeData.Length==p.width*p.height,p.name+" costs and shape");
+                Check(craft.Contains(AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(p))),p.name+" in shop scene");
+                foreach(var e in p.effects)Check(!UpgradeEffectTextFormatter.FormatEffect(e).StartsWith(e.type.ToString()),p.name+" readable effect");
+                status.currentWeapon=katana;status.RecalculateUpgradeEffects(new[]{p});
+                var copy=status.meleeUpgrades.Copy();Near(copy.SizeMultiplier,status.meleeUpgrades.SizeMultiplier,"snapshot copy");
+                status.currentWeapon=ar;status.RecalculateUpgradeEffects(new[]{p});
+                var m=status.meleeUpgrades;
+                Near(m.knockbackDistance+m.sizeBonus+m.explosionDamageRatio+m.punkDriveHitBonus+m.killDropBonus+m.damageReduction+m.extraJumps+m.moveSpeedBonus+m.bossDamageBonus,0,"ranged clears "+p.name);
+                Near(m.SwingMultiplier,1,"ranged swing normal");
+            }
+            Func<string,UpgradePartSO> part=n=>all.Single(p=>p.name==n);
+            status.currentWeapon=katana;player.currentWeapon=katana;
+            status.RecalculateUpgradeEffects(new[]{part("ArmorPlate++"),part("ArmorPlate++"),part("ArmorPlate++")});Near(status.meleeUpgrades.DamageTakenMultiplier,.2f,"defense cap");
+            status.RecalculateUpgradeEffects(new[]{part("ArmorPlate")});
+            int total=0;for(int i=0;i<10;i++)total+=player.CalculateIncomingDamage(1);Check(total==9,"fractional defense 10% on small hits");
+            status.currentWeapon=ar;status.RecalculateUpgradeEffects(new[]{part("ArmorPlate")});Check(player.CalculateIncomingDamage(10)==10,"ranged no defense");Check(player.CalculateIncomingDamage(.5f)==0&&player.CalculateIncomingDamage(.5f)==0,"unmodified damage rounding retained");
+            status.currentWeapon=katana;status.RecalculateUpgradeEffects(new[]{part("SwingGear++"),part("SwingGear++")});Near(status.meleeUpgrades.SwingMultiplier,.49f,"swing stacking");
+            status.RecalculateUpgradeEffects(new[]{part("MobilityGear")});player.moveSpeed=5;Near((float)Call(player,"GetCurrentMoveSpeed"),5.75f,"movement +15%");
+            status.RecalculateUpgradeEffects(new[]{part("AirStep")});Set(player,"isGrounded",true);Check((bool)Call(player,"TryJump"),"ground jump");Check((bool)Call(player,"TryJump"),"extra jump");Check(!(bool)Call(player,"TryJump"),"extra jump exhausted");
+            status.currentWeapon=ar;status.RecalculateUpgradeEffects(new[]{part("AirStep")});Set(player,"airJumpsUsed",0);Check(!(bool)Call(player,"TryJump"),"no extra jump while ranged");
+            status.currentWeapon=katana;status.RecalculateUpgradeEffects(new[]{part("DriveLink"),part("DriveLink")});Near(status.meleeUpgrades.punkDriveHitBonus,.3f,"unique stats dedup");
+            player.NotifyMeleeHit();Near(player.PunkDriveDamageMultiplier,1.3f,"drive buff active");Set(player,"meleeDriveBuffUntil",Time.time-1);Near(player.PunkDriveDamageMultiplier,1,"drive expires");
+            player.NotifyMeleeHit();status.currentWeapon=ar;Near(player.PunkDriveDamageMultiplier,1,"drive disabled ranged");
+            status.currentWeapon=axe;status.RecalculateUpgradeEffects(new[]{part("ReachExtender"),part("ReachExtender")});status.gearCraftAxeSizeMultiplier=3;
+            var arm=Make("QAArm",preview,origin);var armControl=host.AddComponent<ArmRotation>();armControl.arm=arm.transform;armControl.player=host.transform;armControl.sholder=host.transform;
+            armControl.armScales=new[]{Vector3.one,Vector3.one,Vector3.one,Vector3.one};armControl.armOffsets=new Vector3[4];armControl.armBaseRotations=new Vector3[4];
+            Vector3 scale=(Vector3)Call(armControl,"GetScale",3);Near(scale.x,3.6f,"1.2 size cap times GearCraft giant card");
+            arm.transform.localScale=scale;var hitbox=arm.AddComponent<BoxCollider2D>();var melee=arm.AddComponent<MeleeWeapon>();Call(melee,"Awake");
+            Set(melee,"runtimeStatus",status);Set(melee,"playerController",player);
+            hitbox.enabled=true; Physics2D.SyncTransforms(); Near(hitbox.bounds.size.x,3.6f,"collider grows with visual transform");
+            status.currentWeapon=katana;player.currentWeapon=katana;status.STR=0;status.ACC=0;status.craftWeaponDamagebuff=0;
+            var normal=ScriptableObject.CreateInstance<EnemyDataSO>();createdData.Add(normal);
+            var boss=ScriptableObject.CreateInstance<EnemyDataSO>();boss.isBoss=true;createdData.Add(boss);
+            var e1=Enemy(preview,origin+Vector3.right,normal);var e2=Enemy(preview,origin+Vector3.right*2,boss);
+            status.RecalculateUpgradeEffects(new[]{part("BossBreaker"),part("DriveLink")});
+            melee.BeginAttack(10);Call(melee,"OnTriggerEnter2D",e1.GetComponent<Collider2D>());Near(e1.HP,9985,"normal direct damage");
+            Call(melee,"OnTriggerStay2D",e1.GetComponent<Collider2D>());Near(e1.HP,9985,"one hit per swing");
+            Call(melee,"OnTriggerEnter2D",e2.GetComponent<Collider2D>());Near(e2.HP,9977.5f,"boss damage 1.5x");
+            Near(player.PunkDriveDamageMultiplier,1.3f,"native melee hit triggers drive link");
+            melee.BeginAttack(10);Call(melee,"OnTriggerStay2D",e1.GetComponent<Collider2D>());Near(e1.HP,9970,"new swing while overlapping hits again");
+            melee.ApplyWeaponData(ar);Call(melee,"OnTriggerEnter2D",e1.GetComponent<Collider2D>());Near(e1.HP,9970,"weapon switch cancels swing");
+            // Attribution is captured at the killing hit, never from a preceding nonlethal melee hit.
+            e1.HP=20;e1.TakeMeleeDamage(5,origin,.3f);Near((float)typeof(EnemyController).GetField("deathMeleeDropBonus",Private).GetValue(e1),0,"nonlethal no loot bonus");
+            e1.TakeDamage(30,origin);Near((float)typeof(EnemyController).GetField("deathMeleeDropBonus",Private).GetValue(e1),0,"ranged finishing blow no melee loot");
+            e2.HP=20;e2.TakeMeleeDamage(30,origin,.3f);Near((float)typeof(EnemyController).GetField("deathMeleeDropBonus",Private).GetValue(e2),.3f,"melee lethal captures loot bonus");
+            int drops=0;for(int i=0;i<1000;i++)drops+=MaterialDropper.CalculateMeleeDropAmount(1,1,1.35f,.3f,(i+.5f)/1000f);
+            Check(drops==1650,"Junk .35 plus melee .30 gives expected 1.65 drops including fractions");
+            // Global circle query in the preview scene tests the actual explosion path.
+            e1.HP=100;e2.HP=100;e1.transform.position=origin+Vector3.right*.4f;e2.transform.position=origin+Vector3.right*.8f;
+            Physics2D.SyncTransforms();status.RecalculateUpgradeEffects(new[]{part("BlastCore"),part("BossBreaker")});
+            Call(melee,"ExplodeOnHit",(Vector2)origin,4.5f,status.meleeUpgrades);
+            Near(e1.HP,95.5f,"explosion damages nearby normal enemy once");Near(e2.HP,93.25f,"explosion boss multiplier once");
+            // Unique placement must fail before charging any purchase cost.
+            var grid=host.AddComponent<UpgradeGridManager>();int[,] cells=new int[6,6];for(int y=0;y<6;y++)for(int x=0;x<6;x++)cells[y,x]=-1;
+            Set(grid,"grid",cells);Set(grid,"gridSize",6);
+            grid.PlacedParts.Add(new UpgradeGridManager.PlacedPart{partData=part("BlastCore")});
+            Check(!grid.CanPlace(part("BlastCore"),0,0,0),"duplicate unique blocked");Check(grid.GetPlacementFailure(part("BlastCore"),0,0,0).Contains("ユニーク"),"unique reason shown");
+            // Only step the default physics scene when every active body belongs to this disposable QA scene.
+            Check(!UnityEngine.Object.FindObjectsByType<Rigidbody2D>(FindObjectsSortMode.None).Any(b=>b.gameObject.scene!=preview),"no external rigidbodies before isolated physics step");
+            var oldSimulation=Physics2D.simulationMode;
+            try
+            {
+                Physics2D.simulationMode=SimulationMode2D.Script;
+                Vector3 pushOrigin=origin+Vector3.right*100;
+                var pushEnemy=Enemy(preview,pushOrigin,normal);
+                var floor=Make("QAFloor",preview,pushOrigin+new Vector3(0,-.6f,0));floor.tag="Ground";floor.AddComponent<BoxCollider2D>().size=new Vector2(20,.2f);
+                var wall=Make("QAWall",preview,pushOrigin+new Vector3(1.2f,0,0));wall.tag="Wall";wall.AddComponent<BoxCollider2D>().size=new Vector2(.2f,4);
+                var pushBody=pushEnemy.GetComponent<Rigidbody2D>();
+                Physics2D.SyncTransforms();pushEnemy.ApplyMeleeKnockback(.3f,(Vector2)pushOrigin+Vector2.left*2);Physics2D.Simulate(.02f);
+                Near(pushBody.position.x-pushOrigin.x,.3f,"knockback travels while grounded");
+                pushBody.position=pushOrigin;Physics2D.SyncTransforms();pushEnemy.ApplyMeleeKnockback(.7f,(Vector2)pushOrigin+Vector2.left*2);Physics2D.Simulate(.02f);
+                Check(pushBody.position.x-pushOrigin.x>.5f&&pushBody.position.x-pushOrigin.x<.61f,"knockback stops before wall");
+                pushBody.position=pushOrigin;pushEnemy.enemyData=boss;Physics2D.SyncTransforms();pushEnemy.ApplyMeleeKnockback(.3f,(Vector2)pushOrigin+Vector2.left*2);Physics2D.Simulate(.02f);
+                Near(pushBody.position.x-pushOrigin.x,.06f,"boss knockback resistance");
+            }
+            finally{Physics2D.simulationMode=oldSimulation;}
+            result="PASS: "+checks+" native assertions. 18 assets, shop references, restrictions, stats, defense, jumps, visual/collider size, hit dedup, boss damage, drive buff, loot attribution, explosion and unique placement.";
+        }
+        catch(Exception e){result="FAIL after "+checks+" checks: "+e;}
+        finally
+        {
+            EditorSceneManager.CloseScene(preview,true);
+            foreach(var data in createdData)UnityEngine.Object.DestroyImmediate(data);
+            StatusManager.Instance=oldStatus;UnityEngine.Random.state=randomState;
+        }
+        result+="\nActive scene preserved: "+(originalScene==SceneManager.GetActiveScene())+"\nDirty state preserved: "+(dirty==originalScene.isDirty);
+        File.WriteAllText(Result,result+"\n");
+    }
+}
+#endif

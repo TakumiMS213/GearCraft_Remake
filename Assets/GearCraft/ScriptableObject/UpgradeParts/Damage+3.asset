@@ -21,7 +21,7 @@ MonoBehaviour:
   shapeData: 01010001
   effects:
   - type: 0
-    value: 5
+    value: 0.3
   costs:
   - type: 0
     amount: 9

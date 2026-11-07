@@ -621,6 +621,8 @@ public class TooltipSystem : MonoBehaviour
         {
             builder.AppendLine("制限: 遠距離武器のみ");
         }
+        if (part.meleeOnly) builder.AppendLine("制限: 近接武器の装備中のみ有効");
+        if (part.unique) builder.AppendLine("ユニーク: 同じパーツは1個まで装着可能");
 
         builder.AppendLine("効果:");
         if (part.effects == null || part.effects.Length == 0)

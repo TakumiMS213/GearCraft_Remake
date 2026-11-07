@@ -62,7 +62,9 @@ public class PunkDriveManager : MonoBehaviour
         {
             if (enemy == null) yield break; // 👈 Destroyされたら終了
             Vector2 hitPosition = target.ClosestPoint(transform.position);
-            enemy.TakeDamage(damageAmount + STR/10, hitPosition);
+            float strength = playerController != null ? playerController.STR : STR;
+            float multiplier = playerController != null ? playerController.PunkDriveDamageMultiplier : 1f;
+            enemy.TakeDamage((damageAmount + strength / 10f) * multiplier, hitPosition);
 
             if (HitEffect != null)
             {

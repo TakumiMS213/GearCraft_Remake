@@ -58,21 +58,15 @@ public class EnemyAI_Bomber : MonoBehaviour, IEnemyAI
         hasExploded = true;
 
         // 範囲内のプレイヤー/ゲートにダメージ
+        var players = new System.Collections.Generic.HashSet<PlayerController>();
+        var gates = new System.Collections.Generic.HashSet<GateManager>();
         Collider2D[] hits = Physics2D.OverlapCircleAll(owner.transform.position, data.explosionRadius);
         foreach (var hit in hits)
         {
-            if (hit.CompareTag("Player"))
-            {
-                var player = hit.GetComponent<PlayerController>();
-                if (player != null)
-                    player.TakeDamageByBullet(data.explosionDamage);
-            }
-            if (hit.CompareTag("gate"))
-            {
-                var gate = hit.GetComponent<GateManager>();
-                if (gate != null)
-                    gate.TakeDamage(data.explosionDamage);
-            }
+            var player = hit.GetComponentInParent<PlayerController>();
+            if (player != null && players.Add(player)) player.ReceiveEnemyHit();
+            var gate = hit.GetComponentInParent<GateManager>();
+            if (gate != null && gates.Add(gate)) gate.ReceiveEnemyHit();
         }
 
         // 自分を死亡処理

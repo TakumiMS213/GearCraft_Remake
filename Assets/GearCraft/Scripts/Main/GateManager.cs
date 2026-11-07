@@ -82,7 +82,7 @@ public class GateManager : MonoBehaviour
             bool isCircleType = ec.enemyData != null && ec.enemyData.aiType == EnemyAIType.CircleMove;
             if (!isCircleType)
             {
-                TakeDamage(10f);
+                ReceiveEnemyHit();
                 // 無敵中に門へ到達した敵も撃ち漏らしとして扱う。
                 if (statusManager != null) statusManager.killAllEnemies = false;
                 if (cameraShake != null) await cameraShake.ShakeAsync(0.1f, 0.3f, 1, 9f);
@@ -119,14 +119,15 @@ public class GateManager : MonoBehaviour
         GameOver();
     }
 
-    public void TakeDamage(float damage)
+    public void ReceiveEnemyHit()
     {
         if (MainDebugEnemySpawnWindow.IsDebugModeActive) return;
-        if (isInvincible || EndingManager.IsLoadingEnding || damage <= 0f) return;
+        if (isInvincible || EndingManager.IsLoadingEnding) return;
         if (statusManager == null) statusManager = StatusManager.Instance;
         if (statusManager == null) return;
 
-        statusManager.GATE -= damage;
+        statusManager.GATE = Mathf.Max(0f, statusManager.GATE - HealthGaugeRules.PointsPerSegment);
+        HP = statusManager.GATE;
         statusManager.killAllEnemies = false;
         StageFlowManager.Instance?.OnGateHit();
         StartCoroutine(BlinkEffect());

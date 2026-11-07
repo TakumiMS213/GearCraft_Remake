@@ -1,0 +1,59 @@
+素材クレジット
+
+BGM：クリエイター【オト】（OtoSound）
+Steam and Steel Skies
+https://creatoroto-blog.com/
+https://creatoroto-blog.com/freebgmsteamandsteelskies/
+利用規約：https://creatoroto-blog.com/musiclicense/
+
+音楽：魔王魂 / 森田交一
+アコースティック49（悠久の地）、システム17
+https://maou.audio/
+利用規約：https://maou.audio/rule/
+
+BGM：PeriTune / むつき醒 (Sei Mutsuki)
+Steam_Fortress
+https://peritune.com/blog/2020/05/15/steam_fortress/
+Creative Commons Attribution 4.0 International (CC BY 4.0)
+https://creativecommons.org/licenses/by/4.0/
+配布音源ファイルの改変なし。ゲーム内でループ・音量調整して再生。
+
+BGM：甘茶の音楽工房 / 甘茶
+古の碑石
+https://amachamusic.chagasi.com/music_inishienohiseki.html
+利用規約：https://amachamusic.chagasi.com/terms.html
+
+効果音：効果音ラボ
+決定ボタンを押す7、決定ボタンを押す38
+https://soundeffect-lab.info/sound/button/
+利用規約：https://soundeffect-lab.info/agreement/
+
+効果音：Springin’ Sound Stock / 株式会社しくみデザイン
+決定1、決定5、大型ロボットの駆動音2・3・7
+https://www.springin.org/sound-stock/
+利用規約：https://www.springin.org/sound-stock/guideline/
+
+効果音：Pixabay
+Clean machine gun burst / qubodup (Freesound)、freesound_community
+080997_Bullet / freesound_community
+Gunfire Single Shot Colt Peacemaker / johnyridgeback (Freesound)、freesound_community
+Handgun sound effect / u_b6hqzcpu1z
+https://pixabay.com/sound-effects/film-special-effects-clean-machine-gun-burst-98224/
+https://pixabay.com/pt/sound-effects/filme-e-efeitos-especiais-080997-bullet-39735/
+https://pixabay.com/sound-effects/film-special-effects-gunfire-single-shot-colt-peacemaker-94951/
+https://pixabay.com/sound-effects/film-special-effects-handgun-sound-effect-432110/
+Pixabay Content License
+https://pixabay.com/service/license-summary/
+
+フォント
+DotGothic16 / The DotGothic16 Project Authors
+https://github.com/fontworks-fonts/DotGothic16/
+Liberation Sans / Google Corporation, Red Hat, Inc.
+いずれも SIL Open Font License 1.1。著作権表記と全文は次のページに収録。
+
+ソフトウェア・同梱サンプル
+UniTask / Yoshifumi Kawai, Cysharp, Inc.（MIT）
+DOTween / Daniele Giardini - Demigiant
+https://dotween.demigiant.com/license.php
+EmojiOne / TextMesh Pro 同梱サンプル
+同梱の著作権・ライセンス文書は後続ページに収録。

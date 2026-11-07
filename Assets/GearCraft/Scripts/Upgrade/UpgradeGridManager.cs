@@ -70,11 +70,16 @@ public class UpgradeGridManager : MonoBehaviour
 
     public bool CanPlace(UpgradePartSO part, int posX, int posY, int rotation)
     {
+        if (HasUniquePart(part)) return false;
         return CanPlace(part, posX, posY, rotation, grid, gridSize);
     }
 
+    private bool HasUniquePart(UpgradePartSO part) => part != null && part.unique &&
+        placedParts.Exists(p => p != null && p.partData == part);
+
     public string GetPlacementFailure(UpgradePartSO part, int posX, int posY, int rotation)
     {
+        if (HasUniquePart(part)) return "このユニークパーツは、すでに装着されています。";
         return GetPlacementFailure(part, posX, posY, rotation, grid, gridSize);
     }
 

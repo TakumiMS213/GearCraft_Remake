@@ -1,0 +1,42 @@
+using System;
+using System.Collections.Generic;
+namespace UnityEngine {
+ public static class PlayerPrefs {
+  public static Dictionary<string,int> Values=new Dictionary<string,int>();
+  public static int GetInt(string key,int fallback){int value;return Values.TryGetValue(key,out value)?value:fallback;}
+  public static void SetInt(string key,int value){Values[key]=value;}
+  public static void Save(){}
+ }
+}
+public class EnemyDataSO { public string name; public bool IsBossType=true; }
+public static class MainDebugEnemySpawnWindow { public static bool IsDebugModeActive; }
+class Tests {
+ static int n;
+ static void Check(bool b,string s){n++;if(!b)throw new Exception(s);}
+ static void Main(){
+  var ar=new EnemyDataSO{name="lv3_AR-227"};
+  Check(!StartingWeaponProgress.IsSelectionEnabled,"initial OFF");
+  StartingWeaponProgress.SetSelectionEnabled(true);
+  Check(StartingWeaponProgress.IsSelectionEnabled,"initial player can enable");
+  Check(!StartingWeaponProgress.IsUnlocked,"manual ON does not forge boss defeat");
+  Check(UnityEngine.PlayerPrefs.GetInt(StartingWeaponProgress.SelectionEnabledKey,-1)==1,"ON stored");
+  StartingWeaponProgress.SetSelectionEnabled(false);
+  Check(!StartingWeaponProgress.IsSelectionEnabled,"OFF disables");
+  Check(UnityEngine.PlayerPrefs.GetInt(StartingWeaponProgress.SelectionEnabledKey,-1)==0,"OFF stored");
+  StartingWeaponProgress.RecordDefeat(ar);
+  Check(StartingWeaponProgress.IsUnlocked,"actual defeat retained separately");
+  Check(!StartingWeaponProgress.IsSelectionEnabled,"explicit OFF overrides reward");
+  StartingWeaponProgress.SetSelectionEnabled(true);
+  Check(StartingWeaponProgress.IsSelectionEnabled,"reward player can enable");
+  Check(StartingWeaponProgress.IsUnlocked,"toggle preserves defeat");
+  UnityEngine.PlayerPrefs.Values.Clear();
+  StartingWeaponProgress.RecordDefeat(new EnemyDataSO{name="lv3_BB-413"});
+  Check(!StartingWeaponProgress.IsSelectionEnabled,"other boss does not grant default ON");
+  MainDebugEnemySpawnWindow.IsDebugModeActive=true;StartingWeaponProgress.RecordDefeat(ar);
+  Check(!StartingWeaponProgress.IsSelectionEnabled,"debug defeat excluded");
+  MainDebugEnemySpawnWindow.IsDebugModeActive=false;StartingWeaponProgress.RecordDefeat(ar);
+  Check(StartingWeaponProgress.IsSelectionEnabled,"no override follows AR reward");
+  Check(!UnityEngine.PlayerPrefs.Values.ContainsKey(StartingWeaponProgress.SelectionEnabledKey),"default lookup does not create override");
+  Console.WriteLine("PASS: "+n+" preference assertions (in-memory PlayerPrefs; real saves untouched)");
+ }
+}

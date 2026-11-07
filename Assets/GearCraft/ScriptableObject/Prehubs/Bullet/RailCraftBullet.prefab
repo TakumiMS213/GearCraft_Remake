@@ -110,6 +110,8 @@ MonoBehaviour:
   isCannonBullet: 0
   useSweptHitDetection: 1
   sweptHitRadius: 0.08
+  useSeparateTerrainHitRadius: 1
+  terrainHitRadius: 0.08
   ricochetCount: 0
   hitEffect: {fileID: 6421650024529045226, guid: f22a0b0aa01524638a464a81af3bd504, type: 3}
   smoke: {fileID: 0}

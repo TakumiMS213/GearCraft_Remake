@@ -82,7 +82,8 @@ namespace GearCraft.Scripts.Items
         {
             for (int i = active.Count - 1; i >= 0; i--)
             {
-                active[i].age += Time.deltaTime;
+                // ポーズ中も通常と同じ実時間で浮上・フェード・回収を進める。
+                active[i].age += Time.unscaledDeltaTime;
                 if (active[i].player == null || active[i].age >= Mathf.Max(0.1f, duration)) Release(i);
             }
             UpdatePositions();

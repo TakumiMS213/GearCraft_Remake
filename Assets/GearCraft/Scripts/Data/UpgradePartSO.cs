@@ -23,6 +23,14 @@ public class UpgradePartSO : ScriptableObject
 
     [Header("Restriction")]
     public bool rangedOnly;
+    public bool meleeOnly;
+    public bool unique;
+
+    public bool AppliesTo(WeaponDataSO weapon)
+    {
+        return (!rangedOnly || (weapon != null && weapon.weaponType == WeaponType.Ranged)) &&
+            (!meleeOnly || (weapon != null && weapon.weaponType == WeaponType.Melee));
+    }
 
     private void OnValidate()
     {
@@ -92,6 +100,8 @@ public class UpgradePartSO : ScriptableObject
         {
             builder.AppendLine("制限: 遠距離武器のみ");
         }
+        if (meleeOnly) builder.AppendLine("制限: 近接武器の装備中のみ有効");
+        if (unique) builder.AppendLine("ユニーク: 同じパーツは1個まで装着可能");
 
         AppendEffects(builder);
         AppendCosts(builder);

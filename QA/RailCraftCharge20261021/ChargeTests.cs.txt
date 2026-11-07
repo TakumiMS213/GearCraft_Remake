@@ -1,0 +1,57 @@
+using System;
+public static class ChargeTests
+{
+    static int assertions;
+    static void Check(bool ok, string name) { assertions++; if (!ok) throw new Exception(name); }
+    static void Near(float actual, float expected, string name) { Check(Math.Abs(actual-expected)<0.0001f, name+": "+actual); }
+    static bool Step(PlayerChargedShot c, bool press, bool hold, float dt, out float shot, float duration=1f, bool allowed=true)
+        => c.Advance(press,hold,allowed,dt,duration,1.5f,out shot);
+    static void Main()
+    {
+        float shot;
+        var c=new PlayerChargedShot();
+        Check(Step(c,true,false,0,out shot), "quick click fires"); Near(shot,0,"quick minimum"); Near(c.RemainingSeconds,1.5f,"reload begins");
+        Check(!Step(c,true,true,.5f,out shot),"cannot charge during reload"); Check(!c.IsCharging,"meter hidden during reload");
+        Check(!Step(c,false,true,1f,out shot),"held press starts when ready"); Near(c.ChargeFraction,0,"reload excluded from charge");
+        Check(Step(c,false,false,.5f,out shot),"release half"); Near(shot,.5f,"half damage fraction");
+        Step(c,false,false,1.5f,out shot);
+        Step(c,true,true,0,out shot);
+        Check(!Step(c,false,true,3f,out shot),"max held does not autofire"); Near(c.ChargeFraction,1,"max capped");
+        Check(Step(c,false,false,0,out shot),"max release fires"); Near(shot,1,"full damage");
+        Step(c,false,false,1.5f,out shot);
+        Step(c,true,true,0,out shot,.5f);
+        Check(Step(c,false,false,.5f,out shot,.5f),"speed shortened charge"); Near(shot,1,"shortened full"); Near(c.RemainingSeconds,1.5f,"speed does not shorten reload");
+        Step(c,false,false,1.5f,out shot);
+        Step(c,true,true,0,out shot);
+        Step(c,false,true,.6f,out shot);
+        Step(c,false,true,0,out shot,1,false);
+        Check(!c.IsCharging,"pause cancels");
+        Check(!Step(c,false,true,1f,out shot),"resume held cannot rearm");
+        Check(!Step(c,false,false,0,out shot),"release after pause cannot fire");
+        Step(c,true,true,0,out shot); Step(c,false,true,.7f,out shot); c.Cancel();
+        Check(!Step(c,false,false,.1f,out shot),"switch/focus cancel cannot fire");
+        Step(c,true,true,0,out shot); Check(!Step(c,false,false,float.NaN,out shot),"invalid time cannot shoot");
+        foreach (int fps in new[]{15,30,60,144})
+        {
+            c=new PlayerChargedShot(); Step(c,true,true,0,out shot);
+            for(int i=0;i<fps;i++) Step(c,false,true,1f/fps,out shot);
+            Check(Step(c,false,false,0,out shot),"fps release "+fps); Near(shot,1,"fps full "+fps);
+        }
+        // An input released entirely within the cooldown is discarded.
+        c=new PlayerChargedShot(); Step(c,true,false,0,out shot); Step(c,true,true,.2f,out shot);
+        Check(!Step(c,false,false,.2f,out shot),"reload click discarded"); Step(c,false,false,2f,out shot);
+        Check(!c.IsCharging,"discarded click not queued");
+        // Switching away advances reload without losing its remaining time.
+        c=new PlayerChargedShot(); Step(c,true,false,0,out shot); c.Cancel();
+        Step(c,false,false,.4f,out shot,1,false); Near(c.RemainingSeconds,1.1f,"switch reload retained");
+        // Existing automatic guns still fire on press and while held, and melee on press only.
+        var cadence=new PlayerAttackCadence();
+        Check(cadence.Advance(true,true,true,true,0,.5f)==1,"automatic first");
+        Check(cadence.Advance(false,true,true,true,.5f,.5f)==1,"automatic held");
+        Check(cadence.Advance(false,false,true,true,1,.5f)==0,"automatic release");
+        cadence=new PlayerAttackCadence();
+        Check(cadence.Advance(true,true,false,true,0,.5f)==1,"melee press");
+        Check(cadence.Advance(false,true,false,true,1,.5f)==0,"melee held");
+        Console.WriteLine("PASS: "+assertions+" assertions");
+    }
+}

@@ -16,6 +16,16 @@ public class ApplicationQuitter : MonoBehaviour
     private void HandleEscape()
     {
         if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "Title") return;
+        TitleLicenseController licenses = FindFirstObjectByType<TitleLicenseController>();
+        if (licenses != null && licenses.TryCloseDialog()) return;
+        PlayerDataResetController reset = FindFirstObjectByType<PlayerDataResetController>();
+        if (reset != null && reset.TryCloseDialog()) return;
+        StartingWeaponSelectionController selection = FindFirstObjectByType<StartingWeaponSelectionController>();
+        if (selection != null && selection.IsOpen)
+        {
+            selection.Close();
+            return;
+        }
         foreach (UISwitcher switcher in FindObjectsByType<UISwitcher>(FindObjectsSortMode.None))
             if (switcher.TryCloseVisiblePanel()) return;
         QuitGame();

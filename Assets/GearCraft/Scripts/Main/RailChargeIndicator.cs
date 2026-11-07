@@ -8,6 +8,7 @@ public sealed class RailChargeIndicator : MonoBehaviour
     private Material material;
     private bool visible;
     private float fraction;
+    private const float MeterWidth = 1f;
 
     public void Show(bool show, float value)
     {
@@ -21,8 +22,8 @@ public sealed class RailChargeIndicator : MonoBehaviour
     private void CreateMeter()
     {
         material = new Material(Shader.Find("Sprites/Default"));
-        background = CreateLine("ChargeBackground", 0.1f, 200);
-        fill = CreateLine("ChargeFill", 0.055f, 201);
+        background = CreateLine("ChargeBackground", 0.125f, 200);
+        fill = CreateLine("ChargeFill", 0.07f, 201);
         background.startColor = background.endColor = new Color(0.08f, 0.08f, 0.08f, 0.9f);
     }
 
@@ -42,11 +43,11 @@ public sealed class RailChargeIndicator : MonoBehaviour
     private void LateUpdate()
     {
         if (!visible || background == null) return;
-        Vector3 left = transform.position + new Vector3(-0.4f, 1.6f, 0f);
+        Vector3 left = transform.position + new Vector3(-MeterWidth * 0.5f, 1.6f, 0f);
         background.SetPosition(0, left);
-        background.SetPosition(1, left + Vector3.right * 0.8f);
+        background.SetPosition(1, left + Vector3.right * MeterWidth);
         fill.SetPosition(0, left);
-        fill.SetPosition(1, left + Vector3.right * (0.8f * fraction));
+        fill.SetPosition(1, left + Vector3.right * (MeterWidth * fraction));
         fill.startColor = fill.endColor = fraction >= 0.999f
             ? new Color(1f, 0.8f, 0.25f) : new Color(0.6f, 0.85f, 1f);
     }

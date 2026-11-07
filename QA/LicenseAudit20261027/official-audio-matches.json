@@ -1,0 +1,55 @@
+[
+  {
+    "file": "PerituneMaterial_Steam_Fortress.mp3",
+    "url": "https://peritune.com/music/PerituneMaterial_Steam_Fortress.mp3",
+    "sha256": "c4329a668739372583557bd22ad3b57f7cd2c9a410d01269bc0e767cde52c38a",
+    "identical": true
+  },
+  {
+    "file": "大型ロボットの駆動音2.mp3",
+    "url": "https://www.springin.org/wp-content/uploads/2022/11/%E5%A4%A7%E5%9E%8B%E3%83%AD%E3%83%9C%E3%83%83%E3%83%88%E3%81%AE%E9%A7%86%E5%8B%95%E9%9F%B32.mp3",
+    "sha256": "5d4b4428f1251ba1cc7468c4b8f95e8ff0f415822bbbe34ac24dec73e26b7210",
+    "identical": true
+  },
+  {
+    "file": "大型ロボットの駆動音3.mp3",
+    "url": "https://www.springin.org/wp-content/uploads/2022/11/%E5%A4%A7%E5%9E%8B%E3%83%AD%E3%83%9C%E3%83%83%E3%83%88%E3%81%AE%E9%A7%86%E5%8B%95%E9%9F%B33.mp3",
+    "sha256": "cc9df9bb87d5704ec799054f566aee1f61dfee30416c53791f4032ee41fd873a",
+    "identical": true
+  },
+  {
+    "file": "大型ロボットの駆動音7.mp3",
+    "url": "https://www.springin.org/wp-content/uploads/2022/11/%E5%A4%A7%E5%9E%8B%E3%83%AD%E3%83%9C%E3%83%83%E3%83%88%E3%81%AE%E9%A7%86%E5%8B%95%E9%9F%B37.mp3",
+    "sha256": "b0ca0e712f48be2559b837c27864b453bbcdc35ce8859944a7fdb0554ff29561",
+    "identical": true
+  },
+  {
+    "file": "決定1.mp3",
+    "url": "https://www.springin.org/wp-content/uploads/2022/06/%E6%B1%BA%E5%AE%9A1.mp3",
+    "sha256": "15805b5dd5ab4ad3ad561e47ea89a2815c751b8ddce4162a27450198d7ba3561",
+    "bytes": 27843,
+    "identical": true
+  },
+  {
+    "file": "決定5.mp3",
+    "url": "https://www.springin.org/wp-content/uploads/2022/06/%E6%B1%BA%E5%AE%9A5.mp3",
+    "sha256": "cf1de5068ade787d17d98eb6dd791265c40f510f0ef4a491c557d714f205887e",
+    "bytes": 15931,
+    "identical": true
+  },
+  {
+    "file": "決定ボタンを押す7.mp3",
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "file": "決定ボタンを押す38.mp3",
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "file": "Steam-and-Steel-Skies.mp3",
+    "url": "https://creatoroto-blog.com/download/steam-and-steel-skies/?wpdmdl=1808&refresh=6ae050d952fd61793085657",
+    "sha256": "eb96cb3412ee31d2be5c62a3174b4de87efd12c22f121d7b5a3e157a1b7d29e4",
+    "bytes": 863190,
+    "identical": true
+  }
+]

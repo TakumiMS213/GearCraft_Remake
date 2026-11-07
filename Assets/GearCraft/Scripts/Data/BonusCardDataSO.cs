@@ -67,7 +67,7 @@ public class BonusCardDataSO : ScriptableObject
             case CardEffectType.RailCraftBulletSizeMultiplier: return $"弾丸サイズ {value}倍。";
             case CardEffectType.RailCraftApplyOverheat: return "命中した敵にオーバーヒートを付与します。";
             case CardEffectType.RailCraftRicochetMultiplier: return $"弾丸の反射回数 {value}倍。";
-            case CardEffectType.SteamGatlingBulletSpeedMultiplier: return $"弾速 {value}倍（WeaponCustomで強化した値に乗算）。";
+            case CardEffectType.SteamGatlingBulletSpeedMultiplier: return effect.value == 2f ? "弾速が倍になる" : $"弾速が{value}倍になる";
             case CardEffectType.SteamGatlingBossDamageMultiplier: return Multiplier("ボスへのダメージ", effect.value);
             case CardEffectType.SteamGatlingNormalDamageMultiplier: return Multiplier("通常の敵へのダメージ", effect.value);
             case CardEffectType.SteamGatlingDownwardRecoil: return "下向きに撃つと、反動で跳び上がれます。";

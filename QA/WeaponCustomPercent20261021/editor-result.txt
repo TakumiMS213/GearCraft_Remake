@@ -1,0 +1,3 @@
+PASS: 310 assertions using real assets, damage methods, projectile configuration and tooltips. No Play Mode or PlayerPrefs writes.
+Active scene preserved: True
+Dirty state preserved: True

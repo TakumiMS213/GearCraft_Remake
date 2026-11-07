@@ -136,6 +136,17 @@ public static class CraftTutorialMetrics
         PlayerPrefs.Save();
     }
 
+    public static void ResetProgress()
+    {
+        PlayerPrefs.DeleteKey(CraftMasteryKey);
+        PlayerPrefs.DeleteKey(WeaponMasteryKey);
+        // Clear the old first-play flags too, so they cannot revive completed tutorials.
+        PlayerPrefs.DeleteKey("GearCraft.CraftTutorial.AutoPlayed.Craft.v4");
+        PlayerPrefs.DeleteKey("GearCraft.CraftTutorial.AutoPlayed.WeaponCustom.v3");
+        Reset(0);
+        Reset(1);
+    }
+
     private static string GetMetricsKey(int tab)
     {
         return "GearCraft.CraftTutorial.Metrics." + GetTutorialName(tab) + ".v5";

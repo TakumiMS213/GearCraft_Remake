@@ -1,0 +1,155 @@
+#if UNITY_EDITOR
+using System;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+
+[InitializeOnLoad]
+public static class StartingWeaponFlowProbe
+{
+    const string PhaseKey="QA.StartingWeapon.Flow.Phase";
+    const string Folder="QA/StartingWeapon20261021/";
+    const BindingFlags Private=BindingFlags.Instance|BindingFlags.NonPublic;
+    [Serializable] class Backup { public bool unlockExists; public int unlock; public bool galleryExists; public string gallery; public string scene; }
+    static StartingWeaponFlowProbe(){EditorApplication.update-=Tick;EditorApplication.update+=Tick;}
+    static void Log(string text){File.AppendAllText(Folder+"play-result.txt",text+"\n");}
+    static void Check(bool ok,string text){if(!ok)throw new Exception(text);Log("PASS: "+text);}
+    static void Phase(int phase){SessionState.SetInt(PhaseKey,phase);SessionState.SetFloat(PhaseKey+".deadline",(float)EditorApplication.timeSinceStartup+35);}
+    [MenuItem("Tools/QA/Verify Starting Weapon Flow")]
+    public static void Run()
+    {
+        if(!File.Exists(Folder+"prefs-before.json"))throw new Exception("Original preferences backup required.");
+        File.WriteAllText(Folder+"play-result.txt","Starting weapon flow play-mode verification\n");
+        SessionState.SetInt(PhaseKey+".choice",1);Phase(1);
+        if(!EditorApplication.isPlaying)EditorApplication.delayCall+=()=>{EditorApplication.isPlaying=true;};
+        else if(SceneManager.GetActiveScene().name!="Title")SceneManager.LoadScene("Title");
+    }
+    static double nextReport;
+    static void Tick()
+    {
+        int phase=SessionState.GetInt(PhaseKey,0);if(phase==0||EditorApplication.isCompiling||EditorApplication.isUpdating)return;
+        try
+        {
+            if(EditorApplication.timeSinceStartup>=nextReport)
+            {
+                File.WriteAllText(Folder+"state.txt","phase="+phase+" play="+EditorApplication.isPlaying+" changing="+EditorApplication.isPlayingOrWillChangePlaymode+" paused="+EditorApplication.isPaused+" scene="+SceneManager.GetActiveScene().name+" status="+(StatusManager.Instance!=null)+" startScene="+EditorSceneManager.playModeStartScene);
+                Log(File.ReadAllText(Folder+"state.txt"));
+                nextReport=EditorApplication.timeSinceStartup+5;
+            }
+            if(phase==99)
+            {
+                if(EditorApplication.isPlayingOrWillChangePlaymode)return;
+                Restore();SessionState.SetInt(PhaseKey,0);return;
+            }
+            if(EditorApplication.timeSinceStartup>SessionState.GetFloat(PhaseKey+".deadline",0))throw new Exception("Timeout in phase "+phase);
+            if(!EditorApplication.isPlaying)return;
+            if(EditorApplication.isPaused)EditorApplication.isPaused=false;
+            string scene=SceneManager.GetActiveScene().name;
+            if(phase==1 && scene!="Title"){SceneManager.LoadScene("Title");return;}
+            if(phase==1 && scene=="Title")
+            {
+                if(StatusManager.Instance==null)return;
+                PlayerPrefs.SetInt(StartingWeaponProgress.SaveKey,0);
+                var c=UnityEngine.Object.FindFirstObjectByType<StartingWeaponSelectionController>();
+                GameObject.Find("StartButton").GetComponent<Button>().onClick.Invoke();
+                Check(!c.IsOpen,"locked GAMESTART bypasses picker");Check(StatusManager.Instance.currentWeapon.weaponName=="Katana","locked start equips Katana");Phase(2);
+            }
+            else if((phase==2||phase==6) && scene=="Story")
+            {
+                var story=UnityEngine.Object.FindFirstObjectByType<StoryPresenter>();if(story==null)return;
+                typeof(StoryPresenter).GetMethod("LoadReturnScene",Private).Invoke(story,null);
+                Phase(phase==2?3:7);
+            }
+            else if(phase==3 && scene=="CraftSpace")
+            {
+                Check(StatusManager.Instance.currentWeapon.weaponName=="Katana","locked start reaches dorm with Katana");SceneManager.LoadScene("Title");Phase(4);
+            }
+            else if(phase==4 && scene=="Title")
+            {
+                TestUnlockAndUI();
+                ScreenCapture.CaptureScreenshot(Folder+"selection-play.png");
+                SessionState.SetFloat(PhaseKey+".captureUntil",(float)EditorApplication.timeSinceStartup+1);Phase(5);
+            }
+            else if(phase==5 && EditorApplication.timeSinceStartup>=SessionState.GetFloat(PhaseKey+".captureUntil",0))
+            {
+                var c=UnityEngine.Object.FindFirstObjectByType<StartingWeaponSelectionController>();
+                var so=new SerializedObject(c);((Button)so.FindProperty("deployButton").objectReferenceValue).onClick.Invoke();
+                c.Confirm(); // repeated confirmation must not reset or duplicate the departing run.
+                CheckLoadout();Phase(6);
+            }
+            else if(phase==7 && scene=="CraftSpace")
+            {
+                CheckLoadout();Check(StartingWeaponProgress.IsUnlocked,"unlock survives new run and scene transition");
+                int index=SessionState.GetInt(PhaseKey+".choice",1)+1;
+                if(index>=6){Log("PASS: All five crafted weapon starts reached dorm.");Finish();}
+                else{SessionState.SetInt(PhaseKey+".choice",index);SceneManager.LoadScene("Title");Phase(8);}
+            }
+            else if(phase==8 && scene=="Title")
+            {
+                var c=UnityEngine.Object.FindFirstObjectByType<StartingWeaponSelectionController>();
+                GameObject.Find("StartButton").GetComponent<Button>().onClick.Invoke();
+                var so=new SerializedObject(c);int index=SessionState.GetInt(PhaseKey+".choice",1);
+                ((Button)so.FindProperty("choices").GetArrayElementAtIndex(index).FindPropertyRelative("button").objectReferenceValue).onClick.Invoke();
+                Phase(5);
+            }
+        }
+        catch(Exception ex){Log("FAIL: "+ex);Finish();}
+    }
+    static void TestUnlockAndUI()
+    {
+        PlayerPrefs.SetInt(StartingWeaponProgress.SaveKey,0);
+        var ar=AssetDatabase.LoadAssetAtPath<EnemyDataSO>("Assets/GearCraft/ScriptableObject/EnemyData/lv3_AR-227.asset");
+        GearCraft.Gallery.GalleryProgress.RecordEnemy(ar);Check(!StartingWeaponProgress.IsUnlocked,"encounter alone does not unlock");
+        var debug=typeof(MainDebugEnemySpawnWindow).GetField("debugModeActive",BindingFlags.NonPublic|BindingFlags.Static);var old=debug.GetValue(null);
+        debug.SetValue(null,true);try{StartingWeaponProgress.RecordDefeat(ar);Check(!StartingWeaponProgress.IsUnlocked,"debug defeat does not unlock");}finally{debug.SetValue(null,old);}
+        foreach(string id in new[]{"lv3_IC-408","lv3_BB-413","lv3_AR-227"})
+        {
+            var go=new GameObject("QARewardEnemy",typeof(SpriteRenderer));var enemy=go.AddComponent<EnemyController>();enemy.enemyData=AssetDatabase.LoadAssetAtPath<EnemyDataSO>("Assets/GearCraft/ScriptableObject/EnemyData/"+id+".asset");enemy.HP=10;
+            enemy.TakeDamage(1,Vector2.zero);Check(!StartingWeaponProgress.IsUnlocked,"nonlethal hit does not unlock "+id);
+            enemy.TakeDamage(20,Vector2.zero);Check(StartingWeaponProgress.IsUnlocked==(id=="lv3_AR-227"),"actual death gate "+id);
+        }
+        StatusManager.Instance.ResetRunProgress();Check(StartingWeaponProgress.IsUnlocked,"run reset preserves AR reward");
+        var c=UnityEngine.Object.FindFirstObjectByType<StartingWeaponSelectionController>();GameObject.Find("StartButton").GetComponent<Button>().onClick.Invoke();Check(c.IsOpen,"unlocked GAMESTART opens picker");
+        var so=new SerializedObject(c);var deploy=(Button)so.FindProperty("deployButton").objectReferenceValue;var group=(CanvasGroup)so.FindProperty("titleControls").objectReferenceValue;
+        Check(group!=null&&!group.interactable&&!group.blocksRaycasts,"background controls blocked");c.Confirm();Check(!deploy.interactable,"cannot confirm without selecting");
+        var choices=so.FindProperty("choices");Check(choices.arraySize==6,"six authored choices");
+        for(int i=0;i<choices.arraySize;i++)
+        {
+            var choice=choices.GetArrayElementAtIndex(i);var button=(Button)choice.FindPropertyRelative("button").objectReferenceValue;button.onClick.Invoke();
+            Check(deploy.interactable,"selection enables confirm "+i);
+            Check(((TMPro.TMP_Text)so.FindProperty("selectedName").objectReferenceValue).text==choice.FindPropertyRelative("displayName").stringValue,"selected weapon name "+i);
+            for(int j=0;j<choices.arraySize;j++)Check(((GameObject)choices.GetArrayElementAtIndex(j).FindPropertyRelative("selectionFrame").objectReferenceValue).activeSelf==(i==j),"exclusive selection frame "+i+"/"+j);
+            var size=((RectTransform)button.transform).rect.size;Check(Mathf.Abs(size.x-size.y)<.1f,"square block "+i);
+        }
+        var quitter=UnityEngine.Object.FindFirstObjectByType<ApplicationQuitter>();typeof(ApplicationQuitter).GetMethod("HandleEscape",Private).Invoke(quitter,null);
+        Check(!c.IsOpen&&EditorApplication.isPlaying&&group.interactable&&group.blocksRaycasts,"Escape closes picker without quitting and restores title");
+        c.RequestStart();Check(!deploy.interactable,"reopen clears unconfirmed selection");
+        ((Button)choices.GetArrayElementAtIndex(1).FindPropertyRelative("button").objectReferenceValue).onClick.Invoke();
+    }
+    static void CheckLoadout()
+    {
+        string[] names={"Katana","GearCraft_Sword","SteamCannon","RailCraft","SteamGatling","SteamThrower"};int index=SessionState.GetInt(PhaseKey+".choice",1);var status=StatusManager.Instance;
+        Check(status.currentWeapon.weaponName==names[index],"equipped "+names[index]+" in "+SceneManager.GetActiveScene().name);
+        Check(status.ownedWeapons.Count==(index==1?2:1),"only chosen loadout owned "+names[index]);
+        if(index==1)Check(status.FindOwnedWeaponByName("GearCraft_Axe")!=null,"GearCraft axe available");
+        Check(status.STR==0&&status.ACC==0&&status.craftWeaponDamagebuff==0&&status.bossKillCount==0,"clean run stats "+names[index]);
+    }
+    static void Finish(){Phase(99);EditorApplication.isPlaying=false;}
+    static void Restore()
+    {
+        var b=JsonUtility.FromJson<Backup>(File.ReadAllText(Folder+"prefs-before.json"));
+        if(b.unlockExists)PlayerPrefs.SetInt(StartingWeaponProgress.SaveKey,b.unlock);else PlayerPrefs.DeleteKey(StartingWeaponProgress.SaveKey);
+        if(b.galleryExists)PlayerPrefs.SetString(GearCraft.Gallery.GalleryProgress.SaveKey,b.gallery);else PlayerPrefs.DeleteKey(GearCraft.Gallery.GalleryProgress.SaveKey);
+        PlayerPrefs.Save();typeof(GearCraft.Gallery.GalleryProgress).GetField("data",BindingFlags.NonPublic|BindingFlags.Static).SetValue(null,null);
+        Check(PlayerPrefs.HasKey(StartingWeaponProgress.SaveKey)==b.unlockExists&&PlayerPrefs.GetInt(StartingWeaponProgress.SaveKey,0)==b.unlock,"original unlock preference restored");
+        Check(PlayerPrefs.HasKey(GearCraft.Gallery.GalleryProgress.SaveKey)==b.galleryExists&&PlayerPrefs.GetString(GearCraft.Gallery.GalleryProgress.SaveKey,"")==b.gallery,"original gallery preference restored");
+        Check(SceneManager.GetActiveScene().path==b.scene&&!SceneManager.GetActiveScene().isDirty,"original saved editor scene restored");
+        Log("DONE: Play mode stopped; original save values verified.");
+    }
+}
+#endif

@@ -1,0 +1,88 @@
+#if UNITY_EDITOR
+using System;
+using System.IO;
+using System.Reflection;
+using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+[InitializeOnLoad]
+public static class RailChargeEditorProbe
+{
+    const string Result = "QA/RailCraftCharge20261021/editor-result.txt";
+    static int checks;
+    static RailChargeEditorProbe() { EditorApplication.delayCall += Run; }
+    static void Check(bool value, string message) { checks++; if (!value) throw new Exception(message); }
+    static void Near(float value, float expected, string message) { Check(Mathf.Abs(value-expected)<.001f, message+": "+value+" vs "+expected); }
+    static void Run()
+    {
+        if (File.Exists(Result) || EditorApplication.isPlayingOrWillChangePlaymode) return;
+        if (EditorApplication.isCompiling || EditorApplication.isUpdating) { EditorApplication.delayCall += Run; return; }
+        var originalStatus = StatusManager.Instance;
+        Scene originalScene = SceneManager.GetActiveScene();
+        bool originallyDirty = originalScene.isDirty;
+        Scene preview = EditorSceneManager.NewPreviewScene();
+        GameObject host = null;
+        string result;
+        try
+        {
+            host = new GameObject("RailChargeQa") { hideFlags = HideFlags.HideAndDontSave };
+            host.SetActive(false);
+            SceneManager.MoveGameObjectToScene(host, preview);
+            var status = host.AddComponent<StatusManager>();
+            var player = host.AddComponent<PlayerController>();
+            var weapon = AssetDatabase.LoadAssetAtPath<WeaponDataSO>("Assets/GearCraft/ScriptableObject/WeaponData/RailCraft.asset");
+            Check(weapon != null && weapon.UsesChargedShot,"Rail asset loaded");
+            Near(weapon.coolTime,1.5f,"reload"); Near(weapon.GetChargeDuration(1),1,"charge default");
+            Near(weapon.GetChargeDuration(.5f),.5f,"charge speed");
+            status.ACC=20; status.bonusDamage=7; status.craftWeaponDamagebuff=20;
+            Near(status.GetWeaponBaseDamage(weapon,0),120,"module minimum base");
+            Near(status.GetWeaponBaseDamage(weapon,1),420,"module maximum base");
+            Near(status.GetWeaponDamage(weapon,0),390,"min total");
+            Near(status.GetWeaponDamage(weapon,.5f),540,"half total");
+            Near(status.GetWeaponDamage(weapon,1),690,"max total");
+            Near(status.GetWeaponDamageBonus(weapon),270,"ACC and parts x10; module not double added");
+            player.runtimeStatus=status; player.currentWeapon=weapon;
+            FieldInfo damage=typeof(PlayerController).GetField("currentDamage",BindingFlags.NonPublic|BindingFlags.Instance);
+            MethodInfo configure=typeof(PlayerController).GetMethod("ConfigureSpawnedProjectile",BindingFlags.NonPublic|BindingFlags.Instance);
+            foreach (float fraction in new[]{0f,.5f,1f})
+            foreach (float size in new[]{1f,2f})
+            {
+                status.bulletSizeMult=size; status.railCraftBulletSizeMultiplier=size==1 ? 1 : 3;
+                var bullet=(GameObject)PrefabUtility.InstantiatePrefab(weapon.bulletPrefab,preview);
+                try
+                {
+                    var b=bullet.GetComponent<BulletController>();
+                    Vector3 scale=bullet.transform.localScale;
+                    float trail=b.trailWidth, radius=b.sweptHitRadius;
+                    damage.SetValue(player,status.GetWeaponBaseDamage(weapon,fraction));
+                    configure.Invoke(player,new object[]{bullet});
+                    float expected=status.GetWeaponDamage(weapon,fraction);
+                    float thickness=Mathf.Clamp(expected/200f,.5f,4f), bonus=size*status.railCraftBulletSizeMultiplier;
+                    Near(b.bulletDamage,expected,"spawned damage");
+                    Near(bullet.transform.localScale.x,scale.x*bonus,"length not affected by power");
+                    Near(bullet.transform.localScale.y,scale.y*bonus*thickness,"bullet width");
+                    Near(b.trailWidth,trail*bonus*thickness,"trail width");
+                    Near(b.sweptHitRadius,radius*bonus*thickness,"swept width");
+                    Check(!b.destroyOnHit,"piercing retained");
+                }
+                finally { UnityEngine.Object.DestroyImmediate(bullet); }
+            }
+            var flame=AssetDatabase.LoadAssetAtPath<WeaponDataSO>("Assets/GearCraft/ScriptableObject/WeaponData/SteamThrower.asset");
+            Near(status.GetWeaponDamage(flame),.75f+20*.06f+7*.06f+20*.75f,"SteamThrower unchanged");
+            Check(!flame.UsesChargedShot,"other weapons remain automatic");
+            result="PASS: "+checks+" engine assertions. No Play Mode, scene save or PlayerPrefs writes.";
+        }
+        catch(Exception error) { result="FAIL: "+error; }
+        finally
+        {
+            if(host!=null) UnityEngine.Object.DestroyImmediate(host);
+            EditorSceneManager.ClosePreviewScene(preview);
+            StatusManager.Instance=originalStatus;
+        }
+        result+="\nActive scene preserved: "+(SceneManager.GetActiveScene()==originalScene)+"\nDirty state preserved: "+(originalScene.isDirty==originallyDirty);
+        File.WriteAllText(Result,result+"\n");
+    }
+}
+#endif

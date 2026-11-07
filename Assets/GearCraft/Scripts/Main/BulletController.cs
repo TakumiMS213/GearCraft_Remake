@@ -12,6 +12,9 @@ public class BulletController : MonoBehaviour
     public bool isCannonBullet = false;
     public bool useSweptHitDetection = false;
     public float sweptHitRadius = 0.08f;
+    [Tooltip("Keep terrain collision narrow while charge/size upgrades widen enemy hit detection.")]
+    public bool useSeparateTerrainHitRadius = false;
+    [Min(0.01f)] public float terrainHitRadius = 0.08f;
     public float explosionRadiusMultiplier = 1f;
     public float directHitKnockback = 0f;
     public bool applyOverheatOnHit = false;
@@ -206,7 +209,7 @@ public class BulletController : MonoBehaviour
         RaycastHit2D[] hits;
         try
         {
-            hits = Physics2D.CircleCastAll(previousPosition, Mathf.Max(0.01f, sweptHitRadius), movement.normalized, distance);
+            hits = GetSweptHits(movement.normalized, distance);
         }
         finally
         {
@@ -259,6 +262,9 @@ public class BulletController : MonoBehaviour
                 continue;
             }
 
+            // A pierced enemy already damaged by a trigger or an earlier frame is not terrain.
+            if (IsCombatCollider(hitCollider)) continue;
+
             if (!hitCollider.isTrigger)
             {
                 if (ShouldIgnoreSurfaceAfterBounce(hitCollider))
@@ -283,6 +289,31 @@ public class BulletController : MonoBehaviour
                 return;
             }
         }
+    }
+
+    private RaycastHit2D[] GetSweptHits(Vector2 direction, float distance)
+    {
+        RaycastHit2D[] combatHits = Physics2D.CircleCastAll(previousPosition,
+            Mathf.Max(0.01f, sweptHitRadius), direction, distance);
+        if (!useSeparateTerrainHitRadius) return combatHits;
+
+        var hits = new List<RaycastHit2D>();
+        foreach (RaycastHit2D hit in combatHits)
+            if (IsCombatCollider(hit.collider)) hits.Add(hit);
+
+        // Size upgrades widen damage/trails, but never make a horizontal shot collide with the floor.
+        foreach (RaycastHit2D hit in Physics2D.CircleCastAll(previousPosition,
+            Mathf.Max(0.01f, terrainHitRadius), direction, distance))
+            if (!IsCombatCollider(hit.collider)) hits.Add(hit);
+
+        return hits.ToArray();
+    }
+
+    private static bool IsCombatCollider(Collider2D collider)
+    {
+        return collider != null &&
+            (collider.GetComponentInParent<EnemyController>() != null ||
+             collider.GetComponentInParent<EnemyProjectileDamageable>() != null);
     }
 
     private bool ShouldIgnoreSurfaceAfterBounce(Collider2D hitCollider)
@@ -323,7 +354,8 @@ public class BulletController : MonoBehaviour
         Vector2 centerAtHit = hit.centroid;
         if (centerAtHit.sqrMagnitude <= 0.0001f)
         {
-            centerAtHit = hit.point + normal.normalized * Mathf.Max(0.01f, sweptHitRadius);
+            float radius = useSeparateTerrainHitRadius ? terrainHitRadius : sweptHitRadius;
+            centerAtHit = hit.point + normal.normalized * Mathf.Max(0.01f, radius);
         }
 
         return centerAtHit + normal.normalized * 0.02f;

@@ -1,0 +1,9 @@
+{
+  "unlockExists": false,
+  "unlock": 0,
+  "galleryExists": true,
+  "gallery": "{\"hasReachedEnding\":false,\"encounteredEnemies\":[\"lv1_A-1\",\"lv3_FinalBoss\",\"lv1_G-1\",\"lv1_B-1\",\"lv3_IC-408\"],\"acquiredWeapons\":[\"Katana\",\"AR\"],\"craftedRecipes\":[\"PunkDrive\"],\"acquiredMaterials\":[1,2]}",
+  "scene": "Assets/GearCraft/Scenes/Title.unity",
+  "dirty": false,
+  "playing": false
+}

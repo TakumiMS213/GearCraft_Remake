@@ -1,0 +1,7 @@
+Starting weapon flow play-mode verification
+FAIL: System.Exception: Timeout in phase 1
+  at StartingWeaponFlowProbe.Tick () [0x00146] in /Users/sora/Desktop/Unity/GearCraft_Remake/Assets/GearCraft/Scripts/Editor/StartingWeaponFlowProbe.cs:48 
+PASS: original unlock preference restored
+PASS: original gallery preference restored
+PASS: original saved editor scene restored
+DONE: Play mode stopped; original save values verified.

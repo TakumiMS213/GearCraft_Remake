@@ -374,7 +374,7 @@ public class UpgradeShopManager : MonoBehaviour
         for (int i = 0; i < allParts.Length; i++)
         {
             UpgradePartSO part = allParts[i];
-            if (part != null && part.rarity >= PartRarity.Rare)
+            if (CanStock(part) && part.rarity >= PartRarity.Rare)
             {
                 highRarity.Add(part);
             }
@@ -392,7 +392,7 @@ public class UpgradeShopManager : MonoBehaviour
         for (int i = 0; i < allParts.Length; i++)
         {
             UpgradePartSO part = allParts[i];
-            if (part != null && !currentLineup.Contains(part))
+            if (CanStock(part) && !currentLineup.Contains(part))
             {
                 remaining.Add(part);
             }
@@ -415,6 +415,15 @@ public class UpgradeShopManager : MonoBehaviour
             currentLineup[i] = currentLineup[j];
             currentLineup[j] = temp;
         }
+    }
+
+    private static bool CanStock(UpgradePartSO part)
+    {
+        if (part == null) return false;
+        var status = StatusManager.Instance;
+        return !part.unique || status == null ||
+            (!status.ownedUpgradeParts.Contains(part) &&
+             !status.savedUpgradePartPlacements.Exists(p => p != null && p.partData == part));
     }
 
     private static void ApplyIcon(GameObject item, UpgradePartSO part)

@@ -1,0 +1,3 @@
+PASS: 48 engine assertions. No Play Mode, scene save or PlayerPrefs writes.
+Active scene preserved: True
+Dirty state preserved: True

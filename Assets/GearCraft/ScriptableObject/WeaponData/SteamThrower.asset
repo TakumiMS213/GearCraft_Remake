@@ -19,7 +19,6 @@ MonoBehaviour:
   coolTime: 0.08
   baseDamage: 0.75
   accDamageMultiplier: 0.06
-  flatDamageMultiplier: 0.06
   craftModuleDamageMultiplier: 0.75
   attackRange: 2.4
   bulletSpeed: 13

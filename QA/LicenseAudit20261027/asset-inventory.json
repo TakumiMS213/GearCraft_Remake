@@ -1,0 +1,2885 @@
+{
+  "date": "2026-10-27 Asia/Tokyo",
+  "method": "GUID reachability from enabled scenes and non-Editor Resources; conservative candidate set, not a Player build report. Runtime loads and packaging may differ.",
+  "assets": [
+    {
+      "path": "Assets/GearCraft/Audio/080997_bullet-39735.mp3",
+      "sha256": "4608bd190b3d8ceaa7624de9142fabd5de7a4b5fa76df086d90fafddf0dd1804",
+      "guid": "b0ca00f308b8fab49b90dff1b9c11f97",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Main.unity"
+      ],
+      "category": "audio"
+    },
+    {
+      "path": "Assets/GearCraft/Audio/PerituneMaterial_Steam_Fortress.mp3",
+      "sha256": "c4329a668739372583557bd22ad3b57f7cd2c9a410d01269bc0e767cde52c38a",
+      "guid": "b8baebab6da167b4c8e745d559d66777",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Title.unity"
+      ],
+      "official_file_comparison": {
+        "file": "PerituneMaterial_Steam_Fortress.mp3",
+        "url": "https://peritune.com/music/PerituneMaterial_Steam_Fortress.mp3",
+        "sha256": "c4329a668739372583557bd22ad3b57f7cd2c9a410d01269bc0e767cde52c38a",
+        "identical": true
+      },
+      "category": "audio"
+    },
+    {
+      "path": "Assets/GearCraft/Audio/Steam-and-Steel-Skies.mp3",
+      "sha256": "eb96cb3412ee31d2be5c62a3174b4de87efd12c22f121d7b5a3e157a1b7d29e4",
+      "guid": "245f9aec24ae25748b6b8885cd18699e",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Main.unity"
+      ],
+      "official_file_comparison": {
+        "file": "Steam-and-Steel-Skies.mp3",
+        "url": "https://creatoroto-blog.com/download/steam-and-steel-skies/?wpdmdl=1808&refresh=6ae050d952fd61793085657",
+        "sha256": "eb96cb3412ee31d2be5c62a3174b4de87efd12c22f121d7b5a3e157a1b7d29e4",
+        "bytes": 863190,
+        "identical": true
+      },
+      "category": "audio"
+    },
+    {
+      "path": "Assets/GearCraft/Audio/clean-machine-gun-burst-98224.mp3",
+      "sha256": "acc22e1d7fb2d1b0a57e842999386e12409242a338722e719d863239e723c1b7",
+      "guid": "e1788cec8dd5c9848bae2a9489f1ac99",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Main.unity"
+      ],
+      "category": "audio"
+    },
+    {
+      "path": "Assets/GearCraft/Audio/gear2.ogg",
+      "sha256": "04d11b72b470b9fa1a3adc39b811eed78f828a6896c9b22631354cacd9a6c5e6",
+      "guid": "780aef3363657904b8aabe80dddfc37d",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Title.unity",
+        "Assets/GearCraft/ScriptableObject/Prehubs/GearBlackoutTransition.prefab"
+      ],
+      "category": "audio"
+    },
+    {
+      "path": "Assets/GearCraft/Audio/gear3.ogg",
+      "sha256": "797f8a4c5be83521863421d7d80d5a3d28b0793f8b7c75917b191b854eefa493",
+      "guid": "5cdf69e27f107dd4fb77ad8c56f3224d",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "audio"
+    },
+    {
+      "path": "Assets/GearCraft/Audio/gunfire-single-shot-colt-peacemaker-94951.mp3",
+      "sha256": "caa2e474fdd115167ccea901599a6a3f0d2a1b596f85bd1df849e707f91dd565",
+      "guid": "3c1170e82c5200a449026bd0b642885d",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "audio"
+    },
+    {
+      "path": "Assets/GearCraft/Audio/handgun-sound-effect-432110.mp3",
+      "sha256": "fcfbdb418bb6493f4e942f25ce0d4ca93e38cb7c88a8fcd645cdf7521fd5e950",
+      "guid": "5bd1e05daf355e2489ae32666c03520a",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "audio"
+    },
+    {
+      "path": "Assets/GearCraft/Audio/inishienohiseki.mp3",
+      "sha256": "c89bdc2f483a88586fde7000f2b5bd6f06201569eb464149d51cbfd5c1978b05",
+      "guid": "dcf3ff98611f0944192e3147fe0dd38e",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/CraftSpace.unity"
+      ],
+      "category": "audio"
+    },
+    {
+      "path": "Assets/GearCraft/Audio/maou_bgm_acoustic49.mp3",
+      "sha256": "56d734d950a5bbbfcf29018e9af0ba03e6c8c828552492ca85373dac31339291",
+      "guid": "f4c6e23aa744b3449849f9f8735af381",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Craft.unity"
+      ],
+      "category": "audio"
+    },
+    {
+      "path": "Assets/GearCraft/Audio/maou_se_system17.mp3",
+      "sha256": "e572e84fc34d51813d88c43dcf27c58bfd90f6971ddc241d62b5f6ed8416c616",
+      "guid": "bf298cfa5d54d9d41963c65fdf0c5b70",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Craft.unity",
+        "Assets/GearCraft/Scenes/CraftSpace.unity"
+      ],
+      "category": "audio"
+    },
+    {
+      "path": "Assets/GearCraft/Audio/大型ロボットの駆動音2.mp3",
+      "sha256": "5d4b4428f1251ba1cc7468c4b8f95e8ff0f415822bbbe34ac24dec73e26b7210",
+      "guid": "398f3265b390b3d4b93e34cb8ddd1864",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Main.unity"
+      ],
+      "official_file_comparison": {
+        "file": "大型ロボットの駆動音2.mp3",
+        "url": "https://www.springin.org/wp-content/uploads/2022/11/%E5%A4%A7%E5%9E%8B%E3%83%AD%E3%83%9C%E3%83%83%E3%83%88%E3%81%AE%E9%A7%86%E5%8B%95%E9%9F%B32.mp3",
+        "sha256": "5d4b4428f1251ba1cc7468c4b8f95e8ff0f415822bbbe34ac24dec73e26b7210",
+        "identical": true
+      },
+      "category": "audio"
+    },
+    {
+      "path": "Assets/GearCraft/Audio/大型ロボットの駆動音3.mp3",
+      "sha256": "cc9df9bb87d5704ec799054f566aee1f61dfee30416c53791f4032ee41fd873a",
+      "guid": "5c563845ae76af44187cf434fe21252e",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "official_file_comparison": {
+        "file": "大型ロボットの駆動音3.mp3",
+        "url": "https://www.springin.org/wp-content/uploads/2022/11/%E5%A4%A7%E5%9E%8B%E3%83%AD%E3%83%9C%E3%83%83%E3%83%88%E3%81%AE%E9%A7%86%E5%8B%95%E9%9F%B33.mp3",
+        "sha256": "cc9df9bb87d5704ec799054f566aee1f61dfee30416c53791f4032ee41fd873a",
+        "identical": true
+      },
+      "category": "audio"
+    },
+    {
+      "path": "Assets/GearCraft/Audio/大型ロボットの駆動音7.mp3",
+      "sha256": "b0ca0e712f48be2559b837c27864b453bbcdc35ce8859944a7fdb0554ff29561",
+      "guid": "c29cecb89bd346b40bd0e73be5e784d0",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Craft.unity"
+      ],
+      "official_file_comparison": {
+        "file": "大型ロボットの駆動音7.mp3",
+        "url": "https://www.springin.org/wp-content/uploads/2022/11/%E5%A4%A7%E5%9E%8B%E3%83%AD%E3%83%9C%E3%83%83%E3%83%88%E3%81%AE%E9%A7%86%E5%8B%95%E9%9F%B37.mp3",
+        "sha256": "b0ca0e712f48be2559b837c27864b453bbcdc35ce8859944a7fdb0554ff29561",
+        "identical": true
+      },
+      "category": "audio"
+    },
+    {
+      "path": "Assets/GearCraft/Audio/決定1.mp3",
+      "sha256": "15805b5dd5ab4ad3ad561e47ea89a2815c751b8ddce4162a27450198d7ba3561",
+      "guid": "702ae6915569d304db21c01ba709f784",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Craft.unity",
+        "Assets/GearCraft/Scenes/CraftSpace.unity"
+      ],
+      "official_file_comparison": {
+        "file": "決定1.mp3",
+        "url": "https://www.springin.org/wp-content/uploads/2022/06/%E6%B1%BA%E5%AE%9A1.mp3",
+        "sha256": "15805b5dd5ab4ad3ad561e47ea89a2815c751b8ddce4162a27450198d7ba3561",
+        "bytes": 27843,
+        "identical": true
+      },
+      "category": "audio"
+    },
+    {
+      "path": "Assets/GearCraft/Audio/決定5.mp3",
+      "sha256": "cf1de5068ade787d17d98eb6dd791265c40f510f0ef4a491c557d714f205887e",
+      "guid": "a8d4630b295cae5418fa34da8815b369",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Craft.unity",
+        "Assets/GearCraft/Scenes/CraftSpace.unity"
+      ],
+      "official_file_comparison": {
+        "file": "決定5.mp3",
+        "url": "https://www.springin.org/wp-content/uploads/2022/06/%E6%B1%BA%E5%AE%9A5.mp3",
+        "sha256": "cf1de5068ade787d17d98eb6dd791265c40f510f0ef4a491c557d714f205887e",
+        "bytes": 15931,
+        "identical": true
+      },
+      "category": "audio"
+    },
+    {
+      "path": "Assets/GearCraft/Audio/決定ボタンを押す38.mp3",
+      "sha256": "e87fc62c2b1fc96b1c5ba271b51c233b0fe7f6b1b8fc5c20971968178b22b916",
+      "guid": "3469b1a4875b6074ab1ac3205c61d1c6",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "official_file_comparison": {
+        "file": "決定ボタンを押す38.mp3",
+        "error": "HTTP Error 403: Forbidden"
+      },
+      "category": "audio"
+    },
+    {
+      "path": "Assets/GearCraft/Audio/決定ボタンを押す7.mp3",
+      "sha256": "94a8eaae204a4dac8fc25bf7db68b29ac93fd239cc50a0e821d3e9f24f8c763a",
+      "guid": "e79b78304b695cc46b5252b631a8c4c2",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Craft.unity"
+      ],
+      "official_file_comparison": {
+        "file": "決定ボタンを押す7.mp3",
+        "error": "HTTP Error 403: Forbidden"
+      },
+      "category": "audio"
+    },
+    {
+      "path": "Assets/GearCraft/DotGothic16-Regular.ttf",
+      "sha256": "ff706ab702fd4446207c70af564f68b62205c9972f1917f68ba739c61bb6aa18",
+      "guid": "318e8b887fcb8824dbbe718fb2ec136b",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Title.unity"
+      ],
+      "category": "font"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Character/GearCraft_Chara_damaged.png",
+      "sha256": "4580e55c5c08430f6b066fee875ddb5b0ff40a275015d5d098bbaa883470bea5",
+      "guid": "c258317aaf0a1a54681a74f9ceb246fe",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Character/GearCraft_Chara_idle.png",
+      "sha256": "debf9f2173e8bd7924f9dab0ff76ef67c906314f04489f8456ca7f897c79d6d2",
+      "guid": "b80efaa4c3b416e4798415a5c4a51759",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Animation/Player_run.anim",
+        "Assets/GearCraft/Images/Character/Player_idle.anim",
+        "Assets/GearCraft/ScriptableObject/Story/CraftSpaceArrivalMessage.asset"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Character/GearCraft_Chara_jump.png",
+      "sha256": "c8922eac31f3995b54fe3616f2d9b1ed25b6930ad9c044cedaa5acf18e522ae9",
+      "guid": "8c4c6f5f6f0b44e47b87e67d1bceac78",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Animation/Player_jump.anim"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Character/GearCraft_Chara_walk1.png",
+      "sha256": "4f73fb3cfb7d16469458d5ab2b5e35debcde5e194f8b411cc5e1ace2f4fd8382",
+      "guid": "79aac0b099d88d7468817a85eac0e3b5",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Animation/Player_run.anim"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Character/GearCraft_Chara_walk2.png",
+      "sha256": "93e4293734096db236c879a37c1a3edbc4cbe76aec2a19cb71ddeffac2fc1e0c",
+      "guid": "d8215d275e5fa1d4d80ad3825a1d63d3",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Animation/Player_run.anim",
+        "Assets/GearCraft/Scenes/CraftSpace.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/GearCraft_Bar.png",
+      "sha256": "91983edb113633b44914f9120664ca44aa4dc0efaba92b6a9939d3a130788e7f",
+      "guid": "58c7244b174934778aa5d0a778203233",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Craft.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/Material/UpgradePart.png",
+      "sha256": "bd8193dec20b5c9f56a877d0c45ed5c3ad039bb5d45156354c84184b36593a11",
+      "guid": "f25b96a57de2ea248bee56d00a68cdcd",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Craft.unity",
+        "Assets/GearCraft/Scenes/Main.unity",
+        "Assets/GearCraft/ScriptableObject/Prehubs/Drops/Drop_UpgradeCore.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/Material/asault_dot.png",
+      "sha256": "f04064f66d5cc627e6363a9bef5a6074361c7b18e0784ed98c82138495c41dac",
+      "guid": "6fc3b684f9f951244b4c180cb204d89e",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Animation/Arm_assault.anim",
+        "Assets/GearCraft/Scenes/Craft.unity",
+        "Assets/GearCraft/Scenes/Main.unity",
+        "Assets/GearCraft/ScriptableObject/WeaponData/AR.asset"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/Material/gear.png",
+      "sha256": "b57590c6243ca6b6b4dc19e327f6335024954eac7c97c6462eb48aaa2764e8bb",
+      "guid": "e492bb241c1b9a443b001f23cbd51a0c",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Craft.unity",
+        "Assets/GearCraft/Scenes/CraftSpace.unity",
+        "Assets/GearCraft/Scenes/Main.unity",
+        "Assets/GearCraft/Scenes/Title.unity",
+        "Assets/GearCraft/ScriptableObject/Gallery/GalleryCatalog.asset",
+        "Assets/GearCraft/ScriptableObject/Prehubs/Drops/Drop_Gear.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/Material/moduleCore_lv1.png",
+      "sha256": "6592143013795469aaa232c0e74e87ee9fd99fc14bf2f511e96d843390c730e3",
+      "guid": "52b021bbde03e44559ac92549a3923c6",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Craft.unity",
+        "Assets/GearCraft/Scenes/Main.unity",
+        "Assets/GearCraft/ScriptableObject/Prehubs/Drops/Drop_ModuleCore_lv1.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/Material/moduleCore_lv2.png",
+      "sha256": "dc236884a38e604982b982766c09a1d20cef70ae8378a37cc3b3617e5990d4a7",
+      "guid": "4b5ba65d1a6cc49898194495a59461f0",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Craft.unity",
+        "Assets/GearCraft/Scenes/CraftSpace.unity",
+        "Assets/GearCraft/Scenes/Main.unity",
+        "Assets/GearCraft/ScriptableObject/Prehubs/Drops/Drop_ModuleCore_lv2.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/Material/moduleCore_lv3.png",
+      "sha256": "74d027f8193152c099a98bb695eb3625c94410f3b3c84e1d820d127e878946f7",
+      "guid": "27ff361f5ead84bd596d29faf9a8142e",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Craft.unity",
+        "Assets/GearCraft/Scenes/Main.unity",
+        "Assets/GearCraft/ScriptableObject/Prehubs/Drops/Drop_ModuleCore_lv3.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/Material/scrap.png",
+      "sha256": "55a3d717b563e0f768bacda2cb86f097ae378d20fb6f613822b3488346a233e8",
+      "guid": "a1677678f38a64543aa9b9910e7f8b15",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Craft.unity",
+        "Assets/GearCraft/Scenes/CraftSpace.unity",
+        "Assets/GearCraft/Scenes/Main.unity",
+        "Assets/GearCraft/ScriptableObject/Gallery/GalleryCatalog.asset",
+        "Assets/GearCraft/ScriptableObject/Prehubs/Drops/Drop_Scrap.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/Qframe.png",
+      "sha256": "25d8a2e41f4cae4175bca053e17420158cea1855c861dbd335a72c92230de5e4",
+      "guid": "935dd7c0ddb804c3482a82e18cd96359",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/QuestionSqroll.png",
+      "sha256": "a96145ac2d55a420ced63b803701a2ed3b13013b02042b0172f5febc34ca8143",
+      "guid": "68a6eb67ebbcf4a96baf30a4259018e6",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Main.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/Result/RailCraft.png",
+      "sha256": "1b57e2bf38092244c0440ee6c02e0ae0906bcc7c38d58644cd98c140e618cdf7",
+      "guid": "79ae2f232116b402d93941ee1f1614c6",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Animation/Arm_RailCraft.anim",
+        "Assets/GearCraft/Scenes/Craft.unity",
+        "Assets/GearCraft/Scenes/Title.unity",
+        "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_RailCraft_BulletSize.asset",
+        "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_RailCraft_Overheat.asset",
+        "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_RailCraft_Ricochet.asset",
+        "Assets/GearCraft/ScriptableObject/CraftRecipe/RailCraft.asset",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/WeaponSpecific/BonusCard_RailCraft_BulletSize.prefab",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/WeaponSpecific/BonusCard_RailCraft_Overheat.prefab",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/WeaponSpecific/BonusCard_RailCraft_Ricochet.prefab",
+        "Assets/GearCraft/ScriptableObject/WeaponData/RailCraft.asset"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/Result/SteamGatling.png",
+      "sha256": "25e08afa92bbd00a5fb752caf3d649030df1616d445b754976b464e6c920d68d",
+      "guid": "951031652047f4267aba5f3ab2134c46",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Animation/Arm_SteamGatling.anim",
+        "Assets/GearCraft/Scenes/Craft.unity",
+        "Assets/GearCraft/Scenes/Title.unity",
+        "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_SteamGatling_BulletSpeed.asset",
+        "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_SteamGatling_RecoilJump.asset",
+        "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_SteamGatling_TargetDamage.asset",
+        "Assets/GearCraft/ScriptableObject/CraftRecipe/SteamGatling.asset",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/WeaponSpecific/BonusCard_SteamGatling_BulletSpeed.prefab",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/WeaponSpecific/BonusCard_SteamGatling_RecoilJump.prefab",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/WeaponSpecific/BonusCard_SteamGatling_TargetDamage.prefab",
+        "Assets/GearCraft/ScriptableObject/WeaponData/SteamGatling.asset"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/Result/SteamThrower.png",
+      "sha256": "6fb6114a29803fceafb4a6ac60ea0424d128dc1589ce9f800b971fd39756b721",
+      "guid": "fa913e07b0155e84b908a2be457646d8",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Animation/Arm_SteamThrower.anim",
+        "Assets/GearCraft/Scenes/Craft.unity",
+        "Assets/GearCraft/Scenes/Title.unity",
+        "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_SteamThrower_BoostBurn.asset",
+        "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_SteamThrower_NoFall.asset",
+        "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_SteamThrower_SlipOverheat.asset",
+        "Assets/GearCraft/ScriptableObject/CraftRecipe/SteamThrower.asset",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/WeaponSpecific/BonusCard_SteamThrower_BoostBurn.prefab",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/WeaponSpecific/BonusCard_SteamThrower_NoFall.prefab",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/WeaponSpecific/BonusCard_SteamThrower_SlipOverheat.prefab",
+        "Assets/GearCraft/ScriptableObject/WeaponData/SteamThrower.asset"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/Result/gearcraft_dot.png",
+      "sha256": "11d60c239d94f637d807a5e1122393bbb70823f310278f8787daca2978a952c7",
+      "guid": "1e2074d2fd3cf314ba4c26e4497b5c0f",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Animation/Arm_GearCraft_Sword.anim",
+        "Assets/GearCraft/Animation/ChangeAxetoSword.anim",
+        "Assets/GearCraft/Images/Craft/Result/Arm_GearCraft_Sword_atk.anim",
+        "Assets/GearCraft/Scenes/Craft.unity",
+        "Assets/GearCraft/Scenes/Title.unity",
+        "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_GearCraft_AxeSize.asset",
+        "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_GearCraft_SwordMove.asset",
+        "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_GearCraft_TransformGear.asset",
+        "Assets/GearCraft/ScriptableObject/CraftRecipe/GearCraft.asset",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/WeaponSpecific/BonusCard_GearCraft_AxeSize.prefab",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/WeaponSpecific/BonusCard_GearCraft_SwordMove.prefab",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/WeaponSpecific/BonusCard_GearCraft_TransformGear.prefab",
+        "Assets/GearCraft/ScriptableObject/WeaponData/GearCraft.asset",
+        "Assets/GearCraft/ScriptableObject/WeaponData/GearCraft_Sword.asset"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/Result/gearcraft_dot_axe.png",
+      "sha256": "232e6ea4f6fa4a12b0fd8a8971ac769e443ba1a873924f797628a64de71a1056",
+      "guid": "ce445e32ebbdb7642b6aaa8ba51819da",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Animation/Arm_GearCraft_Axe.anim",
+        "Assets/GearCraft/Animation/Change_SwordtoAxe.anim",
+        "Assets/GearCraft/ScriptableObject/WeaponData/GearCraft_Axe.asset"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/Result/gearcraft_dot_axe_white.png",
+      "sha256": "18a0a9987bcedeff0ba680aa7441f0099b8b4f6f8a08bf7bc60ed7c2e1064184",
+      "guid": "cb6aa6d8dffbd7c469dd901057054bf4",
+      "candidate_for_player": false,
+      "referenced_by": [
+        "Assets/GearCraft/Animation/ChangeAxetoSword.anim",
+        "Assets/GearCraft/Animation/Change_SwordtoAxe.anim"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/Result/gearcraft_dot_white.png",
+      "sha256": "5b6ec55b04865f749d1e0f046a3ae17ba4fd8aa7921f0992b72d0481df3486eb",
+      "guid": "628a0edca074b3549bccf232dd4043c3",
+      "candidate_for_player": false,
+      "referenced_by": [
+        "Assets/GearCraft/Animation/ChangeAxetoSword.anim",
+        "Assets/GearCraft/Animation/Change_SwordtoAxe.anim"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/Result/gunto_dot.png",
+      "sha256": "03fc0dd61ff9f208028e58d16b838a8bd04396be8c9f84b2f52e3f0a9b7c2175",
+      "guid": "62f9a3e657bbd8f45893541814f09c29",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Animation/Arm_Sword.anim",
+        "Assets/GearCraft/Scenes/Craft.unity",
+        "Assets/GearCraft/Scenes/Title.unity",
+        "Assets/GearCraft/ScriptableObject/WeaponData/Katana.asset"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/Result/module_barrier.png",
+      "sha256": "a814acb6f87a134b1e2ce35bf773f3cc4fb77575658962a7a1260577b583c938",
+      "guid": "c520a2c3acb6f43858d7341ff0d7d12c",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Craft.unity",
+        "Assets/GearCraft/Scenes/Main.unity",
+        "Assets/GearCraft/ScriptableObject/CraftRecipe/BarrierModule.asset"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/Result/module_repair.png",
+      "sha256": "a185444c5945464b82b228ac927562715d2bceb9415146206ef4c44a2c8b3d7e",
+      "guid": "8f4fc3f6895b72e45a77177d894b3bde",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Craft.unity",
+        "Assets/GearCraft/Scenes/Main.unity",
+        "Assets/GearCraft/ScriptableObject/CraftRecipe/RepairModule.asset"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/Result/module_scrap.png",
+      "sha256": "6d86c3c823586e67017823053df9a8ea61cd5fdc25caaa9f3abc32f6019ebcb3",
+      "guid": "33875a3058f836d4c88d230b1765ccde",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Craft.unity",
+        "Assets/GearCraft/Scenes/Main.unity",
+        "Assets/GearCraft/ScriptableObject/CraftRecipe/ScrapModule.asset"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/Result/module_upglade.png",
+      "sha256": "0743b3d59dd9a6a8f232dec481bc302dda7c37ea07e80c95d848bd92e0e74be8",
+      "guid": "8008310d854fcb44db773d46e69bc419",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Craft.unity",
+        "Assets/GearCraft/ScriptableObject/CraftRecipe/UpgradeModule.asset"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/Result/punkdrive.png",
+      "sha256": "afb958fcce231d7e126aef68e5ce3d1e339cf0b858ec8f4258531d08208617f0",
+      "guid": "f6a44706e7bd8459ea86a302a24a1783",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Craft.unity",
+        "Assets/GearCraft/Scenes/Main.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/Result/punkdrive_preview.png",
+      "sha256": "8b0fa51b498315725ec3aa222abc344ffd5ec20c5063eb65a658fb0379150112",
+      "guid": "247326923e2d64076bcc7684787cc4d2",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Craft.unity",
+        "Assets/GearCraft/ScriptableObject/CraftRecipe/PunkDrive.asset"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/Result/steamShoot.png",
+      "sha256": "de4cffad06ab3227b5bfceb16de2ef4c5a58e30106fe41df6bf6bc947070905c",
+      "guid": "14a5ba212d9cda5498bc4dd99e85cc4e",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Animation/Arm_SteamShoot.anim",
+        "Assets/GearCraft/Scenes/Craft.unity",
+        "Assets/GearCraft/Scenes/Title.unity",
+        "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_SteamCannon_GiantShot.asset",
+        "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_SteamCannon_Knockback.asset",
+        "Assets/GearCraft/ScriptableObject/BonusCard/Weapon_SteamCannon_SlowBigExplosion.asset",
+        "Assets/GearCraft/ScriptableObject/CraftRecipe/SteamCannon.asset",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/WeaponSpecific/BonusCard_SteamCannon_GiantShot.prefab",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/WeaponSpecific/BonusCard_SteamCannon_Knockback.prefab",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/WeaponSpecific/BonusCard_SteamCannon_SlowBigExplosion.prefab",
+        "Assets/GearCraft/ScriptableObject/WeaponData/SteamCannon.asset"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/craft.png",
+      "sha256": "b3856503930583a56065dce23c6e637c3f60a1688e55ccfbafd8c392c99a66a7",
+      "guid": "66e071ac23a42c448a31db9d62d175ad",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Craft.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/craft_button.png",
+      "sha256": "091be658e287118f4f718c98c13ec434dc4ceb355bd9b8a177042fef6ca8b3ab",
+      "guid": "c8e2967ddbc3f9b429a5d0629a176a4e",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Craft.unity",
+        "Assets/GearCraft/Scenes/CraftSpace.unity",
+        "Assets/GearCraft/Scenes/Gallery.unity",
+        "Assets/GearCraft/Scenes/Main.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/craft_hummer.png",
+      "sha256": "f19286cf191b84008caa39dc0781c083f8c4c49cb828e29f376cebfcf6f6722c",
+      "guid": "945c8cb0fb8135e478323bf97cee9ada",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Craft.unity",
+        "Assets/GearCraft/Scenes/CraftSpace.unity",
+        "Assets/GearCraft/Scenes/Title.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/craft_hummer_2.png",
+      "sha256": "4ac658d3c049f9b4994ed5818e21c2d77b2fcfacf71f415155ae9cd8f34fe6e9",
+      "guid": "405d69d40de61cc4fb2a1e8c59c85767",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Craft.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/craft_hummer_3.png",
+      "sha256": "c0324a719ebf940180eb40804ee4f051089e54d745cf263b7c6e671a51be7e3f",
+      "guid": "d26060aebc71f5d43a56ac57a0bc7c25",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Craft.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/cursor.png",
+      "sha256": "e45880d75627292351887656b56e9174b101b40c3ea698027d3138ec430a73ca",
+      "guid": "097db6772c2e449c0adfcef382e1db95",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/custom.png",
+      "sha256": "412e4a8cac82f1f0a637a9ee5ca35af19e456b76db7c5990ac09692ab7403de8",
+      "guid": "31824914e229f4863a6a20239c92d149",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Craft.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/custom_flame.png",
+      "sha256": "5f7d96760fdf05ebf5743f6a84d1165655df9818de32e6d3cb5c239da20585f6",
+      "guid": "1e572d83bda8344dc919f1553ed8654c",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Main.unity",
+        "Assets/GearCraft/ScriptableObject/Prehubs/UI/UpgradeGrid.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/delete_icon.png",
+      "sha256": "a4b46552b80ecdde9d25911f5d3fc0b59833667037a08f2ef88ec5e4244341d1",
+      "guid": "a7741234b6394486998075dc9fe47ed8",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/emergency_icon.png",
+      "sha256": "4929a79d66799a41850963b5407dd441dc5c00a4467968f0adbd3d0b9ec6b872",
+      "guid": "b149fe0dc7ccf448cb8bb672bdef1585",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Craft.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/gearcraft_cantcraft.png",
+      "sha256": "42d86f66ee369a767a367d048619a83bc5570794e71e92254dca7b52ede3c110",
+      "guid": "bf3eb566d341fa0499c14f4c224aec22",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Craft.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/gridcell.png",
+      "sha256": "53baba4bc019ebc82f28de5adc2973a5e3ab792294e9e21cce1d0137f48233e3",
+      "guid": "23c90a3e5aa66a84ba971e22ecdc2f60",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Main.unity",
+        "Assets/GearCraft/ScriptableObject/Prehubs/UI/GridCell.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/hand.png",
+      "sha256": "7bdd99fdfdf179f333d183580bbf0bd5a56b31e423676f655f792cae371b24bc",
+      "guid": "defb6ca3cb0254a5792ef49c366113fa",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/pipe.png",
+      "sha256": "547c8f469d271c5c2fec55f6801a84ffd25ffdb0faf637a549c5056a754556be",
+      "guid": "685e55181256f41beb1d6aa5c54825f6",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/scrapToGear.png",
+      "sha256": "66d57536d54f7ad31e6178f4e1618056925e53221c16617ac830ebf71bbe8b15",
+      "guid": "7622cd94fb8ee48808429fed7962a442",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/sword.png",
+      "sha256": "a22ecef682feebb52ec941744d934e25f9c906b64e61042672d401347ef3becf",
+      "guid": "f9605e97a9eaf644fa326c750e2fdbd7",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Main.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/target.png",
+      "sha256": "825f43280fb3b7424abd9b50462e3532b32193dcd57f9c7b7900c1eafcfcecd4",
+      "guid": "2fc2a374e97424844ad650c3c9cde25a",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Main.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/text/BarrierModule_text.png",
+      "sha256": "8a92a4f2b9fbd26323ef3106efdbb417ca489f20b705837814dea27f81bdc099",
+      "guid": "1c2604be9d92242c0912d585530f4b45",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/text/Craft_Manual_text_1.png",
+      "sha256": "6c451b447be4e86d41d2cadbd79ba1518c6744e4de20beafab89067f10c1cd60",
+      "guid": "7b1179ab656e54e49ae21f06d8156fa9",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/text/GearCraft_text.png",
+      "sha256": "fae81bb1f284d26e33395c0c02264b5bd980e28c218a85901b5ef3efe0bd9eb2",
+      "guid": "4ab4da3ccf7d7489fa1589f3c221f4a3",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/text/PunkDrive_text.png",
+      "sha256": "a473d22c0109faa74d764eb9905b91ea1ec6aaf1329185f41f635ab775fc2ab5",
+      "guid": "2cf78272a13474151a9554a21592c061",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/text/RepairModule_text.png",
+      "sha256": "df968c88fb6d5c6731177fbf501edbfcbec706e527c61701fa9efa85a571a64a",
+      "guid": "3a34a48097773464a9298c79e0ae9b18",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/text/ScrapModule_text.png",
+      "sha256": "9079402f1becf34eaddc0a7533aa328de80e2d2f712b710d80521832cf2accd0",
+      "guid": "6dfd40bbafeac4958b24bc79cf6911dc",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/text/SteamCannon_text.png",
+      "sha256": "f943e56bc4294debee1c390000ccc1f9e2d29cd440781495b815e3ecae95f0ef",
+      "guid": "911676656de004f7e94f1bc455b041d0",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/text/UpgradeModule_text.png",
+      "sha256": "a6a51bac49baf94ed663bc4db5ecdedce040b38e8e85bfc3900cdbc55967491e",
+      "guid": "87b8839a53d994e8b862f2d6b650641a",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/transition_panel.png",
+      "sha256": "157750fc8815f3f7ff5b097d8d7f61741a8fe444337480d0cd8bcfc53ce51b81",
+      "guid": "d5b69522d952e4bdd8f9162dae473a82",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Ending.unity",
+        "Assets/GearCraft/Scenes/Main.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/transition_panel_complete.png",
+      "sha256": "38168207d60da864eaf3c65ff176da4dfd60d751c647d5eea0d33c8b87557376",
+      "guid": "09122efdfb96c4c20b1383ac9085b204",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Main.unity",
+        "Assets/GearCraft/ScriptableObject/CraftRecipe/GearCraft.asset",
+        "Assets/GearCraft/ScriptableObject/CraftRecipe/PunkDrive.asset",
+        "Assets/GearCraft/ScriptableObject/CraftRecipe/SteamCannon.asset"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/transition_panel_gameclear.png",
+      "sha256": "2f5a8c73fb69644c40a859fd3f829b4e73c93ac3c99dc00f814bf62b2ab8fcd4",
+      "guid": "97a4823c6c1d945e2bffb47c087c2c27",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Main.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/transition_panel_success.png",
+      "sha256": "2ce21a39356f473e8c4b19ca3015aded2649c1039b4f1ccae4f2af90f6af4928",
+      "guid": "05e7c67e94e708843b109942a5dba642",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Craft.unity",
+        "Assets/GearCraft/Scenes/Main.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/transition_panel_success_1.png",
+      "sha256": "efe8a7f1ef59e928d9433b0842c4dfc9807a9a4c1f13bc6252c28ca451a27c1c",
+      "guid": "595dd2032ab584b47a15f091587a7ed4",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Craft.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Craft/transition_panel_success_2.png",
+      "sha256": "4c1d1f3cdb81efa7b62f79c78c89d0871b89918f24e9acb42d07d2bbe1eb7ca9",
+      "guid": "b386e45dc8a4fbd489ce69e9b94338d7",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Craft.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/CraftSpace/StatusUpWIndow_ACC.png",
+      "sha256": "0b666e08c81d99f88f20669145f97596f5fd249ec0af12545ac1111e83a9fa9b",
+      "guid": "e367f8b800507034494fcd4b9395b1e2",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/CraftSpace.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/CraftSpace/StatusUpWIndow_HP.png",
+      "sha256": "caea56794d95889a6f706728198a233a913e766529930cc8018ff4b53ca21d40",
+      "guid": "d9749956ff4eed140ad2ca6372fbf60f",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/CraftSpace.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/CraftSpace/StatusUpWIndow_SAN.png",
+      "sha256": "c211d3b5ebcf1ae2ff5f78a0da709db0e2b0292612788b1a9d9567c59f865a48",
+      "guid": "1b1dbf7b0205b344ba342890cfc65663",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/CraftSpace.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/CraftSpace/StatusUpWIndow_STR.png",
+      "sha256": "ce7d8276b711d94d2216f69ecb656adc2a44465ec51cd34fe83dee5836084793",
+      "guid": "5eedf4cccd98def4b9119c555a177ee1",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/CraftSpace.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/CraftSpace/craft_roomPanel.png",
+      "sha256": "7e0713866b9bc4c7354ddb5759d23823174bb0e200ca72de90b3125c15d8e39d",
+      "guid": "b0b8d77d3b6ca9a4d96ff4cb1a807213",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/CraftSpace/gc_cs_bed.png",
+      "sha256": "34e07fd94f8bc872789b25a514cb466877e6e0c338c1f5b56d7ef8b3b81fd56b",
+      "guid": "d614b278701530d4fb02beff7fd25ff3",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/CraftSpace.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/CraftSpace/gc_cs_crafter.png",
+      "sha256": "c28a6c3068eb1002e6db87dc40f1a17fd3b94e7bcab7b121d5771d864d53dd14",
+      "guid": "606f1f42414e2bd4c8646095bfe96dde",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/CraftSpace.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/CraftSpace/gc_cs_flower.png",
+      "sha256": "00f519034136ff6f9fbd07fda3f786c99d7eed6f55346ad246d9d621f11415b7",
+      "guid": "53102e428438aab4c8799376157fecd1",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/CraftSpace/gc_cs_freeze.png",
+      "sha256": "844ebdca525a44838a057c2be28de16637d70febfada32fc3045681003876650",
+      "guid": "bfeb7692577e03e4d91391aa2cb8c163",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/CraftSpace.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/CraftSpace/gc_cs_medi.png",
+      "sha256": "4969a062c9ad0f40bc9a406a075d89f3bcf740b8baed7f402f2a7e631873591c",
+      "guid": "51c30645a41a0ad46a6b0c8cb3e4332a",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/CraftSpace.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/CraftSpace/gc_cs_spacekey.png",
+      "sha256": "a7f941863490c373110df91da94611b526e7ea041a41835f8713102d4e298a35",
+      "guid": "43c58ade36e838a4ca554b35032e33b2",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/CraftSpace.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/CraftSpace/gearcraft_craftspace_bed.png",
+      "sha256": "361c38c6ee42101d0ea7389605c2fbaa60bf9e3fbc382090f681eca052ce5f73",
+      "guid": "fc69db4158d98c1419e38d59d5e13eb0",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/CraftSpace.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/CraftSpace/gearcraft_craftspace_crafter.png",
+      "sha256": "bdec032ecd68e80736e8e59d1dd387f1356d48e03760a1e03bd609fe740f936b",
+      "guid": "6a730e552148c824ca47a966c6b79966",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/CraftSpace.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/CraftSpace/gearcraft_craftspace_flower.png",
+      "sha256": "c5dd0e9c21fcb1feb0f050e080634afb5a99b91e73942348fc9b8d7829a4e30e",
+      "guid": "b442a591403f7394097a00ddf23895bb",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/CraftSpace.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/CraftSpace/gearcraft_craftspace_freeze.png",
+      "sha256": "a47ef4b551f9ed5a538edaa00033433d39788331f47c864b4a9d2c901434654e",
+      "guid": "06b246f9aadf06549b0a12b9a03c2206",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/CraftSpace.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/CraftSpace/gearcraft_craftspace_medi.png",
+      "sha256": "b1b5b705871e1358d79a8deb83f1539c67f32e660782a7f070803fb574b20366",
+      "guid": "f504c4774e22c7d4087b8d14068423f2",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/CraftSpace.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/CraftSpace/gearcraft_craftspace_wall 1.png",
+      "sha256": "7456df86c1b1f7fcc75d617267f16ef82245aa805fae54f5a4d1d884ad40065a",
+      "guid": "a59d8c5c7fe90704d8d7e1c5c94b7de4",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/CraftSpace.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/CraftSpace/gearcraft_craftspace_wall.png",
+      "sha256": "69fc9f745649b2fec493be839df8658547eb3f1bee2e994fb47634f62fc9027c",
+      "guid": "17cf75686f342df4f8b27761e22abc75",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/CraftSpace.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/CraftSpace/gs_cs_gate.png",
+      "sha256": "8ca69540853eddee980896a2a1e71ba0994422ffec1e99fe46ce5d778a249a05",
+      "guid": "183f5807982b886409cc6908142d54de",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/CraftSpace.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/CraftSpace/statusup_notion 1.png",
+      "sha256": "f014d4a788b4a9692f5238dd0787ef09e4b16543e95d4f90477523597b234885",
+      "guid": "86f5bbf0ba158344e8857e5dc888a466",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/CraftSpace.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/CraftSpace/text/CraftSpace_Manual_text_1.png",
+      "sha256": "0a5e3f2cc37fb8bbf50ab8574730eb1c706991281d2748e4ab3801270458d24a",
+      "guid": "010445db1f4564d58b77590503bf439c",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/CraftSpace.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/CraftSpace/text/CraftSpace_Manual_text_2.png",
+      "sha256": "781a7e86c05878887eeda1bc8c2d689bbb7ba85f45241cb920fe01df5dbb0820",
+      "guid": "94cb2c7e294af43769ff0f3da14899f8",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/CraftSpace.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Ending/EndingText/Bad/Bad_1.png",
+      "sha256": "617e1fdb90f72e7fdf57b4ba0bb7cb4b26d11e0b05eb93fb2463e17d55e78562",
+      "guid": "e86da1311b9714e8f8f9cc4ce2ba8049",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Ending.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Ending/EndingText/Bad/Bad_2.png",
+      "sha256": "9d6fb8946db3934a97e115d656e755f798a2dc4cd87e79de07e2e799c8a943e2",
+      "guid": "cb9aeedb070284707a5952ea2ec99a18",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Ending.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Ending/EndingText/Bad/Bad_3.png",
+      "sha256": "4de584585dc67c381c7b4a4c0cdfd5f12b16ddc9e312d23806001b9642fb2b23",
+      "guid": "8f543489cd6654953ae016f66c5316da",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Ending.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Ending/EndingText/Bad/Bad_4.png",
+      "sha256": "c295322bb0437ce883eff2f87cecec485135faaa9a8178d680870cb8f0b10a06",
+      "guid": "b439e437c09d5477493426617f05dab4",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Ending.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Ending/EndingText/Bad/Bad_5.png",
+      "sha256": "cda79c0c78c5e5358d5932bc2d8183c8328d0f9a05b21264a9a5214be93b7686",
+      "guid": "72a5168a82f554af5bbe6919b1ea6c21",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Ending.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Ending/EndingText/Bad/Bad_6.png",
+      "sha256": "96e9711e3227f8ac95572f6643995fa4189c197c2bee02e426616b0094c16ca1",
+      "guid": "fa1c944f2c68141158e5ee7fed6cf606",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Ending.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Ending/EndingText/Bad/Bad_7.png",
+      "sha256": "44d9d5a6b5082b4b843e73c6311526236277465cad5e397f6c6eea53aa2ed992",
+      "guid": "5d708c5565a244e02a3b7f3a967ced1b",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Ending.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Ending/EndingText/Bad/Bad_8.png",
+      "sha256": "516706230585fc3962fff8d5d043aea8cde76bd6291ed0f8ef955ac6e6dfd454",
+      "guid": "29f81d5e166e24679ba0dfd6587fd9f9",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Ending.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Ending/EndingText/Normal/Normal_1.png",
+      "sha256": "25d2453fb924aa0c82e2511132cfc1a4df82a98a85fc547a51896218c015579d",
+      "guid": "f9b6de361849c4390a06275cefe2b7b6",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Ending.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Ending/EndingText/Normal/Normal_2.png",
+      "sha256": "1c21a527da3882206b45b70f5a7abbe82c4345205993c95b848bfa7aa149e80c",
+      "guid": "223a374ea48a24dac9c0223c89d7aa7d",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Ending.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Ending/EndingText/Normal/Normal_3.png",
+      "sha256": "afcc0a5317506b43a69210f11c9a8cb895544a45b2ba26c762c1ef4cb396deb0",
+      "guid": "800e8fb60855745d2be89f9556bc6d25",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Ending.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Ending/EndingText/Normal/Normal_4.png",
+      "sha256": "8f6cf7f72a9968a562c87f4b0bc03007b736bf7d344fb010e0ae7274c6561ac8",
+      "guid": "e015bb428bc664242a7c62fb7d5ff1d1",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Ending.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Ending/EndingText/Normal/Normal_5.png",
+      "sha256": "33574e10854af49879fd3d8a2134fb7df29f6da7854c462f95e1c5de66dc31a0",
+      "guid": "310ab1d3856ad4b129b9088ac2b4870e",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Ending.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Ending/EndingText/Normal/Normal_6.png",
+      "sha256": "4a663de5b21a52dde8eba60918974e2418cd0dee65cc6792439e58adc95b9d3f",
+      "guid": "84d7b2d6bce224018a56db08965482ba",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Ending.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Ending/EndingText/True/True_1.png",
+      "sha256": "34b2eabfea6af48ec9ad0254ba97c2bc3a9728e6139bd998caecfb7a1584bfe3",
+      "guid": "4b10e0e1f82654ea099a59ad3ed1aae5",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Ending.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Ending/EndingText/True/True_10.png",
+      "sha256": "9d2089d591525164cbca8a0ae68dfcc5b7cab0d35510d3bdc3bb8b195abecc08",
+      "guid": "4589782c5c2a3485c9978fe2201baf77",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Ending.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Ending/EndingText/True/True_2.png",
+      "sha256": "51ff818279147bb37f3283c7a1e5664ab253bbd93a6ff9a28f050b4872277ae3",
+      "guid": "5014fcf2dbd7645ce852a3f327ac79a3",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Ending.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Ending/EndingText/True/True_3.png",
+      "sha256": "c83d22592f63f55332442ed056a48b699dbbcade824fae5ee2c8012698864100",
+      "guid": "b767f89ca3c8c4cecb1d1fda66ab42fa",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Ending.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Ending/EndingText/True/True_4.png",
+      "sha256": "62a2a5f601c13f837e3060decc47c65191d80b6b589bbe897cf5c85025edc4a2",
+      "guid": "971afb34ef3104a37a1118185d0389e8",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Ending.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Ending/EndingText/True/True_5.png",
+      "sha256": "846a1b529f7cad2553feb11501e1adba545d26982d2626aad0e3f86d0029c88b",
+      "guid": "b3987b48eb2784c0f864e92913572ba5",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Ending.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Ending/EndingText/True/True_6.png",
+      "sha256": "c270e71adcb5e052ad1af2732cb4d0dfbe0088e89d022848556891882960a423",
+      "guid": "03320a666f4c74289923d6edf030f872",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Ending.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Ending/EndingText/True/True_7.png",
+      "sha256": "0619bd1678f96e2b9fce6348b1c4db625f681193f7e1936dd6aad1310753add8",
+      "guid": "1bd16945700004a1c9d82c86ab21ee6c",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Ending.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Ending/EndingText/True/True_8.png",
+      "sha256": "5ef608d0f7ee8e379c029ddcc5796388431cf20d98cbabde25ceedf3c36ed8aa",
+      "guid": "007c9c54d37af493cb9a0396beba0349",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Ending.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Ending/EndingText/True/True_9.png",
+      "sha256": "6ef657626592e3767863101e40883ad680844749a355f74968521421f082d86c",
+      "guid": "086b4c9a919a243d9911c525e470cea7",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Ending.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Ending/Ending_bad.png",
+      "sha256": "022a790155ab305db6588f7f670c3c755498ee4cb4060c49b00daa5f88d678af",
+      "guid": "9499f29c7857647129906ba0d8a5b43e",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Ending.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Ending/Ending_true.png",
+      "sha256": "ef9f1002493db34c81174042cfac2bbf78b766ca122d08d1cf5b745858ddd534",
+      "guid": "f5029d4b1d311423ba859cfd89242371",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Ending.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/GearCraft_Panel.png",
+      "sha256": "162edb03b8880f490b3ee1fa982876a81dc41b389bc28ebbe1a788dbaf437379",
+      "guid": "ca652b9806ea14f61a96d2634bf627e3",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/CraftSpace.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/GearCraft_icon.jpg",
+      "sha256": "327551bf9b682f72d9d681a44d66e88284216c1dfcbf42e811e7d4044b5689b6",
+      "guid": "9b5117171e8ff6d44951cc1d7b21b12a",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Title/BoostManual_text.png",
+      "sha256": "88fc0202602ad5cf1318728786db6c66f21cac21316355412aeb483d60a4cdb8",
+      "guid": "4d0ce994a7a024e96b600dbd15780cd9",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Main.unity",
+        "Assets/GearCraft/Scenes/Title.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Title/E.png",
+      "sha256": "b5bb58e0bc8fd70fd7866094a9c1a40d94576d3ba8dfd851ff3a81cd21081be1",
+      "guid": "fe3b3aa78974c4557ab59cd0516493a3",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Title/Jumptext.png",
+      "sha256": "09142ecee7e100e675898472fcff05893c97dc3d911969c66641398254d49907",
+      "guid": "3a568d17eb68f423a8962cddb51f0237",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Main.unity",
+        "Assets/GearCraft/Scenes/Title.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Title/ManualTitle.png",
+      "sha256": "a8ec14f6db178e7091cf035c4024e4b48b758a411f460d57a74c81af342237b1",
+      "guid": "1195c1edca88e42afa0f1c1ad78db0ed",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/CraftSpace.unity",
+        "Assets/GearCraft/Scenes/Main.unity",
+        "Assets/GearCraft/Scenes/Title.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Title/Q.png",
+      "sha256": "94975dd28792bba2af230faa937a091ae97470bce584eaa9aefc6570d0f80c74",
+      "guid": "ab74e4febc34244eb9fb89ecccaf51aa",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Main.unity",
+        "Assets/GearCraft/Scenes/Title.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Title/SHIFT.png",
+      "sha256": "454d6e0a494a9612f6575620b12bc48d665a74a49e9146c34fd7d6c6f5193646",
+      "guid": "282aa702bce5443afb15f4167ae8d8d9",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Main.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Title/SPACE.png",
+      "sha256": "90291ad561a6ead5c2eedfaa5b62ac6f7827ee9d8d766b281f41cc95a3f316c7",
+      "guid": "296594f3132f94462805480a5b61ca0d",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Main.unity",
+        "Assets/GearCraft/Scenes/Title.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Title/STRandACC_manulaText.png",
+      "sha256": "db84310864d683dd7fd2529384c6d5956650f1c2b8c9e776db5b0f863f264659",
+      "guid": "f10811ee62969457ab8885230b8395f0",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Title.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Title/Title_story.png",
+      "sha256": "7d35521a2d23b4cd6788f8e5b448ecded84baa7a8e159b8dbefdbefaafeb150f",
+      "guid": "fb415c5cda48643618f0aea406e9b141",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Story.unity",
+        "Assets/GearCraft/Scenes/Title.unity",
+        "Assets/GearCraft/ScriptableObject/Story/OpeningStory.asset"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Title/ad.png",
+      "sha256": "db43e48376628db10c6f0577dbd31350dacfcaf36a83c418a4282e69859573c4",
+      "guid": "4ceb87fab0acf4646bb3beb419c10060",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Main.unity",
+        "Assets/GearCraft/Scenes/Title.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Title/attacktext.png",
+      "sha256": "890d2d74069790f0c9cfeb2f46f2f3cd02681680af6916c8d4572a0adc336d98",
+      "guid": "51158952df36d4c209be2b1fcc802bd6",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Main.unity",
+        "Assets/GearCraft/Scenes/Title.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Title/barriertext.png",
+      "sha256": "1bf3c080a4e8b266587d0780c9a980d4ce31c291b1211eac19ad10e4645a0c2f",
+      "guid": "674e386a411b64f16abe5efe2214491f",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Title/bgm.png",
+      "sha256": "efb4e66ea04f84f5f077aebe4bbf6322cb5ed77efb0c9970b9d8993f3a261c16",
+      "guid": "a85a17f7359f03b40a4279e801936dd9",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/CraftSpace.unity",
+        "Assets/GearCraft/Scenes/Main.unity",
+        "Assets/GearCraft/Scenes/Title.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Title/bgmName_title.png",
+      "sha256": "e044950646d1a500299d952a613025804573853c0c415d60b7e1e64eb072c8e3",
+      "guid": "455b604a068fbc045ae95d667c0246d0",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Title.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Title/boostText.png",
+      "sha256": "68bb083cb397ebd2824a7b5c2619a7516e4f0e0dfd008665b1f3bd91408e0f05",
+      "guid": "201f530b318d34072ace29f979d9fde6",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Title.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Title/gear1.png",
+      "sha256": "bf0cdd4879de15c7651d9603476663bc637df62669f5775a98cb76ba134248ae",
+      "guid": "fea46239e0d3ca642971f06d7a01b662",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Main.unity",
+        "Assets/GearCraft/Scenes/Title.unity",
+        "Assets/GearCraft/ScriptableObject/Prehubs/GearBlackoutTransition.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Title/gear2.png",
+      "sha256": "494eb33889edac4698c7cb7ad99fc3d365687feb1d99cc132afb659996ddfe1b",
+      "guid": "c64bc8d9a35b72548bd3679480114098",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Main.unity",
+        "Assets/GearCraft/Scenes/Title.unity",
+        "Assets/GearCraft/ScriptableObject/Prehubs/GearBlackoutTransition.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Title/gearcraft_gallery.png",
+      "sha256": "0189e2f5c199f90fb2f769515a257e937989f71806e6b3af19baf4dd36c3b3c1",
+      "guid": "354ba795f387444299ee0cc0a0ecc96b",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Title.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Title/gearcraft_question.png",
+      "sha256": "7b00e15bda4037e1a48adbc629760fe661aea1eb4dd3387a91b747ffe180af3e",
+      "guid": "df8307a6034604588bdd4985eec5a927",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Title.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Title/gearcraft_setting_off.png",
+      "sha256": "31b1806dc44aa4c81e3f234857bb7f3e4d4f9f119da341d51e887576b4e4ef22",
+      "guid": "f3742b0b1e2538e46b47258a2a3a10e5",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Craft.unity",
+        "Assets/GearCraft/Scenes/CraftSpace.unity",
+        "Assets/GearCraft/Scenes/Main.unity",
+        "Assets/GearCraft/Scenes/Title.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Title/gearcraft_setting_panel.png",
+      "sha256": "3adc6f0f70515e25f8638afb2caf791983533180bff88dc4175149317864871a",
+      "guid": "97ff858321519784b98105b17cb55a65",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Craft.unity",
+        "Assets/GearCraft/Scenes/CraftSpace.unity",
+        "Assets/GearCraft/Scenes/Main.unity",
+        "Assets/GearCraft/Scenes/Title.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Title/gearcraft_story.png",
+      "sha256": "493abfaf1edb4ed058757ecfd0d5a3ca7acd39470e6ace9d31a98915b60a8320",
+      "guid": "8246496bf30af49f0a950d87a2a25410",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Title.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Title/gearcraft_title.png",
+      "sha256": "cb1a1bcd4ae684f5af92c6f64dd9e609470cd63b7515824537de46a188c012a4",
+      "guid": "a756043150e339c4ea963bbf87d80283",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Title.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Title/gearcraft_title_off.png",
+      "sha256": "d5b78c0cbaa8957bbbeb8cbcb6f6ab286a8ef76d42a5328ef70b45213f07f739",
+      "guid": "c80169b119460e74ebe055594ac2c194",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Title.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Title/gearcraft_title_panel.png",
+      "sha256": "f9c56531515dcb6b8c1f5c9434e721cd989fe8ffda28b139ce23796dd7d6dfa2",
+      "guid": "4f69ada3948d8834babd0489cbcfce23",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Title.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Title/gearcraft_title_start.png",
+      "sha256": "bde5d41f520caf5cf636e4564eee652278bfa7086a3e0d7aa402ed02abeefcf4",
+      "guid": "bbc03c62fcc131344a85a93aaf60190d",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Title.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Title/gearcraft_title_stg.png",
+      "sha256": "d9536ed64e7df39ed903865dba84c4a389713a86ebac7f7942728b41587591b7",
+      "guid": "2dad01b60a0052045a15ac220afc6b02",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Title.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Title/handle.png",
+      "sha256": "44f9592db7d11d11ed58c7cad12e35925d9974d6576fb0951b4fa0cd7c6eaf10",
+      "guid": "80f4b10f4a5aa804bb2476184d8298f2",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Paticles/Burn loop.prefab",
+        "Assets/GearCraft/Paticles/Burn plus.prefab",
+        "Assets/GearCraft/Paticles/Burn.prefab",
+        "Assets/GearCraft/Scenes/CraftSpace.unity",
+        "Assets/GearCraft/Scenes/Main.unity",
+        "Assets/GearCraft/Scenes/Title.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Title/mouse.png",
+      "sha256": "3bcaaa6830a5237f0c4c4ff1a1d1e746977c0130035e93d7f78beecba8da01b6",
+      "guid": "745a84f7395134bcd9cad207a74d3b4a",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Ending.unity",
+        "Assets/GearCraft/Scenes/Main.unity",
+        "Assets/GearCraft/Scenes/Title.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Title/se.png",
+      "sha256": "ca77bb9614bcbc9544aa26749751a73e5b6cdcddc502da0f1933d8554e3afebf",
+      "guid": "9e80534625c4c894fa9f2c7dc2a764d1",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/CraftSpace.unity",
+        "Assets/GearCraft/Scenes/Main.unity",
+        "Assets/GearCraft/Scenes/Title.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Title/shiftext.png",
+      "sha256": "e7bddc778b1e6579a22e7c539f0dc39615b9f647bdf7c58b53a64c7bca077cf3",
+      "guid": "194fc5eecdbb842cbb7760a33c2a28ad",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Main.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Title/storyTitle.png",
+      "sha256": "22a660944ec4ff19eb04285b4bb1e11fd35dc8e19f5c30d1cafd4246237bda7a",
+      "guid": "b1a71b032a64348ca93be4203582c0a4",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Title.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Title/wasdText.mdp.png",
+      "sha256": "005a75b4dcdfe41580efd0b5097adc2409095c9e31d9e3da225ebee3e066df91",
+      "guid": "d243b103e8a3b4817992e47b88bdece9",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Main.unity",
+        "Assets/GearCraft/Scenes/Title.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/Title/wasd_yajirusi.png",
+      "sha256": "0298800950dfed3e754611c2e4089eae1adeba9bf296d71fb435290a0d529986",
+      "guid": "f2ef27fdcc2164e4198abd5e9899bbd6",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/arrow.png",
+      "sha256": "98a2193d7462f17dd53d80cce9c92dc99033b021f1d6602e74034ac8780f3bf7",
+      "guid": "50a53fff82e384e2bb9a5a90ea3a7c95",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/CraftSpace.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/gearcraft_attack_bg.png",
+      "sha256": "142c8242506b9b2a33bdd8580861b6139341f0614a4c9c76fdc27e4886b8c555",
+      "guid": "196be6a507313ad4bb23c4ce42082699",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/ScriptableObject/Story/OpeningStory.asset"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/gearcraft_cave_bg.png",
+      "sha256": "1f9eb5647f40ee43bdf7de9418a9e1ebafa26534d6f478ac63b3b363592eec20",
+      "guid": "db3955c5774bbe748b103a0d24f9df19",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/ScriptableObject/Story/OpeningStory.asset"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/gearcraft_question.png",
+      "sha256": "3475df3736fde07324b011551588be2604f6aa44deb3ee9b2f6bb867434f3cc3",
+      "guid": "4104bcb4fc55c904ab0d2b503387822b",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Craft.unity",
+        "Assets/GearCraft/Scenes/CraftSpace.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/gearcraft_stanp_bg.png",
+      "sha256": "7eb585b8a78557e093724d15392760bf50481d9f3beff10c2cd32c48d88220dd",
+      "guid": "2c7fef32fe86ddb4d812ea4bc363b35c",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/ScriptableObject/Story/OpeningStory.asset"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/little_gear.png",
+      "sha256": "6a80e522a864d02a5cebc7855902cd00ad8974725588b675626b9eb1c8d9310b",
+      "guid": "50db12fd5268194418c06827e6402dbe",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Craft.unity",
+        "Assets/GearCraft/Scenes/CraftSpace.unity",
+        "Assets/GearCraft/Scenes/Ending.unity",
+        "Assets/GearCraft/Scenes/Main.unity",
+        "Assets/GearCraft/Scenes/Story.unity",
+        "Assets/GearCraft/Scenes/Title.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/BonusCards/BonusCard.png",
+      "sha256": "cda8083e301eaac89bb8a1e98996d3b27e239f707947c7cd94dead0f05dbed42",
+      "guid": "3d19e5e345646ac439e7e9a8efbf543c",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/WeaponSpecific/BonusCard_GearCraft_AxeSize.prefab",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/WeaponSpecific/BonusCard_GearCraft_SwordMove.prefab",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/WeaponSpecific/BonusCard_GearCraft_TransformGear.prefab",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/WeaponSpecific/BonusCard_RailCraft_BulletSize.prefab",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/WeaponSpecific/BonusCard_RailCraft_Overheat.prefab",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/WeaponSpecific/BonusCard_RailCraft_Ricochet.prefab",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/WeaponSpecific/BonusCard_SteamCannon_GiantShot.prefab",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/WeaponSpecific/BonusCard_SteamCannon_Knockback.prefab",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/WeaponSpecific/BonusCard_SteamCannon_SlowBigExplosion.prefab",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/WeaponSpecific/BonusCard_SteamGatling_BulletSpeed.prefab",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/WeaponSpecific/BonusCard_SteamGatling_RecoilJump.prefab",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/WeaponSpecific/BonusCard_SteamGatling_TargetDamage.prefab",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/WeaponSpecific/BonusCard_SteamThrower_BoostBurn.prefab",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/WeaponSpecific/BonusCard_SteamThrower_NoFall.prefab",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/WeaponSpecific/BonusCard_SteamThrower_SlipOverheat.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/BonusCards/BonusCard_acc.png",
+      "sha256": "37f320ba292539942c5bd61bd4f0e75a99adf5c592a3a073bc8113544ad3444c",
+      "guid": "305765a22a26e5f4e90cb7ba87977451",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/BonusCards/BonusCard_accTostr.png",
+      "sha256": "a381bd017fcfe3f8579af44aea375d5fe5e226fa181dbbb0347c2c7578422776",
+      "guid": "72d5f85d217e34f6d9816b8188d53f1d",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/ScriptableObject/BonusCard/ACC_to_STR.asset",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/BonusCard_accTostr.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/BonusCards/BonusCard_acc_1.png",
+      "sha256": "73a29a10f912fda7170406863e90f7fe50f3449ea76b809e8e7830c26ea2f011",
+      "guid": "fdcb3c2f360204e5aaf3927c75249dda",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/ScriptableObject/BonusCard/ACC_1.asset",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/BonusCard_acc_1.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/BonusCards/BonusCard_acc_2.png",
+      "sha256": "c5463df0bdf828c02a4328107939ee7f1832ba683a91bdc747131d11d82216b4",
+      "guid": "c288cdc00a2554071b4499f1b97f4022",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/ScriptableObject/BonusCard/ACC_2.asset",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/BonusCard_acc_2.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/BonusCards/BonusCard_acc_3.png",
+      "sha256": "35e0973572c82949f6f318f84fcd205249d10097d09c50ab73ce27c4d55a94b4",
+      "guid": "4a433093df8674f97824691bbd4f3084",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/ScriptableObject/BonusCard/ACC_3.asset",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/BonusCard_acc_3.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/BonusCards/BonusCard_assault.png",
+      "sha256": "1d442aea8610be82760a4a94c4198df3c044fe2f5c4352f58512d92f70d809c6",
+      "guid": "ecd0b2d913e729a43ab822f90419a017",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/ScriptableObject/BonusCard/AR.asset",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/BonusCard_ar.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/BonusCards/BonusCard_gateRepair.png",
+      "sha256": "1ede8b98ea68dd74c8acba379d57c81409b01e8fb1c1381cf8fc4acdf456c713",
+      "guid": "bd39bc2c7475e46b6a9826ae455ba40f",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/ScriptableObject/BonusCard/GateRepair.asset",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/BonusCard_gateRepair.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/BonusCards/BonusCard_gear.png",
+      "sha256": "1036ff77bda25e8e112c9892540bd70193d2c88c3883a94f7a271820443693fe",
+      "guid": "f66e3dc6730bdfb44b44219a9e39f41f",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/BonusCards/BonusCard_gear_1.png",
+      "sha256": "aa43d091298d13b7145bcd83b017bb2c64d0b12a93a618498f94253da021d8b8",
+      "guid": "7ed71aa28d582446f8f5447431ed2eb4",
+      "candidate_for_player": false,
+      "referenced_by": [
+        "Assets/GearCraft/ScriptableObject/BonusCard/Gear_1.asset",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/BonusCard_Gear_1.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/BonusCards/BonusCard_gear_2.png",
+      "sha256": "1f48c55efbcd19e416e3df5a19e9529826914fdfe682c687912d63fe8ffca6d9",
+      "guid": "41a82dc6481ad40ddad7e9644b1847dc",
+      "candidate_for_player": false,
+      "referenced_by": [
+        "Assets/GearCraft/ScriptableObject/BonusCard/Gear_2.asset",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/BonusCard_Gear_2.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/BonusCards/BonusCard_gear_3.png",
+      "sha256": "72f634b45d704f341b17d607a1666fab9fea99b8011e4e2b7cc0a18efc6ac347",
+      "guid": "9cbf15af99ccb4b71a9c4badb4e69aa8",
+      "candidate_for_player": false,
+      "referenced_by": [
+        "Assets/GearCraft/ScriptableObject/BonusCard/Gear_3.asset",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/BonusCard_Gear_3.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/BonusCards/BonusCard_hp.png",
+      "sha256": "460351649fa7530910be99ec20cfa87031efdc531e3c14769857691089e85ebc",
+      "guid": "099b4014e8b7fc04e8aeec0058c9f77a",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/BonusCards/BonusCard_hp_100.png",
+      "sha256": "a2d107210d79a5ea7c96356350317dde50a7220ee6fe34f60553bb4a43ac034a",
+      "guid": "1fd161802537e44969bc07a6a79f1cb5",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/ScriptableObject/BonusCard/HP_100.asset",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/BonusCard_hp_100 1.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/BonusCards/BonusCard_hp_20.png",
+      "sha256": "b11b7068cc53837df2c5a4989c00eb571886bcb1236f8d8741f218d64843bac7",
+      "guid": "39e55747c009e4da4a334f780a1aa48f",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/ScriptableObject/BonusCard/HP_20.asset",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/BonusCard_hp_20.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/BonusCards/BonusCard_katana.png",
+      "sha256": "915d1cf40a60508f0f2db26ec8c410cc6b44c547176dd405335109d033a2e8c8",
+      "guid": "279b4fa524bd5a84a9c0b518599008e8",
+      "candidate_for_player": false,
+      "referenced_by": [
+        "Assets/GearCraft/ScriptableObject/BonusCard/Katana.asset",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/BonusCard_katana.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/BonusCards/BonusCard_moduleCore_1.png",
+      "sha256": "9a87a6d586889c5c86979b2d30e884311597c4cd918664c0fd2b6a3b9d7682b5",
+      "guid": "916b1989229ad114fa2b35ff9767c596",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/ScriptableObject/BonusCard/ModuleCore_1.asset",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/BonusCard_ModuleCore_1.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/BonusCards/BonusCard_moduleCore_2.png",
+      "sha256": "936be43c524915bf8aa6a466bcc4a78942a7faf730a15afc37da21f9c7734c7b",
+      "guid": "b574bdbddeaafe446ac5b4c8f6ec83f0",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/ScriptableObject/BonusCard/ModuleCore_2.asset",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/BonusCard_ModuleCore_2.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/BonusCards/BonusCard_moduleCore_3.png",
+      "sha256": "b64f5ce4b1a444093b92cf4be850d9e0880f02122c7078603f875eb7f82b3ae2",
+      "guid": "dbf0ee2b6dcd6454b949f4e4304894ae",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/ScriptableObject/BonusCard/ModuleCore_3.asset",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/BonusCard_ModuleCore_3.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/BonusCards/BonusCard_san.png",
+      "sha256": "01dee376fc682d9d205f4da495447623ddc807d40d5cbde1b57e7e44b3e4162f",
+      "guid": "787c4da7b0b3e314f8049d33b0064d89",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/BonusCards/BonusCard_scrap.png",
+      "sha256": "e06bbb6ed1dbc58d130e42e18861a3b15c54a4c03e8dd849d0288da1c6e611b7",
+      "guid": "5b25a9286e2c2434aa8271f6d71d26f3",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/BonusCards/BonusCard_scrap_2.png",
+      "sha256": "453c778b04b4f8ba0013ae2b6a7247e3dbb568e4fd4e7c2057e6182f23ddf7b0",
+      "guid": "07ec5dcd7308e415b8b5a20ca03fac54",
+      "candidate_for_player": false,
+      "referenced_by": [
+        "Assets/GearCraft/ScriptableObject/BonusCard/Scrap_2.asset",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/BonusCard_Scrap_2.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/BonusCards/BonusCard_scrap_4.png",
+      "sha256": "e1b05fe015ef7d42531cc662593686c9f1895dd53d3028410ee89fbd7cde6cc9",
+      "guid": "85091d254a20f4f9889ac97a87a7bba4",
+      "candidate_for_player": false,
+      "referenced_by": [
+        "Assets/GearCraft/ScriptableObject/BonusCard/Scrap_4.asset",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/BonusCard_Scrap_4.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/BonusCards/BonusCard_str.png",
+      "sha256": "b80c7e36bcf26d40cb905bc731b53222a149b1d4d8a9f286b9938ec75845359a",
+      "guid": "83fb12e9d90d02c4e8a60bac0b6c112f",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/BonusCards/BonusCard_strToacc.png",
+      "sha256": "48604c5823c022e7425efca1abe283613fd66422f534f6c1bcea54af0b014040",
+      "guid": "044b852788c794b609eb71965ee4caba",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/ScriptableObject/BonusCard/STR_to_ACC.asset",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/BonusCard_strToacc.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/BonusCards/BonusCard_str_1.png",
+      "sha256": "3588c1de2edb4d07c0a219fbc53751bef9320a47588e7024413430881d32bee8",
+      "guid": "a71cb9b870bbb4e34b51eeebaca01e48",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/ScriptableObject/BonusCard/STR_1.asset",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/BonusCard_str_1.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/BonusCards/BonusCard_str_2.png",
+      "sha256": "b4dc17ca4d5c5567154d8ac79e0964fd0f93d1af082c1cd1c386fd7988867a90",
+      "guid": "273d18e9028dd4a33b80e725d455b28b",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/ScriptableObject/BonusCard/STR_2.asset",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/BonusCard_str_2.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/BonusCards/BonusCard_str_3.png",
+      "sha256": "7ef4de96c2815bc6b3c1487ac24200f9bf859f81163f8e2b062492012c7d4e76",
+      "guid": "b6b2a9fda9fab488193f5cad4c2f5a57",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/ScriptableObject/BonusCard/STR_3.asset",
+        "Assets/GearCraft/ScriptableObject/Prehubs/BonusCards/BonusCard_str_3.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/CannonBullet.png",
+      "sha256": "f508b00d184e26cf7a452773eeecd763530764694558064eba1a222fb5e68f81",
+      "guid": "9e03fad54345bf842872fa474c3c680e",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/ScriptableObject/Prehubs/Bullet/CannonBullet.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/Enemy/AR-227.png",
+      "sha256": "ef05e9aeda697b572a2b4d3e0c8016f8eeef3a1ae83314b131d86caeb4288e36",
+      "guid": "6dae2b43d159144748c516452d0dc29a",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/ScriptableObject/Gallery/GalleryCatalog.asset",
+        "Assets/GearCraft/ScriptableObject/Prehubs/Enemy/AR-227.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/Enemy/AR-227_1.png",
+      "sha256": "431097a142c67918cb007b5bd8bbad146af9dd87c6e88e938fccd9b3c4358fd3",
+      "guid": "7b75fbfedeb35b342821babe80af23e5",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Animation/EnemyAnimation/Move_AR227.anim"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/Enemy/AR-227_2.png",
+      "sha256": "50a95850c83635a4a242baff2feffea400007de3506a06a24f27cccbaa2d7dac",
+      "guid": "b8cf95dd1238078408b33a4a0c949fee",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Animation/EnemyAnimation/Move_AR227.anim"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/Enemy/AR-227_Bomb.png",
+      "sha256": "27ef7bc53c9683e0ad3cd079616a9877a09896c203e539a901e6a9a209f89339",
+      "guid": "ba3ea495bf65e40ce9d11d39f52a7fe3",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/ScriptableObject/Prehubs/Bullet/Bomb_AR-221.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/Enemy/AR-227_Bullet.png",
+      "sha256": "9efac3d246b077b74048478e5e9aeb489d5684b7557044887a3fee304384e820",
+      "guid": "939b4bf096e3148e4a8d6535dcaeec2b",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/ScriptableObject/Prehubs/Bullet/Bullet_A-1.prefab",
+        "Assets/GearCraft/ScriptableObject/Prehubs/Bullet/Bullet_AR-221.prefab",
+        "Assets/GearCraft/ScriptableObject/Prehubs/Bullet/Bullet_EK9.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/Enemy/AR-227_Missile.png",
+      "sha256": "a4335b335258df3d63be695f692d94f96ae5f5c12e5e771abd82698570610da2",
+      "guid": "73cabdae56d03436aa8c7d833b9a6bce",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/ScriptableObject/Prehubs/Bullet/Missile_AR-221.prefab",
+        "Assets/GearCraft/ScriptableObject/Prehubs/Bullet/Missile_EK9.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/Enemy/B-1_1.png",
+      "sha256": "4e30de189b2c5d7430d6d96e3b4cb61151b96957f3626a8ae31871afb72fa9e8",
+      "guid": "a89361b66b17adc49bf4d33e705236cc",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Animation/EnemyAnimation/B-1_move.anim",
+        "Assets/GearCraft/ScriptableObject/Gallery/GalleryCatalog.asset",
+        "Assets/GearCraft/ScriptableObject/Prehubs/Enemy/B-1.prefab",
+        "Assets/GearCraft/ScriptableObject/Prehubs/Enemy/B-1_Bullet.prefab",
+        "Assets/GearCraft/ScriptableObject/Prehubs/Enemy/BB-413_HeavyShot.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/Enemy/B-1_2.png",
+      "sha256": "ca0ee5cf71610bd147a806c1158f3a8e0e212189dcca78e420f0b1f5062ac7b2",
+      "guid": "bdb59a6d41da8c54aae5d3f8a95fc0b8",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Animation/EnemyAnimation/B-1_move.anim"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/Enemy/BB-12_1.png",
+      "sha256": "97a3d0c0f0399dfd2819c2af15e945621eb3ddf3d542d41e2d3aa3cc1cb1050f",
+      "guid": "92280e493f9c94695907ebdb5a4162ab",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Animation/EnemyAnimation/BB-12_move.anim",
+        "Assets/GearCraft/ScriptableObject/Gallery/GalleryCatalog.asset",
+        "Assets/GearCraft/ScriptableObject/Prehubs/Enemy/BB-12.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/Enemy/BB-12_2.png",
+      "sha256": "a30b0b3da15810bd012e8b0db7e3ed396d5645d3a697172a81e123dcc6dee0cf",
+      "guid": "f48569db38ffa48c28a88d9c0ff45d6c",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Animation/EnemyAnimation/BB-12_move.anim"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/Enemy/BB-413.png",
+      "sha256": "74d237eca9c64ce858053afc819367a2e62616fe8410420706dc0342afc1ccb1",
+      "guid": "2ac601436225b4bf283b5f7426ca612f",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/Enemy/BB-413_1.png",
+      "sha256": "de498c8497d17f21757d572f7c4ec6f5d971e91881ee406e6cdc446f443e2c65",
+      "guid": "45c031b9708b747408d47479eb7c29b5",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Animation/EnemyAnimation/BB-413_move.anim",
+        "Assets/GearCraft/ScriptableObject/Gallery/GalleryCatalog.asset",
+        "Assets/GearCraft/ScriptableObject/Prehubs/Enemy/BB-413.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/Enemy/BB-413_2.png",
+      "sha256": "230b3c55121aad51e93d5ba337f7c243c6e0cc70ac4f0e0c778b88138a4009f4",
+      "guid": "a146886ae97cb4b3ba8e7c2c602f934c",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Animation/EnemyAnimation/BB-413_move.anim"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/Enemy/EA-21_1.png",
+      "sha256": "437394ad550d8071ad72924fb85cf8333cf90c20c1283613d2b6e9b34f46249a",
+      "guid": "d48109a8a0fe146feb352ab15f6cc6ea",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Animation/EnemyAnimation/EA-21_move.anim",
+        "Assets/GearCraft/ScriptableObject/Gallery/GalleryCatalog.asset",
+        "Assets/GearCraft/ScriptableObject/Prehubs/Enemy/EA-21.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/Enemy/EA-21_2.png",
+      "sha256": "a0101e4681eb6c3dc1c379e82273a9e406170c85830232b76db8585b19ae92ea",
+      "guid": "ba906fd886aef47719ab7c97e7143a04",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Animation/EnemyAnimation/EA-21_move.anim"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/Enemy/EG-33_1.png",
+      "sha256": "2de6161a4121d2f26b02f286e2173899dc6864eeea8b05919ec3b2b5baef9888",
+      "guid": "3c9b144b2a5d91640ba0f2e15dce85fc",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Animation/EnemyAnimation/EG33_move.anim",
+        "Assets/GearCraft/ScriptableObject/Gallery/GalleryCatalog.asset",
+        "Assets/GearCraft/ScriptableObject/Prehubs/Enemy/EG-33.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/Enemy/EG-33_2.png",
+      "sha256": "c20aeefb5aab20bf953fdfe8d5719a8c8614ac59f8b8a5427e2ecd93234b9451",
+      "guid": "76ecfcf2c9ba1974da306f25d29de2b3",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Animation/EnemyAnimation/EG33_move.anim"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/Enemy/Enemy_A1_1.png",
+      "sha256": "3b7b6f300c00536fc01eb784fdb69305fa1d08212aec60b538b532e95ecebfd1",
+      "guid": "576badb3c32404844a8f0cea2ec04e06",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Animation/EnemyAnimation/A-1_move.anim",
+        "Assets/GearCraft/Scenes/Title.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/Enemy/Enemy_A1_2.png",
+      "sha256": "5c5b23c555816def2a7731d47ac580457184c0f3ba71e8e532fac98f89b6355c",
+      "guid": "eb5683999a5694b96a2ee146531194d0",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Animation/EnemyAnimation/A-1_move.anim",
+        "Assets/GearCraft/ScriptableObject/Gallery/GalleryCatalog.asset",
+        "Assets/GearCraft/ScriptableObject/Prehubs/Enemy/A-1.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/Enemy/G-1_1.png",
+      "sha256": "34ef591c72135ff4cefc9f98a2c5c68e8d11dd111e12736925513ec42f2f9620",
+      "guid": "0e5d64657fe2a4ff3b5471142c3f5732",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Animation/EnemyAnimation/Move_G1.anim",
+        "Assets/GearCraft/Scenes/Title.unity",
+        "Assets/GearCraft/ScriptableObject/Gallery/GalleryCatalog.asset",
+        "Assets/GearCraft/ScriptableObject/Prehubs/Enemy/G-1.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/Enemy/G-1_2.png",
+      "sha256": "28770f67b66553d06e43d71fb790ddb37de1026c5b3ab0b6d32219cc84235ad0",
+      "guid": "89eabffa752ca467c91e0a9d28aca143",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Animation/EnemyAnimation/Move_G1.anim"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/Enemy/IC-408_1.png",
+      "sha256": "3a049959a5f160cd247bc77dad2305a0cc0a144d80ce31634fec3107c44200fe",
+      "guid": "db5a61e3fe1054a70b24c156988cc8ba",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Animation/EnemyAnimation/Move_IC408.anim",
+        "Assets/GearCraft/ScriptableObject/Gallery/GalleryCatalog.asset",
+        "Assets/GearCraft/ScriptableObject/Prehubs/Enemy/IC-408.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/Enemy/IC-408_2.png",
+      "sha256": "25eb7967f29ee4cf1db7431e08f56157fb63f30a01c6cf780d5fc60a3389e539",
+      "guid": "05f82c91d0bea46c4838c7f7f235b2d2",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Animation/EnemyAnimation/Move_IC408.anim"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/Enemy/ek_1.png",
+      "sha256": "910f8d30bcb7f8abfafd08ce2005bedcf71b273278c56bd832fa4721d4060dbf",
+      "guid": "71b0da71a0d0e44c7881f930942f1b93",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Animation/EnemyAnimation/Move_EK9.anim",
+        "Assets/GearCraft/ScriptableObject/Gallery/GalleryCatalog.asset",
+        "Assets/GearCraft/ScriptableObject/Prehubs/Enemy/FinalBoss.prefab"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/Enemy/ek_2.png",
+      "sha256": "c13bb00d0b4626e9eaaefef3ab95effbca0fdb28268d6a8d0c5134f5b6019910",
+      "guid": "bed16c8201efa407d9398e1c18cb9451",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Animation/EnemyAnimation/Move_EK9.anim"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/Enemy/kari.png",
+      "sha256": "08981d07881d8d04c0e5b66d1f0663596827500fb48bb025d2953cc816188914",
+      "guid": "eafe6ec19ce1c3049abc3dfa59b7c897",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/ScriptableObject/UpgradeParts/AirStep.asset",
+        "Assets/GearCraft/ScriptableObject/UpgradeParts/ArmorPlate++.asset",
+        "Assets/GearCraft/ScriptableObject/UpgradeParts/ArmorPlate+.asset",
+        "Assets/GearCraft/ScriptableObject/UpgradeParts/ArmorPlate.asset",
+        "Assets/GearCraft/ScriptableObject/UpgradeParts/BlastCore.asset",
+        "Assets/GearCraft/ScriptableObject/UpgradeParts/BossBreaker.asset",
+        "Assets/GearCraft/ScriptableObject/UpgradeParts/Damage+1.asset",
+        "Assets/GearCraft/ScriptableObject/UpgradeParts/Damage+2.asset",
+        "Assets/GearCraft/ScriptableObject/UpgradeParts/Damage+3.asset",
+        "Assets/GearCraft/ScriptableObject/UpgradeParts/DriveLink.asset",
+        "Assets/GearCraft/ScriptableObject/UpgradeParts/HeavySlug++.asset",
+        "Assets/GearCraft/ScriptableObject/UpgradeParts/HeavySlug+.asset",
+        "Assets/GearCraft/ScriptableObject/UpgradeParts/HeavySlug.asset",
+        "Assets/GearCraft/ScriptableObject/UpgradeParts/ImpactPiston++.asset",
+        "Assets/GearCraft/ScriptableObject/UpgradeParts/ImpactPiston+.asset",
+        "Assets/GearCraft/ScriptableObject/UpgradeParts/ImpactPiston.asset",
+        "Assets/GearCraft/ScriptableObject/UpgradeParts/JunkMagnet++.asset",
+        "Assets/GearCraft/ScriptableObject/UpgradeParts/JunkMagnet+.asset",
+        "Assets/GearCraft/ScriptableObject/UpgradeParts/JunkMagnet.asset",
+        "Assets/GearCraft/ScriptableObject/UpgradeParts/MobilityGear.asset",
+        "Assets/GearCraft/ScriptableObject/UpgradeParts/PrecisionNozzle.asset",
+        "Assets/GearCraft/ScriptableObject/UpgradeParts/ReachExtender.asset",
+        "Assets/GearCraft/ScriptableObject/UpgradeParts/ReflectionBullet+.asset",
+        "Assets/GearCraft/ScriptableObject/UpgradeParts/ReflectionBullet.asset",
+        "Assets/GearCraft/ScriptableObject/UpgradeParts/SalvageBlade++.asset",
+        "Assets/GearCraft/ScriptableObject/UpgradeParts/SalvageBlade+.asset",
+        "Assets/GearCraft/ScriptableObject/UpgradeParts/SalvageBlade.asset",
+        "Assets/GearCraft/ScriptableObject/UpgradeParts/SpeedGear++.asset",
+        "Assets/GearCraft/ScriptableObject/UpgradeParts/SpeedGear+.asset",
+        "Assets/GearCraft/ScriptableObject/UpgradeParts/SpeedGear.asset",
+        "Assets/GearCraft/ScriptableObject/UpgradeParts/SwingGear++.asset",
+        "Assets/GearCraft/ScriptableObject/UpgradeParts/SwingGear+.asset",
+        "Assets/GearCraft/ScriptableObject/UpgradeParts/SwingGear.asset",
+        "Assets/GearCraft/ScriptableObject/UpgradeParts/TwinBarrel.asset",
+        "Assets/GearCraft/ScriptableObject/UpgradeParts/UnstableChamber.asset"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/GearCraft_Chara_arm 1.png",
+      "sha256": "c462d27182252d11ece83646779eb3839f2cba7f1e57dadddadf5179ffa1b48c",
+      "guid": "5dc75686bee859541a4349ac96c00b12",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/GearCraft_Chara_arm.png",
+      "sha256": "40bd15e773757bfcf31f07b1cc6133b50672c396aca4d4e404bb3a1e63a76074",
+      "guid": "55e30b73df39dee4e9eb1987d8fec59c",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/GearCraft_Chara_idle.png",
+      "sha256": "debf9f2173e8bd7924f9dab0ff76ef67c906314f04489f8456ca7f897c79d6d2",
+      "guid": "5823050afcb0d0043b39b09edd88b43a",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/CraftSpace.unity",
+        "Assets/GearCraft/Scenes/Main.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/GearCraft_DayPanel.png",
+      "sha256": "bfa12949bb64282f87ba47259dfe5d9e65e9e8739965e1007c591dbfaee15c2a",
+      "guid": "f97d1110d75084dc7a91fe02e131c356",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Main.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/Icon_Option.png",
+      "sha256": "4bfbe3794a8950c949a46aaa6dabf71bbc1f902460452e4ef64ad853c674589f",
+      "guid": "5752a8b811f9c4b79a283118f656a691",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Main.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/bgmName_main.png",
+      "sha256": "b49768b081571829bf6424dc80432f4bd87e1b2e7db6fbe4f841b27e45e2f82b",
+      "guid": "e6896a42fb33b564892cebae6e2ce0b2",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Main.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/boostPanel.png",
+      "sha256": "a7d7b647262dddc30a4ffc6d2c974ff4eceeb053c289d623349957778e8e8b51",
+      "guid": "d373871cbba262544b3f204a1e17ef63",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Main.unity",
+        "Assets/GearCraft/ScriptableObject/Prehubs/others/Boost.prefab",
+        "Assets/GearCraft/ScriptableObject/WeaponData/RailCraft.asset"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/emergency.png",
+      "sha256": "11f4de3f482dd69403a2f44d6e5fc642dd32f8500be771a7e6cdbf95478bc21c",
+      "guid": "60641c4dc4e774e77aef32fa6b2dc978",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Main.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/file_paper.png",
+      "sha256": "99711bd4b392af52b1fdec2f9ed1912b3a6c961c3863524c909929d9745fb706",
+      "guid": "ac7dfa5ea9bd44325ae5c1332119b240",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Main.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/gate.png",
+      "sha256": "f952b18570301c5329f604b01fa4041daab8d8912cae2b5a729b4be23f429d0c",
+      "guid": "d9b608d156ef9a54e978708e20c4b19a",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Main.unity",
+        "Assets/GearCraft/Scenes/Title.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/gearcraft_stage_background_1.png",
+      "sha256": "6cf301e009aa3d22216b5a7c008a6418e2e87a1c5e312ce6a4199642fc2352d2",
+      "guid": "2abdf2a5a770089418083df1b54be679",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Main.unity",
+        "Assets/GearCraft/ScriptableObject/Story/OpeningStory.asset"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/gearcraft_stage_background_2.png",
+      "sha256": "d34b539e9791ce9ae771c983d1cf44dd2e88991810647096e78ed6dd03d33f70",
+      "guid": "5c9c50a41d445b14c92985d9a4cc460f",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/gearcraft_stage_background_fence.png",
+      "sha256": "c64dd2408bf01d9ba9667566a9758d237eb4a16bb23169f56298ba00cbf7c0f0",
+      "guid": "0ff335fd63bcf8e42bc945b3fa52fa13",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/gearcraft_stage_background_fence_v2.png",
+      "sha256": "29e22f6f8573da0bc6a5d61ed6642f3945b4ea9d45b5298ee0d68956cebab355",
+      "guid": "2350d9ca550364046ae0472e00ce2b0a",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Main.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Images/main/warning.png",
+      "sha256": "43c6b50a179dfdf4019d6ec1156863013866251caa0fd7f48ea6e9fd7e25d7e7",
+      "guid": "2e5c36aee4d434e0190e47a2435bb038",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/Scenes/Main.unity"
+      ],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/Plugins/Demigiant/DOTween/Editor/Imgs/DOTweenIcon.png",
+      "sha256": "6e6ca81af7b3fdbecc7069b8644047713af97c8e311cd3da97e75eff0b973faa",
+      "guid": "8da095e39e9b4df488dfd436f81116d6",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "plugin_editor_art"
+    },
+    {
+      "path": "Assets/GearCraft/Plugins/Demigiant/DOTween/Editor/Imgs/DOTweenMiniIcon.png",
+      "sha256": "29cd2e4bf91e3fe91a2485ac1608d2ba6ae338d04c82fd8d343ae4336684e644",
+      "guid": "61521df2e071645488ba3d05e49289ae",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "plugin_editor_art"
+    },
+    {
+      "path": "Assets/GearCraft/Plugins/Demigiant/DOTween/Editor/Imgs/Footer.png",
+      "sha256": "b1bccfb25ef58988d123ade538e28637da988dfaf33272067b641f34582e7b89",
+      "guid": "7051dba417b3d53409f2918f1ea4938d",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "plugin_editor_art"
+    },
+    {
+      "path": "Assets/GearCraft/Plugins/Demigiant/DOTween/Editor/Imgs/Footer_dark.png",
+      "sha256": "2bc04d9700e60b53aa4741c4580d61e490b1192d3ea4f98f4437a2e776057a5a",
+      "guid": "519694efe2bb2914788b151fbd8c01f4",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "plugin_editor_art"
+    },
+    {
+      "path": "Assets/GearCraft/Plugins/Demigiant/DOTween/Editor/Imgs/Header.jpg",
+      "sha256": "80652902491d99fe580056ed204d204d9ecaccf810e7ec546bd949ccff8d67fd",
+      "guid": "78a59ca99f8987941adb61f9e14a06a7",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "plugin_editor_art"
+    },
+    {
+      "path": "Assets/GearCraft/SofumeLogo_WhiteTextAlpha_1920x1080.png",
+      "sha256": "914dca0024de98dc9ebd1fb8395b625d15d0503de959bcc8783cfd6006a91fb6",
+      "guid": "2854f7f5d122a4f3f98fe4e0d0065170",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "artwork_provenance_unconfirmed"
+    },
+    {
+      "path": "Assets/GearCraft/TextMesh Pro/Fonts/LiberationSans.ttf",
+      "sha256": "e5b0af421ea2bfbc1ac8d251d647268087ae82786234c57f757d1f0b90fa8b49",
+      "guid": "e3265ab4bf004d28a9537516768c1c75",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Fallback.asset",
+        "Assets/GearCraft/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF.asset"
+      ],
+      "category": "font"
+    },
+    {
+      "path": "Assets/GearCraft/TextMesh Pro/Sprites/EmojiOne.png",
+      "sha256": "a87b965a701de3dc31d7401e542b1fc946587f912c51d7a26e46ade9f098bd1a",
+      "guid": "dffef66376be4fa480fb02b19edbe903",
+      "candidate_for_player": true,
+      "referenced_by": [
+        "Assets/GearCraft/TextMesh Pro/Resources/Sprite Assets/EmojiOne.asset"
+      ],
+      "category": "emoji_version_unconfirmed"
+    },
+    {
+      "path": "Assets/Screenshots/craft_before_ui.png",
+      "sha256": "0c3034f9a16212c0bcb9e56351ff45be11025fce91f3c730d2ded7212fd053be",
+      "guid": "8ec70cd33571a4df8a5014833a2ab7b6",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "development_screenshot"
+    },
+    {
+      "path": "Assets/Screenshots/craft_crafting_scroll_left_bottom.png",
+      "sha256": "36bb48cd34ba0e5c5e84918043b496be17035d3637bc700b211d953d93cecf3c",
+      "guid": "c2d1c2ea82237411fba488962b268025",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "development_screenshot"
+    },
+    {
+      "path": "Assets/Screenshots/craft_crafting_scroll_left_bottom_v2.png",
+      "sha256": "6fd4b812cd6067a3708bf25ee5cba5bc4cb28a5f33c7c2ffa60838d9885a4a24",
+      "guid": "7899dc8f0b82540a7ad636010dee3a52",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "development_screenshot"
+    },
+    {
+      "path": "Assets/Screenshots/craft_crafting_scroll_left_v1.png",
+      "sha256": "eec25c57dc4b9766fe7446d99ddc9b32e9969f14252e124f29009830e31e4a00",
+      "guid": "cbbde81766e7342e2907f1fa72fb51da",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "development_screenshot"
+    },
+    {
+      "path": "Assets/Screenshots/craft_crafting_scroll_left_v2.png",
+      "sha256": "36bb48cd34ba0e5c5e84918043b496be17035d3637bc700b211d953d93cecf3c",
+      "guid": "f44cea5eb6ec14fa88b5768fbcd98b81",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "development_screenshot"
+    },
+    {
+      "path": "Assets/Screenshots/craft_weapon_custom_after.png",
+      "sha256": "1f0b5eacf09d45495bd80582f9e8096de6653ab1642b614d2d7299e2f37b197d",
+      "guid": "1f31e2796dc894aef8c2553627d47650",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "development_screenshot"
+    },
+    {
+      "path": "Assets/Screenshots/craft_weapon_custom_after_final.png",
+      "sha256": "89b667175a1f69f53b126cdc9ed06de39cb5bc40c14b7306a1f32af3bd212898",
+      "guid": "943930ee5d72f45369fe74e21bd3577f",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "development_screenshot"
+    },
+    {
+      "path": "Assets/Screenshots/craft_weapon_custom_after_final_clean.png",
+      "sha256": "2d33b31930eeaf6a4a752ea54c64c6d60391803bb1470d237e62203edfb0392a",
+      "guid": "7ded359791df84f7ca61f5680a8362dc",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "development_screenshot"
+    },
+    {
+      "path": "Assets/Screenshots/craft_weapon_custom_after_grid_focus.png",
+      "sha256": "f0f4851b42b9dd044a540d00f60eebbe32f03466e16011a5c2a6a7999960884b",
+      "guid": "ff60ba8d034914bb297b251f00680493",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "development_screenshot"
+    },
+    {
+      "path": "Assets/Screenshots/craft_weapon_custom_after_grid_focus_v2.png",
+      "sha256": "46f1cd1033aefb22b78697393d6151898aeda9b061262eae9c454e93240bfa6c",
+      "guid": "f57121ce9593c418e84884475caf5b9a",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "development_screenshot"
+    },
+    {
+      "path": "Assets/Screenshots/craft_weapon_custom_after_v2.png",
+      "sha256": "e2180fe0104122dd9c35daa4b0d19d45a215b85c9def1f722f730cc09962b9c1",
+      "guid": "2e966dca95a624c169795af9580eb6b6",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "development_screenshot"
+    },
+    {
+      "path": "Assets/Screenshots/craft_weapon_custom_after_v3.png",
+      "sha256": "900467624ba5b82ece454e7e82ec4c0d7ecf3ba82ccdb977a579606addcd93f7",
+      "guid": "8105e8c642a984eb78a8752d192f524e",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "development_screenshot"
+    },
+    {
+      "path": "Assets/Screenshots/craft_weapon_custom_after_v4.png",
+      "sha256": "8e664ad8f7a1490d3f814ccda99659cecceb5d975c75f24b192177f2a4c79836",
+      "guid": "a63ce77b258774709be47f77be781ffd",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "development_screenshot"
+    },
+    {
+      "path": "Assets/Screenshots/craft_weapon_custom_after_v5.png",
+      "sha256": "2bd5b393bd569f704e0315dc901653e52773484130a911c2857689a142015aea",
+      "guid": "60a8ee1d735914b739d3aa8cccabb300",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "development_screenshot"
+    },
+    {
+      "path": "Assets/Screenshots/craft_weapon_custom_after_v6.png",
+      "sha256": "0c173a4a499f8ff2b6c9c1bade86dbeef6b1c780efa6d15c7ac49a29dceb8a8e",
+      "guid": "b3d821e7ccf324a289e29ea5d91a139d",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "development_screenshot"
+    },
+    {
+      "path": "Assets/Screenshots/debug_visible_panel.png",
+      "sha256": "fcf71401cb7f32f039f3b851a85b79d37a10f6342c8bf01b98aa226f053152c3",
+      "guid": "5e4774cad56784c59b8d175b1b9001e3",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "development_screenshot"
+    },
+    {
+      "path": "Assets/Screenshots/tooltip_center_test.png",
+      "sha256": "3c3492cafecb30659da8281451f37d1dc19ca402d79f87b3430b7c8089e80f37",
+      "guid": "e3bff08d32f8c4ac7b1df703dc286953",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "development_screenshot"
+    },
+    {
+      "path": "Assets/Screenshots/tooltip_forcecanvas.png",
+      "sha256": "62517d1c2658ef07d6351361cc43c93e1d6e5153fa184d9bc4b7a0c19bd555a0",
+      "guid": "03cbf63773e91489097534bdee868cd0",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "development_screenshot"
+    },
+    {
+      "path": "Assets/Screenshots/tooltip_maincamera_layer_fix.png",
+      "sha256": "62517d1c2658ef07d6351361cc43c93e1d6e5153fa184d9bc4b7a0c19bd555a0",
+      "guid": "3198b0d5d0f114bd98f1ac1021c7bfa0",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "development_screenshot"
+    },
+    {
+      "path": "Assets/Screenshots/tooltip_playmode_after_fix.png",
+      "sha256": "a46c58dce9862d199445a0ee7813042f439640a54ecd486916ea0e5b793957e3",
+      "guid": "b7d661df4fbb64b59a12415c01efbdd8",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "development_screenshot"
+    },
+    {
+      "path": "Assets/Screenshots/tooltip_playmode_layer_fix.png",
+      "sha256": "ebdc3a559c04c0f2dbc7f68fa12456528f2923a9e17f3654cbf53ccfb5b4c312",
+      "guid": "4a50a874e6ed24062a64b4e9162803c3",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "development_screenshot"
+    },
+    {
+      "path": "Assets/Screenshots/tooltip_test_after_fix.png",
+      "sha256": "9db453aee66b02dc81387412bee0dd4c230ad2a1d9bb2f9d1fe4798000ea69f6",
+      "guid": "a53ca5ca19641496189b1e0ef24aa728",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "development_screenshot"
+    },
+    {
+      "path": "Assets/Screenshots/weapon_custom_shop_scroll_bottom_padding.png",
+      "sha256": "28fb5a1045e9c3a2a6944642ac1fe67ca460b6d68138d9455464720e9bd4990a",
+      "guid": "6199ea6d26bc84d258ff94cf8ab04c7d",
+      "candidate_for_player": false,
+      "referenced_by": [],
+      "category": "development_screenshot"
+    }
+  ]
+}

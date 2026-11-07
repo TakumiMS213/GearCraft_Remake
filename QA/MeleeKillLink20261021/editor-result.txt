@@ -1,0 +1,3 @@
+PASS: 213 native assertions. 18 assets, shop references, restrictions, stats, defense, jumps, visual/collider size, hit dedup, boss damage, kill-only drive activation/refresh/expiry/direct and explosion kills, naming, loot attribution, explosion and unique placement.
+Active scene preserved: True
+Dirty state preserved: True

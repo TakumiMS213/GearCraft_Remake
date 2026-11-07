@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 public static class UpgradeEffectTextFormatter
 {
@@ -11,8 +11,8 @@ public static class UpgradeEffectTextFormatter
 
         switch (effect.type)
         {
-            case UpgradeEffectType.DamageFlat:
-                return FormatMagnitudeDelta("ダメージ", effect.value);
+            case UpgradeEffectType.DamagePercent:
+                return FormatPercentDelta("基礎ダメージ", effect.value);
             case UpgradeEffectType.AttackSpeedMult:
                 return FormatAttackSpeedMultiplier(effect.value);
             case UpgradeEffectType.BulletDouble:
@@ -24,11 +24,31 @@ public static class UpgradeEffectTextFormatter
             case UpgradeEffectType.Ricochet:
                 return FormatMagnitudeDelta("跳弾", effect.value);
             case UpgradeEffectType.JunkCollector:
-                return FormatPercentDelta("素材ドロップ率", effect.value);
+                return FormatPercentDelta("素材獲得数", effect.value);
             case UpgradeEffectType.BulletSizeUp:
                 return FormatPercentDelta("弾サイズ", effect.value);
             case UpgradeEffectType.MagnetRangeUp:
                 return FormatMagnitudeDelta("回収範囲", effect.value);
+            case UpgradeEffectType.MeleeKnockback:
+                return $"命中時に敵を{effect.value:0.##}押し戻す（合計上限1.5、ボスは効果20%）";
+            case UpgradeEffectType.MeleeSwingSpeed:
+                return $"振り時間を{(1f - effect.value) * 100f:0}%短縮（合計上限65%）";
+            case UpgradeEffectType.MeleeSize:
+                return $"武器サイズ・攻撃範囲+{effect.value * 100f:0}%（パーツ上限20%、巨大化と重複）";
+            case UpgradeEffectType.MeleeExplosion:
+                return $"命中時に爆発（近接ダメージの{effect.value * 100f:0}%、半径1.2）";
+            case UpgradeEffectType.MeleeDriveBoost:
+                return $"近接撃破後5秒、PunkDriveの火力+{effect.value * 100f:0}%（再撃破で時間更新）";
+            case UpgradeEffectType.MeleeKillDrops:
+                return $"近接撃破時の素材獲得数+{effect.value * 100f:0}%（Junk Magnetと加算）";
+            case UpgradeEffectType.MeleeDefense:
+                return $"被弾後の無敵時間+{effect.value * 100f:0}%（近接装備中、合計上限80%）";
+            case UpgradeEffectType.MeleeExtraJump:
+                return $"空中ジャンプ+{effect.value:0}回";
+            case UpgradeEffectType.MeleeMoveSpeed:
+                return FormatPercentDelta("移動速度", effect.value);
+            case UpgradeEffectType.MeleeBossDamage:
+                return FormatPercentDelta("ボスへの近接ダメージ", effect.value);
             default:
                 return $"{effect.type} {effect.value:0.##}";
         }
@@ -54,8 +74,9 @@ public static class UpgradeEffectTextFormatter
             case UpgradeEffectType.SpreadIncrease:
                 return true;
             case UpgradeEffectType.AttackSpeedMult:
+            case UpgradeEffectType.MeleeSwingSpeed:
                 return effect.value > 1f;
-            case UpgradeEffectType.DamageFlat:
+            case UpgradeEffectType.DamagePercent:
             case UpgradeEffectType.Ricochet:
             case UpgradeEffectType.JunkCollector:
             case UpgradeEffectType.BulletSizeUp:

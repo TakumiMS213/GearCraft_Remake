@@ -7,8 +7,8 @@ namespace GearCraft.Scripts.Main
     public sealed class MainIdleHelpController : MonoBehaviour
     {
         [Header("Timing")]
-        [SerializeField] private float moveHelpDelay = 3f;
-        [SerializeField] private float attackHelpDelay = 3f;
+        [SerializeField] private float moveHelpDelay = 5f;
+        [SerializeField] private float attackHelpDelay = 5f;
         [SerializeField] private float boostHelpDelay = 5f;
 
         [Header("Left Bottom Help")]
@@ -28,30 +28,43 @@ namespace GearCraft.Scripts.Main
         private float moveIdleTime;
         private float attackIdleTime;
         private float boostIdleTime;
+        private SceneTransitionManager sceneTransition;
+        private PlayerController player;
 
         private void Awake()
         {
+            sceneTransition = FindFirstObjectByType<SceneTransitionManager>(FindObjectsInactive.Include);
+            player = FindFirstObjectByType<PlayerController>(FindObjectsInactive.Include);
             EnsureLeftBottomPrompts();
             ResolveBoostObjects();
-            SetPromptActive(movePrompt, false);
-            SetPromptActive(attackPrompt, false);
-            SetBoostPromptActive(false);
+            HideAndReset();
         }
 
-        private void Update()
+        // Read UI state after pause/reward input has been processed for this frame.
+        private void LateUpdate()
         {
-            if (StageFlowManager.IsPlayerInputBlocked)
+            if (StageFlowManager.IsPlayerInputBlocked || EndingManager.IsLoadingEnding ||
+                GearCraft.Gallery.GalleryNavigation.IsOpen ||
+                (sceneTransition != null && sceneTransition.IsLoading) ||
+                player == null || !player.isActiveAndEnabled || player.HP <= 0)
             {
-                moveIdleTime = attackIdleTime = boostIdleTime = 0f;
-                SetPromptActive(movePrompt, false);
-                SetPromptActive(attackPrompt, false);
-                SetBoostPromptActive(false);
+                HideAndReset();
                 return;
             }
 
             UpdateMoveHelp();
             UpdateAttackHelp();
             UpdateBoostHelp();
+        }
+
+        private void OnDisable() => HideAndReset();
+
+        private void HideAndReset()
+        {
+            moveIdleTime = attackIdleTime = boostIdleTime = 0f;
+            SetPromptActive(movePrompt, false);
+            SetPromptActive(attackPrompt, false);
+            SetBoostPromptActive(false);
         }
 
         private void UpdateMoveHelp()

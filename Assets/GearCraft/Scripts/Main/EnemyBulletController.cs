@@ -3,7 +3,6 @@ using UnityEngine;
 public class EnemyBulletController : MonoBehaviour
 {
     [Header("Bullet Settings")]
-    public float bulletDamage = 10f;
     public float bulletLifeTime = 2f;
     public bool destroyOnHit = true; // falseなら貫通
     public bool DoSmoke = false;
@@ -22,6 +21,7 @@ public class EnemyBulletController : MonoBehaviour
 
     public AudioSource hitSound;
 
+    private bool hitResolved;
     private GameObject smokeInstance;
     private ParticleSystem[] smokeParticles;
 
@@ -96,7 +96,7 @@ public class EnemyBulletController : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision == null) return;
+        if (collision == null || hitResolved) return;
 
         // 迎撃できる通常弾は、接触ダメージと消滅演出を同じコンポーネントで一度だけ処理する。
         // Player/Gateへの接触はEnemyProjectileDamageable側で受け、地面接触だけここから委譲する。
@@ -110,8 +110,12 @@ public class EnemyBulletController : MonoBehaviour
             return;
         }
 
-        // 敵や壁などには反応しない
-        if (!collision.CompareTag("Player") && !collision.CompareTag("Ground")) return;
+        PlayerController player = collision.GetComponentInParent<PlayerController>();
+        GateManager gate = collision.GetComponentInParent<GateManager>();
+        if (player == null && gate == null && !collision.CompareTag("Ground")) return;
+
+        // Destroy is deferred. Resolve a consumed projectile only once, including barrier hits.
+        if (destroyOnHit) hitResolved = true;
 
         // 爆弾弾なら爆発処理を優先
         if (bombBullet)
@@ -121,16 +125,14 @@ public class EnemyBulletController : MonoBehaviour
         else
         {
             // 通常弾のダメージ処理
-            PlayerController player = collision.GetComponent<PlayerController>();
             if (player != null)
             {
-                player.TakeDamageByBullet(bulletDamage);
+                player.ReceiveEnemyHit();
             }
 
-            GateManager gate = collision.GetComponent<GateManager>();
             if (gate != null)
             {
-                gate.TakeDamage(bulletDamage);
+                gate.ReceiveEnemyHit();
             }
 
             SpawnHitEffect();
@@ -167,24 +169,20 @@ public class EnemyBulletController : MonoBehaviour
             effect.transform.localScale = Vector3.one * Mathf.Max(0.1f, bombRadius);
         }
 
-        // 範囲内のプレイヤー検出
-        Collider2D[] hitPlayers = playerLayer.value != 0
-            ? Physics2D.OverlapCircleAll(transform.position, bombRadius, playerLayer)
-            : Physics2D.OverlapCircleAll(transform.position, bombRadius);
-
-        foreach (Collider2D col in hitPlayers)
+        // A single explosion hits each target once, even with multiple colliders.
+        var players = new System.Collections.Generic.HashSet<PlayerController>();
+        var gates = new System.Collections.Generic.HashSet<GateManager>();
+        foreach (Collider2D col in Physics2D.OverlapCircleAll(transform.position, bombRadius))
         {
-            if (!col.CompareTag("Player"))
-            {
-                continue;
-            }
+            PlayerController player = col.GetComponentInParent<PlayerController>();
+            if (player != null &&
+                (playerLayer.value == 0 || (playerLayer.value & (1 << col.gameObject.layer)) != 0) &&
+                players.Add(player))
+                player.ReceiveEnemyHit();
 
-            PlayerController player = col.GetComponent<PlayerController>();
-            if (player != null)
-            {
-                player.TakeDamageByBullet(bulletDamage);
-                Debug.Log($"→ {player.name} に範囲ダメージ {bulletDamage}");
-            }
+            GateManager gate = col.GetComponentInParent<GateManager>();
+            if (gate != null && gates.Add(gate))
+                gate.ReceiveEnemyHit();
         }
     }
 

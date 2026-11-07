@@ -15,6 +15,8 @@ public class PlayerController : MonoBehaviour
     public float dashSpeed = 12f;
     public float dashDuration = 0.18f;
     private bool isGrounded;
+    private int airJumpsUsed;
+    private float meleeDriveBuffUntil;
     private int lastTapDirection = 0;
     private float lastTapTime = -999f;
     private int dashDirection = 0;
@@ -47,7 +49,6 @@ public class PlayerController : MonoBehaviour
     private CancellationTokenSource gearCraftCts;
     private WeaponDataSO gearCraftReturnWeapon;
     private WeaponDataSO gearCraftTemporaryWeapon;
-    private const float ENEMY_CONTACT_DAMAGE = 5f;
     private bool isBarrierActive;
     private bool isBarrierRecharging;
     private bool isDeathRetrying;
@@ -206,8 +207,11 @@ public class PlayerController : MonoBehaviour
         if (currentWeapon == appliedWeapon) return;
 
         appliedWeapon = currentWeapon;
+        armRotation?.CancelSwing();
+        meleeDriveBuffUntil = 0f;
         attackCadence.Interrupt();
         chargedShot.Cancel();
+        UpdateChargeIndicator(false);
         lastArmTriggerName = null;
 
         if (meleeWeapon != null)
@@ -278,7 +282,7 @@ public class PlayerController : MonoBehaviour
             }
             else
             {
-                rb.linearVelocity = new Vector2(dashDirection * dashSpeed, rb.linearVelocity.y);
+                rb.linearVelocity = new Vector2(dashDirection * dashSpeed * GetMeleeMoveMultiplier(), rb.linearVelocity.y);
             }
         }
         else
@@ -288,12 +292,7 @@ public class PlayerController : MonoBehaviour
 
         anim.SetBool("run", dashTimer > 0f || moveInput != 0);
 
-        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
-        {
-            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
-            isGrounded = false;
-            anim.SetBool("jump", true);
-        }
+        if (Input.GetKeyDown(KeyCode.Space)) TryJump();
         if (isGrounded) anim.SetBool("jump", false);
     }
 
@@ -312,6 +311,17 @@ public class PlayerController : MonoBehaviour
 
         lastTapDirection = pressedDirection;
         lastTapTime = Time.time;
+    }
+
+    private bool TryJump()
+    {
+        int extra = runtimeStatus != null && runtimeStatus.HasMeleeEquipped ? runtimeStatus.meleeUpgrades.extraJumps : 0;
+        if (rb == null || (!isGrounded && airJumpsUsed >= extra)) return false;
+        if (!isGrounded) airJumpsUsed++;
+        rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+        isGrounded = false;
+        if (anim != null) anim.SetBool("jump", true);
+        return true;
     }
 
     private int GetHorizontalKeyDownDirection()
@@ -355,8 +365,20 @@ public class PlayerController : MonoBehaviour
             speed += runtimeStatus.gearCraftSwordMoveSpeedBonus;
         }
 
-        return Mathf.Max(0f, speed);
+        return Mathf.Max(0f, speed) * GetMeleeMoveMultiplier();
     }
+
+    private float GetMeleeMoveMultiplier() => runtimeStatus != null && runtimeStatus.HasMeleeEquipped
+        ? 1f + runtimeStatus.meleeUpgrades.moveSpeedBonus : 1f;
+
+    public void NotifyMeleeKill()
+    {
+        if (runtimeStatus != null && runtimeStatus.HasMeleeEquipped && runtimeStatus.meleeUpgrades.punkDriveKillBonus > 0f)
+            meleeDriveBuffUntil = Time.time + 5f;
+    }
+
+    public float PunkDriveDamageMultiplier => runtimeStatus != null && runtimeStatus.HasMeleeEquipped && Time.time < meleeDriveBuffUntil
+        ? 1f + runtimeStatus.meleeUpgrades.punkDriveKillBonus : 1f;
 
     // --- Attack ---
     private void HandleAttack()
@@ -398,7 +420,8 @@ public class PlayerController : MonoBehaviour
 
         float interval = currentWeapon != null ? currentWeapon.coolTime : 0f;
         if (runtimeStatus != null) interval *= runtimeStatus.attackSpeedMult;
-        int attacks = attackCadence.Advance(pressed, held, automatic, allowed, deltaTime, interval);
+        float spinUpSeconds = currentWeapon != null && currentWeapon.weaponName == "SteamGatling" ? 5f : 0f;
+        int attacks = attackCadence.Advance(pressed, held, automatic, allowed, deltaTime, interval, spinUpSeconds);
         coolTime = (float)attackCadence.RemainingSeconds;
         for (int i = 0; i < attacks; i++)
         {
@@ -411,6 +434,7 @@ public class PlayerController : MonoBehaviour
 
     private void UpdateChargeIndicator(bool visible)
     {
+        armRotation?.SetFullChargeShake(visible && chargedShot.IsCharging && chargedShot.ChargeFraction >= 1f);
         if (visible && chargeIndicator == null)
             chargeIndicator = gameObject.AddComponent<RailChargeIndicator>();
         if (chargeIndicator != null)
@@ -421,8 +445,9 @@ public class PlayerController : MonoBehaviour
     {
         if (armRotation != null && currentWeapon != null)
         {
-            meleeWeapon?.BeginAttack(currentWeapon.meleeRotateDuration);
-            armRotation.RotateArmOnce(currentWeapon.meleeRotateDuration);
+            float duration = currentWeapon.meleeRotateDuration * (runtimeStatus != null ? runtimeStatus.meleeUpgrades.SwingMultiplier : 1f);
+            meleeWeapon?.BeginAttack(duration);
+            armRotation.RotateArmOnce(duration);
         }
     }
 
@@ -491,7 +516,7 @@ public class PlayerController : MonoBehaviour
         float projectileDamage = currentDamage;
         if (runtimeStatus != null)
         {
-            projectileDamage += runtimeStatus.GetWeaponDamageBonus(currentWeapon);
+            projectileDamage += runtimeStatus.GetWeaponDamageBonus(currentWeapon, currentDamage);
             if (runtimeStatus.bulletSizeMult > 1f)
             {
                 bullet.transform.localScale *= runtimeStatus.bulletSizeMult;
@@ -604,7 +629,17 @@ public class PlayerController : MonoBehaviour
             runtimeStatus.steamCannonGiantBulletChance > 0f &&
             UnityEngine.Random.value < runtimeStatus.steamCannonGiantBulletChance)
         {
-            bullet.transform.localScale *= 3f;
+            const float visualMultiplier = 2f;
+            const float hitboxMultiplier = 1.5f;
+            bullet.transform.localScale *= visualMultiplier;
+            // 見た目は2倍、判定は1.5倍。既存の弾サイズ強化は両方に乗算される。
+            BoxCollider2D hitbox = bullet.GetComponent<BoxCollider2D>();
+            if (hitbox != null)
+            {
+                float colliderCorrection = hitboxMultiplier / visualMultiplier;
+                hitbox.size *= colliderCorrection;
+                hitbox.offset *= colliderCorrection;
+            }
         }
     }
 
@@ -663,7 +698,7 @@ public class PlayerController : MonoBehaviour
 
         if (runtimeStatus != null)
         {
-            damage += runtimeStatus.GetWeaponDamageBonus(currentWeapon);
+            damage += runtimeStatus.GetWeaponDamageBonus(currentWeapon, currentDamage);
         }
 
         Vector3 center = muzzlePosition + (Vector3)(direction.normalized * range * 0.5f);
@@ -693,13 +728,13 @@ public class PlayerController : MonoBehaviour
     // --- Damage & Invincibility ---
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.collider.CompareTag("Ground")) isGrounded = true;
+        UpdateGroundContact(collision);
         if (collision.collider.CompareTag("Enemy") &&
             !MainDebugEnemySpawnWindow.IsDebugModeActive &&
             !isInvincible &&
             collision.gameObject.activeSelf)
         {
-            TakeDamageByBullet(ENEMY_CONTACT_DAMAGE);
+            ReceiveEnemyHit();
         }
         if (collision.collider.CompareTag("Wall"))
         {
@@ -711,6 +746,7 @@ public class PlayerController : MonoBehaviour
 
     private void OnCollisionExit2D(Collision2D collision)
     {
+        if (collision.collider.CompareTag("Ground")) isGrounded = false;
         if (collision.collider.CompareTag("Wall"))
         {
             isTouchingWall = false;
@@ -718,7 +754,16 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    public async void TakeDamageByBullet(float bulletDamage)
+    private void OnCollisionStay2D(Collision2D collision) => UpdateGroundContact(collision);
+
+    private void UpdateGroundContact(Collision2D collision)
+    {
+        if (!collision.collider.CompareTag("Ground") || (rb != null && rb.linearVelocity.y > 0.1f)) return;
+        foreach (var contact in collision.contacts)
+            if (contact.normal.y > 0.5f) { isGrounded = true; airJumpsUsed = 0; break; }
+    }
+
+    public async void ReceiveEnemyHit()
     {
         if (MainDebugEnemySpawnWindow.IsDebugModeActive) return;
         if (EndingManager.IsLoadingEnding) return;
@@ -731,14 +776,14 @@ public class PlayerController : MonoBehaviour
 
         if (runtimeStatus != null)
         {
-            runtimeStatus.HP -= (int)bulletDamage;
+            runtimeStatus.HP = Mathf.Max(0, runtimeStatus.HP - HealthGaugeRules.PointsPerSegment);
             if (runtimeStatus.HP <= 0)
             {
                 isDeathRetrying = true;
                 CancelTemporaryCombatEffects();
                 StageFlowManager deathFlow = StageFlowManager.Instance;
                 deathFlow?.enemySpawner?.StopSpawning();
-                if (AllBlack != null) AllBlack.SetAllToBlack();
+                deathFlow?.BeginPlayerDeathPresentation();
 
                 // 他の敵を破壊
                 foreach (var enemy in GameObject.FindGameObjectsWithTag("Enemy"))
@@ -756,7 +801,9 @@ public class PlayerController : MonoBehaviour
                 var token = this.GetCancellationTokenOnDestroy();
                 try
                 {
-                    await UniTask.Delay(1000, cancellationToken: token);
+                    await UniTask.Delay(TimeSpan.FromSeconds(deathFlow != null
+                        ? deathFlow.PlayerDeathPresentationSeconds : 1f),
+                        ignoreTimeScale: true, cancellationToken: token);
                     // 同時に門が破壊された場合はEDを優先し、別シーンのFlowへ再試行を送らない。
                     if (!EndingManager.IsLoadingEnding && deathFlow != null)
                         deathFlow.RetryDayAfterPlayerDeath();
@@ -771,7 +818,9 @@ public class PlayerController : MonoBehaviour
     private System.Collections.IEnumerator DamageCooldown()
     {
         isInvincible = true;
-        float blinkDuration = 1f, blinkInterval = 0.1f, elapsedTime = 0f;
+        float blinkDuration = runtimeStatus != null && runtimeStatus.HasMeleeEquipped
+            ? runtimeStatus.meleeUpgrades.InvincibilityDurationMultiplier : 1f;
+        float blinkInterval = 0.1f, elapsedTime = 0f;
         while (elapsedTime < blinkDuration)
         {
             spriteRenderer.color = Color.white;
@@ -1046,6 +1095,7 @@ public class PlayerController : MonoBehaviour
 
     public void CancelTemporaryCombatEffects()
     {
+        meleeDriveBuffUntil = 0f;
         // 待機の再開を待たずに解除し、Snapshot復元後の書き戻しを防ぐ。
         CancellationTokenSource pendingBoost = boostCts;
         if (pendingBoost != null)
@@ -1073,6 +1123,7 @@ public class PlayerController : MonoBehaviour
         attackFocusLost = !focused;
         if (!focused)
         {
+            attackCadence.Interrupt();
             chargedShot.Cancel();
             UpdateChargeIndicator(false);
         }

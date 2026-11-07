@@ -81,6 +81,8 @@ public class UIRangeDisplay : MonoBehaviour
     {
         // UI buttons can open the menu after this component's Update.
         if (IsInputBlocked()) HideFeedback();
+        if (activeZone != null)
+            activeZone.SetPromptActive(!IsInputBlocked() && CanShowFurniturePrompt(activeZone));
         menuWasOpen = menuPanel != null && menuPanel.activeInHierarchy;
     }
 
@@ -110,7 +112,7 @@ public class UIRangeDisplay : MonoBehaviour
         if (activeZone != zone) HideFeedback();
         activeZone?.SetPromptActive(false);
         activeZone = zone;
-        activeZone.SetPromptActive(true);
+        activeZone.SetPromptActive(!IsInputBlocked() && CanShowFurniturePrompt(activeZone));
     }
 
     public void UnregisterZone(CraftSpaceInteractionZone zone)
@@ -194,7 +196,8 @@ public class UIRangeDisplay : MonoBehaviour
 
     private void ShowEquipmentGuideIfNeeded()
     {
-        if (activeZone == null || feedbackRoot == null || feedbackRoot.activeSelf ||
+        if (status == null || !status.DormTasks.hasCompletedFirstDay ||
+            activeZone == null || feedbackRoot == null || feedbackRoot.activeSelf ||
             feedbackText == null || !CanUseOneTimeBuff()) return;
 
         string guide;
@@ -216,6 +219,12 @@ public class UIRangeDisplay : MonoBehaviour
         ShowFeedback(guide);
         // Keep decision support visible until leaving the equipment or acting.
         showingEquipmentGuide = true;
+    }
+
+    private bool CanShowFurniturePrompt(CraftSpaceInteractionZone zone)
+    {
+        return zone.ActionType == CraftSpaceInteractionAction.Bed ||
+            status != null && status.DormTasks.hasCompletedFirstDay;
     }
 
     private void ConsumeOneTimeBuff()

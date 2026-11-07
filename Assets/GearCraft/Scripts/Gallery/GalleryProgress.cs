@@ -117,6 +117,14 @@ namespace GearCraft.Gallery
             if (Data.RecordEnding(ending)) Save();
         }
 
+        public static void ResetProgress()
+        {
+            PlayerPrefs.DeleteKey(SaveKey);
+            data = new GalleryProgressData();
+            PlayerPrefs.Save();
+            Changed?.Invoke();
+        }
+
         private static void Save()
         {
             PlayerPrefs.SetString(SaveKey, JsonUtility.ToJson(Data));

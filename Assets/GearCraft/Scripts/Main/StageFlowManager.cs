@@ -13,7 +13,7 @@ using UnityEngine.UI;
 
 public class StageFlowManager : MonoBehaviour
 {
-    private const string OpeningNoticeSeenKey = "GearCraft.Main.OpeningNotice.Seen.v1";
+    public const string OpeningNoticeSeenKey = "GearCraft.Main.OpeningNotice.Seen.v1";
     private const float DayEndPickupSeconds = 0.65f;
 
     public static StageFlowManager Instance { get; private set; }
@@ -53,12 +53,24 @@ public class StageFlowManager : MonoBehaviour
     private bool isOpeningNoticeShowing;
     private bool isCollectingRemainingMaterials;
     private static int playerInputBlockedFrame = -1;
+    private static int pendingRetryStage;
+    private bool isRetryStart;
+    private bool isDayIntroShowing = true;
+    private bool isPlayerDeathPresentation;
+
+    [Header("Player Death / Retry")]
+    [SerializeField] private Image retryBlackout;
+    [SerializeField] private float retryRevealSeconds = 1f;
+    [SerializeField] private GearBlackoutTransition retryGears;
+    [SerializeField] private float retryCoverSeconds = 1.5f;
+    public float PlayerDeathPresentationSeconds => retryGears != null ? retryCoverSeconds + 0.25f : 1f;
     private DayStartSnapshot dayStartSnapshot;
 
     public bool IsStageActive { get; private set; }
     public int EnemyScalingStage { get; private set; } = 1;
     public bool IsBlockingGameplayUI => dayRetryTriggered || EndingManager.IsLoadingEnding ||
         isOpeningNoticeShowing || isCollectingRemainingMaterials ||
+        isDayIntroShowing || isPlayerDeathPresentation ||
         (bonusCardsManager != null && bonusCardsManager.IsChoosingReward) ||
         (restResultReportUI != null && restResultReportUI.IsShowing);
     public static bool IsPlayerInputBlocked => Time.timeScale <= 0f ||
@@ -73,6 +85,7 @@ public class StageFlowManager : MonoBehaviour
     private static void ResetPlayerInputBlock()
     {
         playerInputBlockedFrame = -1;
+        pendingRetryStage = 0;
     }
 
     private void Awake()
@@ -81,6 +94,14 @@ public class StageFlowManager : MonoBehaviour
         {
             Instance = this;
             EnemyScalingStage = GetStageFromCounter();
+            isRetryStart = pendingRetryStage > 0 && pendingRetryStage == EnemyScalingStage;
+            pendingRetryStage = 0;
+            if (retryBlackout != null)
+            {
+                retryBlackout.color = retryGears != null ? Color.clear : Color.black;
+                retryBlackout.gameObject.SetActive(isRetryStart);
+                retryGears?.SetImmediate(isRetryStart);
+            }
         }
         else if (Instance != this)
         {
@@ -165,6 +186,15 @@ public class StageFlowManager : MonoBehaviour
         }
     }
 
+    public bool HasAliveEnemyInGameplayView()
+    {
+        foreach (EnemyController enemy in activeEnemies)
+        {
+            if (enemy != null && enemy.IsAliveInGameplayView) return true;
+        }
+        return false;
+    }
+
     public void OnEnemyKilled(EnemyController enemy, bool wasLastEnemy)
     {
         if (enemy == null || !activeEnemies.Remove(enemy))
@@ -247,7 +277,7 @@ public class StageFlowManager : MonoBehaviour
 
         await UniTask.Delay(TimeSpan.FromSeconds(2f), cancellationToken: cancellationToken);
 
-        if (dayRetryTriggered || EndingManager.IsLoadingEnding)
+        if (dayRetryTriggered || isPlayerDeathPresentation || EndingManager.IsLoadingEnding)
         {
             return;
         }
@@ -292,7 +322,14 @@ public class StageFlowManager : MonoBehaviour
             }
 
             await UniTask.Delay(TimeSpan.FromSeconds(1f), cancellationToken: cancellationToken);
-            sceneTransitionManager?.LoadScene("CraftSpace");
+            if (sceneTransitionManager != null)
+            {
+                // A successful day return, rather than entering Main or visiting Craft,
+                // makes the dorm furniture tour eligible for this run.
+                if (StatusManager.Instance != null)
+                    StatusManager.Instance.DormTasks.hasCompletedFirstDay = true;
+                sceneTransitionManager.LoadScene("CraftSpace");
+            }
             return;
         }
 
@@ -367,6 +404,25 @@ public class StageFlowManager : MonoBehaviour
         gateWasHit = false;
     }
 
+    public void BeginPlayerDeathPresentation()
+    {
+        if (EndingManager.IsLoadingEnding) return;
+        isPlayerDeathPresentation = true;
+        IsStageActive = false;
+        enemySpawner?.StopSpawning();
+        if (stageNumText != null) stageNumText.text = "";
+        if (retryBlackout != null)
+        {
+            retryBlackout.color = retryGears != null ? Color.clear : Color.black;
+            retryBlackout.gameObject.SetActive(true);
+            if (retryGears != null)
+            {
+                retryGears.SetImmediate(false);
+                retryGears.Play(true, retryCoverSeconds);
+            }
+        }
+    }
+
     public void RetryDayAfterPlayerDeath()
     {
         if (dayRetryTriggered || EndingManager.IsLoadingEnding)
@@ -380,6 +436,7 @@ public class StageFlowManager : MonoBehaviour
         ClearBullets();
         RestoreDayStartSnapshot();
         StoryPlaybackRequest.ClearRequest();
+        pendingRetryStage = GetStageFromCounter();
         SceneManager.LoadScene("Main");
     }
 
@@ -390,7 +447,7 @@ public class StageFlowManager : MonoBehaviour
 
     private void StartNextStage()
     {
-        if (dayRetryTriggered || EndingManager.IsLoadingEnding) return;
+        if (dayRetryTriggered || isPlayerDeathPresentation || EndingManager.IsLoadingEnding) return;
         if (StatusManager.Instance != null)
             StatusManager.Instance.DormTasks.hasStartedFirstDay = true;
         activeEnemies.RemoveAll(enemy => enemy == null);
@@ -511,21 +568,40 @@ public class StageFlowManager : MonoBehaviour
 
     private async UniTask ShowDayAsync(CancellationToken cancellationToken)
     {
-        if (stageNumText == null)
+        Tween reveal = null;
+        try
         {
-            return;
-        }
+            if (isRetryStart && retryBlackout != null)
+            {
+                // Keep the reloaded scene covered until its initialization is complete.
+                reveal = retryGears != null
+                    ? retryGears.Play(false, retryRevealSeconds)
+                    : retryBlackout.DOFade(0f, retryRevealSeconds).SetUpdate(true).SetLink(gameObject);
+                await UniTask.Delay(TimeSpan.FromSeconds(retryRevealSeconds), ignoreTimeScale: true,
+                    cancellationToken: cancellationToken);
+                reveal?.Complete();
+                retryBlackout.gameObject.SetActive(false);
+            }
 
-        int day = ((Mathf.Max(1, currentStage) - 1) / 3) + 1;
-        stageNumText.text = $"Day{day}";
-        stageNumText.alpha = 1f;
-        await UniTask.Delay(TimeSpan.FromSeconds(dayDisplaySeconds), cancellationToken: cancellationToken);
-        stageNumText.text = "";
+            transitionManager?.PlayTransition(1);
+            if (stageNumText == null) return;
+            int day = ((Mathf.Max(1, currentStage) - 1) / 3) + 1;
+            stageNumText.text = isRetryStart ? "RETRY" : $"Day{day}";
+            stageNumText.alpha = 1f;
+            await UniTask.Delay(TimeSpan.FromSeconds(dayDisplaySeconds), ignoreTimeScale: true,
+                cancellationToken: cancellationToken);
+        }
+        finally
+        {
+            reveal?.Kill();
+            if (stageNumText != null) stageNumText.text = "";
+            isDayIntroShowing = false;
+        }
     }
 
     private async UniTask HandleGameClearAsync()
     {
-        if (!finalBossDefeated || dayRetryTriggered || EndingManager.IsLoadingEnding)
+        if (!finalBossDefeated || dayRetryTriggered || isPlayerDeathPresentation || EndingManager.IsLoadingEnding)
         {
             return;
         }
@@ -537,7 +613,7 @@ public class StageFlowManager : MonoBehaviour
 
         await UniTask.Delay(TimeSpan.FromSeconds(2f), cancellationToken: this.GetCancellationTokenOnDestroy());
 
-        if (dayRetryTriggered || EndingManager.IsLoadingEnding)
+        if (dayRetryTriggered || isPlayerDeathPresentation || EndingManager.IsLoadingEnding)
         {
             return;
         }
@@ -611,7 +687,8 @@ public class StageFlowManager : MonoBehaviour
         private int upgradeShopDay;
         private bool hasSavedUpgradeShopLineup;
         private List<UpgradePartSO> savedUpgradeShopLineup;
-        private float bonusDamage;
+        private float damageBonusPercent;
+        private MeleeUpgradeStats meleeUpgrades;
         private float attackSpeedMult;
         private bool hasBulletDouble;
         private float spreadModifier;
@@ -678,7 +755,8 @@ public class StageFlowManager : MonoBehaviour
                 snapshot.upgradeShopDay = status.upgradeShopDay;
                 snapshot.hasSavedUpgradeShopLineup = status.hasSavedUpgradeShopLineup;
                 snapshot.savedUpgradeShopLineup = new List<UpgradePartSO>(status.savedUpgradeShopLineup);
-                snapshot.bonusDamage = status.bonusDamage;
+                snapshot.damageBonusPercent = status.damageBonusPercent;
+                snapshot.meleeUpgrades = status.meleeUpgrades.Copy();
                 snapshot.attackSpeedMult = status.attackSpeedMult;
                 snapshot.hasBulletDouble = status.hasBulletDouble;
                 snapshot.spreadModifier = status.spreadModifier;
@@ -756,7 +834,8 @@ public class StageFlowManager : MonoBehaviour
                 status.savedUpgradeShopLineup = savedUpgradeShopLineup != null
                     ? new List<UpgradePartSO>(savedUpgradeShopLineup)
                     : new List<UpgradePartSO>();
-                status.bonusDamage = bonusDamage;
+                status.damageBonusPercent = damageBonusPercent;
+                status.meleeUpgrades = meleeUpgrades != null ? meleeUpgrades.Copy() : new MeleeUpgradeStats();
                 status.attackSpeedMult = attackSpeedMult;
                 status.hasBulletDouble = hasBulletDouble;
                 status.spreadModifier = spreadModifier;

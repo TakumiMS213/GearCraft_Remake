@@ -29,7 +29,6 @@ MonoBehaviour:
   chargeDistance: 0.9
   chargeTime: 1.8
   explosionRadius: 4
-  explosionDamage: 60
   summonEnemyData: {fileID: 11400000, guid: 6cc88938c0229da4a9ee1fb3b6765482, type: 2}
   summonCount: 0
   summonInterval: 6

@@ -1,0 +1,129 @@
+// Standalone managed adapters; no Unity Editor, GameObjects, PlayerPrefs or real saves.
+using System;
+using System.Collections.Generic;
+using System.Reflection;
+using UnityEngine;
+using DG.Tweening;
+namespace UnityEngine {
+ public class MonoBehaviour {
+  protected T GetComponent<T>() where T:class => null;
+  protected T FindFirstObjectByType<T>() where T:class => SceneTransitionManager.Current as T;
+ }
+ public class ScriptableObject {}
+ public class SerializeField:Attribute {}
+ public class TextAreaAttribute:Attribute { public TextAreaAttribute(int a,int b){} }
+ public class MinAttribute:Attribute { public MinAttribute(float v){} }
+ public class HeaderAttribute:Attribute { public HeaderAttribute(string v){} }
+ public class CreateAssetMenuAttribute:Attribute { public string fileName,menuName; }
+ public struct Vector3 { public float x,y,z; public Vector3(float x,float y,float z){this.x=x;this.y=y;this.z=z;} }
+ public struct Bounds { public Vector3 center; }
+ public class Transform { public Vector3 position; }
+ public class Renderer { public Bounds bounds; }
+ public class Camera { public static Camera main; public Transform transform=new Transform(); public float orthographicSize; }
+ public class Sprite {}
+ public static class Time { public static float unscaledTime,timeScale=1; }
+ public enum KeyCode { Space,Return }
+ public static class Input {
+  public static bool Click; public static bool GetMouseButtonDown(int n)=>Click;
+  public static bool GetKeyDown(KeyCode k)=>false;
+ }
+ public static class Mathf { public static float Max(float a,float b)=>Math.Max(a,b); }
+ public static class Debug { public static int Errors; public static void LogError(string s,object o){Errors++;} }
+}
+namespace DG.Tweening {
+ public enum Ease { InOutQuad }
+ public class Tween {
+  protected List<Action> actions=new List<Action>(); bool active=true; Action completed;
+  public Tween(Action a=null){if(a!=null)actions.Add(a);}
+  public Tween SetEase(Ease e)=>this; public Tween SetUpdate(bool b)=>this;
+  public Tween OnComplete(Action a){completed=a;return this;}
+  public bool IsActive()=>active; public void Kill(){active=false;}
+  public void Complete(bool callbacks=false){if(!active)return;active=false;foreach(var a in actions)a();completed?.Invoke();}
+ }
+ public class Sequence:Tween {
+  public Sequence Append(Tween t){actions.Add(()=>t.Complete(true));return this;}
+  public Sequence Join(Tween t)=>Append(t);
+  public Sequence AppendCallback(Action a){actions.Add(a);return this;}
+ }
+ public static class DOTween { public static Sequence Sequence()=>new Sequence(); }
+ public static class Extensions {
+  public static Tween DOMove(this Transform t,Vector3 p,float d)=>new Tween(()=>t.position=p);
+  public static Tween DOOrthoSize(this Camera c,float size,float d)=>new Tween(()=>c.orthographicSize=size);
+ }
+}
+public class SceneTransitionManager { public static SceneTransitionManager Current; public bool IsLoading; }
+public class StatusManager { public static StatusManager Instance; public DormTaskProgress DormTasks=new DormTaskProgress(); }
+public class ArrivalMessageView {
+ public bool IsConfigured=true,IsShowing,Blocks,Visible; public float FadeDuration=.3f;
+ public List<string> Shown=new List<string>();
+ public Tween Show(ArrivalMessagePageData p){Shown.Add(p.Text);Visible=true;IsShowing=true;return null;}
+ public void CompleteShow(){IsShowing=false;}
+ public void HideImmediate(bool keepInputBlocked=false){Blocks=keepInputBlocked;Visible=false;IsShowing=false;}
+}
+class Tests {
+ static int checks;
+ static void Check(bool ok,string why){checks++;if(!ok)throw new Exception(why);}
+ static void Set(object o,string name,object value)=>o.GetType().GetField(name,BindingFlags.NonPublic|BindingFlags.Instance).SetValue(o,value);
+ static T Get<T>(object o,string name)=>(T)o.GetType().GetField(name,BindingFlags.NonPublic|BindingFlags.Instance).GetValue(o);
+ static void Call(object o,string name)=>o.GetType().GetMethod(name,BindingFlags.NonPublic|BindingFlags.Instance).Invoke(o,null);
+ static ArrivalMessageSequenceData Sequence(params string[] texts){
+  var pages=new ArrivalMessagePageData[texts.Length];
+  for(int i=0;i<texts.Length;i++){
+   pages[i]=new ArrivalMessagePageData();Set(pages[i],"text",texts[i]);Set(pages[i],"cameraMoveDuration",1.2f);
+   Set(pages[i],"cameraOrthographicSize",4.8f);Set(pages[i],"autoAdvanceSeconds",8f);
+  }
+  var result=new ArrivalMessageSequenceData();Set(result,"pages",pages);return result;
+ }
+ class Fixture {
+  public ArrivalMessagePresenter P=new ArrivalMessagePresenter();
+  public ArrivalMessageView View=new ArrivalMessageView();
+  public Camera Camera=new Camera {orthographicSize=5.8f};
+  public Fixture(){
+   Camera.transform.position=new Vector3(10,0,-10);Camera.main=Camera;
+   Set(P,"view",View);Set(P,"targetCamera",Camera);
+   Set(P,"sequence",Sequence("ベッド"));Set(P,"furnitureSequence",Sequence("門修復","食事","治療","クラフト"));
+   var targets=new Renderer[4];for(int i=0;i<4;i++)targets[i]=new Renderer{bounds=new Bounds{center=new Vector3(i*5,-i,0)}};
+   Set(P,"furnitureFocusTargets",targets);
+  }
+  public void Start()=>Call(P,"Start"); public void Tick()=>Call(P,"Update");
+  public void Click(){Input.Click=true;Tick();Input.Click=false;}
+  public void FinishTween()=>Get<Tween>(P,"currentTween").Complete(true);
+  public void Stop()=>Call(P,"OnDisable");
+ }
+ static void Reset(){StatusManager.Instance=new StatusManager();SceneTransitionManager.Current=new SceneTransitionManager();StoryPlaybackRequest.ClearRequest();Time.unscaledTime=0;Time.timeScale=1;Input.Click=false;}
+ static void Main(){
+  Reset();var progress=StatusManager.Instance.DormTasks;
+  Check(!progress.NeedsFurnitureTutorial,"fresh run cannot tour");
+  var first=new Fixture();first.Start();first.Tick();Check(!ArrivalMessagePresenter.IsMessagePlaying && first.View.Shown.Count==0,"initial room without story does not tour");first.Stop();
+  progress.hasStartedFirstDay=true;var started=new Fixture();started.Start();started.Tick();Check(started.View.Shown.Count==0,"starting DAY1 is not completing DAY1");started.Stop();
+  StoryPlaybackRequest.SetReturnScene("CraftSpace",true);var intro=new Fixture();intro.Start();intro.Tick();intro.Click();
+  Check(intro.View.Shown.Count==1 && intro.View.Shown[0]=="ベッド","story intro stays bed-only");intro.Stop();
+  progress.hasCompletedFirstDay=true;Check(progress.NeedsFurnitureTutorial,"successful day schedules tour");
+  var tour=new Fixture();SceneTransitionManager.Current.IsLoading=true;tour.Start();tour.Tick();
+  Check(tour.View.Shown.Count==0 && tour.View.Blocks && ArrivalMessagePresenter.IsCameraPresentationPlaying,"wait behind arrival transition, keep input blocked");
+  SceneTransitionManager.Current.IsLoading=false;tour.Tick();
+  string[] order={"門修復","食事","治療","クラフト"};
+  for(int i=0;i<4;i++){
+   Check(!tour.View.Visible && tour.View.Blocks,"text hidden but menu clicks blocked while panning");
+   tour.Click(); // Complete pan but do not skip the explanation.
+   Check(tour.View.Shown.Count==i+1 && tour.View.Shown[i]==order[i],"ordered furniture text after pan");
+   Check(tour.Camera.transform.position.x==i*5 && tour.Camera.transform.position.y==-i && tour.Camera.transform.position.z==-10,"renderer centered, camera depth retained");
+   Check(!progress.hasSeenFurnitureTutorial,"not complete before last message is read");
+   tour.Click();Check(tour.View.Shown.Count==i+1,"fade completion cannot skip explanation");
+   tour.Click();
+  }
+  Check(ArrivalMessagePresenter.IsCameraPresentationPlaying && !progress.hasSeenFurnitureTutorial,"restore before unlocking or recording completion");
+  tour.FinishTween();
+  Check(progress.hasSeenFurnitureTutorial && !progress.NeedsFurnitureTutorial,"completed once per run");
+  Check(tour.Camera.transform.position.x==10 && tour.Camera.transform.position.y==0 && tour.Camera.orthographicSize==5.8f,"restore pre-tour camera and zoom");
+  Check(!ArrivalMessagePresenter.IsMessagePlaying && !ArrivalMessagePresenter.IsCameraPresentationPlaying && !tour.View.Blocks,"restore movement and menu access");tour.Stop();
+  var repeat=new Fixture();repeat.Start();repeat.Tick();Check(repeat.View.Shown.Count==0,"return from Craft or later day cannot repeat tour");repeat.Stop();
+  progress.Reset();Check(!progress.hasCompletedFirstDay && !progress.hasSeenFurnitureTutorial && !progress.NeedsFurnitureTutorial,"new game/reset clears tour progress");
+  progress.hasCompletedFirstDay=true;var interrupted=new Fixture();interrupted.Start();interrupted.Tick();interrupted.Stop();
+  Check(progress.NeedsFurnitureTutorial && !ArrivalMessagePresenter.IsCameraPresentationPlaying,"interrupted tour stays pending and unlocks input");
+  var retry=new Fixture();retry.Start();retry.Tick();retry.FinishTween();Check(retry.View.Shown[0]=="門修復","interrupted visit restarts correctly");
+  retry.View.CompleteShow();Time.unscaledTime=9;retry.Tick();Check(!retry.View.Visible,"auto-advance starts next pan only after display time");retry.Stop();
+  var bad=new Fixture();bad.View.IsConfigured=false;bad.Start();Check(Debug.Errors==1 && progress.NeedsFurnitureTutorial && !ArrivalMessagePresenter.IsMessagePlaying,"missing scene UI never marks complete or deadlocks controls");bad.Stop();
+  Console.WriteLine("PASS: "+checks+" assertions against production presenter/model/progress with managed camera/tween/view adapters.");
+ }
+}

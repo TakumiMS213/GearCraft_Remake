@@ -60,14 +60,14 @@ public class StatusDisplay : MonoBehaviour
         if (statusManager == null) { return; }
 
         // --- HP ---
-        int hpBars = Mathf.Clamp(Mathf.RoundToInt(statusManager.HP / (HP_MAX / 10f)), 0, 10);
+        int hpBars = HealthGaugeRules.FilledSegments(statusManager.HP);
         Color hpColor = GetGaugeColor(statusManager.HP / (float)HP_MAX);
-        SetText(hpText,  "HP : " + BuildGaugeText(hpBars, 10, hpColor, Color.white));
+        SetText(hpText,  "HP : " + BuildGaugeText(hpBars, Mathf.Max(HealthGaugeRules.DefaultSegments, hpBars), hpColor, Color.white));
 
         // --- GATE ---
-        int gateBars = Mathf.Clamp(Mathf.RoundToInt(statusManager.GATE / (GATE_MAX / 10f)), 0, 10);
+        int gateBars = HealthGaugeRules.FilledSegments(statusManager.GATE);
         Color gateColor = GetGaugeColor(statusManager.GATE / (float)GATE_MAX);
-        SetText(gateText, "GATE : " + BuildGaugeText(gateBars, 10, gateColor, Color.white));
+        SetText(gateText, "GATE : " + BuildGaugeText(gateBars, Mathf.Max(HealthGaugeRules.DefaultSegments, gateBars), gateColor, Color.white));
 
         // --- STR / ACC ---
         SetText(strText, $"STR : {statusManager.STR}");

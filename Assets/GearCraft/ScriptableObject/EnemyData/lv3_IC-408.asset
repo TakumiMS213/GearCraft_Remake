@@ -27,7 +27,6 @@ MonoBehaviour:
   chargeDistance: 5
   chargeTime: 1
   explosionRadius: 3
-  explosionDamage: 30
   drops:
   - type: 5
     minAmount: 1

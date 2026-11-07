@@ -122,6 +122,8 @@ public class UpgradePartSOEditor : Editor
         // ===== 制限 =====
         EditorGUILayout.LabelField("制限", EditorStyles.boldLabel);
         EditorGUILayout.PropertyField(serializedObject.FindProperty("rangedOnly"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("meleeOnly"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("unique"));
 
         // ===== 占有マス数表示 =====
         EditorGUILayout.Space(10);

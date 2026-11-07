@@ -11,6 +11,7 @@ public sealed class PlayerAttackCadence
     private const int MaximumAttacksPerFrame = 6;
     private double remaining;
     private bool wasHeld;
+    private double spinUpElapsed;
 
     public double RemainingSeconds => Math.Max(0.0, remaining);
 
@@ -29,13 +30,15 @@ public sealed class PlayerAttackCadence
     {
         remaining = Math.Max(0.0, remaining);
         wasHeld = false;
+        spinUpElapsed = 0.0;
     }
 
     public int Advance(bool pressed, bool held, bool automatic, bool allowed,
-        float deltaTime, float nominalInterval)
+        float deltaTime, float nominalInterval, float spinUpSeconds = 0f)
     {
         if (float.IsNaN(deltaTime) || float.IsInfinity(deltaTime) || deltaTime < 0f ||
-            float.IsNaN(nominalInterval) || float.IsInfinity(nominalInterval))
+            float.IsNaN(nominalInterval) || float.IsInfinity(nominalInterval) ||
+            float.IsNaN(spinUpSeconds) || float.IsInfinity(spinUpSeconds))
         {
             Interrupt();
             return 0;
@@ -61,6 +64,15 @@ public sealed class PlayerAttackCadence
         if (!continuing) remaining = Math.Max(0.0, remaining);
 
         double interval = GetAutomaticInterval(nominalInterval);
+        if (spinUpSeconds > 0f)
+        {
+            spinUpElapsed = continuing && !pressed
+                ? Math.Min(spinUpSeconds, spinUpElapsed + deltaTime) : 0.0;
+            double rateMultiplier = 0.5 + 0.5 * spinUpElapsed / spinUpSeconds;
+            // Scale the established maximum rate after 60 Hz rounding so the
+            // acceleration is smooth, including when rate upgrades are equipped.
+            interval /= rateMultiplier;
+        }
         int attacks = 0;
         while (remaining <= ReadyTolerance && attacks < MaximumAttacksPerFrame)
         {

@@ -177,7 +177,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHP: 20
-  contactDamage: 60
   destroyEffect: {fileID: 2555472082101049140, guid: ec1d5aee65fcf4032b04408158c4c8b4, type: 3}
 --- !u!95 &-4214931386570439042
 Animator:

@@ -30,7 +30,6 @@ MonoBehaviour:
   chargeDistance: 5
   chargeTime: 1
   explosionRadius: 3
-  explosionDamage: 30
   summonEnemyData: {fileID: 0}
   summonCount: 0
   summonInterval: 6

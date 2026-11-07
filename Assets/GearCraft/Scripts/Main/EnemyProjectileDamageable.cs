@@ -3,7 +3,6 @@ using UnityEngine;
 public sealed class EnemyProjectileDamageable : MonoBehaviour
 {
     [SerializeField] private float maxHP = 20f;
-    [SerializeField] private float contactDamage = 15f;
     [SerializeField] private GameObject destroyEffect;
 
     private float hp;
@@ -47,18 +46,18 @@ public sealed class EnemyProjectileDamageable : MonoBehaviour
             return;
         }
 
-        PlayerController player = other.GetComponent<PlayerController>();
+        PlayerController player = other.GetComponentInParent<PlayerController>();
         if (player != null)
         {
-            player.TakeDamageByBullet(contactDamage);
+            player.ReceiveEnemyHit();
             DestroyProjectile();
             return;
         }
 
-        GateManager gate = other.GetComponent<GateManager>();
+        GateManager gate = other.GetComponentInParent<GateManager>();
         if (gate != null)
         {
-            gate.TakeDamage(contactDamage);
+            gate.ReceiveEnemyHit();
             DestroyProjectile();
         }
     }

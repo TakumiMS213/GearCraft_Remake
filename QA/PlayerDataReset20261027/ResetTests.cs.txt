@@ -1,0 +1,100 @@
+// Runs production reset/model/controller sources with in-memory Unity/PlayerPrefs adapters.
+// No Unity Editor or OS save data is touched.
+using System;
+using System.Collections.Generic;
+using System.Reflection;
+using GearCraft.Gallery;
+namespace UnityEngine {
+ public class SerializeField:Attribute{} public class HeaderAttribute:Attribute{public HeaderAttribute(string s){}} public class TooltipAttribute:Attribute{public TooltipAttribute(string s){}}
+ public enum RuntimeInitializeLoadType{SubsystemRegistration}
+ public class RuntimeInitializeOnLoadMethodAttribute:Attribute{public RuntimeInitializeOnLoadMethodAttribute(RuntimeInitializeLoadType t){}}
+ public class GameObject {public bool activeSelf=true; public void SetActive(bool b){activeSelf=b;}}
+ public class MonoBehaviour { public GameObject gameObject=new GameObject(); protected static void Destroy(object o){} protected static void DontDestroyOnLoad(object o){} }
+ public struct Color {public float r,g,b,a;public Color(float r,float g,float b,float a){this.r=r;this.g=g;this.b=b;this.a=a;}}
+ public static class Mathf {public static int Max(int a,int b)=>Math.Max(a,b);public static float Max(float a,float b)=>Math.Max(a,b);public static float Clamp(float v,float a,float b)=>Math.Max(a,Math.Min(b,v)); public static int RoundToInt(float f)=>(int)Math.Round(f);}
+ public static class Debug {public static void Log(object s){} public static void LogWarning(object s){}}
+ public static class JsonUtility {static int id;static Dictionary<string,object> values=new Dictionary<string,object>();public static string ToJson(object o){var k="json-"+(++id);values[k]=o;return k;}public static T FromJson<T>(string s)=>(T)values[s];}
+ public static class PlayerPrefs {
+  public static readonly Dictionary<string,object> Values=new Dictionary<string,object>();public static int saves;
+  public static bool HasKey(string k)=>Values.ContainsKey(k);public static void DeleteKey(string k)=>Values.Remove(k);
+  public static int GetInt(string k,int fallback)=>Values.ContainsKey(k)?(int)Values[k]:fallback;
+  public static string GetString(string k,string fallback)=>Values.ContainsKey(k)?(string)Values[k]:fallback;
+  public static void SetInt(string k,int v)=>Values[k]=v;public static void SetString(string k,string v)=>Values[k]=v;public static void Save(){saves++;}
+ }
+}
+namespace UnityEngine.Serialization {public class FormerlySerializedAsAttribute:Attribute{public FormerlySerializedAsAttribute(string s){}}}
+namespace UnityEngine.UI {public class Graphic{public UnityEngine.Color color;}public class Button:UnityEngine.MonoBehaviour{public Graphic targetGraphic=new Graphic();public static Button Selected;public void Select(){Selected=this;}}}
+namespace TMPro {public class TMP_Text {public string text;}}
+public class EnemyDataSO {public string name;public bool IsBossType=true;}
+public enum WeaponType{Melee,Ranged}
+public class WeaponDataSO {public string name,weaponName;public WeaponType weaponType;public bool UsesChargedShot;public float craftModuleDamageMultiplier;public float GetBaseDamage(float f)=>1;public float GetScaledAccDamageBonus(int n)=>n;}
+public enum CraftResultType{Weapon,PunkDrive,Module}
+public class CraftRecipeSO {public string name,UnlockId;public CraftResultType resultType;public bool HiddenFromUnlockList;public int UnlockBossKills,UnlockSortOrder;}
+public class UpgradePartSO {public bool unique;public UpgradeEffect[] effects;public bool AppliesTo(WeaponDataSO w)=>true;}
+public class UpgradeEffectDisplay{public void Refresh(){}}
+public class UpgradeGridManager {public static UpgradeGridManager Instance; public UpgradeEffectDisplay effectDisplay;public void RefreshUI(){}public class PlacedPart {public UpgradePartSO partData;public int gridX,gridY,rotation,inventoryIndex,placedShopDay;public bool refundCostsOnRemove,returnToShopOnSameDay;}}
+public class StageCounter {public static StageCounter Instance;public int StageCount;}
+public class MaterialManager {public static MaterialManager Instance; public int amount;public void ClearAllMaterials(){amount=0;}}
+public static class MainDebugEnemySpawnWindow{public static bool IsDebugModeActive;}
+public static class StageFlowManager{public const string OpeningNoticeSeenKey="GearCraft.Main.OpeningNotice.Seen.v1";}
+namespace GearCraft.Gallery {public enum GalleryMaterial{None,Scrap,Gear}}
+class Tests {
+ static int count;
+ static void Check(bool value,string name){count++;if(!value)throw new Exception(name);}
+ static void Set(object o,string field,object v)=>o.GetType().GetField(field,BindingFlags.NonPublic|BindingFlags.Instance).SetValue(o,v);
+ static void Main(){
+  var initial=new WeaponDataSO{name="Initial",weaponName="Initial"};
+  var extra=new WeaponDataSO{name="Extra",weaponName="Extra"};
+  var part=new UpgradePartSO();
+  var status=new StatusManager{defaultWeapon=initial,currentWeapon=extra,bossKillCount=4,HP=12,SAN=20,STR=50,ACC=60,GATE=30,module_scrap=true,module_repair=true,module_barrier=true,punkDrive=true,upgradeShopDay=8,hasSavedUpgradeShopLineup=true,LastSelectedCraftRecipeId="locked"};
+  StatusManager.Instance=status;StageCounter.Instance=new StageCounter{StageCount=30};MaterialManager.Instance=new MaterialManager{amount=999};
+  status.ownedWeapons.Add(extra);status.ownedUpgradeParts.Add(part);status.savedUpgradePartPlacements.Add(new StatusManager.SavedUpgradePartPlacement{partData=part});status.savedUpgradeShopLineup.Add(part);
+  status.MarkCraftUnlockNotified("locked");status.DormTasks.hasCrafted=true;status.CraftTutorials.craft.mastered=true;status.CraftTutorials.weaponCustom.stepIndex=5;status.selectedUniqueBonusCardIds.Add("card");
+  status.attackSpeedMult=.2f;status.damageBonusPercent=2;status.gearCraftAxeSizeMultiplier=3;status.meleeUpgrades.extraJumps=2;
+  GalleryProgress.RecordEnemy(new EnemyDataSO{name="boss"});GalleryProgress.RecordWeapon(extra);GalleryProgress.RecordCraft(new CraftRecipeSO{name="recipe",resultType=CraftResultType.Module});GalleryProgress.RecordMaterials(2,3);GalleryProgress.RecordEnding(3);
+  StartingWeaponProgress.RecordDefeat(new EnemyDataSO{name="lv3_AR-227"});StartingWeaponProgress.SetSelectionEnabled(true);
+  string[] intKeys={CraftTutorialMetrics.CraftMasteryKey,CraftTutorialMetrics.WeaponMasteryKey,"GearCraft.CraftTutorial.AutoPlayed.Craft.v4","GearCraft.CraftTutorial.AutoPlayed.WeaponCustom.v3",StageFlowManager.OpeningNoticeSeenKey};
+  foreach(var k in intKeys)UnityEngine.PlayerPrefs.SetInt(k,1);
+  CraftTutorialMetrics.Record(0,"test","success",5,0,0,true);CraftTutorialMetrics.Record(1,"test","success",5,0,0,true);
+  UnityEngine.PlayerPrefs.Values["GearCraft.Audio.BGM.dB.v1"]=-13f;UnityEngine.PlayerPrefs.Values["GearCraft.Audio.SE.dB.v1"]=-7f;UnityEngine.PlayerPrefs.SetString("unrelated","keep");
+  StoryPlaybackRequest.SetReturnScene("Main",true);
+  var prefsBefore=new Dictionary<string,object>(UnityEngine.PlayerPrefs.Values);int savesBefore=UnityEngine.PlayerPrefs.saves;
+  var controller=new PlayerDataResetController();var dialog=new UnityEngine.GameObject();dialog.SetActive(false);
+  var heading=new TMPro.TMP_Text();var message=new TMPro.TMP_Text();var cancelLabel=new TMPro.TMP_Text();var stateLabel=new TMPro.TMP_Text();
+  var open=new UnityEngine.UI.Button();var yes=new UnityEngine.UI.Button();var no=new UnityEngine.UI.Button();var settings=new StartingWeaponSettingsController();var warning=new UnityEngine.GameObject();
+  Set(settings,"stateLabel",stateLabel);Set(settings,"toggleButton",new UnityEngine.UI.Button());Set(settings,"warningWindow",warning);
+  Set(controller,"dialog",dialog);Set(controller,"heading",heading);Set(controller,"message",message);Set(controller,"resetButton",open);Set(controller,"confirmButton",yes);Set(controller,"cancelButton",no);Set(controller,"cancelLabel",cancelLabel);Set(controller,"weaponSettings",settings);
+  controller.ConfirmReset();Check(UnityEngine.PlayerPrefs.saves==savesBefore,"confirmation while closed must do nothing");
+  controller.OpenDialog();Check(controller.IsDialogOpen,"dialog opens");Check(UnityEngine.UI.Button.Selected==no,"cancel selected by default");Check(message.text.Contains("取り消せません"),"destructive consequence shown");
+  Check(controller.TryCloseDialog(),"escape handler consumes modal");Check(!controller.IsDialogOpen,"cancel closes");Check(UnityEngine.UI.Button.Selected==open,"return focus");
+  Check(UnityEngine.PlayerPrefs.Values.Count==prefsBefore.Count,"cancel preserves preference count");foreach(var kv in prefsBefore)Check(Equals(UnityEngine.PlayerPrefs.Values[kv.Key],kv.Value),"cancel preserves "+kv.Key);
+  Check(UnityEngine.PlayerPrefs.saves==savesBefore && status.bossKillCount==4 && status.CraftTutorials.craft.mastered,"cancel leaves runtime and saves unchanged");
+  bool galleryResetEvent=false;GalleryProgress.Changed+=()=>{if(!GalleryProgress.IsUnlocked && GalleryProgress.Data.acquiredWeapons.Count==0)galleryResetEvent=true;};
+  controller.OpenDialog();controller.ConfirmReset();
+  foreach(var k in intKeys)Check(!UnityEngine.PlayerPrefs.HasKey(k),"cleared "+k);
+  Check(!StartingWeaponProgress.IsUnlocked && !StartingWeaponProgress.IsSelectionEnabled,"starting weapon unlock and override reset");
+  Check(!UnityEngine.PlayerPrefs.HasKey(StartingWeaponProgress.SaveKey)&&!UnityEngine.PlayerPrefs.HasKey(StartingWeaponProgress.SelectionEnabledKey),"starting weapon keys removed");
+  Check(!UnityEngine.PlayerPrefs.HasKey(GalleryProgress.SaveKey),"gallery save removed after default weapon registration");
+  Check(!GalleryProgress.IsUnlocked && GalleryProgress.Data.encounteredEnemies.Count==0 && GalleryProgress.Data.acquiredWeapons.Count==0 && GalleryProgress.Data.craftedRecipes.Count==0 && GalleryProgress.Data.acquiredMaterials.Count==0,"gallery cached discoveries cleared");
+  Check(galleryResetEvent,"gallery lock UI notified");
+  Check(CraftTutorialMetrics.GetStats(0).completions==0 && CraftTutorialMetrics.GetStats(1).completions==0,"both tutorial metrics reset");
+  Check(status.HP==100&&status.SAN==100&&status.STR==0&&status.ACC==0&&status.GATE==100,"base stats reset");
+  Check(status.bossKillCount==0&&StageCounter.Instance.StageCount==1&&MaterialManager.Instance.amount==0,"stage unlock and materials reset");
+  Check(status.currentWeapon==initial&&status.ownedWeapons.Count==1&&status.ownedWeapons[0]==initial,"initial loadout only");
+  Check(status.ownedUpgradeParts.Count==0&&status.savedUpgradePartPlacements.Count==0&&status.savedUpgradeShopLineup.Count==0&&!status.hasSavedUpgradeShopLineup,"upgrades/shop reset");
+  Check(!status.IsCraftUnlockNotified("locked")&&status.LastSelectedCraftRecipeId=="","recipe notification and selection reset");
+  Check(!status.CraftTutorials.craft.mastered&&status.CraftTutorials.weaponCustom.stepIndex==0&&!status.DormTasks.hasCrafted,"in-run tutorial and dorm state reset");
+  Check(!status.module_scrap&&!status.module_repair&&!status.module_barrier&&!status.punkDrive,"modules reset");
+  Check(status.attackSpeedMult==1&&status.damageBonusPercent==0&&status.meleeUpgrades.extraJumps==0&&status.gearCraftAxeSizeMultiplier==1&&status.selectedUniqueBonusCardIds.Count==0,"combat bonuses reset");
+  Check(StoryPlaybackRequest.ReturnSceneName=="CraftSpace"&&!StoryPlaybackRequest.HasArrivalMessageRequest,"story request reset");
+  var recipes=new GearCraft.Scripts.Craft.CraftRecipeUnlockModel(new[]{new CraftRecipeSO{UnlockBossKills=0},new CraftRecipeSO{UnlockBossKills=1}});var unlocked=new List<CraftRecipeSO>();recipes.CollectUnlockedRecipes(status.bossKillCount,unlocked);Check(unlocked.Count==1&&unlocked[0].UnlockBossKills==0,"initial recipes remain and progressed recipes relock");
+  Check((float)UnityEngine.PlayerPrefs.Values["GearCraft.Audio.BGM.dB.v1"]==-13f&&(float)UnityEngine.PlayerPrefs.Values["GearCraft.Audio.SE.dB.v1"]==-7f&&UnityEngine.PlayerPrefs.GetString("unrelated","")=="keep","audio and unrelated prefs preserved");
+  Check(stateLabel.text=="OFF"&&!warning.activeSelf,"starting weapon settings refresh immediately");
+  Check(!yes.gameObject.activeSelf&&cancelLabel.text=="閉じる"&&heading.text=="リセットしました","success state shown");
+  int after=UnityEngine.PlayerPrefs.saves;controller.ConfirmReset();Check(UnityEngine.PlayerPrefs.saves==after,"duplicate confirm ignored");
+  controller.CloseDialog();Check(!controller.TryCloseDialog(),"closed modal does not consume escape");
+  PlayerProgressReset.Reset();Check(!GalleryProgress.IsUnlocked&&status.ownedWeapons.Count==1,"repeat reset is idempotent");
+  StatusManager.Instance=null;StageCounter.Instance=null;MaterialManager.Instance=null;PlayerProgressReset.Reset();Check(!GalleryProgress.IsUnlocked,"reset with no run managers supported");
+  Console.WriteLine("PASS: "+count+" assertions. Production reset, StatusManager, progress models and controllers; in-memory adapters, real saves untouched.");
+ }
+}

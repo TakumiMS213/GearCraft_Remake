@@ -29,6 +29,7 @@ public class EnemyController : MonoBehaviour
 
     public event Action<float> Damaged;
     public bool IsHitFlashing => Time.time < hitFlashEndTime;
+    public bool IsAliveInGameplayView => isActiveAndEnabled && HP > 0f && IsInGameplayView();
     public bool IsStunned => bossStun != null && bossStun.IsActive;
     public int BossStunCount => bossStun != null ? bossStun.TriggerCount : 0;
     public float BossStunTimeRemaining => bossStun != null ? bossStun.RemainingTime : 0f;
@@ -56,8 +57,7 @@ public class EnemyController : MonoBehaviour
     private GameObject bossSmokeEffectInstance;
     private ParticleSystem bossSmokeParticle;
     private bool galleryEncounterRecorded;
-    private Camera galleryCamera;
-    private Plane[] galleryCameraPlanes;
+    private readonly Plane[] gameplayCameraPlanes = new Plane[6];
     private Vector3 lastHitLocalPosition;
     private bool hasHitPosition;
     private BossStunState bossStun;
@@ -70,6 +70,8 @@ public class EnemyController : MonoBehaviour
     private Vector3 stunPosition;
     private float stunElapsed;
     private bool stunPoseCaptured;
+    private float deathMeleeDropBonus;
+    private readonly RaycastHit2D[] meleePushHits = new RaycastHit2D[16];
 
     private void Awake()
     {
@@ -136,17 +138,25 @@ public class EnemyController : MonoBehaviour
 
     private void RecordGalleryEncounterIfVisible()
     {
-        if (galleryEncounterRecorded || enemyData == null || spriteRenderer == null || !spriteRenderer.enabled) return;
-        if (galleryCamera == null) galleryCamera = Camera.main;
-        if (galleryCamera == null || !galleryCamera.isActiveAndEnabled
-            || (galleryCamera.cullingMask & (1 << gameObject.layer)) == 0) return;
-
-        if (galleryCameraPlanes == null) galleryCameraPlanes = new Plane[6];
-        GeometryUtility.CalculateFrustumPlanes(galleryCamera, galleryCameraPlanes);
-        if (!GeometryUtility.TestPlanesAABB(galleryCameraPlanes, spriteRenderer.bounds)) return;
+        if (galleryEncounterRecorded || enemyData == null || !IsInGameplayView()) return;
 
         GearCraft.Gallery.GalleryProgress.RecordEnemy(enemyData);
         galleryEncounterRecorded = true;
+    }
+
+    private bool IsInGameplayView()
+    {
+        // Renderer.isVisible includes the Editor's Scene view. Only the gameplay camera counts.
+        if (spriteRenderer == null) spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+        Camera gameplayCamera = Camera.main;
+        if (spriteRenderer == null || !spriteRenderer.enabled || spriteRenderer.sprite == null ||
+            !spriteRenderer.gameObject.activeInHierarchy || gameplayCamera == null ||
+            !gameplayCamera.isActiveAndEnabled ||
+            (gameplayCamera.cullingMask & (1 << spriteRenderer.gameObject.layer)) == 0) return false;
+
+        GeometryUtility.CalculateFrustumPlanes(gameplayCamera, gameplayCameraPlanes);
+        // A partially visible enemy can be hit, including a large boss entering from the right.
+        return GeometryUtility.TestPlanesAABB(gameplayCameraPlanes, spriteRenderer.bounds);
     }
 
     public float GetMoveSpeed(float baseSpeed)
@@ -376,7 +386,17 @@ public class EnemyController : MonoBehaviour
 
     public void TakeDamage(float amount, Vector2 hitPosition)
     {
-        if (!PrepareFinalBossDamage(ref amount)) return;
+        ReceiveHit(amount, hitPosition, 0f);
+    }
+
+    public bool TakeMeleeDamage(float amount, Vector2 hitPosition, float killDropBonus)
+    {
+        return ReceiveHit(amount, hitPosition, Mathf.Max(0f, killDropBonus));
+    }
+
+    private bool ReceiveHit(float amount, Vector2 hitPosition, float killDropBonus)
+    {
+        if (HP <= 0f || amount <= 0f || !IsInGameplayView() || !PrepareFinalBossDamage(ref amount)) return false;
         if (amount > 0f && HP > 0f)
         {
             // 2Dの命中点を本体のZへ合わせる。継続ダメージ中も同じ被弾箇所を保つ。
@@ -384,13 +404,39 @@ public class EnemyController : MonoBehaviour
             lastHitLocalPosition = transform.InverseTransformPoint(point);
             hasHitPosition = true;
         }
+        deathMeleeDropBonus = amount >= HP ? killDropBonus : 0f;
         ApplyDamage(amount);
+        return true;
     }
 
     public void TakeDamage(float amount)
     {
-        if (!PrepareFinalBossDamage(ref amount)) return;
+        if (HP <= 0f || amount <= 0f || !IsInGameplayView() || !PrepareFinalBossDamage(ref amount)) return;
+        deathMeleeDropBonus = 0f;
         ApplyDamage(amount);
+    }
+
+    public void ApplyMeleeKnockback(float distance, Vector2 attackerPosition)
+    {
+        if (HP <= 0f || IsStunned || distance <= 0f) return;
+        var body = GetComponent<Rigidbody2D>();
+        var shape = GetComponent<Collider2D>();
+        if (body == null || shape == null) return;
+        // Push horizontally so ground bosses stay grounded. Boss mass reduces displacement.
+        Vector2 direction = transform.position.x >= attackerPosition.x ? Vector2.right : Vector2.left;
+        float travel = Mathf.Min(distance, 1.5f) * (enemyData != null && enemyData.IsBossType ? 0.2f : 1f);
+        int count = shape.Cast(direction, meleePushHits, travel);
+        for (int i = 0; i < count; i++)
+        {
+            var hit = meleePushHits[i];
+            if (hit.collider == null || hit.collider.isTrigger ||
+                hit.collider.GetComponentInParent<EnemyController>() != null ||
+                hit.collider.GetComponentInParent<PlayerController>() != null ||
+                hit.collider.GetComponentInParent<DroppedMaterialItem>() != null) continue;
+            if (Mathf.Abs(hit.normal.x) < 0.5f) continue; // Floor contact must not block a horizontal push.
+            travel = Mathf.Min(travel, Mathf.Max(0f, hit.distance - 0.02f));
+        }
+        body.MovePosition(body.position + direction * travel);
     }
 
     private bool PrepareFinalBossDamage(ref float amount)
@@ -432,6 +478,7 @@ public class EnemyController : MonoBehaviour
     public async UniTaskVoid Die()
     {
         Vector3 deathPos = transform.position;
+        float meleeDropBonus = deathMeleeDropBonus;
         var deathToken = this.GetCancellationTokenOnDestroy();
         StageFlowManager deathFlow = StageFlowManager.Instance;
 
@@ -440,6 +487,7 @@ public class EnemyController : MonoBehaviour
             spriteRenderer = GetComponentInChildren<SpriteRenderer>();
         if (spriteRenderer == null || !spriteRenderer.enabled) return;
         spriteRenderer.enabled = false;
+        if (HP <= 0f) StartingWeaponProgress.RecordDefeat(enemyData);
         CancelBossStun();
 
         var collider = GetComponent<Collider2D>();
@@ -487,9 +535,9 @@ public class EnemyController : MonoBehaviour
             int stageNum = StageCounter.Instance != null ? StageCounter.Instance.StageCount : 1;
             var stageConfig = deathFlow != null ? deathFlow.stageConfig : null;
             if (stageConfig != null)
-                MaterialDropper.Instance.DropMaterialsWithStageBonus(deathPos, enemyData.drops, stageConfig, stageNum);
+                MaterialDropper.Instance.DropMaterialsWithStageBonus(deathPos, enemyData.drops, stageConfig, stageNum, meleeDropBonus);
             else
-                MaterialDropper.Instance.DropMaterials(deathPos, enemyData.drops);
+                MaterialDropper.Instance.DropMaterials(deathPos, enemyData.drops, meleeDropBonus);
         }
 
         // StageFlowManagerに通知（ステージ進行を委譲）

@@ -686,7 +686,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fadeImage: {fileID: 491690602}
   LoadfadeImage: {fileID: 1976516175}
-  fadeDuration: 0.7
+  fadeDuration: 1.5
   loadingRoot: {fileID: 139486280}
   loadingTipText: {fileID: 1525340592}
   loadingTipData: {fileID: 0}
@@ -698,6 +698,7 @@ MonoBehaviour:
   - "Tip: \u6B6F\u8ECA\u306F\u6B21\u306E\u4E00\u624B\u3092\u4F5C\u308B\u305F\u3081\u306E\u4F59\u767D\u3002"
   - "Tip: \u5371\u967A\u306A\u6642\u307B\u3069\u30B2\u30FC\u30C8\u306E\u8010\u4E45\u3092\u78BA\u8A8D\u3057\u3088\u3046\u3002"
   sceneName: CraftSpace
+  gearBlackout: {fileID: 2136100002}
 --- !u!114 &60426759
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3485,7 +3486,8 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 2136100001}
   m_Father: {fileID: 139486284}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -12435,6 +12437,24 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 012422d4c22846c78e52068aada3d3d2, type: 2}
   - {fileID: 11400000, guid: 64d57a991f684498a1b80de91a915a2b, type: 2}
   - {fileID: 11400000, guid: f5a3b5fb04eb43d2bddd2681542e2b73, type: 2}
+  - {fileID: 11400000, guid: a086768c1084453fa1a3131ec496767d, type: 2}
+  - {fileID: 11400000, guid: 5cb67babd5fc454c9936f936c56a94ed, type: 2}
+  - {fileID: 11400000, guid: e7e3b7861f694cacaaa49c1ed7cd576b, type: 2}
+  - {fileID: 11400000, guid: bc5fdabbdf334a829ee3d4e5871fabc4, type: 2}
+  - {fileID: 11400000, guid: 50104e42bbc7406b99289b4eb93b16f8, type: 2}
+  - {fileID: 11400000, guid: b0fe26dfd0574842aa29d3d489306c1d, type: 2}
+  - {fileID: 11400000, guid: f318febdf373470a8e35c86518778aca, type: 2}
+  - {fileID: 11400000, guid: 46cb9e83bb64485aadf078470dbc7741, type: 2}
+  - {fileID: 11400000, guid: c95a063bd66a455585e26d9acba2da3c, type: 2}
+  - {fileID: 11400000, guid: c8064e3da84c423c821038f3cc23ae86, type: 2}
+  - {fileID: 11400000, guid: ef56c52eb02f400e9630b222304e1fb3, type: 2}
+  - {fileID: 11400000, guid: 1e4e30a8347144ccba7fda2473a653ff, type: 2}
+  - {fileID: 11400000, guid: ead7981092ef442ea448a97d3b3b4cd8, type: 2}
+  - {fileID: 11400000, guid: 065d0ee27c1445bb85b1f5d28bbb8fcd, type: 2}
+  - {fileID: 11400000, guid: 0e1604df9ca74c35806e0c2cdc829628, type: 2}
+  - {fileID: 11400000, guid: d87f11cb98354d21b6220a7d3fa9d71f, type: 2}
+  - {fileID: 11400000, guid: 6a53d308f0724bfbbd225335e976fbce, type: 2}
+  - {fileID: 11400000, guid: ea37fe2b701442a8bf38de02241be305, type: 2}
   shopSlotCount: 6
   rerollGearCost: 1
   shopParent: {fileID: 398361662}
@@ -13125,3 +13145,37 @@ SceneRoots:
   - {fileID: 938116746}
   - {fileID: 46643700}
   - {fileID: 139486284}
+--- !u!1001 &2136100000
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 491690601}
+    m_Modifications: []
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 20a20b141ae44cd5a958ffa9fafc177f, type: 3}
+--- !u!224 &2136100001 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 100001, guid: 20a20b141ae44cd5a958ffa9fafc177f, type: 3}
+  m_PrefabInstance: {fileID: 2136100000}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2136100002 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 100002, guid: 20a20b141ae44cd5a958ffa9fafc177f, type: 3}
+  m_PrefabInstance: {fileID: 2136100000}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2136100003}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e32e3e95e88b46a6a83671fdbb58140a, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+--- !u!1 &2136100003 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 100000, guid: 20a20b141ae44cd5a958ffa9fafc177f, type: 3}
+  m_PrefabInstance: {fileID: 2136100000}
+  m_PrefabAsset: {fileID: 0}

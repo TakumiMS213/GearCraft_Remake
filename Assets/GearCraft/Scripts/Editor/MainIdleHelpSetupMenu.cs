@@ -27,9 +27,9 @@ public static class MainIdleHelpSetupMenu
         }
 
         SerializedObject serialized = new SerializedObject(controller);
-        serialized.FindProperty("moveHelpDelay").floatValue = 7f;
-        serialized.FindProperty("attackHelpDelay").floatValue = 7f;
-        serialized.FindProperty("boostHelpDelay").floatValue = 10f;
+        serialized.FindProperty("moveHelpDelay").floatValue = 5f;
+        serialized.FindProperty("attackHelpDelay").floatValue = 5f;
+        serialized.FindProperty("boostHelpDelay").floatValue = 5f;
         serialized.FindProperty("moveIcon").objectReferenceValue =
             AssetDatabase.LoadAssetAtPath<Sprite>("Assets/GearCraft/Images/Title/ad.png");
         serialized.FindProperty("attackIcon").objectReferenceValue =

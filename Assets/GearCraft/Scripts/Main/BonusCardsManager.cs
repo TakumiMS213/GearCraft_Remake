@@ -118,28 +118,9 @@ public class BonusCardsManager : MonoBehaviour
         }
     }
 
-    async void Start()
+    void Start()
     {
-        if (stageNumText != null)
-        {
-            stageNumText.DOFade(1, 0.1f);
-            int stageCount = StageCounter.Instance != null ? StageCounter.Instance.StageCount : 1;
-            stageNumText.text = $"DAY {(stageCount / 3) + 1}";
-        }
-
-        if (transition != null)
-            transition.PlayTransition(1);
-
-        try
-        {
-            await UniTask.Delay(TimeSpan.FromSeconds(3f), cancellationToken: this.GetCancellationTokenOnDestroy());
-        }
-        catch (OperationCanceledException)
-        {
-            return;
-        }
-        ClearText();
-
+        // Day/retry text and its transition are owned by StageFlowManager.
         audioSource = GetComponent<AudioSource>();
         if (audioSource != null)
         {

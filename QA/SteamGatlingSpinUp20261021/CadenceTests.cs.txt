@@ -1,0 +1,37 @@
+using System;
+class GatlingSpinUpTests
+{
+ static int checks;
+ static void Check(bool ok,string message){checks++;if(!ok)throw new Exception(message);}
+ static int Count(PlayerAttackCadence c,int frames,int fps,float interval,float spin=1.5f){int n=0;for(int i=0;i<frames;i++)n+=c.Advance(false,true,true,true,1f/fps,interval,spin);return n;}
+ static void Main(){
+  foreach(int fps in new[]{15,30,60,144}) foreach(float interval in new[]{.03f,.015f}){
+   var c=new PlayerAttackCadence();
+   Check(c.Advance(true,true,true,true,1f/fps,interval,1.5f)==1,"immediate initial shot");
+   double firstDelay=c.RemainingSeconds;
+   Check(Math.Abs(firstDelay-PlayerAttackCadence.GetAutomaticInterval(interval)*2)<1e-6,"starts at half upgraded maximum");
+   int ramp=Count(c,(int)(fps*1.5),fps,interval);
+   int full=Count(c,fps*3,fps,interval);
+   int expected=(int)Math.Round(3/PlayerAttackCadence.GetAutomaticInterval(interval));
+   Check(Math.Abs(full-expected)<=1,"reaches existing maximum at 1.5 seconds fps="+fps);
+   Check(Math.Abs(ramp-1.5/PlayerAttackCadence.GetAutomaticInterval(interval)*.75)<=2,"ramp integrated firing count fps="+fps);
+   Console.WriteLine("fps="+fps+" interval="+interval+" ramp shots="+ramp+" full 3s shots="+full);
+   c.Advance(false,false,true,true,1,interval,1.5f);
+   Check(c.Advance(true,true,true,true,0,interval,1.5f)==1,"release then restart");
+   Check(Math.Abs(c.RemainingSeconds-firstDelay)<1e-6,"release resets spinup");
+   Count(c,fps*2,fps,interval);
+   Check(c.Advance(false,true,true,false,1,interval,1.5f)==0,"blocked produces no shots");
+   c.Advance(false,true,true,true,0,interval,1.5f);
+   Check(Math.Abs(c.RemainingSeconds-firstDelay)<1e-6,"blocked resets spinup");
+   Count(c,fps*2,fps,interval);c.Interrupt();c.Advance(false,true,true,true,1,interval,1.5f);
+   Check(Math.Abs(c.RemainingSeconds-firstDelay)<1e-6,"switch/focus resets spinup");
+   var normal=new PlayerAttackCadence();normal.Advance(true,true,true,true,0,interval);
+   Check(Math.Abs(normal.RemainingSeconds-PlayerAttackCadence.GetAutomaticInterval(interval))<1e-6,"other automatics start at full rate");
+   Check(Math.Abs(Count(normal,fps*3,fps,interval,0)-expected)<=1,"other automatic cadence retained");
+  }
+  var dynamicRate=new PlayerAttackCadence();dynamicRate.Advance(true,true,true,true,0,.03f,1.5f);Count(dynamicRate,90,60,.03f);
+  Check(Math.Abs(Count(dynamicRate,180,60,.015f)-180)<=2,"boost during hold updates maximum");
+  var melee=new PlayerAttackCadence();Check(melee.Advance(true,true,false,true,0,.5f)==1,"melee initial attack");Check(melee.Advance(false,true,false,true,1,.5f)==0,"melee remains press only");
+  Console.WriteLine("PASS "+checks);
+ }
+}

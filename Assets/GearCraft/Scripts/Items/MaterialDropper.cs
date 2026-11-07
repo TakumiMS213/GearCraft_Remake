@@ -33,7 +33,7 @@ namespace GearCraft.Scripts.Items
             }
         }
 
-        public void DropMaterials(Vector3 position, MaterialDropEntry[] drops)
+        public void DropMaterials(Vector3 position, MaterialDropEntry[] drops, float meleeKillBonus = 0f)
         {
             if (drops == null || drops.Length == 0) return;
 
@@ -49,7 +49,7 @@ namespace GearCraft.Scripts.Items
                 if (Random.value > drop.dropChance) continue;
 
                 int rawAmount = Random.Range(drop.minAmount, drop.maxAmount + 1);
-                int amount = Mathf.RoundToInt(rawAmount * junkMult);
+                int amount = GetDropAmount(rawAmount, 1f, junkMult, meleeKillBonus);
                 if (amount <= 0) continue;
 
                 GameObject prefab = GetPrefabForType(drop.type);
@@ -59,7 +59,7 @@ namespace GearCraft.Scripts.Items
             }
         }
 
-        public void DropMaterialsWithStageBonus(Vector3 position, MaterialDropEntry[] drops, StageGeneratorSO stageConfig, int stageNum)
+        public void DropMaterialsWithStageBonus(Vector3 position, MaterialDropEntry[] drops, StageGeneratorSO stageConfig, int stageNum, float meleeKillBonus = 0f)
         {
             if (drops == null || drops.Length == 0) return;
 
@@ -75,21 +75,33 @@ namespace GearCraft.Scripts.Items
                 junkMult = StatusManager.Instance.junkCollectorMult;
             }
 
-            float totalMult = stageMult * junkMult;
-
             foreach (var drop in drops)
             {
                 if (drop == null) continue;
                 if (Random.value > drop.dropChance) continue;
 
                 int rawAmount = Random.Range(drop.minAmount, drop.maxAmount + 1);
-                int amount = Mathf.Max(1, Mathf.RoundToInt(rawAmount * totalMult));
+                int amount = Mathf.Max(1, GetDropAmount(rawAmount, stageMult, junkMult, meleeKillBonus));
 
                 GameObject prefab = GetPrefabForType(drop.type);
                 if (prefab == null) continue;
 
                 SpawnItems(position, amount, 0.5f, drop.type, prefab);
             }
+        }
+
+        private static int GetDropAmount(int rawAmount, float stageMult, float junkMult, float meleeKillBonus)
+        {
+            if (meleeKillBonus <= 0f) return Mathf.RoundToInt(rawAmount * stageMult * junkMult);
+            return CalculateMeleeDropAmount(rawAmount, stageMult, junkMult, meleeKillBonus, Random.value);
+        }
+
+        public static int CalculateMeleeDropAmount(int rawAmount, float stageMult, float junkMult, float meleeKillBonus, float roll)
+        {
+            float amount = Mathf.Max(0f, rawAmount * stageMult * (junkMult + meleeKillBonus));
+            int whole = Mathf.FloorToInt(amount);
+            // Preserve small increases even when the original drop is just one item.
+            return whole + (roll < amount - whole ? 1 : 0);
         }
 
         private void SpawnItems(Vector3 position, int amount, float horizontalRange, MaterialManager.MaterialType type, GameObject prefab)

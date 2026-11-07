@@ -498,7 +498,7 @@ public sealed class EnemyAI_BossFinal : MonoBehaviour, IEnemyAI, IBossStunHandle
         if (sweptBounds.min.x > targetBounds.max.x || sweptBounds.max.x < targetBounds.min.x ||
             sweptBounds.min.y > targetBounds.max.y || sweptBounds.max.y < targetBounds.min.y) return;
         bladeHit = true;
-        player.TakeDamageByBullet(Mathf.Max(25f, data.explosionDamage));
+        player.ReceiveEnemyHit();
     }
 
     private void AdvanceOnGround(float delta)

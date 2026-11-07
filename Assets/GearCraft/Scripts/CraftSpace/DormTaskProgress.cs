@@ -12,9 +12,13 @@ public enum DormTaskPhase
 public sealed class DormTaskProgress
 {
     public bool hasStartedFirstDay;
+    public bool hasCompletedFirstDay;
+    public bool hasSeenFurnitureTutorial;
     public bool hasCrafted;
     public bool hasUpgradedWeapon;
     public bool hasEncounteredFirstBoss;
+
+    public bool NeedsFurnitureTutorial => hasCompletedFirstDay && !hasSeenFurnitureTutorial;
 
     public DormTaskPhase GetPhase(int stageNumber, int bossKills, int firstBossStage)
     {
@@ -30,6 +34,8 @@ public sealed class DormTaskProgress
     public void Reset()
     {
         hasStartedFirstDay = false;
+        hasCompletedFirstDay = false;
+        hasSeenFurnitureTutorial = false;
         hasCrafted = false;
         hasUpgradedWeapon = false;
         hasEncounteredFirstBoss = false;

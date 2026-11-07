@@ -1,0 +1,88 @@
+#if UNITY_EDITOR
+using System;
+using System.IO;
+using System.Reflection;
+using System.Linq;
+using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using GearCraft.Scripts.Main;
+[InitializeOnLoad]
+public static class WeaponPercentEditorProbe
+{
+    const string Result="QA/WeaponCustomPercent20261021/editor-result.txt";
+    static int checks;
+    static WeaponPercentEditorProbe(){ EditorApplication.delayCall+=Run; }
+    static void Check(bool ok,string msg){ checks++;if(!ok)throw new Exception(msg); }
+    static void Near(float a,float b,string msg){Check(Mathf.Abs(a-b)<.001f,msg+": "+a+" vs "+b);}
+    [MenuItem("Tools/QA/Verify Weapon Percent")]
+    static void Run()
+    {
+        File.WriteAllText("QA/WeaponCustomPercent20261021/editor-state.txt", "playing="+EditorApplication.isPlaying+", willPlay="+EditorApplication.isPlayingOrWillChangePlaymode+", compiling="+EditorApplication.isCompiling+", updating="+EditorApplication.isUpdating);
+        if(File.Exists(Result)||EditorApplication.isPlayingOrWillChangePlaymode)return;
+        if(EditorApplication.isCompiling||EditorApplication.isUpdating){EditorApplication.delayCall+=Run;return;}
+        var originalStatus=StatusManager.Instance;
+        Scene originalScene=SceneManager.GetActiveScene(); bool dirty=originalScene.isDirty;
+        Scene preview=EditorSceneManager.NewPreviewScene();GameObject host=null;string result;
+        try
+        {
+            host=new GameObject("WeaponPercentQa"){hideFlags=HideFlags.HideAndDontSave};host.SetActive(false);
+            SceneManager.MoveGameObjectToScene(host,preview);
+            var status=host.AddComponent<StatusManager>();var player=host.AddComponent<PlayerController>();player.runtimeStatus=status;
+            var inventory=host.AddComponent<InventoryUI>();
+            var weapons=Directory.GetFiles("Assets/GearCraft/ScriptableObject/WeaponData","*.asset").Select(p=>AssetDatabase.LoadAssetAtPath<WeaponDataSO>(p)).ToArray();
+            var names=new[]{"Damage+1","Damage+2","Damage+3","HeavySlug","HeavySlug+","HeavySlug++","UnstableChamber"};
+            var expectedValues=new[]{.1f,.2f,.3f,.1f,.15f,.2f,.2f};
+            var parts=names.Select(n=>AssetDatabase.LoadAssetAtPath<UpgradePartSO>("Assets/GearCraft/ScriptableObject/UpgradeParts/"+n+".asset")).ToArray();
+            for(int i=0;i<parts.Length;i++)
+            {
+                Near(parts[i].effects.Single(e=>e.type==UpgradeEffectType.DamagePercent).value,expectedValues[i],names[i]+" value");
+                Check(parts[i].BuildTooltipText().Contains((expectedValues[i]*100).ToString("0")+"%"),names[i]+" percent tooltip");
+            }
+            status.currentWeapon=weapons.Single(w=>w.weaponName=="RailCraft");
+            status.RecalculateUpgradeEffects(new[]{parts[0],parts[0]});Near(status.damageBonusPercent,.2f,"10+10=20, not 21");
+            status.RecalculateUpgradeEffects(parts);Near(status.damageBonusPercent,1.25f,"all seven additive");
+            Near(status.bulletSizeMult,2.5f,"size bonuses retained");Near(status.spreadModifier,6f,"spread penalty retained");
+            status.currentWeapon=weapons.Single(w=>w.weaponName=="Katana");status.RecalculateUpgradeEffects(parts);
+            Near(status.damageBonusPercent,.6f,"ranged-only filtering");
+            status.RecalculateUpgradeEffects(new UpgradePartSO[0]);Near(status.damageBonusPercent,0,"removal clears bonus");
+            var damageField=typeof(PlayerController).GetField("currentDamage",BindingFlags.NonPublic|BindingFlags.Instance);
+            var configure=typeof(PlayerController).GetMethod("ConfigureSpawnedProjectile",BindingFlags.NonPublic|BindingFlags.Instance);
+            foreach(var w in weapons)
+            foreach(float pct in new[]{0f,.1f,.2f,.3f,.6f})
+            foreach(int moduleBonus in new[]{0,20})
+            foreach(float fraction in w.UsesChargedShot?new[]{0f,.5f,1f}:new[]{0f})
+            {
+                status.currentWeapon=w;player.currentWeapon=w;status.damageBonusPercent=pct;status.ACC=20;status.STR=12;status.craftWeaponDamagebuff=moduleBonus;
+                float basis=w.UsesChargedShot?100+300*fraction+moduleBonus:w.baseDamage;
+                float growth=w.weaponType==WeaponType.Melee?12:20*w.accDamageMultiplier;
+                bool crafted=w.weaponName!="Katana"&&w.weaponName!="AR";
+                float modules=crafted&&!w.UsesChargedShot?moduleBonus*w.craftModuleDamageMultiplier:0;
+                float expected=basis*(1+pct)+growth+modules;
+                Near(status.GetWeaponDamage(w,fraction),expected,w.weaponName+" total");
+                Near(status.GetWeaponBaseDamage(w,fraction)+status.GetWeaponDamageBonus(w,basis),expected,w.weaponName+" attack path");
+                if(w.weaponType!=WeaponType.Ranged||w.bulletPrefab==null)continue;
+                var bullet=(GameObject)PrefabUtility.InstantiatePrefab(w.bulletPrefab,preview);
+                try
+                {
+                    damageField.SetValue(player,basis);configure.Invoke(player,new object[]{bullet});
+                    var flame=bullet.GetComponent<SteamThrowerBulletController>();
+                    float actual=flame!=null?(float)typeof(SteamThrowerBulletController).GetField("damage",BindingFlags.NonPublic|BindingFlags.Instance).GetValue(flame):bullet.GetComponent<BulletController>().bulletDamage;
+                    Near(actual,expected,w.weaponName+" actual projectile");
+                }
+                finally{UnityEngine.Object.DestroyImmediate(bullet);}
+            }
+            result="PASS: "+checks+" assertions using real assets, damage methods, projectile configuration and tooltips. No Play Mode or PlayerPrefs writes.";
+        }
+        catch(Exception e){result="FAIL: "+e;}
+        finally
+        {
+            if(host!=null)UnityEngine.Object.DestroyImmediate(host);
+            EditorSceneManager.ClosePreviewScene(preview);StatusManager.Instance=originalStatus;
+        }
+        result+="\nActive scene preserved: "+(originalScene==SceneManager.GetActiveScene())+"\nDirty state preserved: "+(dirty==originalScene.isDirty);
+        File.WriteAllText(Result,result+"\n");
+    }
+}
+#endif

@@ -16,7 +16,6 @@ public class EnemySpawner : MonoBehaviour
     private const int GroupSpawnMinCount = 1;
     private const int GroupSpawnMaxCount = 3;
     private const int DefaultStagesPerDay = 3;
-    private const float GSeriesSpeedThreshold = 2f;
     private const float GroupSpawnSeparationDistance = 0.9f;
     private const float GroupSpawnMinDelay = 0.12f;
     private const float GroupSpawnMaxDelay = 0.9f;
@@ -46,7 +45,6 @@ public class EnemySpawner : MonoBehaviour
     public GameObject warning;
     public EmergencyWarningUI emergencyWarningUI;
     public float emergencySpeedThreshold = 8f;
-    public float emergencyExplosionDamageThreshold = 30f;
 
     private CancellationTokenSource cts;
     private StageSpawnPlanner spawnPlanner;
@@ -155,16 +153,8 @@ public class EnemySpawner : MonoBehaviour
             return;
         }
 
-        for (int i = 0; i < spawnList.Count; i++)
-        {
-            token.ThrowIfCancellationRequested();
-
-            EnemyDataSO selectedEnemy = spawnList[i];
-
-            await SpawnEnemyGroupAsync(selectedEnemy, ShouldUseGroupedNormalSpawn(stageNum, selectedEnemy), i == spawnList.Count - 1, token);
-
-            await UniTask.Delay((int)(spawnInterval * 1000f), cancellationToken: token);
-        }
+        NormalWaveSpawnSchedule schedule = BuildNormalSpawnSchedule(stageNum, spawnList, spawnInterval, true);
+        await SpawnNormalScheduleAsync(schedule, true, token);
     }
 
     private async UniTask SpawnBossStage(int stageNum, CancellationToken token)
@@ -183,16 +173,10 @@ public class EnemySpawner : MonoBehaviour
                 return;
             }
 
-            for (int i = 0; i < minions.Count; i++)
-            {
-                token.ThrowIfCancellationRequested();
-                EnemyDataSO minionData = minions[i];
-
-                bool markLast = plan.MarkLastMinionAsStageEnd && i == minions.Count - 1;
-                await SpawnEnemyGroupAsync(minionData, ShouldUseGroupedNormalSpawn(stageNum, minionData), markLast, token);
-
+            NormalWaveSpawnSchedule schedule = BuildNormalSpawnSchedule(stageNum, minions, spawnInterval, false);
+            await SpawnNormalScheduleAsync(schedule, plan.MarkLastMinionAsStageEnd, token);
+            if (minions.Count > 0)
                 await UniTask.Delay((int)(spawnInterval * 1000f), cancellationToken: token);
-            }
         }
 
         if (!plan.HasBoss)
@@ -218,40 +202,127 @@ public class EnemySpawner : MonoBehaviour
         }
     }
 
-    private async UniTask SpawnEnemyGroupAsync(EnemyDataSO enemyData, bool useGroup, bool markLastEnemy, CancellationToken token)
+    private NormalWaveSpawnSchedule BuildNormalSpawnSchedule(int stageNum, List<EnemyDataSO> enemies,
+        float normalInterval, bool increaseDensity)
     {
-        if (enemyData == null || enemyData.prefab == null)
+        var schedule = new NormalWaveSpawnSchedule();
+        var density = increaseDensity ? new NormalWaveDensity() : null;
+        foreach (EnemyDataSO primary in enemies)
         {
-            return;
+            List<EnemyDataSO> group = BuildSpawnGroup(primary, ShouldUseGroupedNormalSpawn(stageNum, primary));
+            float duration = normalInterval;
+            for (int i = 0; i + 1 < group.Count; i++) duration += GetGroupSpawnDelay(group[i]);
+            var expanded = new List<EnemyDataSO>();
+            foreach (EnemyDataSO enemy in group)
+            {
+                int copies = density != null ? density.GetSpawnCount(enemy) : 1;
+                for (int copy = 0; copy < copies; copy++) expanded.Add(enemy);
+            }
+            for (int i = 0; i < expanded.Count; i++)
+            {
+                float interval = increaseDensity ? duration / expanded.Count :
+                    i + 1 < expanded.Count ? GetGroupSpawnDelay(expanded[i]) : normalInterval;
+                schedule.Add(expanded[i], interval, IsGSeriesSupportEnemy(expanded[i]));
+            }
+        }
+        return schedule;
+    }
+
+    private async UniTask SpawnNormalScheduleAsync(NormalWaveSpawnSchedule schedule, bool markLastEnemy,
+        CancellationToken token)
+    {
+        var approaching = new List<EnemyController>();
+        var groundEnemies = new List<EnemyController>();
+        var widths = new Dictionary<EnemyDataSO, float>();
+        float remaining = 0f;
+        float sinceSpawn = float.PositiveInfinity;
+        float sinceGround = float.PositiveInfinity;
+
+        float Width(EnemyDataSO data)
+        {
+            if (!widths.TryGetValue(data, out float width))
+            {
+                width = GetEnemyWidth(data.prefab);
+                widths.Add(data, width);
+            }
+            return width;
         }
 
-        List<EnemyDataSO> groupEnemies = BuildSpawnGroup(enemyData, useGroup);
-        for (int i = 0; i < groupEnemies.Count; i++)
+        bool GroundReady(EnemyDataSO data)
         {
-            if (i > 0)
+            if (sinceGround < NormalWaveSpawnSchedule.MinimumGroundInterval) return false;
+            foreach (EnemyController ground in groundEnemies)
             {
-                EnemyDataSO previousEnemy = groupEnemies[i - 1];
-                float spawnDelay = GetGroupSpawnDelay(previousEnemy);
-                await UniTask.Delay((int)(spawnDelay * 1000f), cancellationToken: token);
+                // Actual travel also accounts for overheat, knockback and a blocked vehicle.
+                if (ground == null || ground.HP <= 0f) continue;
+                if (!NormalWaveSpawnSchedule.HasGroundClearance(sinceGround,
+                    transform.position.x - ground.transform.position.x, Width(ground.enemyData), Width(data)))
+                    return false;
             }
+            return true;
+        }
 
+        while (schedule.Count > 0)
+        {
+            // Start/register the preceding enemy before making another decision. No same-frame bursts.
+            await UniTask.NextFrame(cancellationToken: token);
+            if (StageFlowManager.IsPlayerInputBlocked) continue;
+            StageFlowManager flow = StageFlowManager.Instance;
+            if (flow != null && !flow.IsStageActive) continue;
+
+            remaining -= Time.deltaTime;
+            sinceSpawn += Time.deltaTime;
+            sinceGround += Time.deltaTime;
+            approaching.RemoveAll(enemy => enemy == null || enemy.HP <= 0f || enemy.IsAliveInGameplayView);
+            groundEnemies.RemoveAll(enemy => enemy == null || enemy.HP <= 0f);
+            Camera gameplayCamera = Camera.main;
+            bool emptyScreenAdvance = flow != null && gameplayCamera != null && gameplayCamera.isActiveAndEnabled &&
+                !flow.HasAliveEnemyInGameplayView() && approaching.Count == 0 &&
+                sinceSpawn >= NormalWaveSpawnSchedule.EmptyScreenInterval;
+            int index = schedule.FindNext(remaining <= 0f, emptyScreenAdvance, GroundReady,
+                data => EstimateEntrySeconds(data, gameplayCamera, Width(data)));
+            if (index < 0) continue;
+
+            NormalWaveSpawnSchedule.Entry entry = schedule.Take(index);
             token.ThrowIfCancellationRequested();
-
-            EnemyDataSO groupEnemy = groupEnemies[i];
-            if (groupEnemy == null || groupEnemy.prefab == null)
-            {
-                continue;
-            }
-
-            ShowEmergencyWarningIfNeeded(groupEnemy);
-            GameObject spawned = Instantiate(groupEnemy.prefab, transform.position, Quaternion.identity);
+            ShowEmergencyWarningIfNeeded(entry.Enemy);
+            GameObject spawned = Instantiate(entry.Enemy.prefab, transform.position, Quaternion.identity);
             EnemyController enemy = spawned.GetComponent<EnemyController>();
             if (enemy != null)
             {
-                enemy.enemyData = groupEnemy;
-                enemy.isLastEnemy = markLastEnemy && i == groupEnemies.Count - 1;
+                enemy.enemyData = entry.Enemy;
+                // Reordering must not complete a stage while deferred vehicles remain in the queue.
+                enemy.isLastEnemy = markLastEnemy && schedule.Count == 0;
+                if (entry.Ground) groundEnemies.Add(enemy);
+                else approaching.Add(enemy);
             }
+            if (entry.Ground) sinceGround = 0f;
+            remaining = entry.Interval;
+            sinceSpawn = 0f;
         }
+    }
+
+    private static float GetEnemyWidth(GameObject prefab)
+    {
+        float width = 0.5f;
+        foreach (SpriteRenderer renderer in prefab.GetComponentsInChildren<SpriteRenderer>())
+        {
+            if (renderer.sprite != null)
+                width = Mathf.Max(width, renderer.sprite.bounds.size.x * Mathf.Abs(renderer.transform.lossyScale.x));
+        }
+        foreach (BoxCollider2D collider in prefab.GetComponentsInChildren<BoxCollider2D>())
+            width = Mathf.Max(width, collider.size.x * Mathf.Abs(collider.transform.lossyScale.x));
+        return width;
+    }
+
+    private float EstimateEntrySeconds(EnemyDataSO data, Camera gameplayCamera, float width)
+    {
+        float speed = Mathf.Max(0.01f, data.speed * (data.aiType == EnemyAIType.Bomber ? 1.5f : 1f));
+        if (gameplayCamera == null) return 1f / speed;
+        Vector3 position = transform.position;
+        float depth = Vector3.Dot(position - gameplayCamera.transform.position, gameplayCamera.transform.forward);
+        float rightEdge = gameplayCamera.ViewportToWorldPoint(new Vector3(1f, 0.5f, depth)).x;
+        return Mathf.Max(0f, position.x - width * 0.5f - rightEdge) / speed;
     }
 
     private List<EnemyDataSO> BuildSpawnGroup(EnemyDataSO primaryEnemy, bool useGroup)
@@ -262,8 +333,9 @@ public class EnemySpawner : MonoBehaviour
         if (IsGSeriesSupportEnemy(primaryEnemy))
         {
             int mixedTargetCount = Mathf.Clamp(Mathf.Max(2, targetCount), 2, GroupSpawnMaxCount);
-            AddSupportEnemies(groupEnemies, primaryEnemy, mixedTargetCount - 1);
+            // Start the slow vehicle's approach first; flying support fills its entry delay.
             groupEnemies.Add(primaryEnemy);
+            AddSupportEnemies(groupEnemies, primaryEnemy, mixedTargetCount - 1);
             return groupEnemies;
         }
 
@@ -382,14 +454,12 @@ public class EnemySpawner : MonoBehaviour
 
     private static bool IsGSeriesSupportEnemy(EnemyDataSO enemyData)
     {
-        if (enemyData == null || enemyData.IsBossType || enemyData.speed > GSeriesSpeedThreshold)
+        if (enemyData == null || enemyData.IsBossType)
         {
             return false;
         }
 
-        string enemyName = enemyData.enemyName;
-        return !string.IsNullOrEmpty(enemyName) &&
-            enemyName.IndexOf("G", StringComparison.OrdinalIgnoreCase) >= 0;
+        return enemyData.enemyName == "G-1" || enemyData.enemyName == "EG-33";
     }
 
     private int GetEnemyScalingStage(int stageNum)
@@ -800,9 +870,7 @@ public class EnemySpawner : MonoBehaviour
             return true;
         }
 
-        bool hasDangerousExplosion = enemyData.aiType == EnemyAIType.Bomber &&
-            enemyData.explosionDamage >= emergencyExplosionDamageThreshold;
-        return enemyData.speed >= emergencySpeedThreshold || hasDangerousExplosion;
+        return enemyData.speed >= emergencySpeedThreshold;
     }
 
     private void EnsureEmergencyWarningUI()

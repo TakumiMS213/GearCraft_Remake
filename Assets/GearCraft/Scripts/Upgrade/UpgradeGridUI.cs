@@ -921,13 +921,13 @@ public class UpgradeGridUI : MonoBehaviour
 
     private static bool IsIneffectiveForCurrentWeapon(UpgradePartSO part)
     {
-        if (part == null || !part.rangedOnly || StatusManager.Instance == null)
+        if (part == null || StatusManager.Instance == null)
         {
             return false;
         }
 
         WeaponDataSO currentWeapon = StatusManager.Instance.currentWeapon;
-        return currentWeapon != null && currentWeapon.weaponType != WeaponType.Ranged;
+        return !part.AppliesTo(currentWeapon);
     }
 
     private static bool IsTopLeftCellOfPart(int[,] grid, int partIndex, int x, int y)

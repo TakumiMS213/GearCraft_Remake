@@ -58,7 +58,11 @@ public class StatusManager : MonoBehaviour
     [SerializeField] private CraftTutorialRunProgress craftTutorialProgress = new CraftTutorialRunProgress();
     public CraftTutorialRunProgress CraftTutorials => craftTutorialProgress ?? (craftTutorialProgress = new CraftTutorialRunProgress());
 
-    public float bonusDamage = 0f;
+    [UnityEngine.Serialization.FormerlySerializedAs("bonusDamage")]
+    [Tooltip("WEAPONCUSTOM base damage increase. 0.1 = +10%; parts add together.")]
+    public float damageBonusPercent = 0f;
+    public MeleeUpgradeStats meleeUpgrades = new MeleeUpgradeStats();
+    public bool HasMeleeEquipped => currentWeapon != null && currentWeapon.weaponType == WeaponType.Melee;
     public float attackSpeedMult = 1f;
     public bool hasBulletDouble = false;
     public float spreadModifier = 0f;
@@ -157,7 +161,7 @@ public class StatusManager : MonoBehaviour
         foreach (UpgradePartSO part in GetSavedUpgradeParts())
         {
             if (part == null || part.effects == null ||
-                (part.rangedOnly && (weapon == null || weapon.weaponType != WeaponType.Ranged)))
+                !part.AppliesTo(weapon))
                 continue;
 
             foreach (UpgradeEffect effect in part.effects)
@@ -169,7 +173,9 @@ public class StatusManager : MonoBehaviour
 
     public float GetWeaponDamage(WeaponDataSO weapon, float chargeFraction = 0f)
     {
-        return weapon != null ? GetWeaponBaseDamage(weapon, chargeFraction) + GetWeaponDamageBonus(weapon) : 0f;
+        if (weapon == null) return 0f;
+        float baseDamage = GetWeaponBaseDamage(weapon, chargeFraction);
+        return baseDamage + GetWeaponDamageBonus(weapon, baseDamage);
     }
 
     public float GetWeaponBaseDamage(WeaponDataSO weapon, float chargeFraction = 0f)
@@ -177,19 +183,20 @@ public class StatusManager : MonoBehaviour
         if (weapon == null) return 0f;
         float damage = weapon.GetBaseDamage(chargeFraction);
         // RailCraft modules add +5 to both ends of the base damage range.
-        // They are not ACC/grid bonuses and never receive their x10 multipliers.
+        // These modules are part of RailCraft's base, so grid percentages apply to them too.
         if (weapon.UsesChargedShot && IsCraftedWeapon(weapon))
             damage += craftWeaponDamagebuff * weapon.craftModuleDamageMultiplier;
         return damage;
     }
 
-    public float GetWeaponDamageBonus(WeaponDataSO weapon)
+    public float GetWeaponDamageBonus(WeaponDataSO weapon, float? attackBaseDamage = null)
     {
         if (weapon == null) return 0f;
 
         float damageBonus = weapon.weaponType == WeaponType.Melee
-            ? STR + weapon.GetScaledFlatDamageBonus(bonusDamage)
-            : weapon.GetScaledAccDamageBonus(ACC) + weapon.GetScaledFlatDamageBonus(bonusDamage);
+            ? STR : weapon.GetScaledAccDamageBonus(ACC);
+        // Scale only the actual attack's base (including its charge), never STR/ACC.
+        damageBonus += (attackBaseDamage ?? GetWeaponBaseDamage(weapon)) * damageBonusPercent;
 
         if (!weapon.UsesChargedShot && IsCraftedWeapon(weapon))
             damageBonus += craftWeaponDamagebuff * weapon.craftModuleDamageMultiplier;
@@ -229,7 +236,8 @@ public class StatusManager : MonoBehaviour
 
     public void RecalculateUpgradeEffects(IEnumerable<UpgradePartSO> parts)
     {
-        bonusDamage = 0f;
+        meleeUpgrades = new MeleeUpgradeStats();
+        damageBonusPercent = 0f;
         attackSpeedMult = 1f;
         hasBulletDouble = false;
         spreadModifier = 0f;
@@ -239,19 +247,21 @@ public class StatusManager : MonoBehaviour
         magnetRange = 3f;
 
         if (parts == null) return;
+        var uniqueParts = new HashSet<UpgradePartSO>();
         foreach (UpgradePartSO part in parts)
         {
             if (part == null || part.effects == null ||
-                (part.rangedOnly && (currentWeapon == null || currentWeapon.weaponType != WeaponType.Ranged)))
+                !part.AppliesTo(currentWeapon) || (part.unique && !uniqueParts.Add(part)))
                 continue;
 
             foreach (UpgradeEffect effect in part.effects)
             {
                 if (effect == null) continue;
+                if (HasMeleeEquipped) meleeUpgrades.Add(effect);
                 switch (effect.type)
                 {
-                    case UpgradeEffectType.DamageFlat:
-                        bonusDamage += effect.value;
+                    case UpgradeEffectType.DamagePercent:
+                        damageBonusPercent += effect.value;
                         break;
                     case UpgradeEffectType.AttackSpeedMult:
                         attackSpeedMult *= effect.value;
@@ -439,8 +449,9 @@ public class StatusManager : MonoBehaviour
         notifiedCraftUnlockIds.Clear();
         DormTasks.Reset();
         CraftTutorials.Reset();
+        meleeUpgrades = new MeleeUpgradeStats();
 
-        bonusDamage = 0f;
+        damageBonusPercent = 0f;
         attackSpeedMult = 1f;
         hasBulletDouble = false;
         spreadModifier = 0f;
