@@ -47,6 +47,15 @@ public sealed class PlayerAttackCadence
         remaining -= deltaTime;
         if (!allowed || (automatic ? !held : !pressed))
         {
+            if (automatic && spinUpSeconds > 0f)
+            {
+                // Releasing the trigger coasts down; blocked gameplay freezes
+                // the spin state rather than instantly resetting it.
+                if (allowed) spinUpElapsed = Math.Max(0.0, spinUpElapsed - deltaTime);
+                remaining = Math.Max(0.0, remaining);
+                wasHeld = false;
+                return 0;
+            }
             Interrupt();
             return 0;
         }
@@ -66,12 +75,11 @@ public sealed class PlayerAttackCadence
         double interval = GetAutomaticInterval(nominalInterval);
         if (spinUpSeconds > 0f)
         {
-            spinUpElapsed = continuing && !pressed
-                ? Math.Min(spinUpSeconds, spinUpElapsed + deltaTime) : 0.0;
-            double rateMultiplier = 0.5 + 0.5 * spinUpElapsed / spinUpSeconds;
-            // Scale the established maximum rate after 60 Hz rounding so the
-            // acceleration is smooth, including when rate upgrades are equipped.
-            interval /= rateMultiplier;
+            if (continuing) spinUpElapsed = Math.Min(spinUpSeconds, spinUpElapsed + deltaTime);
+            const double minimumRate = 2.0;
+            double maximumRate = Math.Max(minimumRate, 1.0 / interval);
+            double rate = minimumRate + (maximumRate - minimumRate) * spinUpElapsed / spinUpSeconds;
+            interval = 1.0 / rate;
         }
         int attacks = 0;
         while (remaining <= ReadyTolerance && attacks < MaximumAttacksPerFrame)

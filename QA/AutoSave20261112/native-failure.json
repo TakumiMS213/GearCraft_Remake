@@ -1,0 +1,7 @@
+{
+  "quitWaitsForPendingWrite": true,
+  "unsavedExitConfirmation": true,
+  "cancelKeepsPlaying": true,
+  "previousCheckpointPreserved": true,
+  "retryUsesExactFailedSnapshot": true
+}

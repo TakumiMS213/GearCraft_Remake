@@ -1,0 +1,59 @@
+UnityEditor.EditorApplication.delayCall += async () =>
+{
+    var report = new System.Collections.Generic.Dictionary<string, object>();
+    System.Threading.SemaphoreSlim gate = null; bool held = false;
+    string folder = System.IO.Path.Combine(Application.persistentDataPath, "AutoSave");
+    string temporary = System.IO.Path.Combine(folder, "run-state.json.tmp");
+    try
+    {
+        var save = RunSaveService.Instance;
+        if (!await save.BeginRunAsync()) throw new System.Exception(save.LastError);
+        StatusManager.Instance.ResetRunProgress(); StageCounter.Instance.StageCount = 4;
+        StatusManager.Instance.DormTasks.hasCompletedFirstDay = true;
+        save.SaveDayEnd(); await save.PendingSave;
+        StatusManager.Instance.HP = 90; save.SaveDayEnd(); await save.PendingSave;
+        var flags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance;
+        var controller = UnityEngine.Object.FindFirstObjectByType<PlayerDataResetController>(FindObjectsInactive.Include);
+        var dialog = (GameObject)typeof(PlayerDataResetController).GetField("dialog", flags).GetValue(controller);
+        dialog.transform.parent.gameObject.SetActive(true);
+        var heading = (TMPro.TMP_Text)typeof(PlayerDataResetController).GetField("heading", flags).GetValue(controller);
+        string profile = PlayerPrefs.GetString(GearCraft.Gallery.GalleryProgress.SaveKey, "");
+        System.IO.Directory.CreateDirectory(temporary);
+        controller.OpenDialog(); controller.ConfirmReset();
+        float limit = Time.realtimeSinceStartup + 5f;
+        while (heading.text != "リセットできませんでした" && Time.realtimeSinceStartup < limit)
+            await System.Threading.Tasks.Task.Delay(50);
+        if (heading.text != "リセットできませんでした" || PlayerPrefs.GetString(GearCraft.Gallery.GalleryProgress.SaveKey, "") != profile)
+            throw new System.Exception("Failed reset reported success or modified profile");
+        report["failedDeleteShowsFailure"] = true; report["failedDeletePreservesProfile"] = true;
+        ScreenCapture.CaptureScreenshot("QA/AutoSave20261112/07-reset-failure.png");
+        await System.Threading.Tasks.Task.Delay(200);
+        System.IO.Directory.Delete(temporary);
+        controller.CloseDialog();
+        if (!await save.BeginRunAsync()) throw new System.Exception(save.LastError);
+        save.SaveDayEnd(); await save.PendingSave;
+        var store = (RunSaveStore)typeof(RunSaveService).GetField("store", flags).GetValue(save);
+        gate = (System.Threading.SemaphoreSlim)typeof(RunSaveStore).GetField("gate", flags).GetValue(store);
+        await gate.WaitAsync(); held = true;
+        save.SaveDayEnd();
+        controller.OpenDialog(); controller.ConfirmReset();
+        await System.Threading.Tasks.Task.Delay(200);
+        if (heading.text == "リセットしました") throw new System.Exception("Reset completed before writer queue drained");
+        gate.Release(); held = false;
+        limit = Time.realtimeSinceStartup + 5f;
+        while (heading.text != "リセットしました" && Time.realtimeSinceStartup < limit)
+            await System.Threading.Tasks.Task.Delay(50);
+        if (heading.text != "リセットしました" || (await save.InspectAsync()).CanContinue || save.RunId != null || save.CanRetry ||
+            System.IO.Directory.EnumerateFileSystemEntries(folder).Any() || PlayerPrefs.HasKey(RunSaveService.EndedRunKey))
+            throw new System.Exception("Concurrent reset left run data behind");
+        if (GearCraft.Gallery.GalleryProgress.IsUnlocked || StartingWeaponProgress.IsUnlocked || StatusManager.Instance.bossKillCount != 0)
+            throw new System.Exception("Existing progress reset did not execute");
+        report["resetWaitsForPendingWrite"] = true; report["allRunFilesDeleted"] = true;
+        report["inMemorySaveCleared"] = true; report["existingProgressAlsoReset"] = true;
+        ScreenCapture.CaptureScreenshot("QA/AutoSave20261112/08-reset-success.png");
+    }
+    catch (System.Exception ex) { report["error"] = ex.ToString(); }
+    finally { if (held) gate.Release(); if (System.IO.Directory.Exists(temporary)) System.IO.Directory.Delete(temporary); }
+    System.IO.File.WriteAllText("QA/AutoSave20261112/native-reset.json", Newtonsoft.Json.JsonConvert.SerializeObject(report, Newtonsoft.Json.Formatting.Indented));
+};
+return "title reset failure and concurrent write test scheduled";

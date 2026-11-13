@@ -1,0 +1,8 @@
+{
+  "failedDeleteShowsFailure": true,
+  "failedDeletePreservesProfile": true,
+  "resetWaitsForPendingWrite": true,
+  "allRunFilesDeleted": true,
+  "inMemorySaveCleared": true,
+  "existingProgressAlsoReset": true
+}

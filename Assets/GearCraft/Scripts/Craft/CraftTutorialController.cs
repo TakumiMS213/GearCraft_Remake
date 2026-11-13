@@ -19,7 +19,7 @@ namespace GearCraft.Scripts.Craft
         private RectTransform canvasRect, messagePanel;
         private readonly List<RectTransform[]> highlightFrames = new List<RectTransform[]>();
         private readonly List<Rect> highlightBounds = new List<Rect>();
-        private TMP_Text stateText, titleText, taskActionText, bodyText, pageText, confirmText;
+        private TMP_Text titleText, taskActionText, bodyText, pageText, confirmText;
         private Button nextButton, closeButton, hintButton, practiceButton, affordableButton, shortageButton;
         private Button confirmYesButton, confirmNoButton;
         private GameObject confirmOpener;
@@ -266,7 +266,7 @@ namespace GearCraft.Scripts.Craft
             {
                 progress.stepIndex = 2;
                 ResetAttempt();
-                notice = "素材を集める装置は、すでに稼働しています。次の備えを考えましょう。";
+                notice = "ScrapModuleは作成済みです。別のレシピを作成しましょう。";
             }
             if (currentTab == WeaponCustomTab && progress.stepIndex == 0 && upgradeGridManager != null)
             {
@@ -276,7 +276,7 @@ namespace GearCraft.Scripts.Craft
                     progress.practicePartName = placed.partData.name;
                     progress.stepIndex = 1;
                     ResetAttempt();
-                    notice = "一撃の威力は上がっています。別のパーツで、さらに改良しましょう。";
+                    notice = "攻撃力補正は装着済みです。別のパーツで攻撃力か攻撃速度を上げましょう。";
                 }
             }
             if (currentTab == WeaponCustomTab)
@@ -361,11 +361,10 @@ namespace GearCraft.Scripts.Craft
             if (Step == null) { HideTutorial(); return; }
             if (referenceOnly)
             {
-                stateText.text = "手引き：画面を操作しながら確認できます";
                 titleText.text = Step.Title;
-                taskActionText.text = "試したい手順を、ここで確かめられます";
-                bodyText.text = Step.Hint1 + "\n" + Step.Hint2;
-                pageText.text = $"手引き {referenceStepIndex + 1}/{currentSteps.Length}";
+                taskActionText.text = Step.Hint2;
+                bodyText.text = Step.Body;
+                pageText.text = $"{referenceStepIndex + 1}/{currentSteps.Length}";
                 affordableButton.gameObject.SetActive(false);
                 shortageButton.gameObject.SetActive(false);
                 hintButton.gameObject.SetActive(false);
@@ -379,7 +378,6 @@ namespace GearCraft.Scripts.Craft
                 return;
             }
             closeButton.GetComponentInChildren<TMP_Text>().text = "案内を中断";
-            stateText.text = progress.showingFeedback ? "結果を確認" : "手引き：このまま画面を操作できます";
             titleText.text = Step.Title;
             taskActionText.text = GetTaskAction();
             string body = progress.showingFeedback ? progress.feedback : Step.Body;
@@ -408,7 +406,7 @@ namespace GearCraft.Scripts.Craft
             practiceButton.gameObject.SetActive(!progress.showingFeedback);
             practiceButton.GetComponentInChildren<TMP_Text>().text = compactTask ? "説明を開く" : "説明を畳む";
             nextButton.gameObject.SetActive(progress.showingFeedback);
-            nextButton.GetComponentInChildren<TMP_Text>().text = progress.mastered ? "手引きを終える" : "次へ";
+            nextButton.GetComponentInChildren<TMP_Text>().text = progress.mastered ? "案内を終える" : "次へ";
             UpdateHintButton();
             FitMessagePanel();
             UpdateHighlight();
@@ -416,27 +414,27 @@ namespace GearCraft.Scripts.Craft
 
         private string GetTaskAction()
         {
-            if (progress.showingFeedback)
-                return progress.mastered ? "結果を確認したら、手引きを終える" : "結果を確認したら「次へ」";
+            if (!referenceOnly && progress.showingFeedback)
+                return progress.mastered ? "確認したら「案内を終える」" : "「次へ」で次の課題へ進む";
             switch (Step.WaitCondition)
             {
                 case CraftTutorialWaitCondition.AssessCraftMaterials:
                     return craftManager != null && craftManager.SelectedRecipe == tutorialScrapModuleRecipe
-                        ? "材料を比べ、下のボタンで足りるか答える"
-                        : "ScrapModule を選んで、必要な材料を見る";
+                        ? "素材の所持数と必要数を比べ、足りるか答える"
+                        : "ScrapModuleを選び、必要素材を確認する";
                 case CraftTutorialWaitCondition.CraftScrapModule:
                     return craftManager != null && craftManager.SelectedRecipe == tutorialScrapModuleRecipe
-                        ? "中央のハンマーを押して、装置を作成する" : "作成する ScrapModule を選ぶ";
+                        ? "ハンマーを押してScrapModuleを作成する" : "ScrapModuleのレシピを選ぶ";
                 case CraftTutorialWaitCondition.CraftDifferentRecipe:
-                    return "まだ持っていないものを選んで作成する";
+                    return "未作成の別のレシピを選んで作成する";
                 case CraftTutorialWaitCondition.PlaceDamagePart:
                     return upgradeGridUI != null && upgradeGridUI.IsShopDragging
                         ? "形が収まる空きマスで、マウスを離す"
-                        : "攻撃力を上げるパーツを選び、空きマスへドラッグする";
+                        : "攻撃力補正のパーツを空きマスへドラッグする";
                 case CraftTutorialWaitCondition.ImproveWeapon:
                     return upgradeGridUI != null && upgradeGridUI.IsShopDragging
-                        ? "空きマスでマウスを離し、性能の変化を確かめる"
-                        : "先ほどとは違うパーツで、欲しい性能を伸ばす";
+                        ? "空きマスでマウスを離して装着する"
+                        : "別のパーツで攻撃力か攻撃速度を上げる";
                 default: return Step.Title;
             }
         }
@@ -447,9 +445,9 @@ namespace GearCraft.Scripts.Craft
             if (Step.WaitCondition == CraftTutorialWaitCondition.ImproveWeapon &&
                 IsRangedSpeedUnchanged(StatusManager.Instance))
             {
-                if (progress.hintLevel == 1) return "速さが変わらないときは、一撃の威力を伸ばす方法を考えてみましょう。";
-                if (progress.hintLevel == 2) return "左のパーツから、先ほどとは違う「ダメージ＋」の効果を探しましょう。";
-                return "速さのパーツを外せば、材料と空きが戻ります。別の威力パーツを組み込みましょう。";
+                if (progress.hintLevel == 1) return "攻撃間隔が変わらない場合は、攻撃力補正のパーツを選びましょう。";
+                if (progress.hintLevel == 2) return "先ほどとは違う、攻撃力補正のパーツを探しましょう。";
+                return "攻撃速度パーツを外すと、素材と空きマスが戻ります。攻撃力補正のパーツに交換しましょう。";
             }
             if (Step.WaitCondition == CraftTutorialWaitCondition.AssessCraftMaterials &&
                 craftManager != null && craftManager.SelectedRecipe == tutorialScrapModuleRecipe)
@@ -474,12 +472,17 @@ namespace GearCraft.Scripts.Craft
         {
             bool compact = compactTask && !referenceOnly && !progress.showingFeedback;
             bodyText.gameObject.SetActive(!compact);
-            bodyText.fontSize = 24f;
-            float maxBodyHeight = !referenceOnly && !progress.showingFeedback ? (currentTab == CraftTab ? 96f : 120f) : 180f;
-            float bodyHeight = Mathf.Clamp(bodyText.GetPreferredValues(bodyText.text, messagePanel.rect.width - 56f, Mathf.Infinity).y + 4f, 28f, maxBodyHeight);
-            float panelHeight = compact ? 184f : bodyHeight + 188f;
+            float textWidth = messagePanel.rect.width - 56f;
+            float actionHeight = Mathf.Max(48f, taskActionText.GetPreferredValues(taskActionText.text, textWidth, Mathf.Infinity).y + 6f);
+            const float actionTop = 64f;
+            float bodyTop = actionTop + actionHeight + 8f;
+            float bodyHeight = Mathf.Max(40f, bodyText.GetPreferredValues(bodyText.text, textWidth, Mathf.Infinity).y + 6f);
+            float panelHeight = (compact ? actionTop + actionHeight : bodyTop + bodyHeight) + 76f;
             messagePanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, panelHeight);
-            bodyText.rectTransform.offsetMin = new Vector2(28f, -116f - bodyHeight);
+            taskActionText.rectTransform.offsetMax = new Vector2(-28f, -actionTop);
+            taskActionText.rectTransform.offsetMin = new Vector2(28f, -actionTop - actionHeight);
+            bodyText.rectTransform.offsetMax = new Vector2(-28f, -bodyTop);
+            bodyText.rectTransform.offsetMin = new Vector2(28f, -bodyTop - bodyHeight);
             pageText.rectTransform.offsetMin = new Vector2(28f, -panelHeight + 16f);
             pageText.rectTransform.offsetMax = new Vector2(-messagePanel.rect.width + 188f, -panelHeight + 52f);
             LayoutTaskButtons();
@@ -572,7 +575,7 @@ namespace GearCraft.Scripts.Craft
             if (!IsWaitingFor(CraftTutorialWaitCondition.AssessCraftMaterials)) return;
             if (craftManager.SelectedRecipe != tutorialScrapModuleRecipe || tutorialScrapModuleRecipe == null)
             {
-                Fail("まずは、毎日素材を集めるScrapModuleを見てください。この装置の材料が足りるか確かめましょう。");
+                Fail("ScrapModuleを選び、必要素材が足りるか確認しましょう。");
                 return;
             }
             bool enough = CraftManager.HasEnoughMaterials(tutorialScrapModuleRecipe);
@@ -582,7 +585,7 @@ namespace GearCraft.Scripts.Craft
                 return;
             }
             string result = enough ? "材料はそろっています。作成すると、その分の材料を使います。"
-                : "まだ材料が足りません。普段は防衛で得た素材を、次の備えに回します。";
+                : "材料が不足しています。素材は防衛中の敵から入手できます。";
             if (!progress.practiceSuppliesGranted)
             {
                 string grant = GrantMissingCosts(tutorialScrapModuleRecipe.costs);
@@ -598,15 +601,15 @@ namespace GearCraft.Scripts.Craft
             if (IsWaitingFor(CraftTutorialWaitCondition.CraftScrapModule) && recipe == tutorialScrapModuleRecipe)
             {
                 progress.craftedRecipeIds.Add(RecipeId(recipe));
-                Succeed("装置が動き始めました。これからは毎日、歯車を5個ずつ確保できます。");
+                Succeed("ScrapModuleが完成しました。1日が終わるごとに歯車を5個獲得します。");
             }
             else if (IsWaitingFor(CraftTutorialWaitCondition.CraftDifferentRecipe))
             {
                 if (recipe == tutorialScrapModuleRecipe || progress.craftedRecipeIds.Contains(RecipeId(recipe)))
-                { Fail("それはすでに持っています。今回は別のものを作り、備えを増やしましょう。"); return; }
+                { Fail("そのレシピは作成済みです。未作成の別のレシピを選びましょう。"); return; }
                 progress.craftedRecipeIds.Add(RecipeId(recipe));
-                string effect = recipe.resultType == CraftResultType.PunkDrive ? "回転する歯車が周囲の敵を攻撃します。接近されたときの助けになるでしょう。"
-                    : recipe.resultType == CraftResultType.Weapon ? "完成した武器は、すでに装備しています。次の戦いで使い心地を確かめてください。" : "新しい機能が使えるようになりました。次の防衛に役立ててください。";
+                string effect = recipe.resultType == CraftResultType.PunkDrive ? "回転する歯車が、周囲の敵を自動で攻撃します。"
+                    : recipe.resultType == CraftResultType.Weapon ? "完成した武器を装備しました。次の防衛から使用できます。" : DescribeModuleEffect(recipe);
                 Succeed($"{recipe.DisplayName}が完成しました。{effect}");
             }
             else if (IsWaitingFor(CraftTutorialWaitCondition.AssessCraftMaterials))
@@ -614,6 +617,18 @@ namespace GearCraft.Scripts.Craft
                 notice = "完成しました。次は作る前に、材料が足りるかも確かめておきましょう。";
                 // Reconcile on resume rather than interpreting an unassessed action as mastery.
                 if (recipe == tutorialScrapModuleRecipe) { PrepareCurrentStep(); ShowCurrentStep(); }
+            }
+        }
+
+        private static string DescribeModuleEffect(CraftRecipeSO recipe)
+        {
+            if (recipe.statBonus > 0) return $"工房武装の攻撃力が{recipe.statBonus}上がりました。";
+            switch (recipe.moduleFlag)
+            {
+                case "module_scrap": return "1日が終わるごとに歯車を5個獲得します。";
+                case "module_repair": return "ウェーブをクリアするたびにHPが回復します。";
+                case "module_barrier": return "敵の攻撃を1回防ぎ、時間経過でバリアが再展開します。";
+                default: return recipe.Summary;
             }
         }
 
@@ -627,7 +642,7 @@ namespace GearCraft.Scripts.Craft
             if (IsWaitingFor(CraftTutorialWaitCondition.PlaceDamagePart))
             {
                 if (!HasEffect(part, UpgradeEffectType.DamagePercent) || !damageUp)
-                { Fail("パーツは組み込めました。今回は一撃の威力を高めたいので、攻撃力が上がるものを探しましょう。"); return; }
+                { Fail("今回は攻撃力補正のパーツを装着してください。カーソルを合わせて効果を確認できます。"); return; }
                 progress.practicePartName = part.name;
             }
             else if (IsWaitingFor(CraftTutorialWaitCondition.ImproveWeapon))
@@ -635,9 +650,9 @@ namespace GearCraft.Scripts.Craft
                 if (!IsNewWeaponImprovement(part, damageUp, faster))
                 {
                     if (!damageUp && HasEffect(part, UpgradeEffectType.AttackSpeedMult) && IsRangedSpeedUnchanged(status))
-                        Fail("今の構成では攻撃の間隔は変わりません。今回は一撃の威力を高めてみましょう。");
+                        Fail("現在の構成では攻撃間隔が短くなりません。攻撃力補正のパーツを選びましょう。");
                     else
-                        Fail("先ほどとは違うパーツで、今より威力か速さを伸ばしましょう。効果を見比べてみてください。");
+                        Fail("先ほどとは違うパーツで、現在の攻撃力か攻撃速度を上げましょう。");
                     return;
                 }
             }
@@ -694,7 +709,7 @@ namespace GearCraft.Scripts.Craft
         private void OnCraftFailed(CraftRecipeSO recipe)
         {
             if (IsTutorialActive() && currentTab == CraftTab && !progress.showingFeedback)
-                Fail(recipe == null ? "まずは、次の戦いに必要なものを選びましょう。" :
+                Fail(recipe == null ? "作成するレシピを選びましょう。" :
                     !CraftManager.MeetsRequiredWeapon(recipe) ? "この作成には、元になる武器の装備が必要です。指定の武器を装備してから、作業を続けましょう。" : DescribeShortage(recipe.costs));
         }
         private void OnPlacementFailed(UpgradePartSO part)
@@ -1255,17 +1270,13 @@ namespace GearCraft.Scripts.Craft
             messagePanel.anchoredPosition = new Vector2(0f, 36f);
             messagePanel.sizeDelta = new Vector2(1060f, 330f);
 
-            stateText = CreateText("OperationState", messagePanel, 18f, FontStyles.Normal, new Vector2(28f, -8f), new Vector2(-28f, -38f));
-            stateText.color = new Color(0.55f, 0.95f, 0.7f, 1f);
-            titleText = CreateText("Title", messagePanel, 26f, FontStyles.Bold, new Vector2(28f, -38f), new Vector2(-28f, -82f));
-            taskActionText = CreateText("CurrentAction", messagePanel, 20f, FontStyles.Bold, new Vector2(28f, -82f), new Vector2(-28f, -116f));
+            titleText = CreateText("Title", messagePanel, 32f, FontStyles.Bold, new Vector2(28f, -16f), new Vector2(-28f, -58f));
+            taskActionText = CreateText("CurrentAction", messagePanel, 38f, FontStyles.Bold, new Vector2(28f, -64f), new Vector2(-28f, -112f));
             taskActionText.color = new Color(1f, 0.88f, 0.55f, 1f);
-            bodyText = CreateText("Body", messagePanel, 24f, FontStyles.Normal, new Vector2(28f, -116f), new Vector2(-28f, -244f));
-            bodyText.enableAutoSizing = true;
-            bodyText.fontSizeMin = 20f;
-            bodyText.fontSizeMax = 24f;
-            pageText = CreateText("Page", messagePanel, 20f, FontStyles.Normal, new Vector2(28f, -278f), new Vector2(-724f, -314f));
-            stateText.raycastTarget = titleText.raycastTarget = taskActionText.raycastTarget = bodyText.raycastTarget = pageText.raycastTarget = false;
+            bodyText = CreateText("Body", messagePanel, 30f, FontStyles.Normal, new Vector2(28f, -116f), new Vector2(-28f, -244f));
+            bodyText.enableAutoSizing = false;
+            pageText = CreateText("Page", messagePanel, 24f, FontStyles.Normal, new Vector2(28f, -278f), new Vector2(-724f, -314f));
+            titleText.raycastTarget = taskActionText.raycastTarget = bodyText.raycastTarget = pageText.raycastTarget = false;
 
             nextButton = CreateButton("NextButton", messagePanel, "次へ", new Vector2(-24f, 14f), new Vector2(176f, 48f));
             closeButton = CreateButton("CloseButton", messagePanel, "案内を中断", new Vector2(-184f, 14f), new Vector2(136f, 48f));
@@ -1300,7 +1311,7 @@ namespace GearCraft.Scripts.Craft
             panel.anchoredPosition = Vector2.zero;
             panel.sizeDelta = new Vector2(820f, 300f);
 
-            confirmText = CreateText("ConfirmText", panel, 28f, FontStyles.Bold, new Vector2(40f, -32f), new Vector2(-40f, -150f));
+            confirmText = CreateText("ConfirmText", panel, 32f, FontStyles.Bold, new Vector2(40f, -32f), new Vector2(-40f, -150f));
             confirmText.alignment = TextAlignmentOptions.Center;
 
             confirmYesButton = CreateButton("YesButton", panel, "確認する", new Vector2(-164f, 36f), new Vector2(144f, 58f));
@@ -1394,7 +1405,7 @@ namespace GearCraft.Scripts.Craft
             image.color = new Color(0.86f, 0.64f, 0.18f, 1f);
 
             Button button = gameObject.GetComponent<Button>();
-            TMP_Text text = CreateText("Text", gameObject.transform, 22f, FontStyles.Bold, Vector2.zero, Vector2.zero);
+            TMP_Text text = CreateText("Text", gameObject.transform, 24f, FontStyles.Bold, Vector2.zero, Vector2.zero);
             RectTransform textRect = text.GetComponent<RectTransform>();
             Stretch(textRect);
             text.text = label;

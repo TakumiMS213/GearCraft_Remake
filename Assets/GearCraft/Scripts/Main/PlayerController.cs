@@ -66,6 +66,8 @@ public class PlayerController : MonoBehaviour
     private readonly PlayerChargedShot chargedShot = new PlayerChargedShot();
     private RailChargeIndicator chargeIndicator;
     private bool attackFocusLost;
+    private float lastGatlingSpreadSample;
+    private bool hasGatlingSpreadSample;
 
     // --- Components ---
     private Rigidbody2D rb;
@@ -207,6 +209,7 @@ public class PlayerController : MonoBehaviour
         if (currentWeapon == appliedWeapon) return;
 
         appliedWeapon = currentWeapon;
+        hasGatlingSpreadSample = false;
         armRotation?.CancelSwing();
         meleeDriveBuffUntil = 0f;
         attackCadence.Interrupt();
@@ -218,7 +221,7 @@ public class PlayerController : MonoBehaviour
         {
             meleeWeapon.ApplyWeaponData(currentWeapon);
         }
-
+        armRotation?.RefreshWeaponPose(currentWeapon);
     }
 
     /// <summary>
@@ -420,7 +423,7 @@ public class PlayerController : MonoBehaviour
 
         float interval = currentWeapon != null ? currentWeapon.coolTime : 0f;
         if (runtimeStatus != null) interval *= runtimeStatus.attackSpeedMult;
-        float spinUpSeconds = currentWeapon != null && currentWeapon.weaponName == "SteamGatling" ? 5f : 0f;
+        float spinUpSeconds = currentWeapon != null && currentWeapon.weaponName == "SteamGatling" ? 15f : 0f;
         int attacks = attackCadence.Advance(pressed, held, automatic, allowed, deltaTime, interval, spinUpSeconds);
         coolTime = (float)attackCadence.RemainingSeconds;
         for (int i = 0; i < attacks; i++)
@@ -588,9 +591,29 @@ public class PlayerController : MonoBehaviour
     }
 
 
-    private static float CalculateSpreadAngle(float baseAngle, float spread)
+    private float CalculateSpreadAngle(float baseAngle, float spread)
     {
         float clampedSpread = Mathf.Max(0f, spread);
+        if (currentWeapon != null && currentWeapon.weaponName == "SteamGatling")
+        {
+            float sample;
+            if (!hasGatlingSpreadSample)
+                sample = UnityEngine.Random.Range(-1f, 1f);
+            else
+            {
+                // Exclude a small band around the previous bullet's offset.
+                // Every projectile (including double shots) draws its own angle.
+                const float separation = 0.2f;
+                float lowerEnd = Mathf.Max(-1f, lastGatlingSpreadSample - separation);
+                float upperStart = Mathf.Min(1f, lastGatlingSpreadSample + separation);
+                float lowerLength = lowerEnd + 1f;
+                float draw = UnityEngine.Random.Range(0f, lowerLength + 1f - upperStart);
+                sample = draw < lowerLength ? -1f + draw : upperStart + draw - lowerLength;
+            }
+            lastGatlingSpreadSample = sample;
+            hasGatlingSpreadSample = true;
+            return baseAngle + clampedSpread * sample;
+        }
         return baseAngle + UnityEngine.Random.Range(-clampedSpread, clampedSpread);
     }
 

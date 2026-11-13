@@ -1,0 +1,70 @@
+// Execute as an Editor method body. Uses scene-authored objects and existing assets only.
+UnityEditor.EditorApplication.delayCall += async () =>
+{
+    var report = new System.Collections.Generic.Dictionary<string, object>();
+    try
+    {
+        var save = RunSaveService.Instance;
+        if (!await save.BeginRunAsync()) throw new System.Exception(save.LastError);
+        var status = StatusManager.Instance;
+        status.ResetRunProgress();
+        var weapon = UnityEditor.AssetDatabase.LoadAssetAtPath<WeaponDataSO>("Assets/GearCraft/ScriptableObject/WeaponData/RailCraft.asset");
+        var part = UnityEditor.AssetDatabase.LoadAssetAtPath<UpgradePartSO>("Assets/GearCraft/ScriptableObject/UpgradeParts/Damage+1.asset");
+        status.ownedWeapons.Add(weapon); status.currentWeapon = weapon;
+        status.ownedUpgradeParts.Add(part);
+        status.savedUpgradePartPlacements.Add(new StatusManager.SavedUpgradePartPlacement {
+            partData = part, gridX = 1, gridY = 2, rotation = 1, inventoryIndex = 0,
+            refundCostsOnRemove = true, returnToShopOnSameDay = true, placedShopDay = 5 });
+        status.HP = 80; status.SAN = 67; status.STR = 7; status.ACC = 8; status.GATE = 60;
+        status.module_scrap = true; status.module_repair = true; status.module_barrier = true; status.punkDrive = true;
+        status.craftWeaponDamagebuff = 20; status.bossKillCount = 1;
+        status.permanentMagnetRangeBonus = 1.5f;
+        status.railCraftBulletSizeMultiplier = 1.5f; status.railCraftApplyOverheat = true;
+        status.selectedUniqueBonusCardIds.Add("native-save-fixture");
+        status.MarkCraftUnlockNotified("PunkDrive");
+        status.DormTasks.hasStartedFirstDay = true; status.DormTasks.hasCompletedFirstDay = true;
+        status.DormTasks.hasCrafted = true;
+        status.CraftTutorials.craft.stepIndex = 2; status.CraftTutorials.craft.practiceSuppliesGranted = true;
+        status.CraftTutorials.craft.baselineParts.Add(part);
+        status.CraftTutorials.craft.craftedRecipeIds.Add("ScrapModule");
+        status.CraftTutorials.weaponCustom.challengeSuppliesGranted = true;
+        status.LastSelectedCraftRecipeId = "PunkDrive";
+        status.upgradeShopDay = 5; status.hasSavedUpgradeShopLineup = true;
+        status.savedUpgradeShopLineup.Add(part);
+        save.EnterShopDay(5); save.AdvanceShopReroll(); save.AdvanceShopReroll();
+        StageCounter.Instance.StageCount = 13;
+        for (int i = 0; i < 6; i++) MaterialManager.Instance.SetMaterialForRestore((MaterialManager.MaterialType)i, 11 + i);
+        // These are deliberately impossible transient/derived values and must not survive restore.
+        status.attackSpeedMult = 9f; status.damageBonusPercent = 99f; status.steamThrowerBoostBurnDropsActive = true;
+        Time.timeScale = 0f;
+        save.SaveDayEnd();
+        status.HP = 12; MaterialManager.Instance.SetMaterialForRestore(MaterialManager.MaterialType.Scrap, 999);
+        var samples = new System.Collections.Generic.List<object>();
+        var root = save.transform;
+        for (int i = 0; i < 16; i++)
+        {
+            await System.Threading.Tasks.Task.Delay(100);
+            var text = root.Find("SaveIndicator/SaveText").GetComponent<TMPro.TMP_Text>();
+            samples.Add(new { time = i * 0.1f, active = text.gameObject.activeInHierarchy,
+                text = text.text, alpha = text.alpha, gearZ = root.Find("SaveIndicator/SaveGear").eulerAngles.z, paused = Time.timeScale == 0f });
+            if (i == 1) ScreenCapture.CaptureScreenshot("QA/AutoSave20261112/01-save-indicator.png");
+        }
+        await save.PendingSave;
+        var info = await save.InspectAsync();
+        if (!info.CanContinue) throw new System.Exception(info.error);
+        if ((int)info.data.status["HP"] != 80 || info.data.materials[0] != 11) throw new System.Exception("Snapshot changed after capture");
+        if (info.data.status["attackSpeedMult"] != null || info.data.status["damageBonusPercent"] != null ||
+            info.data.status["steamThrowerBoostBurnDropsActive"] != null) throw new System.Exception("Transient/derived state persisted");
+        report["copyIndependent"] = true; report["excludedTransient"] = true;
+        report["samples"] = samples; report["runId"] = save.RunId;
+        report["payload"] = info.data;
+        Time.timeScale = 1f;
+        RunSaveUI.Instance.RequestStart(UnityEngine.Object.FindFirstObjectByType<StartingWeaponSelectionController>());
+        await System.Threading.Tasks.Task.Delay(400);
+        ScreenCapture.CaptureScreenshot("QA/AutoSave20261112/02-continue-dialog.png");
+        report["continueDialog"] = RunSaveUI.Instance.IsOpen;
+    }
+    catch (System.Exception ex) { report["error"] = ex.ToString(); Time.timeScale = 1f; }
+    System.IO.File.WriteAllText("QA/AutoSave20261112/native-fixture.json", Newtonsoft.Json.JsonConvert.SerializeObject(report, Newtonsoft.Json.Formatting.Indented));
+};
+return "native fixture scheduled";

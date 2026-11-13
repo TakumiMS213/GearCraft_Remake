@@ -16,6 +16,7 @@ public class ApplicationQuitter : MonoBehaviour
     private void HandleEscape()
     {
         if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "Title") return;
+        if (RunSaveUI.Instance != null && RunSaveUI.Instance.TryHandleEscape()) return;
         TitleLicenseController licenses = FindFirstObjectByType<TitleLicenseController>();
         if (licenses != null && licenses.TryCloseDialog()) return;
         PlayerDataResetController reset = FindFirstObjectByType<PlayerDataResetController>();
@@ -31,7 +32,21 @@ public class ApplicationQuitter : MonoBehaviour
         QuitGame();
     }
 
-    public static void QuitGame()
+    public static async void QuitGame()
+    {
+        if (RunSaveService.Instance != null)
+        {
+            await RunSaveService.Instance.PendingSave;
+            if (!string.IsNullOrEmpty(RunSaveService.Instance.LastError) && RunSaveService.Instance.RunId != null)
+            {
+                RunSaveUI.Instance?.ConfirmUnsavedExit(QuitImmediately, null);
+                return;
+            }
+        }
+        QuitImmediately();
+    }
+
+    public static void QuitImmediately()
     {
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;

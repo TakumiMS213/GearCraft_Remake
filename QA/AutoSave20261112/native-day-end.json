@@ -1,0 +1,17 @@
+{
+  "noCheckpointUntilResultClosed": true,
+  "automaticSaveAfterDayEnd": true,
+  "nextStage": 4,
+  "hpAfterDayRepair": 80,
+  "gearsAfterDailyModule": 5,
+  "saveIndicatorDuringTransition": true,
+  "scene": "CraftSpace",
+  "materialsAfterDormArrival": [
+    0,
+    5,
+    0,
+    0,
+    0,
+    0
+  ]
+}

@@ -1,0 +1,54 @@
+UnityEditor.EditorApplication.delayCall += async () =>
+{
+    var report = new System.Collections.Generic.Dictionary<string, object>();
+    System.Threading.SemaphoreSlim gate = null;
+    bool held = false;
+    string temporary = System.IO.Path.Combine(Application.persistentDataPath, "AutoSave/run-save.json.tmp");
+    try
+    {
+        var save = RunSaveService.Instance;
+        StatusManager.Instance.HP = 80; save.SaveDayEnd(); await save.PendingSave;
+        var store = (RunSaveStore)typeof(RunSaveService).GetField("store", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(save);
+        gate = (System.Threading.SemaphoreSlim)typeof(RunSaveStore).GetField("gate", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(store);
+        StatusManager.Instance.HP = 73;
+        MaterialManager.Instance.SetMaterialForRestore(MaterialManager.MaterialType.Scrap, 22);
+        System.IO.Directory.CreateDirectory(temporary);
+        await gate.WaitAsync(); held = true;
+        save.SaveDayEnd();
+        ApplicationQuitter.QuitGame();
+        await System.Threading.Tasks.Task.Delay(200);
+        if (!UnityEditor.EditorApplication.isPlaying || RunSaveUI.Instance.IsOpen || !save.IsSaving)
+            throw new System.Exception("Quit did not wait for pending write");
+        report["quitWaitsForPendingWrite"] = true;
+        gate.Release(); held = false;
+        await save.PendingSave; await System.Threading.Tasks.Task.Delay(200);
+        if (string.IsNullOrEmpty(save.LastError) || !save.CanRetry || !RunSaveUI.Instance.IsOpen)
+            throw new System.Exception("Failure/retry/unsaved quit dialog missing");
+        ScreenCapture.CaptureScreenshot("QA/AutoSave20261112/04-unsaved-exit.png");
+        await System.Threading.Tasks.Task.Delay(200);
+        report["unsavedExitConfirmation"] = true;
+        RunSaveUI.Instance.TryHandleEscape();
+        await System.Threading.Tasks.Task.Delay(200);
+        ScreenCapture.CaptureScreenshot("QA/AutoSave20261112/05-save-failure.png");
+        report["cancelKeepsPlaying"] = UnityEditor.EditorApplication.isPlaying && !RunSaveUI.Instance.IsOpen;
+        var old = await save.InspectAsync();
+        if (!old.CanContinue || (int)old.data.status["HP"] != 80) throw new System.Exception("Previous checkpoint lost");
+        StatusManager.Instance.HP = 55;
+        MaterialManager.Instance.SetMaterialForRestore(MaterialManager.MaterialType.Scrap, 999);
+        System.IO.Directory.Delete(temporary);
+        save.RetrySave(); await save.PendingSave;
+        var retried = await save.InspectAsync();
+        if (!retried.CanContinue || (int)retried.data.status["HP"] != 73 || retried.data.materials[0] != 22 || save.CanRetry || save.LastError != null)
+            throw new System.Exception("Retry captured live state instead of failed snapshot");
+        report["previousCheckpointPreserved"] = true;
+        report["retryUsesExactFailedSnapshot"] = true;
+    }
+    catch (System.Exception ex) { report["error"] = ex.ToString(); }
+    finally
+    {
+        if (held) gate.Release();
+        if (System.IO.Directory.Exists(temporary)) System.IO.Directory.Delete(temporary);
+    }
+    System.IO.File.WriteAllText("QA/AutoSave20261112/native-failure.json", Newtonsoft.Json.JsonConvert.SerializeObject(report, Newtonsoft.Json.Formatting.Indented));
+};
+return "failure and quit test scheduled";

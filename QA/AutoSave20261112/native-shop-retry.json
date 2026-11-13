@@ -1,0 +1,16 @@
+{
+  "reenterKeepsConfirmedStock": true,
+  "loadRegeneratesSameStockFromDaySeed": true,
+  "dailyRewardsNotRepeated": true,
+  "postCheckpointRerollReverted": true,
+  "stock": [
+    "Assets/GearCraft/ScriptableObject/UpgradeParts/AirStep.asset",
+    "Assets/GearCraft/ScriptableObject/UpgradeParts/DriveLink.asset",
+    "Assets/GearCraft/ScriptableObject/UpgradeParts/HeavySlug++.asset",
+    "Assets/GearCraft/ScriptableObject/UpgradeParts/SwingGear.asset",
+    "Assets/GearCraft/ScriptableObject/UpgradeParts/MobilityGear.asset",
+    "Assets/GearCraft/ScriptableObject/UpgradeParts/PrecisionNozzle.asset"
+  ],
+  "playerDeathRetryPreservesCheckpoint": true,
+  "sceneAfterRetry": "Main"
+}

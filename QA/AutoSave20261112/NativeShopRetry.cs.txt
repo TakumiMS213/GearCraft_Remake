@@ -1,0 +1,55 @@
+UnityEditor.EditorApplication.delayCall += async () =>
+{
+    var report = new System.Collections.Generic.Dictionary<string, object>();
+    try
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Craft");
+        await System.Threading.Tasks.Task.Delay(1200);
+        var shop = UnityEngine.Object.FindFirstObjectByType<UpgradeShopManager>(FindObjectsInactive.Include);
+        shop.EnsureLineupInitialized();
+        var first = StatusManager.Instance.savedUpgradeShopLineup.Select(p => UnityEditor.AssetDatabase.GetAssetPath(p)).ToArray();
+        if (first.Length == 0) throw new System.Exception("Shop not initialized");
+        UnityEngine.SceneManagement.SceneManager.LoadScene("CraftSpace");
+        await System.Threading.Tasks.Task.Delay(300);
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Craft");
+        await System.Threading.Tasks.Task.Delay(500);
+        shop = UnityEngine.Object.FindFirstObjectByType<UpgradeShopManager>(FindObjectsInactive.Include);
+        shop.EnsureLineupInitialized();
+        if (!first.SequenceEqual(StatusManager.Instance.savedUpgradeShopLineup.Select(p => UnityEditor.AssetDatabase.GetAssetPath(p))))
+            throw new System.Exception("Reentering shop rerolled inventory");
+        report["reenterKeepsConfirmedStock"] = true;
+        shop.TryRerollLineup();
+        if (RunSaveService.Instance.ShopReroll != 1) throw new System.Exception("Reroll count missing");
+        if (!await RunSaveService.Instance.LoadRunAsync()) throw new System.Exception(RunSaveService.Instance.LastError);
+        await System.Threading.Tasks.Task.Delay(5500);
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Craft");
+        await System.Threading.Tasks.Task.Delay(700);
+        shop = UnityEngine.Object.FindFirstObjectByType<UpgradeShopManager>(FindObjectsInactive.Include);
+        shop.EnsureLineupInitialized();
+        if (!first.SequenceEqual(StatusManager.Instance.savedUpgradeShopLineup.Select(p => UnityEditor.AssetDatabase.GetAssetPath(p))))
+            throw new System.Exception("Load rerolled not-yet-visited shop");
+        if (MaterialManager.Instance.GetMaterial(MaterialManager.MaterialType.Gear) != 5 || RunSaveService.Instance.ShopReroll != 0)
+            throw new System.Exception("Load duplicated rewards or kept post-checkpoint purchases");
+        report["loadRegeneratesSameStockFromDaySeed"] = true;
+        report["dailyRewardsNotRepeated"] = true;
+        report["postCheckpointRerollReverted"] = true;
+        report["stock"] = first;
+        var path = System.IO.Path.Combine(Application.persistentDataPath, "AutoSave/run-save.json");
+        var before = System.IO.File.ReadAllText(path);
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Main");
+        await System.Threading.Tasks.Task.Delay(3000);
+        StageFlowManager.Instance.enemySpawner.StopSpawning();
+        StatusManager.Instance.HP = 0;
+        StageFlowManager.Instance.BeginPlayerDeathPresentation();
+        StageFlowManager.Instance.RetryDayAfterPlayerDeath();
+        await System.Threading.Tasks.Task.Delay(3000);
+        StageFlowManager.Instance.enemySpawner.StopSpawning();
+        if (System.IO.File.ReadAllText(path) != before || !(await RunSaveService.Instance.InspectAsync()).CanContinue)
+            throw new System.Exception("Player auto-retry invalidated or overwrote checkpoint");
+        report["playerDeathRetryPreservesCheckpoint"] = true;
+        report["sceneAfterRetry"] = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+    }
+    catch (System.Exception ex) { report["error"] = ex.ToString(); }
+    System.IO.File.WriteAllText("QA/AutoSave20261112/native-shop-retry.json", Newtonsoft.Json.JsonConvert.SerializeObject(report, Newtonsoft.Json.Formatting.Indented));
+};
+return "shop and auto-retry test scheduled";

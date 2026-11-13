@@ -1,4 +1,4 @@
-﻿%YAML 1.1
+%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -11,9 +11,9 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f2890903c8b71094a906053107056e03, type: 3}
   m_Name: ReflectionBullet
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   partName: Reflection Bullet
-  icon: {fileID: 21300000, guid: eafe6ec19ce1c3049abc3dfa59b7c897, type: 3}
+  icon: {fileID: 5970169814907239951, guid: a690c9623166d448baa71d3163878039, type: 3}
   rarity: 2
   partColor: {r: 0.95, g: 0.55, b: 0.05, a: 1}
   width: 2
@@ -28,3 +28,5 @@ MonoBehaviour:
   - type: 2
     amount: 1
   rangedOnly: 1
+  meleeOnly: 0
+  unique: 0

@@ -1,0 +1,16 @@
+{
+  "unknownVersion": true,
+  "unknownWeaponID": true,
+  "wrongAssetType": true,
+  "missingField": true,
+  "negativeMaterials": true,
+  "nonRestStage": true,
+  "badRotation": true,
+  "outsideGrid": true,
+  "duplicatePlacement": true,
+  "invalidInventoryIndex": true,
+  "missingTutorialTrack": true,
+  "invalidTutorialHint": true,
+  "cancelWeaponSelectionPreservesCheckpoint": true,
+  "confirmedNewGameInvalidatesOldCheckpoint": true
+}

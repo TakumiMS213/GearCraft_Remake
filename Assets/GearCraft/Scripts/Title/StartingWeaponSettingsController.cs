@@ -11,14 +11,14 @@ public sealed class StartingWeaponSettingsController : MonoBehaviour
     private void OnEnable()
     {
         RefreshState();
-        warningWindow.SetActive(false);
+        if (warningWindow != null) warningWindow.SetActive(false);
     }
 
     public void ToggleSelection()
     {
         StartingWeaponProgress.SetSelectionEnabled(!StartingWeaponProgress.IsSelectionEnabled);
         RefreshState();
-        warningWindow.SetActive(true);
+        if (warningWindow != null) warningWindow.SetActive(true);
     }
 
     private void RefreshState()
@@ -33,6 +33,6 @@ public sealed class StartingWeaponSettingsController : MonoBehaviour
     public void RefreshAfterReset()
     {
         RefreshState();
-        warningWindow.SetActive(false);
+        if (warningWindow != null) warningWindow.SetActive(false);
     }
 }

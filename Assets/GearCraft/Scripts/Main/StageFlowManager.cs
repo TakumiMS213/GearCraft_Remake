@@ -73,7 +73,7 @@ public class StageFlowManager : MonoBehaviour
         isDayIntroShowing || isPlayerDeathPresentation ||
         (bonusCardsManager != null && bonusCardsManager.IsChoosingReward) ||
         (restResultReportUI != null && restResultReportUI.IsShowing);
-    public static bool IsPlayerInputBlocked => Time.timeScale <= 0f ||
+    public static bool IsPlayerInputBlocked => Time.timeScale <= 0f || QuitConfirmationController.BlocksPlayerInput || RunSaveUI.BlocksGameplay ||
         playerInputBlockedFrame == Time.frameCount || (Instance != null && Instance.IsBlockingGameplayUI);
 
     public static void BlockPlayerInputForCurrentFrame()
@@ -328,6 +328,7 @@ public class StageFlowManager : MonoBehaviour
                 // makes the dorm furniture tour eligible for this run.
                 if (StatusManager.Instance != null)
                     StatusManager.Instance.DormTasks.hasCompletedFirstDay = true;
+                RunSaveService.Instance?.SaveDayEnd();
                 sceneTransitionManager.LoadScene("CraftSpace");
             }
             return;
@@ -696,6 +697,7 @@ public class StageFlowManager : MonoBehaviour
         private float junkCollectorMult;
         private float bulletSizeMult;
         private float magnetRange;
+        private float permanentMagnetRangeBonus;
         private List<string> selectedUniqueBonusCardIds;
         private float gearCraftAxeSizeMultiplier;
         private float gearCraftSwordMoveSpeedBonus;
@@ -764,6 +766,7 @@ public class StageFlowManager : MonoBehaviour
                 snapshot.junkCollectorMult = status.junkCollectorMult;
                 snapshot.bulletSizeMult = status.bulletSizeMult;
                 snapshot.magnetRange = status.magnetRange;
+                snapshot.permanentMagnetRangeBonus = status.permanentMagnetRangeBonus;
                 snapshot.selectedUniqueBonusCardIds = status.selectedUniqueBonusCardIds != null
                     ? new List<string>(status.selectedUniqueBonusCardIds)
                     : new List<string>();
@@ -843,6 +846,7 @@ public class StageFlowManager : MonoBehaviour
                 status.junkCollectorMult = junkCollectorMult;
                 status.bulletSizeMult = bulletSizeMult;
                 status.magnetRange = magnetRange;
+                status.permanentMagnetRangeBonus = permanentMagnetRangeBonus;
                 status.selectedUniqueBonusCardIds = selectedUniqueBonusCardIds != null
                     ? new List<string>(selectedUniqueBonusCardIds)
                     : new List<string>();

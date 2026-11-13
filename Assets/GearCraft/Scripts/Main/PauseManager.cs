@@ -57,6 +57,7 @@ public class PauseManager : MonoBehaviour
 
     private void Update()
     {
+        if (QuitConfirmationController.BlocksPlayerInput || RunSaveUI.BlocksGameplay) return;
         if (leavingScene) return;
         if (StageFlowManager.Instance != null && StageFlowManager.Instance.IsBlockingGameplayUI) return;
         if (Input.GetKeyDown(KeyCode.Escape))

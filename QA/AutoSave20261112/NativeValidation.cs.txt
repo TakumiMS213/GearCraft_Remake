@@ -1,0 +1,52 @@
+UnityEditor.EditorApplication.delayCall += async () =>
+{
+    var report = new System.Collections.Generic.Dictionary<string, object>();
+    try
+    {
+        var save = RunSaveService.Instance;
+        var info = await save.InspectAsync();
+        if (!info.CanContinue) throw new System.Exception(info.error);
+        var flags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance;
+        var codec = (RunSaveCodec)typeof(RunSaveService).GetField("codec", flags).GetValue(save);
+        var config = (StageGeneratorSO)typeof(RunSaveService).GetField("stageConfig", flags).GetValue(save);
+        var mutations = new System.Collections.Generic.Dictionary<string, System.Action<RunSaveData>> {
+            { "unknownVersion", d => d.version = 999 },
+            { "unknownWeaponID", d => d.status["currentWeapon"] = "removed-weapon" },
+            { "wrongAssetType", d => d.status["currentWeapon"] = d.status["ownedUpgradeParts"][0].DeepClone() },
+            { "missingField", d => d.status.Remove("STR") },
+            { "negativeMaterials", d => d.materials[0] = -1 },
+            { "nonRestStage", d => d.stage = 14 },
+            { "badRotation", d => d.status["savedUpgradePartPlacements"][0]["rotation"] = 4 },
+            { "outsideGrid", d => d.status["savedUpgradePartPlacements"][0]["gridX"] = 99 },
+            { "duplicatePlacement", d => ((Newtonsoft.Json.Linq.JArray)d.status["savedUpgradePartPlacements"]).Add(d.status["savedUpgradePartPlacements"][0].DeepClone()) },
+            { "invalidInventoryIndex", d => d.status["savedUpgradePartPlacements"][0]["inventoryIndex"] = 999 },
+            { "missingTutorialTrack", d => d.status["craftTutorialProgress"]["craft"] = Newtonsoft.Json.Linq.JValue.CreateNull() },
+            { "invalidTutorialHint", d => d.status["craftTutorialProgress"]["craft"]["hintLevel"] = 99 }
+        };
+        foreach (var pair in mutations)
+        {
+            var data = Newtonsoft.Json.JsonConvert.DeserializeObject<RunSaveData>(Newtonsoft.Json.JsonConvert.SerializeObject(info.data));
+            pair.Value(data); bool rejected = false;
+            try { codec.Validate(data, config); } catch { rejected = true; }
+            if (!rejected) throw new System.Exception("Accepted invalid data: " + pair.Key);
+            report[pair.Key] = true;
+        }
+        var source = UnityEngine.Object.FindFirstObjectByType<StartingWeaponSelectionController>();
+        var runBefore = info.data.runId;
+        RunSaveUI.Instance.RequestStart(source);
+        await System.Threading.Tasks.Task.Delay(300);
+        var newButton = (UnityEngine.UI.Button)typeof(RunSaveUI).GetField("newButton", flags).GetValue(RunSaveUI.Instance);
+        newButton.onClick.Invoke();
+        if (!source.IsOpen) throw new System.Exception("New game did not open weapon selection");
+        source.Close();
+        if ((await save.InspectAsync()).data.runId != runBefore) throw new System.Exception("Cancel invalidated checkpoint");
+        report["cancelWeaponSelectionPreservesCheckpoint"] = true;
+        source.StartNewGame(); source.SelectWeapon(0); source.Confirm();
+        await System.Threading.Tasks.Task.Delay(500);
+        if (save.RunId == runBefore || (await save.InspectAsync()).CanContinue) throw new System.Exception("Committed new game kept old checkpoint");
+        report["confirmedNewGameInvalidatesOldCheckpoint"] = true;
+    }
+    catch (System.Exception ex) { report["error"] = ex.ToString(); }
+    System.IO.File.WriteAllText("QA/AutoSave20261112/native-validation.json", Newtonsoft.Json.JsonConvert.SerializeObject(report, Newtonsoft.Json.Formatting.Indented));
+};
+return "validation and new game test scheduled";

@@ -87,7 +87,7 @@ public class EndingManager : MonoBehaviour
     /// <summary>
     /// シーンを跨いでエンディングを再生する
     /// </summary>
-    public static void LoadEndingScene(int endNum)
+    public static async void LoadEndingScene(int endNum)
     {
         if (IsLoadingEnding || endNum < 1 || endNum > 3)
         {
@@ -95,6 +95,7 @@ public class EndingManager : MonoBehaviour
         }
 
         IsLoadingEnding = true;
+        if (RunSaveService.Instance != null) await RunSaveService.Instance.InvalidateRunAsync();
         PendingEndingNum = endNum;
         Time.timeScale = 1f;
         SceneTransitionManager.LoadSceneWithTransition("Ending");

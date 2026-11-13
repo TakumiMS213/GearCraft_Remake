@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   weaponName: SteamGatling
   icon: {fileID: 21300000, guid: 951031652047f4267aba5f3ab2134c46, type: 3}
-  description: "\u4f4e\u706b\u529b\u306e\u5f3e\u3092\u5e83\u7bc4\u56f2\u306b\u9023\u5c04\u3059\u308b\u30ac\u30c8\u30ea\u30f3\u30b0\u578b\u306e\u5de5\u623f\u6b66\u88c5\u3002\u5de6\u30af\u30ea\u30c3\u30af\u3092\u62bc\u3057\u7d9a\u3051\u308b\u3068\u30015\u79d2\u3067\u6700\u5927\u767a\u5c04\u30ec\u30fc\u30c8\u306b\u9054\u3059\u308b\u3002\u767a\u5c04\u30ec\u30fc\u30c8\u5f37\u5316\u306f\u6700\u5927\u30ec\u30fc\u30c8\u306b\u53cd\u6620\u3055\u308c\u308b\u3002"
+  description: "低火力の弾を1発ごとに異なる方向へ拡散させるガトリング型の工房武装。毎秒2発から始まり、左クリックを15秒押し続けると最大レートに達する。射撃を止めると15秒かけて毎秒2発まで減速する。発射レート強化は最大レートに反映される。"
   weaponType: 1
   coolTime: 0.03
   baseDamage: 10

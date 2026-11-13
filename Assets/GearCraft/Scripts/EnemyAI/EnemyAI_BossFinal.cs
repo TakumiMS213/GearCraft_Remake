@@ -542,7 +542,7 @@ public sealed class EnemyAI_BossFinal : MonoBehaviour, IEnemyAI, IBossStunHandle
                 shield.a = originalColor.a;
                 sprite.color = shield;
             }
-            if (animator != null) animator.speed = originalAnimationSpeed * 0.65f;
+            if (animator != null) animator.speed = owner != null && owner.IsStunned ? 0f : originalAnimationSpeed * 0.65f;
             return;
         }
         bool blade = state == ActionState.CrusherWindup || state == ActionState.CrusherSurge;
@@ -557,7 +557,8 @@ public sealed class EnemyAI_BossFinal : MonoBehaviour, IEnemyAI, IBossStunHandle
                 : new Color(1f, 0.7f, 0.25f, originalColor.a);
             sprite.color = warning ? Color.Lerp(originalColor, warningColor, 0.55f + Mathf.PingPong(stateElapsed * 3f, 0.45f)) : originalColor;
         }
-        if (animator != null) animator.speed = originalAnimationSpeed * (blade ? 2.5f : phase == 2 ? 1.5f : 1f);
+        if (animator != null) animator.speed = owner != null && owner.IsStunned
+            ? 0f : originalAnimationSpeed * (blade ? 2.5f : phase == 2 ? 1.5f : 1f);
     }
 
     public void OnDeath()

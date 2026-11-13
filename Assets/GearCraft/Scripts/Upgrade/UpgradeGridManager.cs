@@ -323,6 +323,14 @@ public class UpgradeGridManager : MonoBehaviour
         gridUI.RefreshDisplay(grid, gridSize, placedParts, ownedParts);
     }
 
+    public void DiscardRuntimeState()
+    {
+        placedParts.Clear();
+        grid = null;
+        if (Instance == this) Instance = null;
+        Destroy(gameObject);
+    }
+
     public void RecalculateEffects()
     {
         if (StatusManager.Instance == null)

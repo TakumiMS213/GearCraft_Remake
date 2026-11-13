@@ -25,6 +25,7 @@ public class UIRangeDisplay : MonoBehaviour
     [SerializeField] private Image fadeImage;
     [SerializeField] private GameObject menuPanel;
     [SerializeField] private GameObject feedbackRoot;
+    [SerializeField] private GameObject furnitureUsageNotice;
     [SerializeField] private TMP_Text feedbackText;
     [SerializeField, Min(0f)] private float feedbackSeconds = 4f;
     public StatusManager status;
@@ -54,6 +55,7 @@ public class UIRangeDisplay : MonoBehaviour
 
         HideAllPrompts();
         HideFeedback();
+        RefreshFurnitureUsageNotice();
     }
 
     private void Update()
@@ -79,10 +81,11 @@ public class UIRangeDisplay : MonoBehaviour
 
     private void LateUpdate()
     {
+        RefreshFurnitureUsageNotice();
         // UI buttons can open the menu after this component's Update.
         if (IsInputBlocked()) HideFeedback();
         if (activeZone != null)
-            activeZone.SetPromptActive(!IsInputBlocked() && CanShowFurniturePrompt(activeZone));
+            activeZone.SetPromptActive(!IsInputBlocked() && CanUseFurniture(activeZone));
         menuWasOpen = menuPanel != null && menuPanel.activeInHierarchy;
     }
 
@@ -95,7 +98,7 @@ public class UIRangeDisplay : MonoBehaviour
     {
         if (sceneTransitionManager == null)
             sceneTransitionManager = FindFirstObjectByType<SceneTransitionManager>();
-        return Time.timeScale <= 0f || menuWasOpen ||
+        return Time.timeScale <= 0f || QuitConfirmationController.BlocksPlayerInput || RunSaveUI.BlocksGameplay || menuWasOpen ||
             menuPanel != null && menuPanel.activeInHierarchy ||
             Input.GetKeyDown(KeyCode.Tab) || Input.GetKeyDown(KeyCode.Escape) ||
             ArrivalMessagePresenter.IsMessagePlaying || ArrivalMessagePresenter.IsCameraPresentationPlaying ||
@@ -112,7 +115,7 @@ public class UIRangeDisplay : MonoBehaviour
         if (activeZone != zone) HideFeedback();
         activeZone?.SetPromptActive(false);
         activeZone = zone;
-        activeZone.SetPromptActive(!IsInputBlocked() && CanShowFurniturePrompt(activeZone));
+        activeZone.SetPromptActive(!IsInputBlocked() && CanUseFurniture(activeZone));
     }
 
     public void UnregisterZone(CraftSpaceInteractionZone zone)
@@ -134,7 +137,8 @@ public class UIRangeDisplay : MonoBehaviour
             HideFeedback();
             return;
         }
-        if (activeZone == null)
+        // Before the furniture tour, non-bed furniture is scenery: no action, feedback, or SE.
+        if (activeZone == null || !CanUseFurniture(activeZone))
         {
             return;
         }
@@ -196,8 +200,8 @@ public class UIRangeDisplay : MonoBehaviour
 
     private void ShowEquipmentGuideIfNeeded()
     {
-        if (status == null || !status.DormTasks.hasCompletedFirstDay ||
-            activeZone == null || feedbackRoot == null || feedbackRoot.activeSelf ||
+        if (status == null || activeZone == null || !CanUseFurniture(activeZone) ||
+            feedbackRoot == null || feedbackRoot.activeSelf ||
             feedbackText == null || !CanUseOneTimeBuff()) return;
 
         string guide;
@@ -221,10 +225,17 @@ public class UIRangeDisplay : MonoBehaviour
         showingEquipmentGuide = true;
     }
 
-    private bool CanShowFurniturePrompt(CraftSpaceInteractionZone zone)
+    private bool CanUseFurniture(CraftSpaceInteractionZone zone)
     {
         return zone.ActionType == CraftSpaceInteractionAction.Bed ||
-            status != null && status.DormTasks.hasCompletedFirstDay;
+            status != null && status.DormTasks.hasCompletedFirstDay && status.DormTasks.hasSeenFurnitureTutorial;
+    }
+
+    private void RefreshFurnitureUsageNotice()
+    {
+        if (furnitureUsageNotice == null) return;
+        bool visible = status != null && status.DormTasks.hasCompletedFirstDay && status.DormTasks.hasSeenFurnitureTutorial;
+        if (furnitureUsageNotice.activeSelf != visible) furnitureUsageNotice.SetActive(visible);
     }
 
     private void ConsumeOneTimeBuff()

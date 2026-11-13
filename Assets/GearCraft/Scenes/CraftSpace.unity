@@ -1,5 +1,23 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &2137000000
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications: []
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: c7d280e493e04dad932883590ac80ee4, type: 3}
+--- !u!224 &2137000001 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 1001, guid: c7d280e493e04dad932883590ac80ee4, type: 3}
+  m_PrefabInstance: {fileID: 2137000000}
+  m_PrefabAsset: {fileID: 0}
 --- !u!29 &1
 OcclusionCullingSettings:
   m_ObjectHideFlags: 0
@@ -2906,6 +2924,7 @@ MonoBehaviour:
   - {fileID: 497357497}
   transitionManager: {fileID: 1904236480}
   menuPanel: {fileID: 1387623690}
+  furnitureUsageNotice: {fileID: 1365085772}
   feedbackRoot: {fileID: 2100000200}
   feedbackText: {fileID: 2100000205}
   feedbackSeconds: 4
@@ -5483,7 +5502,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1365085773
 RectTransform:
   m_ObjectHideFlags: 0
@@ -8662,6 +8681,7 @@ BoxCollider2D:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
+  - {fileID: 2137000001}
   - {fileID: 1790808518}
   - {fileID: 1568228713}
   - {fileID: 784906184}

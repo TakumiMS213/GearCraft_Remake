@@ -1,11 +1,16 @@
 using GearCraft.Gallery;
 using UnityEngine;
+using System.Threading.Tasks;
 
 /// <summary>Explicit player-requested reset, separate from starting a new run.</summary>
 public static class PlayerProgressReset
 {
-    public static void Reset()
+    public static async Task Reset()
     {
+        if (RunSaveService.Instance != null) await RunSaveService.Instance.DeleteAllAsync();
+        else await new RunSaveStore(System.IO.Path.Combine(Application.persistentDataPath, "AutoSave")).DeleteAllAsync();
+        PlayerPrefs.DeleteKey(RunSaveService.EndedRunKey);
+        UpgradeGridManager.Instance?.DiscardRuntimeState();
         StoryPlaybackRequest.ClearRequest();
         StatusManager.Instance?.ResetRunProgress();
         if (StageCounter.Instance != null) StageCounter.Instance.StageCount = 1;

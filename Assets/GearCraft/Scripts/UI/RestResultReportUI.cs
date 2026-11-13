@@ -374,6 +374,8 @@ public class RestResultReportUI : MonoBehaviour
         {
             MaterialManager.MaterialType type = types[i];
             int amount = materialGains != null && materialGains.TryGetValue(type, out int gained) ? gained : 0;
+            if (amount <= 0) continue;
+
             materialAmountTexts[type] = CreateRow(GetMaterialIcon(type), FormatMaterialName(type), amount, Color.white);
             displayedMaterialAmounts[type] = amount;
         }

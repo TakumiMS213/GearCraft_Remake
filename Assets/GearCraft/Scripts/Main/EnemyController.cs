@@ -9,7 +9,8 @@ public class EnemyController : MonoBehaviour
     private const string EnemyLayerName = "Enemy";
     private const float HitFlashDuration = 0.05f;
     private const float StunShakeAmplitude = 0.025f;
-    private const float StunShakeFrequency = 22f;
+    private const float StunShakeInterval = 0.5f;
+    private const float StunShakeDuration = 0.12f;
     private const float BossSmokeStartHpRatio = 0.5f;
     private const float BossSmokeMinEmission = 12f;
     private const float BossSmokeMaxEmission = 60f;
@@ -63,8 +64,8 @@ public class EnemyController : MonoBehaviour
     private BossStunState bossStun;
     private Rigidbody2D stunBody;
     private RigidbodyConstraints2D constraintsBeforeStun;
-    private Animator stunAnimator;
-    private float animationSpeedBeforeStun;
+    private Animator[] stunAnimators;
+    private float[] animationSpeedsBeforeStun;
     private Transform stunVisual;
     private Vector3 stunVisualRestPosition;
     private Vector3 stunPosition;
@@ -113,7 +114,8 @@ public class EnemyController : MonoBehaviour
         }
 
         stunBody = GetComponent<Rigidbody2D>();
-        stunAnimator = GetComponentInChildren<Animator>();
+        stunAnimators = GetComponentsInChildren<Animator>(true);
+        animationSpeedsBeforeStun = new float[stunAnimators.Length];
         if (spriteRenderer != null && spriteRenderer.transform != transform)
         {
             stunVisual = spriteRenderer.transform;
@@ -183,13 +185,10 @@ public class EnemyController : MonoBehaviour
                 constraintsBeforeStun = stunBody.constraints;
                 stunBody.constraints = RigidbodyConstraints2D.FreezeAll;
             }
-            if (stunAnimator != null)
-            {
-                animationSpeedBeforeStun = stunAnimator.speed;
-                stunAnimator.speed = 0f;
-            }
+            CaptureStunAnimationSpeeds();
             (currentAI as IBossStunHandler)?.SetStunned(true);
         }
+        PauseStunAnimations();
         HoldStunPosition();
         PlayStunExplosion(LastStunHitPosition);
         UpdateBossSmokeEffect();
@@ -204,6 +203,7 @@ public class EnemyController : MonoBehaviour
             ReleaseStunPose(true);
             return;
         }
+        PauseStunAnimations();
         // EKの通常色更新も停止するため、共通の被弾点滅だけは終了させる。
         if (spriteRenderer != null && !IsHitFlashing && !IsFinalBossArmored)
             spriteRenderer.color = originalColor;
@@ -230,15 +230,47 @@ public class EnemyController : MonoBehaviour
     {
         if (!IsStunned || HP <= 0f) return;
         HoldStunPosition();
-        if (stunAnimator != null) stunAnimator.speed = 0f;
+        PauseStunAnimations();
         if (stunVisual == null) return;
         stunElapsed += Time.deltaTime;
-        float phase = stunElapsed * StunShakeFrequency * Mathf.PI * 2f;
         Vector3 scale = stunVisual.parent.lossyScale;
-        // 本体の当たり判定は固定し、画像だけをワールド座標で数cm揺らす。
+        // 当たり判定とドリル等のアニメーションは止め、画像だけ0.5秒ごとに短く震わせる。
+        Vector3 offset = GetStunShakeOffset(stunElapsed);
         stunVisual.localPosition = stunVisualRestPosition + new Vector3(
-            Mathf.Sin(phase) * StunShakeAmplitude / Mathf.Max(0.001f, Mathf.Abs(scale.x)),
-            Mathf.Sin(phase * 0.7f) * StunShakeAmplitude * 0.5f / Mathf.Max(0.001f, Mathf.Abs(scale.y)), 0f);
+            offset.x / Mathf.Max(0.001f, Mathf.Abs(scale.x)),
+            offset.y / Mathf.Max(0.001f, Mathf.Abs(scale.y)), 0f);
+    }
+
+    private static Vector3 GetStunShakeOffset(float elapsed)
+    {
+        float pulseTime = Mathf.Repeat(Mathf.Max(0f, elapsed), StunShakeInterval);
+        if (pulseTime >= StunShakeDuration) return Vector3.zero;
+        float progress = pulseTime / StunShakeDuration;
+        float envelope = Mathf.Sin(progress * Mathf.PI);
+        float phase = progress * Mathf.PI * 4f;
+        return new Vector3(Mathf.Sin(phase) * StunShakeAmplitude * envelope,
+            Mathf.Sin(phase * 0.7f) * StunShakeAmplitude * 0.5f * envelope, 0f);
+    }
+
+    private void CaptureStunAnimationSpeeds()
+    {
+        if (stunAnimators == null) return;
+        for (int i = 0; i < stunAnimators.Length; i++)
+            if (stunAnimators[i] != null) animationSpeedsBeforeStun[i] = stunAnimators[i].speed;
+    }
+
+    private void PauseStunAnimations()
+    {
+        if (stunAnimators == null) return;
+        foreach (Animator animator in stunAnimators)
+            if (animator != null) animator.speed = 0f;
+    }
+
+    private void RestoreStunAnimations()
+    {
+        if (stunAnimators == null) return;
+        for (int i = 0; i < stunAnimators.Length; i++)
+            if (stunAnimators[i] != null) stunAnimators[i].speed = animationSpeedsBeforeStun[i];
     }
 
     private void ReleaseStunPose(bool resumeAI)
@@ -246,7 +278,7 @@ public class EnemyController : MonoBehaviour
         if (!stunPoseCaptured) return;
         stunPoseCaptured = false;
         if (stunBody != null) stunBody.constraints = constraintsBeforeStun;
-        if (stunAnimator != null) stunAnimator.speed = animationSpeedBeforeStun;
+        RestoreStunAnimations();
         if (stunVisual != null) stunVisual.localPosition = stunVisualRestPosition;
         if (resumeAI) (currentAI as IBossStunHandler)?.SetStunned(false);
     }

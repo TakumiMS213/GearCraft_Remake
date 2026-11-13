@@ -11,9 +11,9 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f2890903c8b71094a906053107056e03, type: 3}
   m_Name: HeavySlug++
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   partName: Heavy Slug++
-  icon: {fileID: 21300000, guid: eafe6ec19ce1c3049abc3dfa59b7c897, type: 3}
+  icon: {fileID: -5362722441193572350, guid: 3c0cf3d7bb11743968c1753de0be3600, type: 3}
   rarity: 3
   partColor: {r: 0.62, g: 0.52, b: 0.44, a: 1}
   width: 2
@@ -30,3 +30,5 @@ MonoBehaviour:
   - type: 2
     amount: 2
   rangedOnly: 1
+  meleeOnly: 0
+  unique: 0

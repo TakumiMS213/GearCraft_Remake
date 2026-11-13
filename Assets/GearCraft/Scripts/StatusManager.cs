@@ -70,6 +70,7 @@ public class StatusManager : MonoBehaviour
     public float junkCollectorMult = 1f;
     public float bulletSizeMult = 1f;
     public float magnetRange = 3f;
+    public float permanentMagnetRangeBonus = 0f;
     public List<string> selectedUniqueBonusCardIds = new List<string>();
 
     [Header("Weapon Specific Bonus Cards")]
@@ -244,7 +245,7 @@ public class StatusManager : MonoBehaviour
         ricochetCount = 0;
         junkCollectorMult = 1f;
         bulletSizeMult = 1f;
-        magnetRange = 3f;
+        magnetRange = 3f + permanentMagnetRangeBonus;
 
         if (parts == null) return;
         var uniqueParts = new HashSet<UpgradePartSO>();
@@ -421,6 +422,7 @@ public class StatusManager : MonoBehaviour
 
     public void ResetRunProgress()
     {
+        permanentMagnetRangeBonus = 0f;
         HP = 100;
         SAN = 100;
         STR = 0;

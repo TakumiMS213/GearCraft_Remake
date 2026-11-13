@@ -1,0 +1,6 @@
+{
+  "gateGameOverInvalidatesCheckpoint": true,
+  "ending2InvalidatesCheckpoint": true,
+  "ending3InvalidatesCheckpoint": true,
+  "finishedRunCannotResumeAtTitle": true
+}

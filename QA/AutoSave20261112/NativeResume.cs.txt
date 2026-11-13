@@ -1,0 +1,37 @@
+UnityEditor.EditorApplication.delayCall += async () =>
+{
+    var report = new System.Collections.Generic.Dictionary<string, object>();
+    try
+    {
+        var save = RunSaveService.Instance;
+        var info = await save.InspectAsync();
+        if (!info.CanContinue) throw new System.Exception(info.error ?? "Checkpoint missing after restart");
+        report["readAfterRestart"] = true;
+        if (!await save.LoadRunAsync()) throw new System.Exception(save.LastError);
+        var status = StatusManager.Instance;
+        var codec = (RunSaveCodec)typeof(RunSaveService).GetField("codec", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(save);
+        var actual = codec.Capture(status, MaterialManager.Instance, save.RunId, info.data.revision, save.Seed, save.ShopReroll);
+        if (!Newtonsoft.Json.Linq.JToken.DeepEquals(info.data.status, actual.status) ||
+            !info.data.materials.SequenceEqual(actual.materials) || info.data.stage != actual.stage || info.data.shopReroll != actual.shopReroll)
+            throw new System.Exception("Restored snapshot differs");
+        if (status.attackSpeedMult != 1f || Mathf.Abs(status.damageBonusPercent - .1f) > .0001f ||
+            Mathf.Abs(status.magnetRange - 4.5f) > .0001f || status.steamThrowerBoostBurnDropsActive)
+            throw new System.Exception("Permanent/derived/transient effects were not separated");
+        var p = status.savedUpgradePartPlacements[0];
+        if (!p.refundCostsOnRemove || !p.returnToShopOnSameDay || p.placedShopDay != 5 || p.rotation != 1 || p.inventoryIndex != 0)
+            throw new System.Exception("Part return metadata lost");
+        report["all44StatusFieldsAndSixMaterialsMatch"] = true;
+        report["partEffectsRecomputedOnce"] = true;
+        report["partReturnMetadata"] = true;
+        report["shopSeed"] = save.Seed; report["shopReroll"] = save.ShopReroll;
+        report["materialBeforeDorm"] = actual.materials;
+        await System.Threading.Tasks.Task.Delay(3500);
+        report["scene"] = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        report["introStoryRequested"] = StoryPlaybackRequest.HasArrivalMessageRequest;
+        report["materialAfterDorm"] = System.Enum.GetValues(typeof(MaterialManager.MaterialType)).Cast<MaterialManager.MaterialType>().Select(MaterialManager.Instance.GetMaterial).ToArray();
+        ScreenCapture.CaptureScreenshot("QA/AutoSave20261112/03-resumed-dorm.png");
+    }
+    catch (System.Exception ex) { report["error"] = ex.ToString(); }
+    System.IO.File.WriteAllText("QA/AutoSave20261112/native-resume.json", Newtonsoft.Json.JsonConvert.SerializeObject(report, Newtonsoft.Json.Formatting.Indented));
+};
+return "resume test scheduled";

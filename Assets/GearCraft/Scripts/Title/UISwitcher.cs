@@ -7,6 +7,8 @@ public class UISwitcher : MonoBehaviour
     [SerializeField] private GameObject panel;
     [SerializeField] private GameObject panel2;
     public AudioSource ClickSound;
+    public bool HasVisiblePanel => panel != null && panel.activeInHierarchy ||
+        panel2 != null && panel2.activeInHierarchy;
 
     // 表示ボタンに割り当てる
     public void ShowPanel()

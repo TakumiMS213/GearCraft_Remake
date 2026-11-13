@@ -1,0 +1,26 @@
+{
+  "readAfterRestart": true,
+  "all44StatusFieldsAndSixMaterialsMatch": true,
+  "partEffectsRecomputedOnce": true,
+  "partReturnMetadata": true,
+  "shopSeed": -706299091,
+  "shopReroll": 2,
+  "materialBeforeDorm": [
+    11,
+    12,
+    13,
+    14,
+    15,
+    16
+  ],
+  "scene": "CraftSpace",
+  "introStoryRequested": false,
+  "materialAfterDorm": [
+    11,
+    12,
+    13,
+    14,
+    15,
+    16
+  ]
+}

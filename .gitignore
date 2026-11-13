@@ -118,3 +118,9 @@ InitTestScene*.unity*
 /QA/**/*.compile.rsp
 /QA/**/*.compile.cs.txt
 /QA/**/*.compile.log.txt
+
+# Local player-state backups and transient verification markers.
+/QA/**/preservation-before.json
+/QA/**/preferences-before.plist
+/QA/**/persistent-before/
+/QA/AutoSave20261112/reload.txt

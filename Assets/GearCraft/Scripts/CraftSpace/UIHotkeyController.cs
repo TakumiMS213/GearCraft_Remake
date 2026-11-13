@@ -12,6 +12,7 @@ public class UIHotkeyController : MonoBehaviour
 
     void Update()
     {
+        if (QuitConfirmationController.BlocksPlayerInput || RunSaveUI.BlocksGameplay) return;
         if (Input.GetKeyDown(KeyCode.Tab))
         {
             ToggleMenu();

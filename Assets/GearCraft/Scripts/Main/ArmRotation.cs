@@ -22,21 +22,47 @@ public class ArmRotation : MonoBehaviour
     private Coroutine swing;
     private bool fullChargeShake;
     private Vector3 chargeShakeOffset;
+    private WeaponDataSO posedWeapon;
+    private bool poseInitialized;
 
     void Start()
     {
-        playerController = player.GetComponent<PlayerController>();
+        playerController = player != null ? player.GetComponent<PlayerController>() : null;
+        RefreshWeaponPose(StatusManager.Instance != null ? StatusManager.Instance.currentWeapon : playerController?.currentWeapon);
+    }
+
+    // Scene loading and DAY/RETRY presentation block input, but the first rendered pose must already be attached.
+    public void RefreshWeaponPose(WeaponDataSO weapon)
+    {
+        if (player == null || arm == null || sholder == null) return;
+        ClearChargeShakeOffset();
+        posedWeapon = weapon;
+        poseInitialized = true;
+        ApplyAttachedPose(weapon);
+        arm.rotation = weapon != null && weapon.weaponType == WeaponType.Melee
+            ? Quaternion.Euler(GetBaseRotation(GetPoseIndex(weapon)))
+            : sholder.rotation;
+    }
+
+    private void ApplyAttachedPose(WeaponDataSO weapon)
+    {
+        int index = GetPoseIndex(weapon);
+        ApplyPose(index);
+        arm.position = weapon != null && weapon.weaponType == WeaponType.Melee
+            ? player.position + GetOffset(index)
+            : sholder.position + sholder.rotation * GetOffset(index);
     }
 
     void Update()
     {
-        // UI操作中は、ポーズ前の武器・肩の向きを維持する。
-        if (StageFlowManager.IsPlayerInputBlocked) return;
         ClearChargeShakeOffset();
-        if (playerController == null) return;
+        if (playerController == null || player == null || arm == null || sholder == null) return;
 
         // 近接武器では回転処理をスキップ
         WeaponDataSO currentWeaponData = StatusManager.Instance != null ? StatusManager.Instance.currentWeapon : null;
+        if (!poseInitialized || currentWeaponData != posedWeapon) RefreshWeaponPose(currentWeaponData);
+        // Freeze aiming during UI, not the initial attachment to the player.
+        if (StageFlowManager.IsPlayerInputBlocked) return;
         bool isMelee = currentWeaponData != null && currentWeaponData.weaponType == WeaponType.Melee;
 
         if (isMelee)
@@ -91,6 +117,11 @@ public class ArmRotation : MonoBehaviour
     private void LateUpdate()
     {
         ClearChargeShakeOffset();
+        // The player can still settle onto the floor during the DAY presentation.
+        // Keep the attachment aligned without reading the cursor or resetting a paused melee swing.
+        if (poseInitialized && player != null && arm != null && sholder != null &&
+            StageFlowManager.IsPlayerInputBlocked && swing == null)
+            ApplyAttachedPose(posedWeapon);
         if (!fullChargeShake || arm == null || Time.timeScale <= 0f || StageFlowManager.IsPlayerInputBlocked) return;
 
         float phase = Time.time * Mathf.PI * 2f;

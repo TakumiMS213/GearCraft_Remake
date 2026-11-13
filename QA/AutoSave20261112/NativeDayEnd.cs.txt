@@ -1,0 +1,54 @@
+UnityEditor.EditorApplication.delayCall += async () =>
+{
+    var report = new System.Collections.Generic.Dictionary<string, object>();
+    try
+    {
+        var status = StatusManager.Instance;
+        status.ResetRunProgress(); status.HP = 60; status.module_scrap = true; status.module_repair = true;
+        status.DormTasks.hasStartedFirstDay = true;
+        MaterialManager.Instance.ClearAllMaterials();
+        StageCounter.Instance.StageCount = 3;
+        StoryPlaybackRequest.ClearRequest();
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Main");
+        await System.Threading.Tasks.Task.Delay(3500);
+        var flow = StageFlowManager.Instance;
+        flow.enemySpawner.StopSpawning();
+        foreach (var enemy in UnityEngine.Object.FindObjectsByType<EnemyController>(FindObjectsSortMode.None)) enemy.gameObject.SetActive(false);
+        var flags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance;
+        ((System.Collections.IList)typeof(StageFlowManager).GetField("activeEnemies", flags).GetValue(flow)).Clear();
+        typeof(StageFlowManager).GetField("stagesSinceRest", flags).SetValue(flow, 2);
+        status.HP = 60; status.GATE = 100;
+        typeof(StageFlowManager).GetMethod("OnStageComplete", flags).Invoke(flow, null);
+        float limit = Time.realtimeSinceStartup + 10f;
+        while ((flow.restResultReportUI == null || !flow.restResultReportUI.IsShowing || !flow.restResultReportUI.continueButton.interactable) && Time.realtimeSinceStartup < limit)
+            await System.Threading.Tasks.Task.Delay(50);
+        if (flow.restResultReportUI == null || !flow.restResultReportUI.IsShowing) throw new System.Exception("Day result never appeared");
+        if ((await RunSaveService.Instance.InspectAsync()).CanContinue) throw new System.Exception("Saved before result confirmation");
+        report["noCheckpointUntilResultClosed"] = true;
+        flow.restResultReportUI.continueButton.onClick.Invoke();
+        limit = Time.realtimeSinceStartup + 12f;
+        bool captured = false;
+        while (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "CraftSpace" && Time.realtimeSinceStartup < limit)
+        {
+            var indicator = RunSaveService.Instance.transform.Find("SaveIndicator");
+            if (!captured && indicator.gameObject.activeSelf)
+            { ScreenCapture.CaptureScreenshot("QA/AutoSave20261112/06-day-end-save.png"); captured = true; }
+            await System.Threading.Tasks.Task.Delay(50);
+        }
+        await RunSaveService.Instance.PendingSave;
+        var info = await RunSaveService.Instance.InspectAsync();
+        if (!info.CanContinue) throw new System.Exception(info.error ?? "No automatic checkpoint");
+        if (info.data.stage != 4 || (int)info.data.status["HP"] != 80 || info.data.materials[1] != 5 ||
+            !(bool)info.data.status["dormTaskProgress"]["hasCompletedFirstDay"])
+            throw new System.Exception("Day rewards/progress not included in checkpoint");
+        report["automaticSaveAfterDayEnd"] = true;
+        report["nextStage"] = info.data.stage; report["hpAfterDayRepair"] = (int)info.data.status["HP"];
+        report["gearsAfterDailyModule"] = info.data.materials[1]; report["saveIndicatorDuringTransition"] = captured;
+        report["scene"] = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        await System.Threading.Tasks.Task.Delay(2500);
+        report["materialsAfterDormArrival"] = System.Enum.GetValues(typeof(MaterialManager.MaterialType)).Cast<MaterialManager.MaterialType>().Select(MaterialManager.Instance.GetMaterial).ToArray();
+    }
+    catch (System.Exception ex) { report["error"] = ex.ToString(); }
+    System.IO.File.WriteAllText("QA/AutoSave20261112/native-day-end.json", Newtonsoft.Json.JsonConvert.SerializeObject(report, Newtonsoft.Json.Formatting.Indented));
+};
+return "DAY end integration test scheduled";

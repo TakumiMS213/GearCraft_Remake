@@ -47,6 +47,13 @@ public sealed class StartingWeaponSelectionController : MonoBehaviour
     public void RequestStart()
     {
         if (departing || IsOpen || (sceneTransition != null && sceneTransition.IsLoading)) return;
+        if (RunSaveUI.Instance != null) RunSaveUI.Instance.RequestStart(this);
+        else StartNewGame();
+    }
+
+    public void StartNewGame()
+    {
+        if (departing || IsOpen || (sceneTransition != null && sceneTransition.IsLoading)) return;
         if (!StartingWeaponProgress.IsSelectionEnabled)
         {
             Depart(StatusManager.Instance != null ? StatusManager.Instance.defaultWeapon : null, null);
@@ -105,11 +112,18 @@ public sealed class StartingWeaponSelectionController : MonoBehaviour
         }
     }
 
-    private void Depart(WeaponDataSO weapon, WeaponDataSO additionalWeapon)
+    private async void Depart(WeaponDataSO weapon, WeaponDataSO additionalWeapon)
     {
         if (weapon == null || StatusManager.Instance == null || storyLoader == null) return;
         departing = true;
         deployButton.interactable = false;
+        if (RunSaveService.Instance != null && !await RunSaveService.Instance.BeginRunAsync())
+        {
+            departing = false;
+            RefreshSelection();
+            return;
+        }
+        UpgradeGridManager.Instance?.DiscardRuntimeState();
         // Preserve permanent unlocks, but always begin with a clean run.
         StatusManager status = StatusManager.Instance;
         status.ResetRunProgress();

@@ -1,4 +1,4 @@
-﻿%YAML 1.1
+%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -11,9 +11,9 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f2890903c8b71094a906053107056e03, type: 3}
   m_Name: PrecisionNozzle
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   partName: Precision Nozzle
-  icon: {fileID: 21300000, guid: eafe6ec19ce1c3049abc3dfa59b7c897, type: 3}
+  icon: {fileID: 4672321026794899800, guid: 3a79a7b448d4543968a611f6cf566e9a, type: 3}
   rarity: 0
   partColor: {r: 0.2, g: 0.65, b: 0.85, a: 1}
   width: 1
@@ -28,3 +28,5 @@ MonoBehaviour:
   - type: 1
     amount: 1
   rangedOnly: 1
+  meleeOnly: 0
+  unique: 0

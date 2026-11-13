@@ -97,7 +97,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (sceneTransitionManager == null)
             sceneTransitionManager = FindFirstObjectByType<SceneTransitionManager>();
-        return Time.timeScale <= 0f ||
+        return Time.timeScale <= 0f || QuitConfirmationController.BlocksPlayerInput || RunSaveUI.BlocksGameplay ||
             ArrivalMessagePresenter.IsMessagePlaying || ArrivalMessagePresenter.IsCameraPresentationPlaying ||
             sceneTransitionManager != null && sceneTransitionManager.IsLoading;
     }

@@ -375,6 +375,7 @@ public class BonusCardsManager : MonoBehaviour
                 break;
 
             case CardEffectType.MagnetRangeUp:
+                status.permanentMagnetRangeBonus += effect.value;
                 status.magnetRange += effect.value;
                 break;
 

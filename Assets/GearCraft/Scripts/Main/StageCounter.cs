@@ -14,7 +14,8 @@ public class StageCounter : MonoBehaviour
         // シングルトン実装
         if (Instance != null && Instance != this)
         {
-            Destroy(gameObject); // 2つ目が生成されたら破棄
+            if (GetComponent<RunSaveService>() != null) Destroy(this);
+            else Destroy(gameObject);
             return;
         }
         Instance = this;

@@ -103,6 +103,19 @@ public class MaterialManager : MonoBehaviour
         }
     }
 
+    public void SetMaterialForRestore(MaterialType type, int value)
+    {
+        switch (type)
+        {
+            case MaterialType.Scrap: scrap = value; break;
+            case MaterialType.Gear: gear = value; break;
+            case MaterialType.UpgradeCore: upgradeCore = value; break;
+            case MaterialType.ModuleCore_lv1: moduleCore_lv1 = value; break;
+            case MaterialType.ModuleCore_lv2: moduleCore_lv2 = value; break;
+            case MaterialType.ModuleCore_lv3: moduleCore_lv3 = value; break;
+        }
+    }
+
     public void AddMaterial(MaterialType type, int amount)
     {
         if (amount <= 0) return;

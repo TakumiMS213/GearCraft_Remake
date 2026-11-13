@@ -1,0 +1,39 @@
+UnityEditor.EditorApplication.delayCall += async () =>
+{
+    var report = new System.Collections.Generic.Dictionary<string, object>();
+    try
+    {
+        var save = RunSaveService.Instance;
+        var gate = UnityEngine.Object.FindFirstObjectByType<GateManager>();
+        if (gate == null || MainDebugEnemySpawnWindow.IsDebugModeActive) throw new System.Exception("Gate test prerequisites missing");
+        StatusManager.Instance.GATE = 10f;
+        gate.ReceiveEnemyHit();
+        await System.Threading.Tasks.Task.Delay(700);
+        if ((await save.InspectAsync()).CanContinue || save.RunId != null) throw new System.Exception("Gate defeat kept checkpoint");
+        report["gateGameOverInvalidatesCheckpoint"] = true;
+        await System.Threading.Tasks.Task.Delay(4500);
+        for (int ending = 2; ending <= 3; ending++)
+        {
+            UnityEngine.SceneManagement.SceneManager.LoadScene("Title");
+            await System.Threading.Tasks.Task.Delay(400);
+            if (!await save.BeginRunAsync()) throw new System.Exception(save.LastError);
+            StatusManager.Instance.ResetRunProgress();
+            StageCounter.Instance.StageCount = 4;
+            StatusManager.Instance.DormTasks.hasCompletedFirstDay = true;
+            save.SaveDayEnd(); await save.PendingSave;
+            if (!(await save.InspectAsync()).CanContinue) throw new System.Exception("Ending fixture not saved");
+            EndingManager.LoadEndingScene(ending);
+            await System.Threading.Tasks.Task.Delay(600);
+            if ((await save.InspectAsync()).CanContinue || save.RunId != null) throw new System.Exception("ED kept checkpoint: " + ending);
+            report["ending" + ending + "InvalidatesCheckpoint"] = true;
+            await System.Threading.Tasks.Task.Delay(4500);
+        }
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Title");
+        await System.Threading.Tasks.Task.Delay(400);
+        if ((await save.InspectAsync()).CanContinue) throw new System.Exception("Returning to Title revived finished run");
+        report["finishedRunCannotResumeAtTitle"] = true;
+    }
+    catch (System.Exception ex) { report["error"] = ex.ToString(); }
+    System.IO.File.WriteAllText("QA/AutoSave20261112/native-endings.json", Newtonsoft.Json.JsonConvert.SerializeObject(report, Newtonsoft.Json.Formatting.Indented));
+};
+return "gate and ending invalidation test scheduled";

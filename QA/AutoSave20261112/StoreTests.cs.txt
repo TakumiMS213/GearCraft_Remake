@@ -1,0 +1,92 @@
+// Production disk store tests. All writes are confined to a new temporary directory.
+using System;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
+
+public static class StoreTests
+{
+    static int checks;
+    static void Check(bool value, string name)
+    { if (!value) throw new Exception(name); checks++; Console.WriteLine("PASS: " + name); }
+    public static void Main() { Run().GetAwaiter().GetResult(); }
+    public static async Task Run()
+    {
+        string folder = Path.Combine(Path.GetTempPath(), "gearcraft-save-" + Guid.NewGuid().ToString("N"));
+        string primary = Path.Combine(folder, "run-save.json"), backup = Path.Combine(folder, "run-save.bak");
+        try
+        {
+            var store = new RunSaveStore(folder);
+            Check(!(await store.ReadAsync()).HasSave, "empty install has no Continue");
+            await store.BeginAsync("run-a", 123);
+            Check(!(await store.ReadAsync()).HasSave, "starting a run creates no premature checkpoint");
+            string one = "{\"text\":\"日本語の保存\",\"materials\":[1,2,3,4,5,6]}", two = "second snapshot";
+            Check(await store.WriteAsync("run-a", 1, one), "first checkpoint writes");
+            Check((await new RunSaveStore(folder).ReadAsync()).payload == one, "new store instance reads persisted UTF8 snapshot");
+            Check(await store.WriteAsync("run-a", 2, two), "second checkpoint writes");
+            Check(File.Exists(backup) && !File.Exists(primary + ".tmp"), "atomic replace leaves backup and no temporary file");
+            File.WriteAllText(primary, "truncated {");
+            Check((await store.ReadAsync()).payload == one, "interrupted primary falls back to same-run backup");
+            Check(await store.WriteAsync("run-a", 3, "third"), "checkpoint after recovery writes");
+            File.WriteAllText(primary, "broken again");
+            Check((await store.ReadAsync()).payload == one, "recovery write preserves previous healthy backup");
+            await store.WriteAsync("run-a", 4, "fourth");
+            var envelope = JObject.Parse(File.ReadAllText(primary));
+            envelope["payload"] = "tampered"; File.WriteAllText(primary, envelope.ToString());
+            Check((await store.ReadAsync()).payload == one, "checksum mismatch falls back");
+            envelope["version"] = 999; File.WriteAllText(primary, envelope.ToString());
+            var future = await store.ReadAsync();
+            Check(!future.HasSave && future.error != null, "unknown future version blocks Continue instead of rolling back");
+            File.Delete(primary);
+            await store.WriteAsync("run-a", 5, "stable");
+            Directory.CreateDirectory(primary + ".tmp");
+            bool failed = false;
+            try { await store.WriteAsync("run-a", 6, "retry-identical"); } catch (IOException) { failed = true; }
+            catch (UnauthorizedAccessException) { failed = true; }
+            Check(failed && (await store.ReadAsync()).payload == "stable", "write failure preserves last normal checkpoint");
+            Directory.Delete(primary + ".tmp");
+            await store.WriteAsync("run-a", 6, "retry-identical");
+            Check((await store.ReadAsync()).payload == "retry-identical", "retry stores the exact failed snapshot");
+            await store.InvalidateAsync();
+            Check(!(await new RunSaveStore(folder).ReadAsync()).HasSave, "ended run cannot recover from primary or backup after restart");
+            Check(!await store.WriteAsync("run-a", 7, "late"), "late checkpoint cannot resurrect ended run");
+            await store.BeginAsync("run-b", 456);
+            var fresh = await store.ReadAsync();
+            Check(!fresh.HasSave && fresh.error == null, "new run rejects old run files without reporting them as corruption");
+            Check(!await store.WriteAsync("run-a", 8, "old-id"), "wrong run cannot write");
+            await store.WriteAsync("run-b", 1, "new-run");
+            await store.WriteAsync("run-b", 2, "new-run-2");
+            envelope = JObject.Parse(File.ReadAllText(primary)); envelope["version"] = 999;
+            File.WriteAllText(primary, envelope.ToString());
+            await store.BeginAsync("run-b-next", 456);
+            Check(await store.WriteAsync("run-b-next", 1, "newer-run"), "committed new game can replace unsupported old-run save");
+            File.WriteAllText(primary + ".tmp", "incomplete");
+            // Hold the actual store gate to guarantee an enqueued write overlaps reset.
+            var gate = (SemaphoreSlim)typeof(RunSaveStore).GetField("gate", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(store);
+            await gate.WaitAsync();
+            Task<bool> queued = store.WriteAsync("run-b-next", 3, "must-not-revive");
+            Task reset = store.DeleteAllAsync();
+            gate.Release(); await reset;
+            Check(!await queued, "reset cancels already queued old generation write");
+            Check(!Directory.EnumerateFileSystemEntries(folder).Any(), "reset removes primary backup temporary and manifest files");
+            Check(!(await new RunSaveStore(folder).ReadAsync()).HasSave, "restart after concurrent reset has no Continue");
+            await store.BeginAsync("run-c", 789);
+            await store.WriteAsync("run-c", 1, new string('x', 8 * 1024 * 1024));
+            Task<bool> inFlight = store.WriteAsync("run-c", 2, new string('y', 8 * 1024 * 1024));
+            await store.DeleteAllAsync(); await inFlight;
+            Check(!Directory.EnumerateFileSystemEntries(folder).Any(), "reset waits for in-progress large write then removes everything");
+            await store.BeginAsync("run-d", 1); await store.WriteAsync("run-d", 1, "keep");
+            Directory.CreateDirectory(Path.Combine(folder, "run-state.json.tmp"));
+            failed = false; try { await store.DeleteAllAsync(); } catch { failed = true; }
+            Check(failed && (await store.ReadAsync()).payload == "keep", "failed reset reports failure and keeps the existing checkpoint");
+            Directory.Delete(Path.Combine(folder, "run-state.json.tmp"));
+            await store.DeleteAllAsync();
+            Check(!(await store.ReadAsync()).HasSave, "failed reset can be retried");
+            Console.WriteLine("Store checks passed: " + checks);
+        }
+        finally { if (Directory.Exists(folder)) Directory.Delete(folder, true); }
+    }
+}

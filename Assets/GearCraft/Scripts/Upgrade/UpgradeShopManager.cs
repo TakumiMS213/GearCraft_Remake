@@ -31,6 +31,9 @@ public class UpgradeShopManager : MonoBehaviour
     private readonly List<GameObject> shopItemObjects = new List<GameObject>();
     private bool hasGeneratedLineup;
     private int shopDay = -1;
+    private WeaponDataSO availabilityWeapon;
+    private System.Random lineupRandom;
+    private TMP_Text availabilityMessageText;
     private readonly Vector3[] tooltipCorners = new Vector3[4];
 
     public int ShopDay => shopDay;
@@ -49,6 +52,8 @@ public class UpgradeShopManager : MonoBehaviour
 
     private void LateUpdate()
     {
+        WeaponDataSO currentWeapon = StatusManager.Instance != null ? StatusManager.Instance.currentWeapon : null;
+        if (currentWeapon != availabilityWeapon) RefreshShopAvailability();
         RefreshMaterialShortageWindow();
     }
 
@@ -82,6 +87,7 @@ public class UpgradeShopManager : MonoBehaviour
             return;
         }
 
+        RunSaveService.Instance?.AdvanceShopReroll();
         GenerateLineupInternal();
         RefreshMaterialDisplays();
         if (infoText != null)
@@ -92,6 +98,9 @@ public class UpgradeShopManager : MonoBehaviour
 
     private void GenerateLineupInternal()
     {
+        var save = RunSaveService.Instance;
+        lineupRandom = save != null && !string.IsNullOrEmpty(save.RunId)
+            ? new System.Random(unchecked(save.Seed ^ shopDay * 73856093 ^ save.ShopReroll * 19349663)) : null;
         currentLineup.Clear();
         if (allParts == null || allParts.Length == 0)
         {
@@ -225,6 +234,8 @@ public class UpgradeShopManager : MonoBehaviour
 
     private void RefreshShopAvailability()
     {
+        StatusManager status = StatusManager.Instance;
+        availabilityWeapon = status != null ? status.currentWeapon : null;
         if (shopParent == null) return;
 
         // Reorder existing rows instead of rebuilding them: material events can
@@ -233,21 +244,22 @@ public class UpgradeShopManager : MonoBehaviour
         bool orderChanged = false;
         for (int pass = 0; pass < 2; pass++)
         {
-            bool showAffordable = pass == 0;
+            bool showAvailable = pass == 0;
             for (int i = 0; i < currentLineup.Count && i < shopItemObjects.Count; i++)
             {
                 GameObject item = shopItemObjects[i];
                 if (item == null) continue;
 
-                bool affordable = CanAfford(currentLineup[i]);
-                if (affordable != showAffordable) continue;
+                UpgradePartSO part = currentLineup[i];
+                bool available = CanAfford(part) && (status == null || part.AppliesTo(availabilityWeapon));
+                if (available != showAvailable) continue;
 
                 CanvasGroup group = item.GetComponent<CanvasGroup>();
                 if (group != null)
                 {
                     // Retain raycasts so unavailable parts still expose their
                     // effects, costs and the existing shortage feedback.
-                    group.alpha = affordable ? 1f : unaffordableItemAlpha;
+                    group.alpha = available ? 1f : unaffordableItemAlpha;
                 }
 
                 if (item.transform.GetSiblingIndex() != siblingIndex)
@@ -270,23 +282,34 @@ public class UpgradeShopManager : MonoBehaviour
         // Use the existing tooltip's owner so pointer exit, dragging, tab changes
         // and rebuilt rows all dismiss this notice along with the part details.
         TooltipSystem tooltip = TooltipSystem.FindInstance();
-        bool show = false;
+        string message = null;
         if (isActiveAndEnabled && tooltip != null)
         {
             for (int i = 0; i < currentLineup.Count && i < shopItemObjects.Count; i++)
             {
                 GameObject item = shopItemObjects[i];
                 if (item != null && item.activeInHierarchy &&
-                    tooltip.IsShowingFor(item.transform as RectTransform) && !CanAfford(currentLineup[i]))
+                    tooltip.IsShowingFor(item.transform as RectTransform))
                 {
-                    show = true;
+                    UpgradePartSO part = currentLineup[i];
+                    StatusManager status = StatusManager.Instance;
+                    if (part != null && status != null && !part.AppliesTo(status.currentWeapon))
+                        message = part.meleeOnly ? "近接武器専用です" : "遠距離武器専用です";
+                    else if (!CanAfford(part))
+                        message = "素材が足りません";
                     break;
                 }
             }
         }
 
-        materialShortageWindow.gameObject.SetActive(show);
-        if (!show) return;
+        if (message != null)
+        {
+            if (availabilityMessageText == null)
+                availabilityMessageText = materialShortageWindow.GetComponentInChildren<TMP_Text>(true);
+            if (availabilityMessageText != null) availabilityMessageText.text = message;
+        }
+        materialShortageWindow.gameObject.SetActive(message != null);
+        if (message == null) return;
 
         RectTransform parent = materialShortageWindow.parent as RectTransform;
         if (parent == null) return;
@@ -382,7 +405,7 @@ public class UpgradeShopManager : MonoBehaviour
 
         if (highRarity.Count > 0)
         {
-            currentLineup.Add(highRarity[Random.Range(0, highRarity.Count)]);
+            currentLineup.Add(highRarity[NextIndex(highRarity.Count)]);
         }
     }
 
@@ -400,7 +423,7 @@ public class UpgradeShopManager : MonoBehaviour
 
         while (currentLineup.Count < shopSlotCount && remaining.Count > 0)
         {
-            int index = Random.Range(0, remaining.Count);
+            int index = NextIndex(remaining.Count);
             currentLineup.Add(remaining[index]);
             remaining.RemoveAt(index);
         }
@@ -410,7 +433,7 @@ public class UpgradeShopManager : MonoBehaviour
     {
         for (int i = currentLineup.Count - 1; i > 0; i--)
         {
-            int j = Random.Range(0, i + 1);
+            int j = NextIndex(i + 1);
             UpgradePartSO temp = currentLineup[i];
             currentLineup[i] = currentLineup[j];
             currentLineup[j] = temp;
@@ -425,6 +448,8 @@ public class UpgradeShopManager : MonoBehaviour
             (!status.ownedUpgradeParts.Contains(part) &&
              !status.savedUpgradePartPlacements.Exists(p => p != null && p.partData == part));
     }
+
+    private int NextIndex(int count) => lineupRandom != null ? lineupRandom.Next(count) : Random.Range(0, count);
 
     private static void ApplyIcon(GameObject item, UpgradePartSO part)
     {
@@ -564,6 +589,7 @@ public class UpgradeShopManager : MonoBehaviour
         }
 
         shopDay = currentDay;
+        RunSaveService.Instance?.EnterShopDay(shopDay);
         currentLineup.Clear();
         hasGeneratedLineup = status != null && status.hasSavedUpgradeShopLineup;
         if (hasGeneratedLineup)
